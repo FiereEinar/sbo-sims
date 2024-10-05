@@ -5,7 +5,7 @@ import Category from '../models/category';
 import Student from '../models/student';
 import { createTransactionBody } from '../types/transaction';
 import { validationResult } from 'express-validator';
-import mongoose from 'mongoose';
+import mongoose, { UpdateQuery } from 'mongoose';
 
 /**
  * GET - fetch all transactions made
@@ -169,5 +169,84 @@ export const delete_transaction = asyncHandler(async (req, res) => {
 
 	res.json(
 		new CustomResponse(true, result, 'Transaction deleted successfully')
+	);
+});
+
+/**
+ * PUT - update a transaction based on ID in params
+ */
+export const update_transaction = asyncHandler(async (req, res) => {
+	const { transactionID } = req.params;
+	const {
+		amount,
+		categoryID,
+		date,
+		description,
+		studentID,
+	}: createTransactionBody = req.body;
+
+	// check if the given transaction ID is valid
+	if (!mongoose.isValidObjectId(transactionID)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`${transactionID} is not a valid transaction ID`
+			)
+		);
+		return;
+	}
+
+	// check if the category exists
+	const category = await Category.findById(categoryID);
+	if (category === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Category with ID ${categoryID} not found`
+			)
+		);
+		return;
+	}
+
+	// check for errors in validation
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in body validation',
+				errors.array()[0].msg
+			)
+		);
+		return;
+	}
+
+	// check if the student with the given ID exists
+	const student = await Student.findOne({ studentID: studentID }).exec();
+	if (student === null) {
+		res.json(
+			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
+		);
+		return;
+	}
+
+	// create and save the transaction
+	const update: UpdateQuery<ITransaction> = {
+		amount: amount,
+		category: categoryID,
+		owner: student._id,
+		description: description,
+		date: date,
+	};
+
+	const result = await Transaction.findByIdAndUpdate(transactionID, update, {
+		new: true,
+	}).exec();
+
+	res.json(
+		new CustomResponse(true, result, 'Transaction updated successfully')
 	);
 });

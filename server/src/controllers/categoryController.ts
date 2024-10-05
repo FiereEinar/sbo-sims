@@ -104,3 +104,21 @@ export const delete_category = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, result, 'Category deleted successfully'));
 });
+
+/**
+ * PUT - update a category based on ID in params
+ */
+export const update_category = asyncHandler(async (req, res) => {
+	const { categoryID } = req.params;
+
+	if (!mongoose.isValidObjectId(categoryID)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`${categoryID} is not a valid category ID`
+			)
+		);
+		return;
+	}
+});

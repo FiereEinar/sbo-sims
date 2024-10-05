@@ -33,6 +33,17 @@ export const get_student = asyncHandler(async (req, res) => {
 		})
 		.exec();
 
+	if (student === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Student with ID ${studentID} does not exist`
+			)
+		);
+		return;
+	}
+
 	res.json(new CustomResponse(true, student, 'Student data'));
 });
 
@@ -145,7 +156,7 @@ export const delete_student = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	await Student.findByIdAndDelete(student._id);
+	const result = await Student.findByIdAndDelete(student._id);
 
-	res.json(new CustomResponse(true, null, 'Student deleted successfully'));
+	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });

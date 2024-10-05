@@ -136,3 +136,38 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		new CustomResponse(true, transaction, 'Transaction saved successfully')
 	);
 });
+
+/**
+ * DELETE - delete a transaction by given ID in params
+ */
+export const delete_transaction = asyncHandler(async (req, res) => {
+	const { transactionID } = req.params;
+
+	// check if the given ID is valid
+	if (!mongoose.isValidObjectId(transactionID)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`${transactionID} is not a valid transaction ID`
+			)
+		);
+		return;
+	}
+
+	const result = await Transaction.findByIdAndDelete(transactionID);
+	if (result === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Transaction with ID: ${transactionID} does not exists`
+			)
+		);
+		return;
+	}
+
+	res.json(
+		new CustomResponse(true, result, 'Transaction deleted successfully')
+	);
+});

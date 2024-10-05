@@ -71,3 +71,36 @@ export const create_category = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, category, 'Category created successfully'));
 });
+
+/**
+ * DELETE - delete a category by given ID in params
+ */
+export const delete_category = asyncHandler(async (req, res) => {
+	const { categoryID } = req.params;
+
+	// check if the given ID is valid
+	if (!mongoose.isValidObjectId(categoryID)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`${categoryID} is not a valid category ID`
+			)
+		);
+		return;
+	}
+
+	const result = await Category.findByIdAndDelete(categoryID);
+	if (result === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Category with ID ${categoryID} does not exist`
+			)
+		);
+		return;
+	}
+
+	res.json(new CustomResponse(true, result, 'Category deleted successfully'));
+});

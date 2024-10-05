@@ -6,6 +6,8 @@ import connectToDB from './src/database/mongodb';
 connectToDB();
 
 import studentRouter from './src/routes/student';
+import transactionRouter from './src/routes/transaction';
+
 import { notFoundHandler } from './src/middlewares/not-found';
 import { errorHandler } from './src/middlewares/error';
 
@@ -15,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/student', studentRouter);
+app.use('/transaction', transactionRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

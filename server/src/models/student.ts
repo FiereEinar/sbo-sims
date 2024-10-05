@@ -9,7 +9,6 @@ export interface IStudent {
 	firstname: string;
 	lastname: string;
 	email: string;
-	transactions: [ITransaction];
 }
 
 const StudentSchema = new Schema<IStudent>({
@@ -17,7 +16,6 @@ const StudentSchema = new Schema<IStudent>({
 	firstname: { type: String, required: true },
 	lastname: { type: String, required: true },
 	email: { type: String, required: false },
-	transactions: [{ type: Schema.Types.ObjectId, ref: 'Transaction' }],
 });
 
 export default mongoose.model('Student', StudentSchema);

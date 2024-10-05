@@ -7,12 +7,14 @@ export interface ITransaction {
 	_id: string;
 	amount: number;
 	category: ICategory;
+	description: string;
 	date: Date;
 }
 
 const TransactionSchema = new Schema<ITransaction>({
 	amount: { type: Number, minlength: 1, required: true },
-	category: { type: Schema.Types.ObjectId, ref: 'Category' },
+	category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+	description: { type: String, required: false },
 	date: { type: Date, default: Date.now },
 });
 

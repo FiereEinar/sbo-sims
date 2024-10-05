@@ -2,8 +2,8 @@ import asyncHandler from 'express-async-handler';
 import Transaction, { ITransaction } from '../models/transaction';
 import CustomResponse from '../utils/custom-response';
 import Category from '../models/category';
-import { createTransactionBody } from '../types/transaction';
 import Student from '../models/student';
+import { createTransactionBody } from '../types/transaction';
 import { validationResult } from 'express-validator';
 import mongoose from 'mongoose';
 
@@ -12,10 +12,15 @@ import mongoose from 'mongoose';
  * TODO: implement paganation
  */
 export const get_all_transactions = asyncHandler(async (req, res) => {
-	const transactions = await Transaction.find().populate({
-		model: Category,
-		path: 'category',
-	});
+	const transactions = await Transaction.find()
+		.populate({
+			model: Category,
+			path: 'category',
+		})
+		.populate({
+			model: Student,
+			path: 'owner',
+		});
 
 	res.json(new CustomResponse(true, transactions, 'All transactions'));
 });
@@ -33,7 +38,16 @@ export const get_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	const transaction = await Transaction.findById(transactionID);
+	const transaction = await Transaction.findById(transactionID)
+		.populate({
+			model: Category,
+			path: 'category',
+		})
+		.populate({
+			model: Student,
+			path: 'owner',
+		});
+
 	if (transaction === null) {
 		res.json(
 			new CustomResponse(
@@ -60,9 +74,27 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		studentID,
 	}: createTransactionBody = req.body;
 
+	// check if the given category ID is valid
 	if (!mongoose.isValidObjectId(categoryID)) {
 		res.json(
-			new CustomResponse(false, null, `${categoryID} is not a valid ID`)
+			new CustomResponse(
+				false,
+				null,
+				`${categoryID} is not a valid category ID`
+			)
+		);
+		return;
+	}
+
+	// check if the category exists
+	const category = await Category.findById(categoryID);
+	if (category === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Category with ID ${categoryID} not found`
+			)
 		);
 		return;
 	}

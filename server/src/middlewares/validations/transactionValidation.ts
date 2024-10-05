@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 export const createTransactionValidation = [
 	body('amount').isNumeric(),
 
-	body('categoy')
+	body('categoryID')
 		.trim()
 		.escape()
 		.isLength({ min: 1 })

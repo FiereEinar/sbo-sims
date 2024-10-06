@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Category, { ICategory } from '../models/category';
 import CustomResponse from '../utils/custom-response';
-import mongoose from 'mongoose';
+import mongoose, { UpdateQuery } from 'mongoose';
 import { validationResult } from 'express-validator';
 
 /**
@@ -110,7 +110,9 @@ export const delete_category = asyncHandler(async (req, res) => {
  */
 export const update_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
+	const { name }: Omit<ICategory, '_id'> = req.body;
 
+	// check if the given ID is valid
 	if (!mongoose.isValidObjectId(categoryID)) {
 		res.json(
 			new CustomResponse(
@@ -121,4 +123,40 @@ export const update_category = asyncHandler(async (req, res) => {
 		);
 		return;
 	}
+
+	// check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in body validation',
+				errors.array()[0].msg
+			)
+		);
+		return;
+	}
+
+	// create and save the category
+	const update: UpdateQuery<ICategory> = {
+		name: name,
+	};
+
+	const result = await Category.findByIdAndUpdate(categoryID, update, {
+		new: true,
+	}).exec();
+
+	if (result === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Category with ID: ${categoryID} does not exist`
+			)
+		);
+		return;
+	}
+
+	res.json(new CustomResponse(true, result, 'Category updated successfully'));
 });

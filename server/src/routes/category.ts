@@ -5,6 +5,7 @@ import {
 	delete_category,
 	get_all_category,
 	get_category,
+	get_category_transactions,
 	update_category,
 } from '../controllers/categoryController';
 
@@ -13,6 +14,8 @@ const router = express.Router();
 router.get('/', get_all_category);
 
 router.get('/:categoryID', get_category);
+
+router.get('/:categoryID/transaction', get_category_transactions);
 
 router.post('/', createCategoryValidation, create_category);
 

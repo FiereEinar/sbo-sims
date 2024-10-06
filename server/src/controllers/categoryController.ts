@@ -3,6 +3,8 @@ import Category, { ICategory } from '../models/category';
 import CustomResponse from '../utils/custom-response';
 import mongoose, { UpdateQuery } from 'mongoose';
 import { validationResult } from 'express-validator';
+import Transaction from '../models/transaction';
+import Student from '../models/student';
 
 /**
  * GET - fetch all categories
@@ -41,6 +43,45 @@ export const get_category = asyncHandler(async (req, res) => {
 	}
 
 	res.json(new CustomResponse(true, category, 'Category'));
+});
+
+/**
+ * GET - fetch the transactions made in a category
+ */
+export const get_category_transactions = asyncHandler(async (req, res) => {
+	const { categoryID } = req.params;
+
+	// check if the given ID is valid
+	if (!mongoose.isValidObjectId(categoryID)) {
+		res.json(
+			new CustomResponse(false, null, `${categoryID} is not a valid ID`)
+		);
+		return;
+	}
+
+	// check if the given category exists
+	const category = await Category.findById(categoryID);
+	if (category === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Category wit ID: ${categoryID} not found`
+			)
+		);
+		return;
+	}
+
+	const categoryTransactions = await Transaction.find({
+		category: category._id,
+	})
+		.populate({ model: Student, path: 'owner' })
+		.populate({ model: Category, path: 'category' })
+		.exec();
+
+	res.json(
+		new CustomResponse(true, categoryTransactions, 'Category transactions')
+	);
 });
 
 /**

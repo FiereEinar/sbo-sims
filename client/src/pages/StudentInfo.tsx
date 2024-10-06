@@ -50,7 +50,11 @@ export default function StudentInfo() {
 					<p>Full name: {`${studentData.firstname} ${studentData.lastname}`}</p>
 					<p>Email: {studentData.email || 'Not provided'}</p>
 				</div>
-				<TransactionsTable transactions={studentTransactions} />
+
+				<div>
+					<h1 className='text-muted-foreground'>Previous transactions made:</h1>
+					<TransactionsTable transactions={studentTransactions} />
+				</div>
 			</div>
 		</section>
 	);

@@ -50,10 +50,10 @@ export default function TransactionsTable({
 						<TableCell className='text-muted-foreground'>
 							{transaction.category.name}
 						</TableCell>
-						<TableCell className='text-muted-foreground'>
+						<TableCell className='text-muted-foreground max-w-[300px]'>
 							{transaction.description}
 						</TableCell>
-						<TableCell className='text-right'>{transaction.amount}</TableCell>
+						<TableCell className='text-right'>P{transaction.amount}</TableCell>
 					</TableRow>
 				))}
 			</TableBody>
@@ -61,7 +61,7 @@ export default function TransactionsTable({
 			<TableFooter>
 				<TableRow>
 					<TableCell colSpan={3}>Total</TableCell>
-					<TableCell className='text-right'>{totalAmount}</TableCell>
+					<TableCell className='text-right'>P{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>
 		</Table>

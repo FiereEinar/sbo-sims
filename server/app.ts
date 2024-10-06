@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 dotenv.config();
 
 import connectToDB from './src/database/mongodb';
@@ -13,6 +14,7 @@ import { notFoundHandler } from './src/middlewares/not-found';
 import { errorHandler } from './src/middlewares/error';
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

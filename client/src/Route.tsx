@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Student from './pages/Student';
 import Transaction from './pages/Transaction';
 import Category from './pages/Category';
+import StudentInfo from './pages/StudentInfo';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -26,6 +27,10 @@ export default function Route() {
 				{
 					path: '/category',
 					element: <Category />,
+				},
+				{
+					path: '/student/:studentID',
+					element: <StudentInfo />,
 				},
 			],
 		},

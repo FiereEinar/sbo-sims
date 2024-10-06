@@ -11,7 +11,28 @@ import { UpdateQuery } from 'mongoose';
  * GET - fetch all students
  */
 export const get_all_students = asyncHandler(async (req, res) => {
-	const students = await Student.find();
+	// const students = await Student.find();
+	const students = await Student.aggregate([
+		{
+			$lookup: {
+				from: 'transactions', // collection name of the Transaction model
+				localField: '_id',
+				foreignField: 'owner', // transaction field that links to the student
+				as: 'transactions',
+			},
+		},
+		{
+			$addFields: {
+				totalTransactions: { $size: '$transactions' }, // count the number of transactions
+				totalTransactionsAmount: { $sum: '$transactions.amount' },
+			},
+		},
+		{
+			$project: {
+				transactions: 0, // exclude the transactions array from the result
+			},
+		},
+	]);
 
 	res.json(new CustomResponse(true, students, 'All students'));
 });
@@ -22,16 +43,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 export const get_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
 
-	const student = await Student.findOne({ studentID: studentID })
-		.populate({
-			model: Transaction,
-			path: 'transactions',
-			populate: {
-				model: Category,
-				path: 'category',
-			},
-		})
-		.exec();
+	const student = await Student.findOne({ studentID: studentID }).exec();
 
 	if (student === null) {
 		res.json(

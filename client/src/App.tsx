@@ -1,11 +1,12 @@
-import { Button } from './components/ui/button';
+import { Outlet } from 'react-router-dom';
+import LeftSidebar from './components/LeftSidebar';
 
 function App() {
 	return (
-		<main className='dark p-5 bg-background'>
-			<div className='bg-card p-3'>
-				<h1 className='text-red-500'>Hello World!</h1>
-				<Button size='sm'>Click Me!</Button>
+		<main className='transition-all bg-background flex'>
+			<LeftSidebar />
+			<div className='p-5'>
+				<Outlet />
 			</div>
 		</main>
 	);

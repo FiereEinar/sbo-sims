@@ -11,9 +11,13 @@ import { createTransactionValidation } from '../middlewares/validations/transact
 const router = express.Router();
 
 router.get('/', get_all_transactions);
+
 router.get('/:transactionID', get_transaction);
+
 router.post('/', createTransactionValidation, create_transaction);
+
 router.put('/:transactionID', createTransactionValidation, update_transaction);
+
 router.delete('/:transactionID', delete_transaction);
 
 export default router;

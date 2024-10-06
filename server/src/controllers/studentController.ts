@@ -48,6 +48,37 @@ export const get_student = asyncHandler(async (req, res) => {
 });
 
 /**
+ * GET - fetch the transactions that a student have made
+ */
+export const get_student_transaction = asyncHandler(async (req, res) => {
+	const { studentID } = req.params;
+
+	const student = await Student.findOne({ studentID: studentID }).exec();
+
+	if (student === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Student with ID ${studentID} does not exist`
+			)
+		);
+		return;
+	}
+
+	const studentTransactions = await Transaction.find({
+		owner: student._id,
+	})
+		.populate({ model: Student, path: 'owner' })
+		.populate({ model: Category, path: 'category' })
+		.exec();
+
+	res.json(
+		new CustomResponse(true, studentTransactions, 'Student transactions')
+	);
+});
+
+/**
  * POST - create a student
  */
 export const create_student = asyncHandler(async (req, res) => {

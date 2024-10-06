@@ -10,7 +10,28 @@ import Student from '../models/student';
  * GET - fetch all categories
  */
 export const get_all_category = asyncHandler(async (req, res) => {
-	const categories = await Category.find();
+	// const categories = await Category.find();
+	const categories = await Category.aggregate([
+		{
+			$lookup: {
+				from: 'transactions', // collection name of the Transaction model
+				localField: '_id',
+				foreignField: 'category', // transaction field that links to the student
+				as: 'transactions',
+			},
+		},
+		{
+			$addFields: {
+				totalTransactions: { $size: '$transactions' }, // count the number of transactions
+				totalTransactionsAmount: { $sum: '$transactions.amount' },
+			},
+		},
+		{
+			$project: {
+				transactions: 0, // exclude the transactions array from the result
+			},
+		},
+	]);
 
 	res.json(new CustomResponse(true, categories, 'All categories'));
 });
@@ -42,7 +63,13 @@ export const get_category = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	res.json(new CustomResponse(true, category, 'Category'));
+	const categoryTransactions = await Transaction.find({
+		category: category._id,
+	});
+
+	res.json(
+		new CustomResponse(true, { category, categoryTransactions }, 'Category')
+	);
 });
 
 /**

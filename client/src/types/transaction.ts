@@ -9,3 +9,8 @@ export type Transaction = MongoEntity & {
 	owner: Student;
 	description?: string;
 };
+
+export type TransactionsData = {
+	totalTransactions: number;
+	totalTransactionsAmount: number;
+};

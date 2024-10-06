@@ -24,10 +24,8 @@ export default function Transaction() {
 
 	return (
 		<section>
-			<div>
-				<h1 className='mb-3 text-lg'>Transactions List</h1>
-				<TransactionsTable transactions={transactions} />
-			</div>
+			<h1 className='mb-3 text-lg'>Transactions List</h1>
+			<TransactionsTable transactions={transactions} />
 		</section>
 	);
 }

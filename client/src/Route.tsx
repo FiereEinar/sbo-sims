@@ -5,12 +5,14 @@ import Student from './pages/Student';
 import Transaction from './pages/Transaction';
 import Category from './pages/Category';
 import StudentInfo from './pages/StudentInfo';
+import NotFound from './pages/NotFound';
 
 export default function Route() {
 	const route = createBrowserRouter([
 		{
 			path: '/',
 			element: <App />,
+			errorElement: <NotFound />,
 			children: [
 				{
 					index: true,

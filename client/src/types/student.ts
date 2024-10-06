@@ -1,4 +1,5 @@
 import { MongoEntity } from './mongoEntity';
+import { TransactionsData } from './transaction';
 
 export type Student = MongoEntity & {
 	firstname: string;
@@ -8,7 +9,4 @@ export type Student = MongoEntity & {
 };
 
 // TODO: rename this shit
-export type StudentWithTransactions = Student & {
-	totalTransactions: number;
-	totalTransactionsAmount: number;
-};
+export type StudentWithTransactions = Student & TransactionsData;

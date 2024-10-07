@@ -4,7 +4,7 @@ export const transactionSchema = z.object({
 	amount: z
 		.string()
 		.refine((val) => !Number.isNaN(parseInt(val, 10)), {
-			message: 'Expected number, received a string',
+			message: 'Enter a valid amount',
 		})
 		.refine((val) => parseInt(val, 10) >= 0, {
 			message: 'Please enter a non-negative number',

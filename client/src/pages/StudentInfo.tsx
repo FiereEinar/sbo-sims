@@ -51,16 +51,11 @@ export default function StudentInfo() {
 			<div className='space-y-3'>
 				<div className='flex justify-between'>
 					<Header>Student Info</Header>
-
 					<EditAndDeleteButton />
 				</div>
-
 				<hr />
-
 				<StudentDataCard studentID={studentID} studentData={studentData} />
-
 				<hr />
-
 				<div>
 					<h1 className='text-muted-foreground'>Previous transactions made:</h1>
 					<TransactionsTable transactions={studentTransactions} />

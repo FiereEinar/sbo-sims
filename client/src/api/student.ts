@@ -2,6 +2,7 @@ import { Student, StudentWithTransactions } from '@/types/student';
 import axiosInstance from './axiosInstance';
 import { Transaction } from '@/types/transaction';
 import { APIResponse } from '@/types/api-response';
+import { StudentFormValues } from '@/components/forms/AddStudentForm';
 
 export const fetchStudents = async (): Promise<
 	StudentWithTransactions[] | undefined
@@ -45,7 +46,7 @@ export const fetchStudentTransactions = async (
 };
 
 export const submitStudentForm = async (
-	formData: Student
+	formData: StudentFormValues
 ): Promise<APIResponse | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/student', formData);

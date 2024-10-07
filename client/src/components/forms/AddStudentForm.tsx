@@ -9,12 +9,14 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import InputField from '../InputField';
-import { Student } from '@/types/student';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { studentSchema } from '@/lib/validations/studentSchema';
 import { fetchStudents, submitStudentForm } from '@/api/student';
 import { useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
+
+export type StudentFormValues = z.infer<typeof studentSchema>;
 
 export function AddStudentForm() {
 	const { refetch } = useQuery({
@@ -28,11 +30,11 @@ export function AddStudentForm() {
 		setError,
 		reset,
 		formState: { errors, isSubmitting },
-	} = useForm<Student>({
+	} = useForm<StudentFormValues>({
 		resolver: zodResolver(studentSchema),
 	});
 
-	const onSubmit = async (data: Student) => {
+	const onSubmit = async (data: StudentFormValues) => {
 		try {
 			const result = await submitStudentForm(data);
 
@@ -73,28 +75,28 @@ export function AddStudentForm() {
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
-					<InputField<Student>
+					<InputField<StudentFormValues>
 						name='studentID'
 						registerFn={register}
 						errors={errors}
 						label='Student ID:'
 						id='studentID'
 					/>
-					<InputField<Student>
+					<InputField<StudentFormValues>
 						name='firstname'
 						registerFn={register}
 						errors={errors}
 						label='Firstname:'
 						id='firstname'
 					/>
-					<InputField<Student>
+					<InputField<StudentFormValues>
 						name='lastname'
 						registerFn={register}
 						errors={errors}
 						label='Lastname:'
 						id='lastname'
 					/>
-					<InputField<Student>
+					<InputField<StudentFormValues>
 						name='email'
 						registerFn={register}
 						errors={errors}

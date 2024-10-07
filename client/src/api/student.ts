@@ -1,6 +1,7 @@
 import { Student, StudentWithTransactions } from '@/types/student';
 import axiosInstance from './axiosInstance';
 import { Transaction } from '@/types/transaction';
+import { APIResponse } from '@/types/api-response';
 
 export const fetchStudents = async (): Promise<
 	StudentWithTransactions[] | undefined
@@ -40,5 +41,17 @@ export const fetchStudentTransactions = async (
 			`Failed to fetch transactions of student with ID ${studentID}`,
 			err
 		);
+	}
+};
+
+export const submitStudentForm = async (
+	formData: Student
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.post('/student', formData);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to submit student form', err);
 	}
 };

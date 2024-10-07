@@ -48,16 +48,10 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 						onClick={() => navigate(`/student/${student.studentID}`)}
 						key={student._id}
 					>
-						<TableCell className='text-muted-foreground'>
-							{student.studentID}
-						</TableCell>
-						<TableCell className='text-muted-foreground'>{`${student.firstname} ${student.lastname}`}</TableCell>
-						<TableCell className='text-muted-foreground'>
-							{student.email}
-						</TableCell>
-						<TableCell className='text-muted-foreground'>
-							{student.totalTransactions}
-						</TableCell>
+						<TableCell className=''>{student.studentID}</TableCell>
+						<TableCell className=''>{`${student.firstname} ${student.lastname}`}</TableCell>
+						<TableCell className=''>{student.email}</TableCell>
+						<TableCell className=''>{student.totalTransactions}</TableCell>
 						<TableCell className='text-right'>
 							{student.totalTransactionsAmount ?? 0}
 						</TableCell>

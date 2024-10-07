@@ -46,12 +46,8 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 						onClick={() => navigate(`/category/${category._id}`)}
 						key={category._id}
 					>
-						<TableCell className='text-muted-foreground'>
-							{category.name}
-						</TableCell>
-						<TableCell className='text-muted-foreground'>
-							{category.totalTransactions}
-						</TableCell>
+						<TableCell className=''>{category.name}</TableCell>
+						<TableCell className=''>{category.totalTransactions}</TableCell>
 						<TableCell className='text-right'>
 							{category.totalTransactionsAmount ?? 0}
 						</TableCell>

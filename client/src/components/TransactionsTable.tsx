@@ -43,14 +43,12 @@ export default function TransactionsTable({
 			<TableBody>
 				{transactions.map((transaction) => (
 					<TableRow key={transaction._id}>
-						<TableCell className='text-muted-foreground'>
+						<TableCell className=''>
 							{new Date(transaction.date).toLocaleDateString()}{' '}
 							{new Date(transaction.date).toLocaleTimeString()}
 						</TableCell>
-						<TableCell className='text-muted-foreground'>
-							{transaction.category.name}
-						</TableCell>
-						<TableCell className='text-muted-foreground max-w-[300px]'>
+						<TableCell className=''>{transaction.category.name}</TableCell>
+						<TableCell className=' max-w-[300px]'>
 							{transaction.description}
 						</TableCell>
 						<TableCell className='text-right'>P{transaction.amount}</TableCell>

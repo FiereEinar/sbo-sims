@@ -1,5 +1,7 @@
 import { fetchCategories } from '@/api/category';
+import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import CategoriesTable from '@/components/CategoriesTable';
+import SidebarPageLayout from '@/components/SidebarPageLayout';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
@@ -23,9 +25,12 @@ export default function Category() {
 	console.log(categories);
 
 	return (
-		<section>
-			<h1 className='mb-3 text-lg'>Category Page</h1>
+		<SidebarPageLayout>
+			<div className='flex justify-between'>
+				<h1 className='mb-3 text-lg'>Category Page</h1>
+				<EditAndDeleteButton />
+			</div>
 			<CategoriesTable categories={categories} />
-		</section>
+		</SidebarPageLayout>
 	);
 }

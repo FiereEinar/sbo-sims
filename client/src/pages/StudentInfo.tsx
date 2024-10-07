@@ -1,5 +1,7 @@
 import { fetchStudentByID, fetchStudentTransactions } from '@/api/student';
 import BackButton from '@/components/buttons/BackButton';
+import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
+import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StudentDataCard from '@/components/StudentDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import { Button } from '@/components/ui/button';
@@ -44,20 +46,13 @@ export default function StudentInfo() {
 	console.log(studentTransactions);
 
 	return (
-		<section className='space-y-3'>
+		<SidebarPageLayout>
 			<BackButton />
 			<div className='space-y-3'>
 				<div className='flex justify-between'>
 					<h1 className='text-2xl'>Student Info</h1>
 
-					<div className='space-x-2'>
-						<Button size='sm' variant='ocean'>
-							Edit
-						</Button>
-						<Button size='sm' variant='destructive'>
-							Delete
-						</Button>
-					</div>
+					<EditAndDeleteButton />
 				</div>
 
 				<hr />
@@ -71,6 +66,6 @@ export default function StudentInfo() {
 					<TransactionsTable transactions={studentTransactions} />
 				</div>
 			</div>
-		</section>
+		</SidebarPageLayout>
 	);
 }

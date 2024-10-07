@@ -112,7 +112,7 @@ export default function AddTransactionForm({
 
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
-					<DialogTitle>Add Student</DialogTitle>
+					<DialogTitle>Add Transaction</DialogTitle>
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 

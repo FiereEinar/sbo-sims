@@ -1,5 +1,6 @@
 import { fetchCategories } from '@/api/category';
 import CategoriesTable from '@/components/CategoriesTable';
+import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
@@ -29,10 +30,7 @@ export default function Category() {
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
 				<Header>Category Page</Header>
-				<Button className='flex justify-center gap-1' size='sm'>
-					<img className='size-5' src='/icons/plus.svg' alt='' />
-					<p>Add Category</p>
-				</Button>
+				<AddCategoryForm />
 			</div>
 			<CategoriesTable categories={categories} />
 		</SidebarPageLayout>

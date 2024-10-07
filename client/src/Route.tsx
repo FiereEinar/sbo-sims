@@ -6,6 +6,7 @@ import Transaction from './pages/Transaction';
 import Category from './pages/Category';
 import StudentInfo from './pages/StudentInfo';
 import NotFound from './pages/NotFound';
+import CategoryInfo from './pages/CategoryInfo';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -33,6 +34,10 @@ export default function Route() {
 				{
 					path: '/student/:studentID',
 					element: <StudentInfo />,
+				},
+				{
+					path: '/category/:categoryID',
+					element: <CategoryInfo />,
 				},
 			],
 		},

@@ -25,7 +25,7 @@ export default function Student() {
 	return (
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
-				<h1 className='mb-3 text-lg'>Student List</h1>
+				<h1 className='mb-3 text-2xl'>Student List</h1>
 				<AddStudentForm />
 			</div>
 			<StudentsTable students={students} />

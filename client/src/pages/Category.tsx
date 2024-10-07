@@ -27,7 +27,7 @@ export default function Category() {
 	return (
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
-				<h1 className='mb-3 text-lg'>Category Page</h1>
+				<h1 className='mb-3 text-2xl'>Category Page</h1>
 				<Button className='flex justify-center gap-1' size='sm'>
 					<img className='size-5' src='/icons/plus.svg' alt='' />
 					<p>Add Category</p>

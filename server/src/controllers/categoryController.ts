@@ -65,7 +65,15 @@ export const get_category = asyncHandler(async (req, res) => {
 
 	const categoryTransactions = await Transaction.find({
 		category: category._id,
-	});
+	})
+		.populate({
+			model: Category,
+			path: 'category',
+		})
+		.populate({
+			model: Student,
+			path: 'owner',
+		});
 
 	res.json(
 		new CustomResponse(true, { category, categoryTransactions }, 'Category')

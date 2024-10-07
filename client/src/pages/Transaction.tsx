@@ -37,7 +37,7 @@ export default function Transaction() {
 	return (
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
-				<h1 className='mb-3 text-lg'>Transactions List</h1>
+				<h1 className='mb-3 text-2xl'>Transactions List</h1>
 				<AddTransactionForm categories={categories} />
 			</div>
 

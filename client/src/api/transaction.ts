@@ -26,3 +26,15 @@ export const submitTransactionForm = async (
 		console.error('Failed to fetch transaction', err);
 	}
 };
+
+export const fetchTransactionByID = async (
+	transactionID: string
+): Promise<Transaction | undefined> => {
+	try {
+		const { data } = await axiosInstance.get(`/transaction/${transactionID}`);
+
+		return data.data;
+	} catch (err: any) {
+		console.error(`Failed to fetch transaction with ID ${transactionID}`, err);
+	}
+};

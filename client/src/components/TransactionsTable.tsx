@@ -9,6 +9,7 @@ import {
 	TableRow,
 } from './ui/table';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type TransactionsTableProps = {
 	transactions: Transaction[];
@@ -16,6 +17,7 @@ type TransactionsTableProps = {
 export default function TransactionsTable({
 	transactions,
 }: TransactionsTableProps) {
+	const navigate = useNavigate();
 	const [totalAmount, setTotalAmount] = useState(0);
 
 	useEffect(() => {
@@ -33,17 +35,21 @@ export default function TransactionsTable({
 			{/* <TableCaption>A list of your recent invoices.</TableCaption> */}
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[100px]'>Student ID</TableHead>
+					<TableHead className='w-[200px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Date</TableHead>
 					<TableHead className='w-[200px]'>Category</TableHead>
-					<TableHead className='w-[200px]'>Description</TableHead>
-					<TableHead className='w-[100px] text-right'>Amount</TableHead>
+					{/* <TableHead className='w-[200px]'>Description</TableHead> */}
+					<TableHead className='w-[200px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
 
 			<TableBody>
 				{transactions.map((transaction) => (
-					<TableRow className='cursor-pointer' key={transaction._id}>
+					<TableRow
+						onClick={() => navigate(`/transaction/${transaction._id}`)}
+						className='cursor-pointer'
+						key={transaction._id}
+					>
 						<TableCell className=''>{transaction.owner.studentID}</TableCell>
 						<TableCell className=''>
 							{new Date(transaction.date).toLocaleDateString()}
@@ -51,9 +57,9 @@ export default function TransactionsTable({
 							{new Date(transaction.date).toLocaleTimeString()}
 						</TableCell>
 						<TableCell className=''>{transaction.category.name}</TableCell>
-						<TableCell className=' max-w-[300px]'>
+						{/* <TableCell className=' max-w-[300px]'>
 							{transaction.description}
-						</TableCell>
+						</TableCell> */}
 						<TableCell className='text-right'>P{transaction.amount}</TableCell>
 					</TableRow>
 				))}
@@ -61,7 +67,7 @@ export default function TransactionsTable({
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={4}>Total</TableCell>
+					<TableCell colSpan={3}>Total</TableCell>
 					<TableCell className='text-right'>P{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

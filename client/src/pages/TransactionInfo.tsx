@@ -1,19 +1,21 @@
-import { fetchCategoryAndTransactions } from '@/api/category';
+import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StudentDataCard from '@/components/StudentDataCard';
+import TransactionDataCard from '@/components/TransactionDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
-export default function CategoryInfo() {
-	const { categoryID } = useParams();
-	if (!categoryID) return;
+export default function TransactionInfo() {
+	const { transactionID } = useParams();
+	if (!transactionID) return;
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: [`category_${categoryID}`],
-		queryFn: () => fetchCategoryAndTransactions(categoryID),
+		queryKey: [`transaction_${transactionID}`],
+		queryFn: () => fetchTransactionByID(transactionID),
 	});
 
 	if (isLoading) {
@@ -24,19 +26,26 @@ export default function CategoryInfo() {
 		return <p>Error</p>;
 	}
 
+	console.log(data);
+
 	return (
 		<SidebarPageLayout>
 			<BackButton />
 			<div className='flex justify-between'>
-				<div>
-					<p className='text-sm text-muted-foreground'>
-						Previous transactions for{' '}
-					</p>
-					<Header>{data.category.name}</Header>
-				</div>
+				<Header>Transaction Details</Header>
 				<EditAndDeleteButton />
 			</div>
-			<TransactionsTable transactions={data.categoryTransactions} />
+			<hr />
+			<TransactionDataCard transaction={data} />
+
+			<Header>Transaction Owner</Header>
+			<hr />
+			<StudentDataCard
+				studentID={data.owner.studentID}
+				studentData={data.owner}
+			/>
+			<hr />
+			<TransactionsTable transactions={[data]} />
 		</SidebarPageLayout>
 	);
 }

@@ -1,9 +1,10 @@
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import Header from '@/components/ui/header';
 
 export default function Dashboard() {
 	return (
 		<SidebarPageLayout>
-			<h1 className='mb-3 text-2xl'>Dashboard Page</h1>
+			<Header>Dashboard Page</Header>
 			{/* <DataTableDemo /> */}
 		</SidebarPageLayout>
 	);

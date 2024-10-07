@@ -4,7 +4,7 @@ import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StudentDataCard from '@/components/StudentDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
-import { Button } from '@/components/ui/button';
+import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
@@ -50,7 +50,7 @@ export default function StudentInfo() {
 			<BackButton />
 			<div className='space-y-3'>
 				<div className='flex justify-between'>
-					<h1 className='text-2xl'>Student Info</h1>
+					<Header>Student Info</Header>
 
 					<EditAndDeleteButton />
 				</div>

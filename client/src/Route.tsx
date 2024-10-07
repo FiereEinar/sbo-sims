@@ -7,6 +7,7 @@ import Category from './pages/Category';
 import StudentInfo from './pages/StudentInfo';
 import NotFound from './pages/NotFound';
 import CategoryInfo from './pages/CategoryInfo';
+import TransactionInfo from './pages/TransactionInfo';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -38,6 +39,10 @@ export default function Route() {
 				{
 					path: '/category/:categoryID',
 					element: <CategoryInfo />,
+				},
+				{
+					path: '/transaction/:transactionID',
+					element: <TransactionInfo />,
 				},
 			],
 		},

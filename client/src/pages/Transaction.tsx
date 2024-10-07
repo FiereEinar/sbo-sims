@@ -3,6 +3,7 @@ import { fetchTransactions } from '@/api/transaction';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import TransactionsTable from '@/components/TransactionsTable';
+import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Transaction() {
@@ -37,7 +38,7 @@ export default function Transaction() {
 	return (
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
-				<h1 className='mb-3 text-2xl'>Transactions List</h1>
+				<Header>Transactions List</Header>
 				<AddTransactionForm categories={categories} />
 			</div>
 

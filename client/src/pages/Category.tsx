@@ -2,6 +2,7 @@ import { fetchCategories } from '@/api/category';
 import CategoriesTable from '@/components/CategoriesTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import { Button } from '@/components/ui/button';
+import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
@@ -27,7 +28,7 @@ export default function Category() {
 	return (
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
-				<h1 className='mb-3 text-2xl'>Category Page</h1>
+				<Header>Category Page</Header>
 				<Button className='flex justify-center gap-1' size='sm'>
 					<img className='size-5' src='/icons/plus.svg' alt='' />
 					<p>Add Category</p>

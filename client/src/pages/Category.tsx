@@ -1,7 +1,7 @@
 import { fetchCategories } from '@/api/category';
-import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import CategoriesTable from '@/components/CategoriesTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
@@ -10,7 +10,7 @@ export default function Category() {
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['students'],
+		queryKey: ['categories'],
 		queryFn: fetchCategories,
 	});
 
@@ -28,7 +28,10 @@ export default function Category() {
 		<SidebarPageLayout>
 			<div className='flex justify-between'>
 				<h1 className='mb-3 text-lg'>Category Page</h1>
-				<EditAndDeleteButton />
+				<Button className='flex justify-center gap-1' size='sm'>
+					<img className='size-5' src='/icons/plus.svg' alt='' />
+					<p>Add Category</p>
+				</Button>
 			</div>
 			<CategoriesTable categories={categories} />
 		</SidebarPageLayout>

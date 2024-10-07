@@ -34,8 +34,10 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 			<TableHeader>
 				<TableRow>
 					<TableHead className='w-[300px]'>Category name</TableHead>
-					<TableHead>Total transactions</TableHead>
-					<TableHead>Total Transactions amount</TableHead>
+					<TableHead className='w-[300px]'>Total transactions</TableHead>
+					<TableHead className='w-[200px] text-right'>
+						Total Transactions amount
+					</TableHead>
 				</TableRow>
 			</TableHeader>
 

@@ -33,18 +33,19 @@ export default function TransactionsTable({
 			{/* <TableCaption>A list of your recent invoices.</TableCaption> */}
 			<TableHeader>
 				<TableRow>
-					<TableHead>Date</TableHead>
-					<TableHead>Category</TableHead>
-					<TableHead>Description</TableHead>
-					<TableHead>Amount</TableHead>
+					<TableHead className='w-[200px]'>Date</TableHead>
+					<TableHead className='w-[200px]'>Category</TableHead>
+					<TableHead className='w-[200px]'>Description</TableHead>
+					<TableHead className='w-[200px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
 
 			<TableBody>
 				{transactions.map((transaction) => (
-					<TableRow key={transaction._id}>
+					<TableRow className='cursor-pointer' key={transaction._id}>
 						<TableCell className=''>
-							{new Date(transaction.date).toLocaleDateString()}{' '}
+							{new Date(transaction.date).toLocaleDateString()}
+							{' - '}
 							{new Date(transaction.date).toLocaleTimeString()}
 						</TableCell>
 						<TableCell className=''>{transaction.category.name}</TableCell>

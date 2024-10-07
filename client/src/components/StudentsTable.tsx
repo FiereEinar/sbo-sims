@@ -33,11 +33,13 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className=''>Student ID</TableHead>
-					<TableHead>Full name</TableHead>
-					<TableHead>Email</TableHead>
-					<TableHead className=''>Transactions made</TableHead>
-					<TableHead className='text-right '>Transactions amount</TableHead>
+					<TableHead className='w-[200px]'>Student ID</TableHead>
+					<TableHead className='w-[200px]'>Full name</TableHead>
+					<TableHead className='w-[200px]'>Email</TableHead>
+					<TableHead className='w-[100px]'>Transactions made</TableHead>
+					<TableHead className='w-[100px] text-right '>
+						Transactions amount
+					</TableHead>
 				</TableRow>
 			</TableHeader>
 

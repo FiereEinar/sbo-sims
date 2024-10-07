@@ -10,10 +10,10 @@ export const createTransactionValidation = [
 		.withMessage('Category ID must not be empty'),
 
 	body('date')
-		.trim()
-		.isDate()
-		.withMessage('Date must be a valid date')
-		.optional(),
+		.optional()
+		.isISO8601()
+		.toDate()
+		.withMessage('Date must be a valid date'),
 
 	body('description').trim().escape().optional(),
 

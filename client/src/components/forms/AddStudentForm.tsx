@@ -52,7 +52,7 @@ export function AddStudentForm() {
 			refetch();
 			reset();
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit form' });
+			setError('root', { message: 'Failed to submit student form' });
 		}
 	};
 

@@ -1,11 +1,11 @@
 import asyncHandler from 'express-async-handler';
 import Transaction, { ITransaction } from '../models/transaction';
-import CustomResponse from '../utils/custom-response';
 import Category from '../models/category';
 import Student from '../models/student';
 import { createTransactionBody } from '../types/transaction';
 import { validationResult } from 'express-validator';
 import mongoose, { UpdateQuery } from 'mongoose';
+import CustomResponse from '../types/response';
 
 /**
  * GET - fetch all transactions made

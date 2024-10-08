@@ -4,8 +4,8 @@ import Transaction from '../models/transaction';
 import Category from '../models/category';
 import { createStudentBody } from '../types/student';
 import { validationResult } from 'express-validator';
-import CustomResponse from '../utils/custom-response';
 import { UpdateQuery } from 'mongoose';
+import CustomResponse from '../types/response';
 
 /**
  * GET - fetch all students

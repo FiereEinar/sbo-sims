@@ -1,10 +1,10 @@
 import asyncHandler from 'express-async-handler';
 import Category, { ICategory } from '../models/category';
-import CustomResponse from '../utils/custom-response';
 import mongoose, { UpdateQuery } from 'mongoose';
 import { validationResult } from 'express-validator';
 import Transaction from '../models/transaction';
 import Student from '../models/student';
+import CustomResponse from '../types/response';
 
 /**
  * GET - fetch all categories

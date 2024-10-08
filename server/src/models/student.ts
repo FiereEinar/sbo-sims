@@ -1,14 +1,12 @@
 import mongoose from 'mongoose';
 import { ITransaction } from './transaction';
+import { Entity } from '../types/entity';
 
 const Schema = mongoose.Schema;
 
-export interface IStudent {
+export interface IStudent extends Entity {
 	_id: string;
 	studentID: string;
-	firstname: string;
-	lastname: string;
-	email: string;
 }
 
 const StudentSchema = new Schema<IStudent>({

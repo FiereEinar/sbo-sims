@@ -9,8 +9,15 @@ import asyncHandler from 'express-async-handler';
 
 const signupExtraValidation = asyncHandler(
 	async (req: CustomRequest, res: Response, next: NextFunction) => {
-		const { password, confirmPassword, email, studentID }: signupUserBody =
-			req.body;
+		const {
+			firstname,
+			lastname,
+			bio,
+			password,
+			confirmPassword,
+			email,
+			studentID,
+		}: signupUserBody = req.body;
 
 		// check for errors in form validation
 		const errors = validationResult(req);

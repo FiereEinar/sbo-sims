@@ -3,7 +3,12 @@ import {
 	loginValidation,
 	signupValidation,
 } from '../middlewares/validations/userValidations';
-import { login, logout, signup } from '../controllers/authController';
+import {
+	check_auth,
+	login,
+	logout,
+	signup,
+} from '../controllers/authController';
 
 const router = express.Router();
 
@@ -12,5 +17,7 @@ router.post('/login', loginValidation, login);
 router.post('/signup', signupValidation, signup);
 
 router.get('/logout', logout);
+
+router.get('/check-auth', check_auth);
 
 export default router;

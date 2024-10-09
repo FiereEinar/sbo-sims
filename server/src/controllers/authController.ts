@@ -115,3 +115,35 @@ export const logout = asyncHandler(async (req: CustomRequest, res) => {
 
 	res.sendStatus(200);
 });
+
+/**
+ * GET - check if authenticated
+ */
+export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
+	const token = req.cookies[appCookieName] as string;
+
+	if (token === undefined) {
+		res.sendStatus(401);
+		return;
+	}
+
+	const secretKey = process.env.JWT_SECRET_KEY;
+	if (!secretKey) throw new Error('JWT secret key not found');
+
+	jwt.verify(token, secretKey, async (err, payload) => {
+		if (err) {
+			res.sendStatus(403);
+			return;
+		}
+
+		const data = payload as { studentID: string };
+
+		const user = await User.findOne({ studentID: data.studentID });
+		if (user === null) {
+			res.sendStatus(403);
+			return;
+		}
+
+		res.sendStatus(200);
+	});
+});

@@ -16,6 +16,9 @@ export interface IUser extends Entity {
 
 const UserSchema = new Schema<IUser>({
 	studentID: { type: String, required: true },
+	firstname: { type: String, minlength: 1, maxlength: 50, required: true },
+	lastname: { type: String, minlength: 1, maxlength: 50, required: true },
+	email: { type: String, required: false },
 	password: { type: String, required: true },
 	profile: {
 		url: String,

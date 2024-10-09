@@ -1,6 +1,7 @@
 import { navbarLinks } from '@/constants';
 import DarkModeToggle from './buttons/DarkModeToggle';
 import SidebarLink from './SidebarLink';
+import LogoutButton from './buttons/LogoutButton';
 
 export default function LeftSidebar() {
 	return (
@@ -13,9 +14,7 @@ export default function LeftSidebar() {
 
 			<div className='flex flex-col justify-between gap-3'>
 				<DarkModeToggle text='Toggle Theme' />
-				<SidebarLink
-					link={{ icon: 'logout', name: 'Logout', path: '/logout' }}
-				/>
+				<LogoutButton />
 			</div>
 		</aside>
 	);

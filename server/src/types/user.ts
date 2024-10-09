@@ -6,3 +6,8 @@ export type signupUserBody = Entity & {
 	confirmPassword: string;
 	bio?: string;
 };
+
+export type loginUserBody = {
+	studentID: string;
+	password: string;
+};

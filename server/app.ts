@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 dotenv.config();
 
 import connectToDB from './src/database/mongodb';
@@ -15,10 +16,15 @@ import { notFoundHandler } from './src/middlewares/not-found';
 import { errorHandler } from './src/middlewares/error';
 
 const app = express();
-app.use(cors());
+app.use(
+	cors({
+		credentials: true,
+	})
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use('/student', studentRouter);
 app.use('/transaction', transactionRouter);

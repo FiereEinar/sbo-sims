@@ -135,3 +135,16 @@ export const signupValidation = [
 
 	signupExtraValidation,
 ];
+
+export const loginValidation = [
+	body('studentID')
+		.trim()
+		.escape()
+		.isLength({ min: 10, max: 10 })
+		.withMessage('Student IDs are only 10 numbers in length'),
+
+	body('password')
+		.trim()
+		.isLength({ min: 1, max: 30 })
+		.withMessage('Password must be 1-30 characters'),
+];

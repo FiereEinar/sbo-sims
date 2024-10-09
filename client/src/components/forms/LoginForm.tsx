@@ -3,14 +3,14 @@ import InputField from '../InputField';
 import { Button } from '../ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signupSchema } from '@/lib/validations/signupSchema';
 import ErrorText from '../ui/error-text';
-import { submitSignupForm } from '@/api/user';
+import { submitLoginForm } from '@/api/user';
 import { Link, useNavigate } from 'react-router-dom';
+import { loginSchema } from '@/lib/validations/loginSchema';
 
-export type SignupFormValues = z.infer<typeof signupSchema>;
+export type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function SignupForm() {
+export default function LoginForm() {
 	const navigate = useNavigate();
 
 	const {
@@ -18,11 +18,12 @@ export default function SignupForm() {
 		handleSubmit,
 		setError,
 		formState: { errors, isSubmitting },
-	} = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) });
+	} = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
-	const onSubmit = async (data: SignupFormValues) => {
+	const onSubmit = async (data: LoginFormValues) => {
 		try {
-			const result = await submitSignupForm(data);
+			console.log(data);
+			const result = await submitLoginForm(data);
 
 			if (!result) {
 				setError('root', { message: 'Failed to submit signup form' });
@@ -31,12 +32,12 @@ export default function SignupForm() {
 
 			if (!result.success) {
 				setError('root', {
-					message: `${result.message} - ${result.error ?? ''}`,
+					message: `${result.message}`,
 				});
 				return;
 			}
 
-			navigate('/login');
+			navigate('/');
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit signup form' });
 		}
@@ -45,39 +46,17 @@ export default function SignupForm() {
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className='space-y-3'>
 			<div>
-				<InputField<SignupFormValues>
+				<InputField<LoginFormValues>
 					name='studentID'
 					id='studentID'
 					label='Student ID:'
 					registerFn={register}
 					errors={errors}
 				/>
-				<InputField<SignupFormValues>
-					name='firstname'
-					id='firstname'
-					label='First name:'
-					registerFn={register}
-					errors={errors}
-				/>
-				<InputField<SignupFormValues>
-					name='lastname'
-					id='lastname'
-					label='Last name:'
-					registerFn={register}
-					errors={errors}
-				/>
-				<InputField<SignupFormValues>
+				<InputField<LoginFormValues>
 					name='password'
 					id='password'
 					label='Password:'
-					type='password'
-					registerFn={register}
-					errors={errors}
-				/>
-				<InputField<SignupFormValues>
-					name='confirmPassword'
-					id='confirmPassword'
-					label='Confirm Password:'
 					type='password'
 					registerFn={register}
 					errors={errors}
@@ -89,9 +68,9 @@ export default function SignupForm() {
 			)}
 
 			<div className='text-xs text-muted-foreground flex gap-1'>
-				<p>Already have an account?</p>
-				<Link to='/login' className='underline'>
-					Log in
+				<p>Don't have an account?</p>
+				<Link to='/signup' className='underline'>
+					Sign up
 				</Link>
 			</div>
 

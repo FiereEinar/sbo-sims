@@ -6,6 +6,7 @@ import {
 } from 'react-hook-form';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import ErrorText from './ui/error-text';
 
 interface InputFieldProps<T extends FieldValues> {
 	label: string;
@@ -36,9 +37,7 @@ export default function InputField<T extends FieldValues>({
 				placeholder={placeholder}
 			/>
 			{errors[name] && errors[name].message && (
-				<p className='text-xs text-destructive'>
-					{errors[name].message.toString()}
-				</p>
+				<ErrorText>{errors[name].message.toString()}</ErrorText>
 			)}
 		</div>
 	);

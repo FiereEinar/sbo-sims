@@ -15,6 +15,7 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
+import Plus from '../icons/plus';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -63,7 +64,7 @@ export default function AddCategoryForm() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button className='flex justify-center gap-1' size='sm'>
-					<img className='size-5' src='/icons/plus.svg' alt='' />
+					<Plus />
 					<p>Add Category</p>
 				</Button>
 			</DialogTrigger>

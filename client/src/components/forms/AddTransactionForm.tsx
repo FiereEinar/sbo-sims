@@ -18,6 +18,7 @@ import { Category } from '@/types/category';
 import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../CategoryPicker';
+import Plus from '../icons/plus';
 
 type AddTransactionFormProps = {
 	categories: Category[];
@@ -91,7 +92,7 @@ export default function AddTransactionForm({
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button className='flex justify-center gap-1' size='sm'>
-					<img className='size-5' src='/icons/plus.svg' alt='' />
+					<Plus />
 					<p>Add Transaction</p>
 				</Button>
 			</DialogTrigger>

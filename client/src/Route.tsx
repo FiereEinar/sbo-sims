@@ -8,12 +8,19 @@ import StudentInfo from './pages/StudentInfo';
 import NotFound from './pages/NotFound';
 import CategoryInfo from './pages/CategoryInfo';
 import TransactionInfo from './pages/TransactionInfo';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function Route() {
 	const route = createBrowserRouter([
 		{
 			path: '/',
-			element: <App />,
+			element: (
+				<ProtectedRoute>
+					<App />
+				</ProtectedRoute>
+			),
 			errorElement: <NotFound />,
 			children: [
 				{
@@ -45,6 +52,14 @@ export default function Route() {
 					element: <TransactionInfo />,
 				},
 			],
+		},
+		{
+			path: '/login',
+			element: <Login />,
+		},
+		{
+			path: '/signup',
+			element: <Signup />,
 		},
 	]);
 

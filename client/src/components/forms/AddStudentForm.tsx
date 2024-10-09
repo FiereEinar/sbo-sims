@@ -15,6 +15,7 @@ import { studentSchema } from '@/lib/validations/studentSchema';
 import { fetchStudents, submitStudentForm } from '@/api/student';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
+import Plus from '../icons/plus';
 
 export type StudentFormValues = z.infer<typeof studentSchema>;
 
@@ -63,7 +64,7 @@ export function AddStudentForm() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button className='flex justify-center gap-1' size='sm'>
-					<img className='size-5' src='/icons/plus.svg' alt='' />
+					<Plus />
 					<p>Add Student</p>
 				</Button>
 			</DialogTrigger>

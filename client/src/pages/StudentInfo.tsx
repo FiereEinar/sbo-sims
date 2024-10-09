@@ -43,9 +43,6 @@ export default function StudentInfo() {
 		return <p>Error</p>;
 	}
 
-	console.log(studentData);
-	console.log(studentTransactions);
-
 	return (
 		<SidebarPageLayout>
 			<BackButton />

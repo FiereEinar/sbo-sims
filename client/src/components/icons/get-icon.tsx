@@ -4,6 +4,7 @@ import Dashboard from './dashboard';
 import Logout from './logout';
 import Money from './money';
 import Person from './person';
+import Plus from './plus';
 
 export type iconKeys =
 	| 'dashboard'
@@ -11,6 +12,7 @@ export type iconKeys =
 	| 'money'
 	| 'category'
 	| 'logout'
+	| 'plus'
 	| 'back';
 
 type GetIconProps = {
@@ -26,6 +28,7 @@ export default function GetIcon({ iconKey }: GetIconProps) {
 	icons.set('category', <Category />);
 	icons.set('logout', <Logout />);
 	icons.set('back', <Back />);
+	icons.set('plus', <Plus />);
 
 	return icons.get(iconKey);
 }

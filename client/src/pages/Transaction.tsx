@@ -34,8 +34,6 @@ export default function Transaction() {
 		return <p>Error</p>;
 	}
 
-	console.log(transactions);
-
 	return (
 		<SidebarPageLayout>
 			<StickyHeader>

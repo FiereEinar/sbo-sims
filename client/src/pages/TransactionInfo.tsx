@@ -26,8 +26,6 @@ export default function TransactionInfo() {
 		return <p>Error</p>;
 	}
 
-	console.log(data);
-
 	return (
 		<SidebarPageLayout>
 			<BackButton />

@@ -113,6 +113,11 @@ input:-webkit-autofill:active {
 	fill: hsl(var(--primary-1));
 }
 
+.plus-icon-svg {
+	fill: hsl(var(--primary-foreground));
+	transition: all 0.3s ease;
+}
+
 /* CUSTOM SCROLLBAR */
 /* width */
 ::-webkit-scrollbar {

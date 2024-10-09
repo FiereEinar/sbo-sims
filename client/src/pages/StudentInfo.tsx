@@ -2,6 +2,7 @@ import { fetchStudentByID, fetchStudentTransactions } from '@/api/student';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StickyHeader from '@/components/StickyHeader';
 import StudentDataCard from '@/components/StudentDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
@@ -49,10 +50,10 @@ export default function StudentInfo() {
 		<SidebarPageLayout>
 			<BackButton />
 			<div className='space-y-3'>
-				<div className='flex justify-between'>
+				<StickyHeader>
 					<Header>Student Info</Header>
 					<EditAndDeleteButton />
-				</div>
+				</StickyHeader>
 				<hr />
 				<StudentDataCard studentID={studentID} studentData={studentData} />
 				<hr />

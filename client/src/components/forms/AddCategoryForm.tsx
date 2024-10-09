@@ -36,7 +36,6 @@ export default function AddCategoryForm() {
 
 	const onSubmit = async (data: CategoryFormValues) => {
 		try {
-			console.log(data);
 			const result = await submitCategoryForm(data);
 
 			if (!result) {
@@ -83,6 +82,14 @@ export default function AddCategoryForm() {
 						errors={errors}
 						label='Category name:'
 						id='name'
+					/>
+
+					<InputField<CategoryFormValues>
+						name='fee'
+						registerFn={register}
+						errors={errors}
+						label='Category fee:'
+						id='fee'
 					/>
 
 					{errors.root && errors.root.message && (

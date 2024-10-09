@@ -2,6 +2,7 @@ import { fetchCategories } from '@/api/category';
 import CategoriesTable from '@/components/CategoriesTable';
 import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
 
@@ -27,10 +28,10 @@ export default function Category() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='flex justify-between'>
+			<StickyHeader>
 				<Header>Category Page</Header>
 				<AddCategoryForm />
-			</div>
+			</StickyHeader>
 			<CategoriesTable categories={categories} />
 		</SidebarPageLayout>
 	);

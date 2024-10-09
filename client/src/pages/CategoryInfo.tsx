@@ -2,6 +2,7 @@ import { fetchCategoryAndTransactions } from '@/api/category';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StickyHeader from '@/components/StickyHeader';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +28,7 @@ export default function CategoryInfo() {
 	return (
 		<SidebarPageLayout>
 			<BackButton />
-			<div className='flex justify-between'>
+			<StickyHeader>
 				<div>
 					<p className='text-xs text-muted-foreground'>
 						Previous transactions for{' '}
@@ -38,7 +39,7 @@ export default function CategoryInfo() {
 					</p>
 				</div>
 				<EditAndDeleteButton />
-			</div>
+			</StickyHeader>
 			<TransactionsTable transactions={data.categoryTransactions} />
 		</SidebarPageLayout>
 	);

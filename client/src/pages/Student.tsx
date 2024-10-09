@@ -1,6 +1,7 @@
 import { fetchStudents } from '@/api/student';
 import { AddStudentForm } from '@/components/forms/AddStudentForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StickyHeader from '@/components/StickyHeader';
 import StudentsTable from '@/components/StudentsTable';
 import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
@@ -25,10 +26,10 @@ export default function Student() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='flex justify-between'>
+			<StickyHeader>
 				<Header>Student List</Header>
 				<AddStudentForm />
-			</div>
+			</StickyHeader>
 			<StudentsTable students={students} />
 		</SidebarPageLayout>
 	);

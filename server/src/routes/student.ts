@@ -21,10 +21,10 @@ router.get('/:studentID', get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 
-router.post('/', createStudentValidation, create_student);
+router.post('/', auth, createStudentValidation, create_student);
 
-router.put('/:studentID', updateStudentValidation, update_student);
+router.put('/:studentID', auth, updateStudentValidation, update_student);
 
-router.delete('/:studentID', delete_student);
+router.delete('/:studentID', auth, delete_student);
 
 export default router;

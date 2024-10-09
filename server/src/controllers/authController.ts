@@ -89,3 +89,29 @@ export const login = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, null, 'Login successfull'));
 });
+
+/**
+ * GET - user logout
+ */
+export const logout = asyncHandler(async (req: CustomRequest, res) => {
+	const token = req.cookies[appCookieName] as string;
+
+	if (token === undefined) {
+		res.sendStatus(204);
+		return;
+	}
+
+	const user = await User.findOne({ token: token });
+	if (user) {
+		user.token = '';
+		await user.save();
+	}
+
+	res.clearCookie(appCookieName, {
+		httpOnly: true,
+		sameSite: 'none',
+		secure: true,
+	});
+
+	res.sendStatus(200);
+});

@@ -19,12 +19,7 @@ export const createStudentValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Last name must not be empty'),
 
-	body('email')
-		.trim()
-		.escape()
-		.isEmail()
-		.withMessage('Email must be valid')
-		.optional(),
+	body('email').trim().escape().optional(),
 ];
 
 export const updateStudentValidation = [
@@ -40,10 +35,5 @@ export const updateStudentValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Last name must not be empty'),
 
-	body('email')
-		.trim()
-		.escape()
-		.isEmail()
-		.withMessage('Email must be valid')
-		.optional(),
+	body('email').trim().escape().optional(),
 ];

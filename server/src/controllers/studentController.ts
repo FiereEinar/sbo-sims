@@ -6,6 +6,7 @@ import { createStudentBody } from '../types/student';
 import { validationResult } from 'express-validator';
 import { UpdateQuery } from 'mongoose';
 import CustomResponse from '../types/response';
+import { validateEmail } from '../utils/utils';
 
 /**
  * GET - fetch all students
@@ -103,8 +104,20 @@ export const create_student = asyncHandler(async (req, res) => {
 			new CustomResponse(
 				false,
 				null,
-				'Error in body validation',
+				'Error in form validation',
 				errors.array()[0].msg
+			)
+		);
+		return;
+	}
+
+	if (email?.length && !validateEmail(email)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				'Email must be valid'
 			)
 		);
 		return;
@@ -153,6 +166,18 @@ export const update_student = asyncHandler(async (req, res) => {
 				null,
 				'Error in body validation',
 				errors.array()[0].msg
+			)
+		);
+		return;
+	}
+
+	if (email?.length && !validateEmail(email)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				'Email must be valid'
 			)
 		);
 		return;

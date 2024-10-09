@@ -52,6 +52,9 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	res.json(new CustomResponse(true, user, 'User signed up successfully'));
 });
 
+/**
+ * POST - user login
+ */
 export const login = asyncHandler(async (req, res) => {
 	const { studentID, password }: loginUserBody = req.body;
 
@@ -73,6 +76,9 @@ export const login = asyncHandler(async (req, res) => {
 	const token = jwt.sign({ studentID: user.studentID }, secretKey, {
 		expiresIn: '1d',
 	});
+
+	user.token = token;
+	await user.save();
 
 	res.cookie(appCookieName, token, {
 		httpOnly: true,

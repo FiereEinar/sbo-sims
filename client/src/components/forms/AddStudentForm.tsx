@@ -47,7 +47,7 @@ export function AddStudentForm() {
 
 			if (!result.success) {
 				setError('root', {
-					message: `${result.message}\n${result.error ?? ''}`,
+					message: `${result.message} - ${result.error ?? ''}`,
 				});
 				return;
 			}

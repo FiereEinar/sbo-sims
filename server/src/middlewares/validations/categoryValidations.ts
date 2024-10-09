@@ -6,4 +6,6 @@ export const createCategoryValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('Category name must not be empty'),
+
+	body('fee').isNumeric(),
 ];

@@ -8,7 +8,9 @@ import { login, logout, signup } from '../controllers/authController';
 const router = express.Router();
 
 router.post('/login', loginValidation, login);
+
 router.post('/signup', signupValidation, signup);
+
 router.get('/logout', logout);
 
 export default router;

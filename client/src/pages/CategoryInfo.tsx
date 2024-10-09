@@ -29,10 +29,13 @@ export default function CategoryInfo() {
 			<BackButton />
 			<div className='flex justify-between'>
 				<div>
-					<p className='text-sm text-muted-foreground'>
+					<p className='text-xs text-muted-foreground'>
 						Previous transactions for{' '}
 					</p>
 					<Header>{data.category.name}</Header>
+					<p className='text-muted-foreground flex gap-1'>
+						Category fee: P{data.category.fee}
+					</p>
 				</div>
 				<EditAndDeleteButton />
 			</div>

@@ -3,6 +3,7 @@ import { TransactionsData } from './transaction';
 
 export type Category = MongoEntity & {
 	name: string;
+	fee: number;
 };
 
 // TODO: rename this shit

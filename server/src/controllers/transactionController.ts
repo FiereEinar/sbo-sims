@@ -99,6 +99,24 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	// check if the amount paid is over the amount required for a category
+	if (amount > category.fee) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`The amount is over the required amount for ${category.name} fee`
+			)
+		);
+		return;
+	}
+
+	// check if the amount paid is non-negative
+	if (amount <= 0) {
+		res.json(new CustomResponse(false, null, `Enter a valid amount`));
+		return;
+	}
+
 	// check for errors in validation
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -210,6 +228,24 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	// check if the amount paid is over the amount required for a category
+	if (amount > category.fee) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`The amount is over the required amount for ${category.name} fee`
+			)
+		);
+		return;
+	}
+
+	// check if the amount paid is non-negative
+	if (amount <= 0) {
+		res.json(new CustomResponse(false, null, `Enter a valid amount`));
+		return;
+	}
+
 	// check for errors in validation
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -250,3 +286,5 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		new CustomResponse(true, result, 'Transaction updated successfully')
 	);
 });
+
+// TODO: add a new route specifically for updating the amount paid

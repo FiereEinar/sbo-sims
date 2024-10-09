@@ -38,8 +38,8 @@ export default function TransactionsTable({
 					<TableHead className='w-[200px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Date</TableHead>
 					<TableHead className='w-[200px]'>Category</TableHead>
-					{/* <TableHead className='w-[200px]'>Description</TableHead> */}
-					<TableHead className='w-[200px] text-right'>Amount</TableHead>
+					<TableHead className='w-[100px] text-right'>Status</TableHead>
+					<TableHead className='w-[100px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
 
@@ -57,9 +57,13 @@ export default function TransactionsTable({
 							{new Date(transaction.date).toLocaleTimeString()}
 						</TableCell>
 						<TableCell className=''>{transaction.category.name}</TableCell>
-						{/* <TableCell className=' max-w-[300px]'>
-							{transaction.description}
-						</TableCell> */}
+						<TableCell className='text-right'>
+							{transaction.amount >= transaction.category.fee ? (
+								<p className='text-green-500'>Paid</p>
+							) : (
+								<p className='text-yellow-500'>Partial</p>
+							)}
+						</TableCell>
 						<TableCell className='text-right'>P{transaction.amount}</TableCell>
 					</TableRow>
 				))}
@@ -67,7 +71,7 @@ export default function TransactionsTable({
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={3}>Total</TableCell>
+					<TableCell colSpan={4}>Total</TableCell>
 					<TableCell className='text-right'>P{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

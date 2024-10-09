@@ -123,7 +123,7 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  * POST - create a category
  */
 export const create_category = asyncHandler(async (req, res) => {
-	const { name }: Omit<ICategory, '_id'> = req.body;
+	const { name, fee }: Omit<ICategory, '_id'> = req.body;
 
 	// check for validation errors
 	const errors = validationResult(req);
@@ -142,6 +142,7 @@ export const create_category = asyncHandler(async (req, res) => {
 	// create and save the category
 	const category = new Category({
 		name: name,
+		fee: fee,
 	});
 	await category.save();
 

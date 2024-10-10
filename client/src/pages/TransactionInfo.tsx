@@ -1,6 +1,6 @@
 import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
-import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
+import EditAndDeleteTransactionButton from '@/components/buttons/EditAndDeleteTransactionButton';
 import UpdateTransactionAmountForm from '@/components/forms/UpdateTransactionAmountForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StudentDataCard from '@/components/StudentDataCard';
@@ -33,7 +33,7 @@ export default function TransactionInfo() {
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>
-				<EditAndDeleteButton />
+				<EditAndDeleteTransactionButton transaction={data} />
 			</div>
 			<hr />
 			<TransactionDataCard transaction={data} />

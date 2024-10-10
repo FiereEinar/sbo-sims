@@ -58,3 +58,17 @@ export const submitUpdateTransactionAmountForm = async (
 		);
 	}
 };
+
+export const requestDeleteTransaction = async (
+	transactionID: string
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.delete(
+			`/transaction/${transactionID}`
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to send request on delete transaction', err);
+	}
+};

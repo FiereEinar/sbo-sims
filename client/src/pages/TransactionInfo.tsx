@@ -1,3 +1,4 @@
+import { fetchCategories } from '@/api/category';
 import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteTransactionButton from '@/components/buttons/EditAndDeleteTransactionButton';
@@ -14,16 +15,29 @@ export default function TransactionInfo() {
 	const { transactionID } = useParams();
 	if (!transactionID) return;
 
-	const { data, isLoading, error } = useQuery({
+	const {
+		data: transaction,
+		isLoading: TLoading,
+		error: TError,
+	} = useQuery({
 		queryKey: [`transaction_${transactionID}`],
 		queryFn: () => fetchTransactionByID(transactionID),
 	});
 
-	if (isLoading) {
+	const {
+		data: categories,
+		isLoading: CLoading,
+		error: CError,
+	} = useQuery({
+		queryKey: ['categories'],
+		queryFn: fetchCategories,
+	});
+
+	if (TLoading || CLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (error || !data) {
+	if (TError || CError || !transaction || !categories) {
 		return <p>Error</p>;
 	}
 
@@ -33,22 +47,25 @@ export default function TransactionInfo() {
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>
-				<EditAndDeleteTransactionButton transaction={data} />
+				<EditAndDeleteTransactionButton
+					categories={categories}
+					transaction={transaction}
+				/>
 			</div>
 			<hr />
-			<TransactionDataCard transaction={data} />
+			<TransactionDataCard transaction={transaction} />
 
 			<Header>Transaction Owner</Header>
 			<hr />
 			<StudentDataCard
-				studentID={data.owner.studentID}
-				studentData={data.owner}
+				studentID={transaction.owner.studentID}
+				studentData={transaction.owner}
 			/>
 			<hr />
 			<div className='flex justify-end'>
-				<UpdateTransactionAmountForm transaction={data} />
+				<UpdateTransactionAmountForm transaction={transaction} />
 			</div>
-			<TransactionsTable transactions={[data]} />
+			<TransactionsTable transactions={[transaction]} />
 		</SidebarPageLayout>
 	);
 }

@@ -18,13 +18,17 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import AddTransactionForm from '../forms/AddTransactionForm';
+import { Category } from '@/types/category';
 
 type EditAndDeleteTransactionButtonProps = {
 	transaction: Transaction;
+	categories: Category[];
 };
 
 export default function EditAndDeleteTransactionButton({
 	transaction,
+	categories,
 }: EditAndDeleteTransactionButtonProps) {
 	const { refetch } = useQuery({
 		queryKey: [`transaction_${transaction._id}`],
@@ -33,7 +37,7 @@ export default function EditAndDeleteTransactionButton({
 
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton />
+			<EditButton transaction={transaction} categories={categories} />
 			<DeleteButton transactionID={transaction._id} refetch={refetch} />
 		</div>
 	);
@@ -105,11 +109,15 @@ function DeleteButton({ transactionID, refetch }: DeleteButtonProps) {
 	);
 }
 
-function EditButton() {
+function EditButton({
+	transaction,
+	categories,
+}: EditAndDeleteTransactionButtonProps) {
 	return (
-		<Button className='flex gap-1' size='sm' variant='ocean'>
-			<img src='/icons/edit.svg' className='size-5' alt='' />
-			<p>Edit</p>
-		</Button>
+		<AddTransactionForm
+			mode='edit'
+			transaction={transaction}
+			categories={categories}
+		/>
 	);
 }

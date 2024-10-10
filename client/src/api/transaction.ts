@@ -24,7 +24,23 @@ export const submitTransactionForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to fetch transaction', err);
+		console.error('Failed to submit add transaction form', err);
+	}
+};
+
+export const submitUpdateTransactionForm = async (
+	transactionID: string,
+	formData: TransactionFormValues
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.put(
+			`/transaction/${transactionID}`,
+			formData
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to submit update transaction form', err);
 	}
 };
 

@@ -1,4 +1,9 @@
-import { fetchTransactions, submitTransactionForm } from '@/api/transaction';
+import {
+	fetchTransactionByID,
+	fetchTransactions,
+	submitTransactionForm,
+	submitUpdateTransactionForm,
+} from '@/api/transaction';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Dialog,
@@ -13,28 +18,44 @@ import { Button } from '../ui/button';
 import { DialogHeader, DialogFooter } from '../ui/dialog';
 import { transactionSchema } from '@/lib/validations/transactionSchema';
 import InputField from '../InputField';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Category } from '@/types/category';
 import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../CategoryPicker';
 import Plus from '../icons/plus';
+import { Transaction } from '@/types/transaction';
+import { useNavigate } from 'react-router-dom';
 
 type AddTransactionFormProps = {
 	categories: Category[];
+	mode?: 'edit' | 'add';
+	transaction?: Transaction;
 };
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
 export default function AddTransactionForm({
 	categories,
+	transaction,
+	mode = 'add',
 }: AddTransactionFormProps) {
+	if (transaction === undefined && mode === 'edit') {
+		throw new Error('No transaction data provided while form mode is on edit');
+	}
+
 	const [date, setDate] = useState<Date>();
 	const [category, setCategory] = useState<string>();
+	const navigate = useNavigate();
 
 	const { refetch } = useQuery({
 		queryKey: ['transactions'],
 		queryFn: fetchTransactions,
+	});
+
+	const { refetch: tRefetch } = useQuery({
+		queryKey: [`transaction_${transaction?._id}`],
+		queryFn: () => fetchTransactionByID(transaction?._id ?? ''),
 	});
 
 	const {
@@ -45,7 +66,19 @@ export default function AddTransactionForm({
 		formState: { errors, isSubmitting },
 	} = useForm<TransactionFormValues>({
 		resolver: zodResolver(transactionSchema),
+		defaultValues: {
+			studentID: transaction?.owner.studentID ?? '',
+			amount: transaction?.amount.toString() ?? '',
+			description: transaction?.description ?? '',
+		},
 	});
+
+	useEffect(() => {
+		if (transaction) {
+			setDate(new Date(transaction.date));
+			setCategory(transaction.category._id);
+		}
+	}, [transaction]);
 
 	// TODO: create another input field for time
 	const onSubmit = async (data: TransactionFormValues) => {
@@ -65,7 +98,11 @@ export default function AddTransactionForm({
 
 			data.categoryID = category;
 
-			const result = await submitTransactionForm(data);
+			let result;
+
+			if (transaction && mode === 'edit')
+				result = await submitUpdateTransactionForm(transaction._id, data);
+			else if (mode === 'add') result = await submitTransactionForm(data);
 
 			if (!result) {
 				setError('root', {
@@ -81,7 +118,8 @@ export default function AddTransactionForm({
 				return;
 			}
 
-			refetch();
+			mode === 'add' ? refetch() : tRefetch();
+			navigate(`/transaction/${result.data._id ?? ''}`);
 			reset();
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit transaction form' });
@@ -91,15 +129,24 @@ export default function AddTransactionForm({
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button className='flex justify-center gap-1' size='sm'>
-					<Plus />
-					<p>Add Transaction</p>
-				</Button>
+				{mode === 'add' ? (
+					<Button className='flex justify-center gap-1' size='sm'>
+						<Plus />
+						<p>Add Transaction</p>
+					</Button>
+				) : (
+					<Button className='flex gap-1' size='sm' variant='ocean'>
+						<img src='/icons/edit.svg' className='size-5' alt='' />
+						<p>Edit</p>
+					</Button>
+				)}
 			</DialogTrigger>
 
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
-					<DialogTitle>Add Transaction</DialogTitle>
+					<DialogTitle>
+						{mode === 'add' ? 'Add' : 'Edit'} Transaction
+					</DialogTitle>
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 
@@ -128,6 +175,7 @@ export default function AddTransactionForm({
 					/>
 
 					<CategoryPicker
+						defaultValue={category}
 						categories={categories}
 						setCategory={setCategory}
 						error={errors.categoryID?.message?.toString()}

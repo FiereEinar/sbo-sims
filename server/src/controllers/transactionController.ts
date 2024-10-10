@@ -2,10 +2,14 @@ import asyncHandler from 'express-async-handler';
 import Transaction, { ITransaction } from '../models/transaction';
 import Category from '../models/category';
 import Student from '../models/student';
-import { createTransactionBody } from '../types/transaction';
+import {
+	createTransactionBody,
+	updateTransactionAmountBody,
+} from '../types/transaction';
 import { validationResult } from 'express-validator';
 import mongoose, { UpdateQuery } from 'mongoose';
 import CustomResponse from '../types/response';
+import { CustomRequest } from '../types/request';
 
 /**
  * GET - fetch all transactions made
@@ -288,3 +292,92 @@ export const update_transaction = asyncHandler(async (req, res) => {
 });
 
 // TODO: add a new route specifically for updating the amount paid
+export const update_transaction_amount = asyncHandler(
+	async (req: CustomRequest, res) => {
+		const { transactionID } = req.params;
+		const { amount }: updateTransactionAmountBody = req.body;
+
+		// check if the given transaction ID is valid
+		if (!mongoose.isValidObjectId(transactionID)) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					`${transactionID} is not a valid transaction ID`
+				)
+			);
+			return;
+		}
+
+		const transaction = await Transaction.findById(transactionID)
+			.populate({
+				model: Category,
+				path: 'category',
+			})
+			.exec();
+
+		if (transaction === null) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					`Transaction with ID: ${transactionID} does not exists`
+				)
+			);
+			return;
+		}
+
+		const category = transaction.category;
+		const transactionAmountSum = transaction.amount + amount;
+
+		// check if the amount paid is over the amount required for a category
+		if (transactionAmountSum > category.fee) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					`The amount is over the required amount for ${category.name} fee`
+				)
+			);
+			return;
+		}
+
+		// check if the amount paid is non-negative
+		if (amount <= 0) {
+			res.json(new CustomResponse(false, null, `Enter a valid amount`));
+			return;
+		}
+
+		// check for errors in validation
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in body validation',
+					errors.array()[0].msg
+				)
+			);
+			return;
+		}
+
+		const update: UpdateQuery<ITransaction> = {
+			amount: transactionAmountSum,
+		};
+
+		const result = await Transaction.findByIdAndUpdate(
+			transaction._id,
+			update,
+			{ new: true }
+		).exec();
+
+		res.json(
+			new CustomResponse(
+				true,
+				result,
+				'Transaction amount updated successfully'
+			)
+		);
+	}
+);

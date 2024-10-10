@@ -26,6 +26,7 @@ export default function Student() {
 
 	return (
 		<SidebarPageLayout>
+			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Student List</Header>
 				<AddStudentForm />

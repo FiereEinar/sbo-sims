@@ -2,12 +2,14 @@ import { Button } from '../ui/button';
 
 export default function EditAndDeleteButton() {
 	return (
-		<div className='space-x-2'>
-			<Button size='sm' variant='ocean'>
-				Edit
+		<div className='space-x-2 flex'>
+			<Button className='flex gap-1' size='sm' variant='ocean'>
+				<img src='/icons/edit.svg' className='size-5' alt='' />
+				<p>Edit</p>
 			</Button>
-			<Button size='sm' variant='destructive'>
-				Delete
+			<Button className='flex gap-1' size='sm' variant='destructive'>
+				<img src='/icons/delete.svg' className='size-5' alt='' />
+				<p>Delete</p>
 			</Button>
 		</div>
 	);

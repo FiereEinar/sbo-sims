@@ -10,6 +10,7 @@ import {
 } from './ui/table';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DateText from './ui/date-text';
 
 type TransactionsTableProps = {
 	transactions: Transaction[];
@@ -44,29 +45,31 @@ export default function TransactionsTable({
 			</TableHeader>
 
 			<TableBody>
-				{transactions.map((transaction) => (
-					<TableRow
-						onClick={() => navigate(`/transaction/${transaction._id}`)}
-						className='cursor-pointer'
-						key={transaction._id}
-					>
-						<TableCell className=''>{transaction.owner.studentID}</TableCell>
-						<TableCell className=''>
-							{new Date(transaction.date).toLocaleDateString()}
-							{' - '}
-							{new Date(transaction.date).toLocaleTimeString()}
-						</TableCell>
-						<TableCell className=''>{transaction.category.name}</TableCell>
-						<TableCell className='text-right'>
-							{transaction.amount >= transaction.category.fee ? (
-								<p className='text-green-500'>Paid</p>
-							) : (
-								<p className='text-yellow-500'>Partial</p>
-							)}
-						</TableCell>
-						<TableCell className='text-right'>P{transaction.amount}</TableCell>
-					</TableRow>
-				))}
+				{transactions.map((transaction) => {
+					return (
+						<TableRow
+							onClick={() => navigate(`/transaction/${transaction._id}`)}
+							className='cursor-pointer'
+							key={transaction._id}
+						>
+							<TableCell className=''>{transaction.owner.studentID}</TableCell>
+							<TableCell className=''>
+								<DateText date={new Date(transaction.date)} />
+							</TableCell>
+							<TableCell className=''>{transaction.category.name}</TableCell>
+							<TableCell className='text-right'>
+								{transaction.amount >= transaction.category.fee ? (
+									<p className='text-green-500'>Paid</p>
+								) : (
+									<p className='text-yellow-500'>Partial</p>
+								)}
+							</TableCell>
+							<TableCell className='text-right'>
+								P{transaction.amount}
+							</TableCell>
+						</TableRow>
+					);
+				})}
 			</TableBody>
 
 			<TableFooter>

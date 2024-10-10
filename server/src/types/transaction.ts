@@ -5,3 +5,7 @@ export type createTransactionBody = {
 	description?: string;
 	date?: Date;
 };
+
+export type updateTransactionAmountBody = {
+	amount: number;
+};

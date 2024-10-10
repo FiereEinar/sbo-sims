@@ -7,5 +7,5 @@ export const createCategoryValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Category name must not be empty'),
 
-	body('fee').isNumeric(),
+	body('fee').isNumeric().toInt(),
 ];

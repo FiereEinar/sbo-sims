@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 
 export const createTransactionValidation = [
-	body('amount').isNumeric(),
+	body('amount').isNumeric().toInt(),
 
 	body('categoryID')
 		.trim()
@@ -22,4 +22,8 @@ export const createTransactionValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('Student ID must not be empty'),
+];
+
+export const updateTransactionAmountValidation = [
+	body('amount').isNumeric().toInt(),
 ];

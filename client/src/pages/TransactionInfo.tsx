@@ -1,6 +1,7 @@
 import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
+import UpdateTransactionAmountForm from '@/components/forms/UpdateTransactionAmountForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StudentDataCard from '@/components/StudentDataCard';
 import TransactionDataCard from '@/components/TransactionDataCard';
@@ -28,6 +29,7 @@ export default function TransactionInfo() {
 
 	return (
 		<SidebarPageLayout>
+			<div className='mt-5' />
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>
@@ -43,6 +45,9 @@ export default function TransactionInfo() {
 				studentData={data.owner}
 			/>
 			<hr />
+			<div className='flex justify-end'>
+				<UpdateTransactionAmountForm transaction={data} />
+			</div>
 			<TransactionsTable transactions={[data]} />
 		</SidebarPageLayout>
 	);

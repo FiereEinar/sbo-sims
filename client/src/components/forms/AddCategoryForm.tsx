@@ -75,7 +75,6 @@ export default function AddCategoryForm() {
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 
-				{/* TODO: factor out all this shit */}
 				<form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
 					<InputField<CategoryFormValues>
 						name='name'

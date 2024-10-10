@@ -2,6 +2,7 @@ import { Transaction } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
 import { APIResponse } from '@/types/api-response';
 import { TransactionFormValues } from '@/components/forms/AddTransactionForm';
+import { UpdateTransactionAmountFormValues } from '@/components/forms/UpdateTransactionAmountForm';
 
 export const fetchTransactions = async (): Promise<
 	Transaction[] | undefined
@@ -36,5 +37,24 @@ export const fetchTransactionByID = async (
 		return data.data;
 	} catch (err: any) {
 		console.error(`Failed to fetch transaction with ID ${transactionID}`, err);
+	}
+};
+
+export const submitUpdateTransactionAmountForm = async (
+	transactionID: string,
+	formData: UpdateTransactionAmountFormValues
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.put(
+			`/transaction/${transactionID}/amount`,
+			formData
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error(
+			`Failed to submit transaction amount update with ID ${transactionID}`,
+			err
+		);
 	}
 };

@@ -48,37 +48,39 @@ export default function AddTransactionForm({
 	const [category, setCategory] = useState<string>();
 	const navigate = useNavigate();
 
-	const { refetch } = useQuery({
+	const { data: transactions, refetch } = useQuery({
 		queryKey: ['transactions'],
 		queryFn: fetchTransactions,
 	});
 
-	const { refetch: tRefetch } = useQuery({
+	const { data: transactionData, refetch: tRefetch } = useQuery({
 		queryKey: [`transaction_${transaction?._id}`],
-		queryFn: () => fetchTransactionByID(transaction?._id ?? ''),
+		queryFn: () => fetchTransactionByID(transaction?._id),
 	});
 
 	const {
 		register,
 		handleSubmit,
+		setValue,
 		setError,
 		reset,
 		formState: { errors, isSubmitting },
 	} = useForm<TransactionFormValues>({
 		resolver: zodResolver(transactionSchema),
-		defaultValues: {
-			studentID: transaction?.owner.studentID ?? '',
-			amount: transaction?.amount.toString() ?? '',
-			description: transaction?.description ?? '',
-		},
 	});
 
 	useEffect(() => {
-		if (transaction) {
-			setDate(new Date(transaction.date));
-			setCategory(transaction.category._id);
+		console.log('trans', transactionData);
+		console.log('transassss', transactions);
+		if (transactionData) {
+			setDate(new Date(transactionData.date));
+			setCategory(transactionData.category._id);
+
+			setValue('amount', transactionData.amount.toString());
+			setValue('studentID', transactionData.owner.studentID);
+			setValue('description', transactionData.description);
 		}
-	}, [transaction]);
+	}, [transactionData]);
 
 	// TODO: create another input field for time
 	const onSubmit = async (data: TransactionFormValues) => {

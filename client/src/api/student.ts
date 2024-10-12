@@ -56,3 +56,28 @@ export const submitStudentForm = async (
 		console.error('Failed to submit student form', err);
 	}
 };
+
+export const submitUpdateStudentForm = async (
+	studentID: string,
+	formData: StudentFormValues
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.put(`/student/${studentID}`, formData);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to submit update student form', err);
+	}
+};
+
+export const requestDeleteStudent = async (
+	studentID: string
+): Promise<APIResponse | undefined> => {
+	try {
+		const { data } = await axiosInstance.delete(`/student/${studentID}`);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to send request delete student', err);
+	}
+};

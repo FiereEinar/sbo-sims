@@ -22,7 +22,6 @@ export default function LoginForm() {
 
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
-			console.log(data);
 			const result = await submitLoginForm(data);
 
 			if (!result) {

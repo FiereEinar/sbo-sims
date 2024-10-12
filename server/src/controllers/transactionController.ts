@@ -238,7 +238,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 			new CustomResponse(
 				false,
 				null,
-				`The amount is over the required amount for ${category.name} fee`
+				`The amount is over the required amount for ${category.name} fee (${category.fee})`
 			)
 		);
 		return;

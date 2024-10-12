@@ -1,6 +1,6 @@
 import { fetchStudentByID, fetchStudentTransactions } from '@/api/student';
 import BackButton from '@/components/buttons/BackButton';
-import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
+import EditAndDeleteStudentButton from '@/components/buttons/EditAndDeleteStudentButton';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import StudentDataCard from '@/components/StudentDataCard';
@@ -40,7 +40,7 @@ export default function StudentInfo() {
 	}
 
 	if (!studentData || !studentTransactions) {
-		return <p>Error</p>;
+		return <p>No student found</p>;
 	}
 
 	return (
@@ -50,7 +50,7 @@ export default function StudentInfo() {
 			<div className='space-y-3'>
 				<StickyHeader>
 					<Header>Student Info</Header>
-					<EditAndDeleteButton />
+					<EditAndDeleteStudentButton student={studentData} />
 				</StickyHeader>
 				<hr />
 				<StudentDataCard studentID={studentID} studentData={studentData} />

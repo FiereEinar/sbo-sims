@@ -45,7 +45,7 @@ export const submitUpdateTransactionForm = async (
 };
 
 export const fetchTransactionByID = async (
-	transactionID: string
+	transactionID: string | undefined
 ): Promise<Transaction | undefined> => {
 	try {
 		const { data } = await axiosInstance.get(`/transaction/${transactionID}`);

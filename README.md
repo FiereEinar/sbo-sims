@@ -1,0 +1,57 @@
+# Transactions Tracker
+
+A simple and intuitive web application designed to help you easily track student transactions for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management. Here's a refined version of your features section:
+
+## Status
+
+🚧 **Under Development**: This application is currently a work in progress, and new features and improvements are being actively added. Some features may be incomplete or subject to change.
+
+## Features
+
+- **Student Management**: Easily add, edit, and remove students from the system.
+- **Event & Category Creation**: Create custom events or categories for which students will be making payments.
+- **Transaction Management**: Track, update, and manage all student transactions efficiently.
+- **Authentication & Authorization**: Secure login and user management to ensure only authorized users can access or modify data.
+
+## Technologies Used
+
+### Frontend
+
+- **TypeScript**
+- **React**
+- **Tailwind CSS**
+- **Vite**
+- **Shadcn**
+- **Vercel**
+
+### Backend
+
+- **TypeScript**
+- **Express**
+- **Node.js**
+- **MongoDB**
+- **Mongoose**
+- **Cloudinary**
+- **Vercel**
+
+## Libraries Used
+
+### Frontend
+
+- **[react-hook-form](https://www.npmjs.com/package/react-hook-form):** Simplifies form state management and validation.
+- **[react-router-dom](https://reactrouter.com/en/main):** Routing for React applications.
+- **[zod](https://zod.dev/):** Schema validation for forms.
+- **[react-query](https://www.npmjs.com/package/react-query):** Data fetching and caching.
+- **[axios](https://axios-http.com/docs/intro):** Promise-based HTTP client.
+- **[date-fns](https://date-fns.org/docs/Getting-Started):** JavaScript date utility library.
+
+### Backend
+
+- **[bcryptjs](https://www.npmjs.com/package/bcryptjs):** Password hashing and salting.
+- **[jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken):** JSON Web Token implementation.
+- **[dotenv](https://www.npmjs.com/package/dotenv):** Environment variable management.
+- **[express-validator](https://www.npmjs.com/package/express-validator):** User input validation middleware.
+- **[cloudinary](https://cloudinary.com/):** Image upload and storage.
+- **[multer](https://www.npmjs.com/package/multer):** File upload middleware for Node.js.
+- **[express-async-handler](https://www.npmjs.com/package/express-async-handler):** Asynchronous error handling middleware.
+- **[cors](https://www.npmjs.com/package/cors):** Middleware for enabling CORS.

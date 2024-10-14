@@ -1,6 +1,6 @@
 # Transactions Tracker
 
-A simple and intuitive web application designed to help you easily track student transactions for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management. Here's a refined version of your features section:
+A simple and intuitive web application designed to help you easily track student transactions for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.
 
 ## Status
 

@@ -5,12 +5,18 @@ import { validationResult } from 'express-validator';
 import Transaction from '../models/transaction';
 import Student from '../models/student';
 import CustomResponse from '../types/response';
+import Organization from '../models/organization';
+import { ICategoryWithTransactions } from '../types/category';
+import organization from '../models/organization';
 
 /**
  * GET - fetch all categories
  */
 export const get_all_category = asyncHandler(async (req, res) => {
-	// const categories = await Category.find();
+	// const categories = await Category.find().populate({
+	// 	model: Organization,
+	// 	path: 'organization',
+	// });
 	const categories = await Category.aggregate([
 		{
 			$lookup: {
@@ -25,6 +31,17 @@ export const get_all_category = asyncHandler(async (req, res) => {
 				totalTransactions: { $size: '$transactions' }, // count the number of transactions
 				totalTransactionsAmount: { $sum: '$transactions.amount' },
 			},
+		},
+		{
+			$lookup: {
+				from: 'organizations',
+				localField: 'organization',
+				foreignField: '_id',
+				as: 'organization',
+			},
+		},
+		{
+			$unwind: '$organization',
 		},
 		{
 			$project: {
@@ -123,7 +140,7 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  * POST - create a category
  */
 export const create_category = asyncHandler(async (req, res) => {
-	const { name, fee }: Omit<ICategory, '_id'> = req.body;
+	const { name, fee, organization }: Omit<ICategory, '_id'> = req.body;
 
 	// check for validation errors
 	const errors = validationResult(req);
@@ -139,10 +156,24 @@ export const create_category = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	// check if the organization exists
+	const existingOrganization = await Organization.findById(organization);
+	if (existingOrganization === null) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Organization with ID: ${organization} does not exist`
+			)
+		);
+		return;
+	}
+
 	// create and save the category
 	const category = new Category({
 		name: name,
 		fee: fee,
+		organization: organization,
 	});
 	await category.save();
 

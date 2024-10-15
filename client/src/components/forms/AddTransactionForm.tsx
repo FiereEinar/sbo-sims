@@ -26,6 +26,7 @@ import CategoryPicker from '../CategoryPicker';
 import Plus from '../icons/plus';
 import { Transaction } from '@/types/transaction';
 import { useNavigate } from 'react-router-dom';
+import ErrorText from '../ui/error-text';
 
 type AddTransactionFormProps = {
 	categories: Category[];
@@ -192,9 +193,7 @@ export default function AddTransactionForm({
 					/>
 
 					{errors.root && errors.root.message && (
-						<p className='text-xs text-destructive'>
-							{errors.root.message.toString()}
-						</p>
+						<ErrorText>{errors.root.message.toString()}</ErrorText>
 					)}
 
 					<div className='flex justify-end'>

@@ -24,6 +24,7 @@ import Plus from '../icons/plus';
 import { Student } from '@/types/student';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import ErrorText from '../ui/error-text';
 
 export type StudentFormValues = z.infer<typeof studentSchema>;
 
@@ -152,9 +153,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 					/>
 
 					{errors.root && errors.root.message && (
-						<p className='text-xs text-destructive'>
-							{errors.root.message.toString()}
-						</p>
+						<ErrorText>{errors.root.message.toString()}</ErrorText>
 					)}
 
 					<div className='flex justify-end'>

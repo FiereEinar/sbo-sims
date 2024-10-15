@@ -16,6 +16,7 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import Plus from '../icons/plus';
+import ErrorText from '../ui/error-text';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -93,9 +94,7 @@ export default function AddCategoryForm() {
 					/>
 
 					{errors.root && errors.root.message && (
-						<p className='text-xs text-destructive'>
-							{errors.root.message.toString()}
-						</p>
+						<ErrorText>{errors.root.message.toString()}</ErrorText>
 					)}
 
 					<div className='flex justify-end'>

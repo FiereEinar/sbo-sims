@@ -17,6 +17,7 @@ import { DialogHeader, DialogFooter } from '../ui/dialog';
 import InputField from '../InputField';
 import { z } from 'zod';
 import { Transaction } from '@/types/transaction';
+import ErrorText from '../ui/error-text';
 
 export const updateTransactionAmountSchema = z.object({
 	amount: z
@@ -122,9 +123,7 @@ export default function UpdateTransactionAmountForm({
 					/>
 
 					{errors.root && errors.root.message && (
-						<p className='text-xs text-destructive'>
-							{errors.root.message.toString()}
-						</p>
+						<ErrorText>{errors.root.message.toString()}</ErrorText>
 					)}
 
 					<div className='flex justify-end'>

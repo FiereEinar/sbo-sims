@@ -144,6 +144,15 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	// check if the student already paid
+	const isAlreadyPaid = await Transaction.findOne({
+		owner: student._id,
+	}).exec();
+	if (isAlreadyPaid) {
+		res.json(new CustomResponse(false, null, 'This student has already paid'));
+		return;
+	}
+
 	// create and save the transaction
 	const transaction = new Transaction({
 		amount: amount,

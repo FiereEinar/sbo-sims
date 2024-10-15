@@ -19,4 +19,9 @@ export const navbarLinks = [
 		name: 'Category',
 		icon: 'category',
 	},
+	{
+		path: '/organization',
+		name: 'Organization',
+		icon: 'organization',
+	},
 ];

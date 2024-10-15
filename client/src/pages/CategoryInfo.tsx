@@ -36,6 +36,9 @@ export default function CategoryInfo() {
 					</p>
 					<Header>{data.category.name}</Header>
 					<p className='text-muted-foreground flex gap-1'>
+						Organization: {data.category.organization.name}
+					</p>
+					<p className='text-muted-foreground flex gap-1'>
 						Category fee: P{data.category.fee}
 					</p>
 				</div>

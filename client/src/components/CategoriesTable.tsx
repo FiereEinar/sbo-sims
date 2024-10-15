@@ -33,8 +33,9 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[300px]'>Category name</TableHead>
-					<TableHead className='w-[300px]'>Total transactions</TableHead>
+					<TableHead className='w-[200px]'>Organization</TableHead>
+					<TableHead className='w-[200px]'>Category name</TableHead>
+					<TableHead className='w-[200px]'>Total transactions</TableHead>
 					<TableHead className='w-[200px] text-right'>
 						Total Transactions amount
 					</TableHead>
@@ -48,6 +49,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 						onClick={() => navigate(`/category/${category._id}`)}
 						key={category._id}
 					>
+						<TableCell className=''>{category.organization.name}</TableCell>
 						<TableCell className=''>{category.name}</TableCell>
 						<TableCell className=''>{category.totalTransactions}</TableCell>
 						<TableCell className='text-right'>
@@ -59,7 +61,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={2}>Total</TableCell>
+					<TableCell colSpan={3}>Total</TableCell>
 					<TableCell className='text-right'>{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

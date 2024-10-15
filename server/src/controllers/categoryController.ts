@@ -8,6 +8,7 @@ import CustomResponse from '../types/response';
 import Organization from '../models/organization';
 import { ICategoryWithTransactions } from '../types/category';
 import organization from '../models/organization';
+import { createCategoryBody } from '../types/organization';
 
 /**
  * GET - fetch all categories
@@ -68,7 +69,13 @@ export const get_category = asyncHandler(async (req, res) => {
 	}
 
 	// check if the given category exists
-	const category = await Category.findById(categoryID);
+	const category = await Category.findById(categoryID)
+		.populate({
+			model: Organization,
+			path: 'organization',
+		})
+		.exec();
+
 	if (category === null) {
 		res.json(
 			new CustomResponse(
@@ -140,7 +147,7 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  * POST - create a category
  */
 export const create_category = asyncHandler(async (req, res) => {
-	const { name, fee, organization }: Omit<ICategory, '_id'> = req.body;
+	const { name, fee, organizationID }: createCategoryBody = req.body;
 
 	// check for validation errors
 	const errors = validationResult(req);
@@ -157,13 +164,13 @@ export const create_category = asyncHandler(async (req, res) => {
 	}
 
 	// check if the organization exists
-	const existingOrganization = await Organization.findById(organization);
+	const existingOrganization = await Organization.findById(organizationID);
 	if (existingOrganization === null) {
 		res.json(
 			new CustomResponse(
 				false,
 				null,
-				`Organization with ID: ${organization} does not exist`
+				`Organization with ID: ${organizationID} does not exist`
 			)
 		);
 		return;
@@ -173,7 +180,7 @@ export const create_category = asyncHandler(async (req, res) => {
 	const category = new Category({
 		name: name,
 		fee: fee,
-		organization: organization,
+		organization: organizationID,
 	});
 	await category.save();
 

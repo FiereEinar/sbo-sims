@@ -17,10 +17,20 @@ import {
 import { Button } from '../ui/button';
 import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
+import OrganizationPicker from '../OrganizationPicker';
+import { Organization } from '@/types/organization';
+import { useState } from 'react';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
-export default function AddCategoryForm() {
+type AddCategoryFormProps = {
+	organizations: Organization[];
+};
+
+export default function AddCategoryForm({
+	organizations,
+}: AddCategoryFormProps) {
+	const [org, setOrg] = useState<string>();
 	const { refetch } = useQuery({
 		queryKey: ['categories'],
 		queryFn: fetchCategories,
@@ -38,6 +48,13 @@ export default function AddCategoryForm() {
 
 	const onSubmit = async (data: CategoryFormValues) => {
 		try {
+			if (!org) {
+				setError('organizationID', { message: 'Select an organization' });
+				return;
+			}
+
+			data.organizationID = org;
+
 			const result = await submitCategoryForm(data);
 
 			if (!result) {
@@ -91,6 +108,13 @@ export default function AddCategoryForm() {
 						errors={errors}
 						label='Category fee:'
 						id='fee'
+					/>
+
+					<OrganizationPicker
+						defaultValue={org}
+						setOrg={setOrg}
+						organizations={organizations}
+						error={errors.organizationID?.message}
 					/>
 
 					{errors.root && errors.root.message && (

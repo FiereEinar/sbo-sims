@@ -49,7 +49,7 @@ export default function AddTransactionForm({
 	const [category, setCategory] = useState<string>();
 	const navigate = useNavigate();
 
-	const { data: transactions, refetch } = useQuery({
+	const { refetch } = useQuery({
 		queryKey: ['transactions'],
 		queryFn: fetchTransactions,
 	});
@@ -71,8 +71,6 @@ export default function AddTransactionForm({
 	});
 
 	useEffect(() => {
-		console.log('trans', transactionData);
-		console.log('transassss', transactions);
 		if (transactionData) {
 			setDate(new Date(transactionData.date));
 			setCategory(transactionData.category._id);

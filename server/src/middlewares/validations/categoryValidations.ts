@@ -7,7 +7,7 @@ export const createCategoryValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Category name must not be empty'),
 
-	body('organization')
+	body('organizationID')
 		.trim()
 		.escape()
 		.isLength({ min: 1 })

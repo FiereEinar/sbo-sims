@@ -7,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
+import ErrorText from './ui/error-text';
 
 type CategoryPickerProps = {
 	setCategory: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -39,7 +40,7 @@ export default function CategoryPicker({
 					))}
 				</SelectContent>
 			</Select>
-			{error && <p className='text-xs text-destructive'>{error}</p>}
+			{error && <ErrorText>{error}</ErrorText>}
 		</div>
 	);
 }

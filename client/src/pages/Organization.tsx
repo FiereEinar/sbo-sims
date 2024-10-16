@@ -1,4 +1,5 @@
 import { fetchAllOrganizations } from '@/api/organization';
+import AddOrganizationForm from '@/components/forms/AddOrganizationForm';
 import OrganizationTable from '@/components/OrganizationTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -28,6 +29,7 @@ export default function Organization() {
 			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Organizations</Header>
+				<AddOrganizationForm />
 			</StickyHeader>
 
 			<OrganizationTable organizations={organizations} />

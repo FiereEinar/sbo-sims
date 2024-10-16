@@ -10,6 +10,7 @@ import {
 import { StudentWithTransactions } from '@/types/student';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import _ from 'lodash';
 
 interface StudentsTableProps {
 	students: StudentWithTransactions[];
@@ -51,7 +52,9 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 						key={student._id}
 					>
 						<TableCell className=''>{student.studentID}</TableCell>
-						<TableCell className=''>{`${student.firstname} ${student.lastname}`}</TableCell>
+						<TableCell className=''>
+							{_.startCase(`${student.firstname} ${student.lastname}`)}
+						</TableCell>
 						<TableCell className=''>{student.email}</TableCell>
 						<TableCell className=''>{student.totalTransactions}</TableCell>
 						<TableCell className='text-right'>

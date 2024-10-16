@@ -11,13 +11,15 @@ export const createStudentValidation = [
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('First name must not be empty'),
+		.withMessage('First name must not be empty')
+		.toLowerCase(),
 
 	body('lastname')
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('Last name must not be empty'),
+		.withMessage('Last name must not be empty')
+		.toLowerCase(),
 
 	body('email').trim().escape().optional(),
 ];
@@ -27,13 +29,15 @@ export const updateStudentValidation = [
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('First name must not be empty'),
+		.withMessage('First name must not be empty')
+		.toLowerCase(),
 
 	body('lastname')
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('Last name must not be empty'),
+		.withMessage('Last name must not be empty')
+		.toLowerCase(),
 
 	body('email').trim().escape().optional(),
 ];

@@ -112,14 +112,16 @@ export const signupValidation = [
 		.escape()
 		.toLowerCase()
 		.isLength({ min: 1, max: 50 })
-		.withMessage('First name must be 1-50 characters'),
+		.withMessage('First name must be 1-50 characters')
+		.toLowerCase(),
 
 	body('lastname')
 		.trim()
 		.escape()
 		.toLowerCase()
 		.isLength({ min: 1, max: 50 })
-		.withMessage('Last name must be 1-50 characters'),
+		.withMessage('Last name must be 1-50 characters')
+		.toLowerCase(),
 
 	body('password')
 		.trim()

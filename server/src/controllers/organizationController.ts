@@ -29,7 +29,7 @@ export const get_all_organizations = asyncHandler(async (req, res) => {
  * POST - create a category
  */
 export const create_organization = asyncHandler(async (req, res) => {
-	const { name }: Omit<IOrganization, '_id'> = req.body;
+	const { name, governor, treasurer }: Omit<IOrganization, '_id'> = req.body;
 
 	// check for validation errors
 	const errors = validationResult(req);
@@ -48,6 +48,8 @@ export const create_organization = asyncHandler(async (req, res) => {
 	// create and save the category
 	const category = new Organization({
 		name: name,
+		governor: governor,
+		treasurer: treasurer,
 	});
 	await category.save();
 

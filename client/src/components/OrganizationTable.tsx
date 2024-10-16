@@ -8,6 +8,7 @@ import {
 	TableRow,
 } from './ui/table';
 import { useNavigate } from 'react-router-dom';
+import _ from 'lodash';
 
 type OrganizationTableProps = {
 	organizations: Organization[];
@@ -21,8 +22,10 @@ export default function OrganizationTable({
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[400px]'>Organization</TableHead>
-					<TableHead className='w-[400px] text-right'>
+					<TableHead className='w-[200px]'>Organization</TableHead>
+					<TableHead className='w-[200px]'>Governor</TableHead>
+					<TableHead className='w-[200px]'>Treasurer</TableHead>
+					<TableHead className='w-[200px] text-right'>
 						Total Categories
 					</TableHead>
 				</TableRow>
@@ -36,6 +39,8 @@ export default function OrganizationTable({
 						key={org._id}
 					>
 						<TableCell className=''>{org.name}</TableCell>
+						<TableCell className=''>{_.startCase(org.governor)}</TableCell>
+						<TableCell className=''>{_.startCase(org.treasurer)}</TableCell>
 						<TableCell className='text-right'>
 							{org.categories.length}
 						</TableCell>

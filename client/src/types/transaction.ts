@@ -8,6 +8,8 @@ export type Transaction = MongoEntity & {
 	category: Category;
 	owner: Student;
 	description?: string;
+	governor: string;
+	treasurer: string;
 };
 
 export type TransactionsData = {

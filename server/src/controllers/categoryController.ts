@@ -14,10 +14,6 @@ import { createCategoryBody } from '../types/organization';
  * GET - fetch all categories
  */
 export const get_all_category = asyncHandler(async (req, res) => {
-	// const categories = await Category.find().populate({
-	// 	model: Organization,
-	// 	path: 'organization',
-	// });
 	const categories = await Category.aggregate([
 		{
 			$lookup: {

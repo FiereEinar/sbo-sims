@@ -26,7 +26,7 @@ export const get_all_organizations = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, organizations, 'Organizations'));
 });
 /**
- * POST - create a category
+ * POST - create an organization
  */
 export const create_organization = asyncHandler(async (req, res) => {
 	const { name, governor, treasurer }: Omit<IOrganization, '_id'> = req.body;
@@ -45,16 +45,16 @@ export const create_organization = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	// create and save the category
-	const category = new Organization({
+	// create and save the organization
+	const organization = new Organization({
 		name: name,
 		governor: governor,
 		treasurer: treasurer,
 	});
-	await category.save();
+	await organization.save();
 
 	res.json(
-		new CustomResponse(true, category, 'Organization created successfully')
+		new CustomResponse(true, organization, 'Organization created successfully')
 	);
 });
 

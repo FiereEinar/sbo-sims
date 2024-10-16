@@ -11,6 +11,8 @@ export interface ITransaction {
 	category: ICategory;
 	description?: string;
 	date?: Date;
+	governor: string;
+	treasurer: string;
 }
 
 const TransactionSchema = new Schema<ITransaction>({
@@ -19,6 +21,8 @@ const TransactionSchema = new Schema<ITransaction>({
 	category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 	description: { type: String, required: false },
 	date: { type: Date, default: Date.now },
+	governor: { type: String, required: true },
+	treasurer: { type: String, required: true },
 });
 
 export default mongoose.model('Transaction', TransactionSchema);

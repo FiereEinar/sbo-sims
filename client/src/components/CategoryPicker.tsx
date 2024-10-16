@@ -35,7 +35,7 @@ export default function CategoryPicker({
 				<SelectContent>
 					{categories.map((category) => (
 						<SelectItem key={category._id} value={category._id}>
-							{category.name}
+							{category.organization.name} - {category.name}
 						</SelectItem>
 					))}
 				</SelectContent>

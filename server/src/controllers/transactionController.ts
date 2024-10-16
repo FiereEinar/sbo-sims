@@ -10,6 +10,7 @@ import { validationResult } from 'express-validator';
 import mongoose, { UpdateQuery } from 'mongoose';
 import CustomResponse from '../types/response';
 import { CustomRequest } from '../types/request';
+import Organization from '../models/organization';
 
 /**
  * GET - fetch all transactions made
@@ -46,6 +47,10 @@ export const get_transaction = asyncHandler(async (req, res) => {
 		.populate({
 			model: Category,
 			path: 'category',
+			populate: {
+				model: Organization,
+				path: 'organization',
+			},
 		})
 		.populate({
 			model: Student,
@@ -91,7 +96,10 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	}
 
 	// check if the category exists
-	const category = await Category.findById(categoryID);
+	const category = await Category.findById(categoryID).populate({
+		model: Organization,
+		path: 'organization',
+	});
 	if (category === null) {
 		res.json(
 			new CustomResponse(
@@ -109,7 +117,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 			new CustomResponse(
 				false,
 				null,
-				`The amount is over the required amount for ${category.name} fee`
+				`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
 			)
 		);
 		return;
@@ -147,6 +155,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	// check if the student already paid
 	const isAlreadyPaid = await Transaction.findOne({
 		owner: student._id,
+		category: category._id,
 	}).exec();
 	if (isAlreadyPaid) {
 		res.json(new CustomResponse(false, null, 'This student has already paid'));
@@ -160,6 +169,8 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		owner: student._id,
 		description: description,
 		date: date,
+		governor: category.organization.governor,
+		treasurer: category.organization.treasurer,
 	});
 	await transaction.save();
 

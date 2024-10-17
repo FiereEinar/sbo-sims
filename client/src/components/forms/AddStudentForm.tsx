@@ -144,6 +144,40 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 						label='Lastname:'
 						id='lastname'
 					/>
+					<div className='flex gap-2'>
+						<InputField<StudentFormValues>
+							name='middlename'
+							registerFn={register}
+							errors={errors}
+							label='Middlename: (optional)'
+							id='middlename'
+						/>
+
+						<InputField<StudentFormValues>
+							name='course'
+							registerFn={register}
+							errors={errors}
+							label='Course:'
+							id='course'
+						/>
+					</div>
+					<div className='flex gap-2'>
+						<InputField<StudentFormValues>
+							name='gender'
+							registerFn={register}
+							errors={errors}
+							label='Gender: (M/F)'
+							id='gender'
+						/>
+						<InputField<StudentFormValues>
+							name='year'
+							type='number'
+							registerFn={register}
+							errors={errors}
+							label='Year:'
+							id='year'
+						/>
+					</div>
 					<InputField<StudentFormValues>
 						name='email'
 						registerFn={register}

@@ -21,7 +21,25 @@ export const createStudentValidation = [
 		.withMessage('Last name must not be empty')
 		.toLowerCase(),
 
+	body('course')
+		.trim()
+		.escape()
+		.isLength({ min: 1 })
+		.withMessage('Course must not be empty')
+		.toUpperCase(),
+
+	body('gender')
+		.trim()
+		.escape()
+		.isLength({ min: 1 })
+		.withMessage('Gender must not be empty')
+		.toUpperCase(),
+
+	body('year').toInt().isInt(),
+
 	body('email').trim().escape().optional(),
+
+	body('middlename').trim().escape().optional(),
 ];
 
 export const updateStudentValidation = [

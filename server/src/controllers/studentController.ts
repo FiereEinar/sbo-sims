@@ -95,7 +95,16 @@ export const get_student_transaction = asyncHandler(async (req, res) => {
  * POST - create a student
  */
 export const create_student = asyncHandler(async (req, res) => {
-	const { studentID, firstname, lastname, email }: createStudentBody = req.body;
+	const {
+		studentID,
+		firstname,
+		lastname,
+		email,
+		course,
+		gender,
+		year,
+		middlename,
+	}: createStudentBody = req.body;
 
 	// check for errors in validation
 	const errors = validationResult(req);
@@ -143,6 +152,10 @@ export const create_student = asyncHandler(async (req, res) => {
 		firstname: firstname,
 		lastname: lastname,
 		email: email,
+		course: course,
+		gender: gender,
+		middlename: middlename,
+		year: year,
 	});
 	await student.save();
 

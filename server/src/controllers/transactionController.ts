@@ -162,6 +162,18 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	// check if the student is within the organization
+	if (!category.organization.departments.includes(student.course)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+			)
+		);
+		return;
+	}
+
 	// create and save the transaction
 	const transaction = new Transaction({
 		amount: amount,

@@ -7,7 +7,7 @@ export const studentSchema = z.object({
 	email: z.string().optional(),
 	course: z.string().min(1, 'Course must not be empty'),
 	gender: z.string().min(1, 'Gender must not be empty'),
-	middlename: z.string().min(1, 'Gender must not be empty'),
+	middlename: z.string().optional(),
 	year: z
 		.string()
 		.refine((val) => !Number.isNaN(parseInt(val, 10)), {

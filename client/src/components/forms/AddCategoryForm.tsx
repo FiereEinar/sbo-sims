@@ -18,13 +18,13 @@ import { Button } from '../ui/button';
 import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import OrganizationPicker from '../OrganizationPicker';
-import { Organization } from '@/types/organization';
+import { OrganizationWithCategory } from '@/types/organization';
 import { useState } from 'react';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
 type AddCategoryFormProps = {
-	organizations: Organization[];
+	organizations: OrganizationWithCategory[];
 };
 
 export default function AddCategoryForm({

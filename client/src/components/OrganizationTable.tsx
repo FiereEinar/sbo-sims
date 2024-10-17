@@ -1,4 +1,4 @@
-import { Organization } from '@/types/organization';
+import { OrganizationWithCategory } from '@/types/organization';
 import {
 	Table,
 	TableBody,
@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 
 type OrganizationTableProps = {
-	organizations: Organization[];
+	organizations: OrganizationWithCategory[];
 };
 export default function OrganizationTable({
 	organizations,

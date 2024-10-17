@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ICategory } from './category';
 
 const Schema = mongoose.Schema;
 

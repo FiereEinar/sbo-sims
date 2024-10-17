@@ -54,7 +54,9 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 						<TableCell className=''>{student.studentID}</TableCell>
 						<TableCell className=''>
 							{_.startCase(
-								`${student.firstname} ${student.lastname}`.toLowerCase()
+								`${student.firstname} ${student.middlename ?? ''} ${
+									student.lastname
+								}`.toLowerCase()
 							)}
 						</TableCell>
 						<TableCell className=''>{student.course}</TableCell>

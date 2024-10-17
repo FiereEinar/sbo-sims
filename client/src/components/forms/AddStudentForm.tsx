@@ -67,6 +67,10 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			setValue('firstname', studentData.firstname);
 			setValue('lastname', studentData.lastname);
 			setValue('studentID', studentData.studentID);
+			setValue('middlename', studentData.middlename);
+			setValue('course', studentData.course);
+			setValue('gender', studentData.gender);
+			setValue('year', studentData.year?.toString());
 		}
 	}, [studentData]);
 

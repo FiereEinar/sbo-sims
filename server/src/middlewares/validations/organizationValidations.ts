@@ -5,7 +5,7 @@ export const createOrganizationValidation = [
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('Category name must not be empty'),
+		.withMessage('Organization name must not be empty'),
 
 	body('governor')
 		.trim()
@@ -20,4 +20,6 @@ export const createOrganizationValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Treasurer name must not be empty')
 		.toLowerCase(),
+
+	body('departments').toArray().isArray(),
 ];

@@ -36,7 +36,7 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 				<TableRow>
 					<TableHead className='w-[200px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Full name</TableHead>
-					<TableHead className='w-[200px]'>Email</TableHead>
+					<TableHead className='w-[200px]'>Course</TableHead>
 					<TableHead className='w-[100px]'>Transactions made</TableHead>
 					<TableHead className='w-[100px] text-right '>
 						Transactions amount
@@ -53,9 +53,11 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 					>
 						<TableCell className=''>{student.studentID}</TableCell>
 						<TableCell className=''>
-							{_.startCase(`${student.firstname} ${student.lastname}`)}
+							{_.startCase(
+								`${student.firstname} ${student.lastname}`.toLowerCase()
+							)}
 						</TableCell>
-						<TableCell className=''>{student.email}</TableCell>
+						<TableCell className=''>{student.course}</TableCell>
 						<TableCell className=''>{student.totalTransactions}</TableCell>
 						<TableCell className='text-right'>
 							{student.totalTransactionsAmount ?? 0}

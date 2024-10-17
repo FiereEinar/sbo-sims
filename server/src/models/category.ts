@@ -3,11 +3,17 @@ import { IOrganization } from './organization';
 
 const Schema = mongoose.Schema;
 
+export type YearLevel = 1 | 2 | 3 | 4;
+
+export type Semester = '1st' | '2nd';
+
 export interface ICategory {
 	_id: string;
 	name: string;
 	fee: number;
 	organization: IOrganization;
+	semester: Semester;
+	year: YearLevel;
 }
 
 const CategorySchema = new Schema<ICategory>({

@@ -29,7 +29,8 @@ export const get_all_organizations = asyncHandler(async (req, res) => {
  * POST - create an organization
  */
 export const create_organization = asyncHandler(async (req, res) => {
-	const { name, governor, treasurer }: Omit<IOrganization, '_id'> = req.body;
+	const { name, governor, treasurer, departments }: Omit<IOrganization, '_id'> =
+		req.body;
 
 	// check for validation errors
 	const errors = validationResult(req);
@@ -45,11 +46,14 @@ export const create_organization = asyncHandler(async (req, res) => {
 		return;
 	}
 
+	departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
+
 	// create and save the organization
 	const organization = new Organization({
 		name: name,
 		governor: governor,
 		treasurer: treasurer,
+		departments: departments,
 	});
 	await organization.save();
 

@@ -6,4 +6,5 @@ export type Organization = MongoEntity & {
 	name: string;
 	governor: string;
 	treasurer: string;
+	departments: string[];
 };

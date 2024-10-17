@@ -7,12 +7,14 @@ export interface IOrganization {
 	name: string;
 	governor: string;
 	treasurer: string;
+	departments: string[];
 }
 
 const OrganizationSchema = new Schema<IOrganization>({
 	name: { type: String, required: true },
 	governor: { type: String, required: true },
 	treasurer: { type: String, required: true },
+	departments: { type: [String] },
 });
 
 export default mongoose.model('Organization', OrganizationSchema);

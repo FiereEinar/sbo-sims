@@ -73,6 +73,7 @@ export default function AddCategoryForm({
 
 			refetch();
 			reset();
+			setOrg('');
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit category form' });
 		}

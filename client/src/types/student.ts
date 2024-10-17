@@ -5,6 +5,10 @@ export type Student = MongoEntity & {
 	firstname: string;
 	lastname: string;
 	studentID: string;
+	middlename: string;
+	gender: string;
+	course: string;
+	year: number;
 	email?: string;
 };
 

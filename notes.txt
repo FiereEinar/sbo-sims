@@ -1,6 +1,0 @@
-Notes for myself:
-
-- Validation on studentID (must be 10 numbers) are only in signup. 
-  There are students that only has 7 numbers as their student ID 
-  so I can't put the same signup validation (user) on create student validation
-

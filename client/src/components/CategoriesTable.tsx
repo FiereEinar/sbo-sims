@@ -35,6 +35,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 				<TableRow>
 					<TableHead className='w-[200px]'>Organization</TableHead>
 					<TableHead className='w-[200px]'>Category name</TableHead>
+					<TableHead className='w-[200px]'>Category fee</TableHead>
 					<TableHead className='w-[200px]'>Total transactions</TableHead>
 					<TableHead className='w-[200px] text-right'>
 						Total Transactions amount
@@ -51,6 +52,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 					>
 						<TableCell className=''>{category.organization.name}</TableCell>
 						<TableCell className=''>{category.name}</TableCell>
+						<TableCell className=''>{category.fee}</TableCell>
 						<TableCell className=''>{category.totalTransactions}</TableCell>
 						<TableCell className='text-right'>
 							{category.totalTransactionsAmount ?? 0}
@@ -61,7 +63,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={3}>Total</TableCell>
+					<TableCell colSpan={4}>Total</TableCell>
 					<TableCell className='text-right'>{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

@@ -39,8 +39,8 @@ export default function TransactionsTable({
 					<TableHead className='w-[200px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Date</TableHead>
 					<TableHead className='w-[200px]'>Category</TableHead>
-					<TableHead className='w-[100px] text-right'>Status</TableHead>
-					<TableHead className='w-[100px] text-right'>Amount</TableHead>
+					<TableHead className='w-[200px] text-right'>Status</TableHead>
+					<TableHead className='w-[200px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
 

@@ -22,8 +22,8 @@ export default function OrganizationTable({
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[200px]'>Organization</TableHead>
-					<TableHead className='w-[200px]'>Governor</TableHead>
+					<TableHead className='w-[300px]'>Organization</TableHead>
+					<TableHead className='w-[300px]'>Governor</TableHead>
 					<TableHead className='w-[200px]'>Treasurer</TableHead>
 					<TableHead className='w-[200px] text-right'>
 						Total Categories

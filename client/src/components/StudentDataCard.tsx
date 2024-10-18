@@ -22,6 +22,8 @@ export default function StudentDataCard({
 				)}
 			</p>
 			<p>Email: {studentData.email || 'Not provided'}</p>
+			<p>Gender: {studentData.gender}</p>
+			<p>Year level: {studentData.year}</p>
 		</div>
 	);
 }

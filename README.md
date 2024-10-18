@@ -11,6 +11,7 @@ A simple and intuitive web application designed to help you easily track student
 - **Student Management**: Easily add, edit, and remove students from the system.
 - **Event & Category Creation**: Create custom events or categories for which students will be making payments.
 - **Transaction Management**: Track, update, and manage all student transactions efficiently.
+- **Organization Management**: Manage what organization facilitates certain events & categories.
 - **Authentication & Authorization**: Secure login and user management to ensure only authorized users can access or modify data.
 
 ## Technologies Used

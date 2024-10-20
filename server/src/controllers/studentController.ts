@@ -45,10 +45,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 		.limit(pageSizeNum)
 		.exec();
 
-	const next =
-		(await Student.countDocuments()) > skipAmount + pageSizeNum
-			? pageNum + 1
-			: -1;
+	const next = students.length > skipAmount + pageSizeNum ? pageNum + 1 : -1;
 	const prev = pageNum > 1 ? pageNum - 1 : -1;
 
 	res.json(

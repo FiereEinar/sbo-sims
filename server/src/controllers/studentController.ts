@@ -8,13 +8,12 @@ import { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
 import { loadStudents } from '../students/load-students';
-import student from '../models/student';
 
 /**
  * GET - fetch all students
  */
 export const get_all_students = asyncHandler(async (req, res) => {
-	const { page, pageSize, search, course, year, gender } = req.query;
+	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
 
 	const pageNum = page ? parseInt(page as string) : 1;
 	const pageSizeNum = pageSize ? parseInt(pageSize as string) : 100;
@@ -38,14 +37,17 @@ export const get_all_students = asyncHandler(async (req, res) => {
 
 	const skipAmount = (pageNum - 1 > 0 ? pageNum - 1 : 0) * pageSizeNum;
 
-	const students = await Student.find({
-		$and: filters,
-	})
+	const students = await Student.find({ $and: filters })
+		.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
 		.skip(skipAmount)
 		.limit(pageSizeNum)
 		.exec();
 
-	const next = students.length > skipAmount + pageSizeNum ? pageNum + 1 : -1;
+	const next =
+		(await Student.countDocuments({ $and: filters })) >
+			skipAmount + pageSizeNum && !search?.length
+			? pageNum + 1
+			: -1;
 	const prev = pageNum > 1 ? pageNum - 1 : -1;
 
 	res.json(
@@ -267,6 +269,6 @@ export const delete_student = asyncHandler(async (req, res) => {
 });
 
 export const load_all_students = asyncHandler(async (req, res) => {
-	// await loadStudents();
+	await loadStudents();
 	res.json({ message: 'done' });
 });

@@ -14,9 +14,13 @@ import _ from 'lodash';
 
 interface StudentsTableProps {
 	students: StudentWithTransactions[] | undefined;
+	isLoading: boolean;
 }
 
-export default function StudentsTable({ students }: StudentsTableProps) {
+export default function StudentsTable({
+	students,
+	isLoading,
+}: StudentsTableProps) {
 	const [totalAmount, setTotalAmount] = useState(0);
 	const navigate = useNavigate();
 
@@ -47,6 +51,16 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 			</TableHeader>
 
 			<TableBody>
+				{isLoading && (
+					<TableRow>
+						<TableCell colSpan={7}>Loading...</TableCell>
+					</TableRow>
+				)}
+				{!students?.length && !isLoading && (
+					<TableRow>
+						<TableCell colSpan={7}>No students</TableCell>
+					</TableRow>
+				)}
 				{students &&
 					students.map((student) => (
 						<TableRow

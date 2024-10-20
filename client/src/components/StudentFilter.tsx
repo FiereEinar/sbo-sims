@@ -32,9 +32,13 @@ export default function StudentFilter({
 	const [year, setYear] = useState<StudentFilterValues['year']>('All');
 	const yearsOptions = ['All', '1', '2', '3', '4'];
 
+	// having issues implementing this, it just defaults to acsending for now
+	const [sortBy, setSortBy] = useState<StudentFilterValues['sortBy']>('asc');
+	const sortingOptions = ['asc', 'dec'];
+
 	useEffect(() => {
-		onChange({ search: debouncedSearch, course, gender, year });
-	}, [debouncedSearch, course, gender, year]);
+		onChange({ search: debouncedSearch, course, gender, year, sortBy });
+	}, [debouncedSearch, course, gender, year, sortBy]);
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>
@@ -113,6 +117,28 @@ export default function StudentFilter({
 					</SelectContent>
 				</Select>
 			</div>
+
+			{/* Name sort */}
+			{/* <div className='space-x-1'>
+				<Label className='ml-1'>Sort name:</Label>
+				<Select
+					defaultValue={sortBy}
+					onValueChange={(value) =>
+						setSortBy(value as StudentFilterValues['sortBy'])
+					}
+				>
+					<SelectTrigger className='w-full'>
+						<SelectValue placeholder='Gender' />
+					</SelectTrigger>
+					<SelectContent>
+						{sortingOptions.map((opt, i) => (
+							<SelectItem key={i} value={opt}>
+								{opt === 'asc' ? 'Ascending' : 'Decending'}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div> */}
 		</div>
 	);
 }

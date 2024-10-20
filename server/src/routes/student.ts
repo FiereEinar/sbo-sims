@@ -21,7 +21,7 @@ router.get('/', get_all_students);
 
 router.get('/courses', get_available_course);
 
-router.get('/load-students', load_all_students);
+// router.get('/load-students', load_all_students);
 
 router.get('/:studentID', get_student);
 

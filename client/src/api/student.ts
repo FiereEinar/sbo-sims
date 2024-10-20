@@ -10,8 +10,8 @@ import { StudentFormValues } from '@/components/forms/AddStudentForm';
 
 export const fetchStudents = async (
 	filters: StudentFilterValues,
-	page: number,
-	pageSize: number
+	page: number = 1,
+	pageSize: number = 50
 ): Promise<APIPaginatedResponse<StudentWithTransactions[]> | undefined> => {
 	try {
 		console.log(filters);
@@ -20,10 +20,14 @@ export const fetchStudents = async (
 		if (filters.course) url = url + `&course=${filters.course}`;
 		if (filters.year) url = url + `&year=${filters.year}`;
 		if (filters.gender) url = url + `&gender=${filters.gender}`;
+		if (filters.sortBy) url = url + `&sortBy=${filters.sortBy}`;
 
+		console.log('url: ', url);
 		const { data } = await axiosInstance.get<
 			APIPaginatedResponse<StudentWithTransactions[]>
 		>(url);
+
+		console.log(data);
 
 		return data;
 	} catch (err: any) {

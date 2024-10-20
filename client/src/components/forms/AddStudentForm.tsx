@@ -14,7 +14,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { studentSchema } from '@/lib/validations/studentSchema';
 import {
 	fetchStudentByID,
-	fetchStudents,
 	submitStudentForm,
 	submitUpdateStudentForm,
 } from '@/api/student';
@@ -42,7 +41,6 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 
 	const { refetch } = useQuery({
 		queryKey: ['students'],
-		queryFn: fetchStudents,
 	});
 
 	const { data: studentData, refetch: sRefetch } = useQuery({

@@ -16,6 +16,8 @@ interface InputFieldProps<T extends FieldValues> {
 	type?: React.HTMLInputTypeAttribute | undefined;
 	placeholder?: string;
 	id: string;
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	autoComplete?: boolean;
 }
 
 export default function InputField<T extends FieldValues>({
@@ -26,6 +28,8 @@ export default function InputField<T extends FieldValues>({
 	id,
 	type,
 	errors,
+	onChange,
+	autoComplete = true,
 }: InputFieldProps<T>) {
 	return (
 		<div className='space-y-1 text-muted-foreground'>
@@ -33,6 +37,8 @@ export default function InputField<T extends FieldValues>({
 			<Input
 				{...registerFn(name)}
 				type={type}
+				autoComplete={autoComplete ? 'on' : 'off'}
+				onChange={onChange}
 				id={id}
 				placeholder={placeholder}
 			/>

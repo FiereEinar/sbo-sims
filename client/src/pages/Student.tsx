@@ -26,6 +26,7 @@ export default function Student() {
 	const [search, setSearch] = useState<StudentFilterValues['search']>();
 	const [course, setCourse] = useState<StudentFilterValues['course']>();
 	const [gender, setGender] = useState<StudentFilterValues['gender']>();
+	const [sortBy, setSortBy] = useState<StudentFilterValues['sortBy']>('asc');
 	const [year, setYear] = useState<StudentFilterValues['year']>();
 
 	const {
@@ -33,9 +34,12 @@ export default function Student() {
 		isLoading: studentsLoading,
 		error: studentsError,
 	} = useQuery({
-		queryKey: ['students', { search, course, gender, year, page, pageSize }],
+		queryKey: [
+			'students',
+			{ search, course, gender, year, page, pageSize, sortBy },
+		],
 		queryFn: () =>
-			fetchStudents({ search, gender, year, course }, page, pageSize),
+			fetchStudents({ search, gender, year, course, sortBy }, page, pageSize),
 	});
 
 	const {
@@ -49,6 +53,7 @@ export default function Student() {
 
 	const onFilterChange = (filters: StudentFilterValues) => {
 		setSearch(filters.search);
+		setSortBy(filters.sortBy);
 		setCourse(
 			filters.course === defaultFilterValue ? undefined : filters.course
 		);
@@ -58,12 +63,13 @@ export default function Student() {
 		setYear(filters.year === defaultFilterValue ? undefined : filters.year);
 	};
 
+	useEffect(() => {
+		setPage(1);
+	}, [search]);
+
 	if (studentsError || cError) {
 		return <p>Error</p>;
 	}
-	useEffect(() => {
-		console.log('Page: ', page);
-	}, [page]);
 
 	console.log(studentsFetchResult);
 
@@ -78,7 +84,10 @@ export default function Student() {
 				courses={[defaultFilterValue].concat(courses ?? [])}
 				onChange={onFilterChange}
 			/>
-			<StudentsTable students={studentsFetchResult?.data} />
+			<StudentsTable
+				isLoading={studentsLoading}
+				students={studentsFetchResult?.data}
+			/>
 			{studentsLoading || (cLoading && <p>Loading...</p>)}
 
 			{studentsFetchResult && (

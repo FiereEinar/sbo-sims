@@ -27,6 +27,9 @@ import Plus from '../icons/plus';
 import { Transaction } from '@/types/transaction';
 import { useNavigate } from 'react-router-dom';
 import ErrorText from '../ui/error-text';
+import { fetchStudents } from '@/api/student';
+import _ from 'lodash';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type AddTransactionFormProps = {
 	categories: Category[];
@@ -47,6 +50,8 @@ export default function AddTransactionForm({
 
 	const [date, setDate] = useState<Date>();
 	const [category, setCategory] = useState<string>();
+	const [studentIdSearch, setStudentIdSearch] = useState('');
+	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 
 	const { refetch } = useQuery({
@@ -57,6 +62,11 @@ export default function AddTransactionForm({
 	const { data: transactionData, refetch: tRefetch } = useQuery({
 		queryKey: [`transaction_${transaction?._id}`],
 		queryFn: () => fetchTransactionByID(transaction?._id),
+	});
+
+	const { data: studentsFetchResult } = useQuery({
+		queryKey: ['students', { debouncedStudentIdSearch }],
+		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
 	});
 
 	const {
@@ -161,13 +171,40 @@ export default function AddTransactionForm({
 						id='amount'
 					/>
 
-					<InputField<TransactionFormValues>
-						name='studentID'
-						registerFn={register}
-						errors={errors}
-						label='Student ID:'
-						id='studentID'
-					/>
+					<div>
+						<InputField<TransactionFormValues>
+							name='studentID'
+							registerFn={register}
+							errors={errors}
+							label='Student ID:'
+							autoComplete={false}
+							id='studentID'
+							onChange={(e) => {
+								setValue('studentID', e.target.value);
+								setStudentIdSearch(e.target.value);
+							}}
+						/>
+						<div className='relative w-full'>
+							{studentsFetchResult && studentIdSearch && (
+								<div className='absolute w-full p-1 z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2'>
+									{studentsFetchResult.data.map((student) => (
+										<button
+											type='button'
+											onClick={() => {
+												setValue('studentID', student.studentID);
+												setStudentIdSearch('');
+											}}
+											key={student._id}
+											className='transition-all cursor-pointer hover:bg-card flex w-full select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
+										>
+											{student.studentID} -{' '}
+											{_.startCase(`${student.firstname} ${student.lastname}`)}
+										</button>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
 
 					<DatePicker
 						date={date}

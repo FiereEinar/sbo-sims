@@ -20,4 +20,5 @@ export type StudentFilterValues = {
 	gender?: 'All' | 'M' | 'F';
 	course?: string;
 	year?: 'All' | '1' | '2' | '3' | '4';
+	sortBy?: 'asc' | 'dec';
 };

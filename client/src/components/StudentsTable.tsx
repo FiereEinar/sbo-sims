@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import _ from 'lodash';
 
 interface StudentsTableProps {
-	students: StudentWithTransactions[];
+	students: StudentWithTransactions[] | undefined;
 }
 
 export default function StudentsTable({ students }: StudentsTableProps) {
@@ -47,29 +47,32 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 			</TableHeader>
 
 			<TableBody>
-				{students.map((student) => (
-					<TableRow
-						className='cursor-pointer'
-						onClick={() => navigate(`/student/${student.studentID}`)}
-						key={student._id}
-					>
-						<TableCell className=''>{student.studentID}</TableCell>
-						<TableCell className=''>
-							{_.startCase(
-								`${student.firstname} ${student.middlename ?? ''} ${
-									student.lastname
-								}`.toLowerCase()
-							)}
-						</TableCell>
-						<TableCell className=''>{student.course}</TableCell>
-						<TableCell className=''>{student.year}</TableCell>
-						<TableCell className=''>{student.gender}</TableCell>
-						<TableCell className=''>{student.totalTransactions ?? 0}</TableCell>
-						<TableCell className='text-right'>
-							{student.totalTransactionsAmount ?? 0}
-						</TableCell>
-					</TableRow>
-				))}
+				{students &&
+					students.map((student) => (
+						<TableRow
+							className='cursor-pointer'
+							onClick={() => navigate(`/student/${student.studentID}`)}
+							key={student._id}
+						>
+							<TableCell className=''>{student.studentID}</TableCell>
+							<TableCell className=''>
+								{_.startCase(
+									`${student.firstname} ${student.middlename ?? ''} ${
+										student.lastname
+									}`.toLowerCase()
+								)}
+							</TableCell>
+							<TableCell className=''>{student.course}</TableCell>
+							<TableCell className=''>{student.year}</TableCell>
+							<TableCell className=''>{student.gender}</TableCell>
+							<TableCell className=''>
+								{student.totalTransactions ?? 0}
+							</TableCell>
+							<TableCell className='text-right'>
+								{student.totalTransactionsAmount ?? 0}
+							</TableCell>
+						</TableRow>
+					))}
 			</TableBody>
 
 			<TableFooter>

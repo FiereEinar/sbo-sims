@@ -14,3 +14,10 @@ export type Student = MongoEntity & {
 
 // TODO: rename this shit
 export type StudentWithTransactions = Student & TransactionsData;
+
+export type StudentFilterValues = {
+	search?: string;
+	gender?: 'All' | 'M' | 'F';
+	course?: string;
+	year?: 'All' | '1' | '2' | '3' | '4';
+};

@@ -1,22 +1,31 @@
-import { Student, StudentWithTransactions } from '@/types/student';
+import {
+	Student,
+	StudentFilterValues,
+	StudentWithTransactions,
+} from '@/types/student';
 import axiosInstance from './axiosInstance';
 import { Transaction } from '@/types/transaction';
 import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
 import { StudentFormValues } from '@/components/forms/AddStudentForm';
 
-export const fetchStudents = async (): Promise<
-	StudentWithTransactions[] | undefined
-> => {
+export const fetchStudents = async (
+	filters: StudentFilterValues,
+	page: number,
+	pageSize: number
+): Promise<APIPaginatedResponse<StudentWithTransactions[]> | undefined> => {
 	try {
+		console.log(filters);
+		let url = `/student?page=${page}&pageSize=${pageSize}`;
+		if (filters.search) url = url + `&search=${filters.search}`;
+		if (filters.course) url = url + `&course=${filters.course}`;
+		if (filters.year) url = url + `&year=${filters.year}`;
+		if (filters.gender) url = url + `&gender=${filters.gender}`;
+
 		const { data } = await axiosInstance.get<
 			APIPaginatedResponse<StudentWithTransactions[]>
-		>('/student?page=1&pageSize=50');
+		>(url);
 
-		console.log(data);
-		console.log(typeof data.prev);
-		console.log(typeof data.next);
-
-		return data.data;
+		return data;
 	} catch (err: any) {
 		console.error('Failed to fetch students', err);
 	}
@@ -85,5 +94,17 @@ export const requestDeleteStudent = async (
 		return data;
 	} catch (err: any) {
 		console.error('Failed to send request delete student', err);
+	}
+};
+
+export const fetchAvailableCourses = async (): Promise<
+	string[] | undefined
+> => {
+	try {
+		const { data } = await axiosInstance.get(`/student/courses`);
+
+		return data.data;
+	} catch (err: any) {
+		console.error('Failed to fetch student courses', err);
 	}
 };

@@ -1,28 +1,71 @@
-import { fetchStudents } from '@/api/student';
+import { fetchAvailableCourses, fetchStudents } from '@/api/student';
 import { AddStudentForm } from '@/components/forms/AddStudentForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
+import StudentFilter from '@/components/StudentFilter';
 import StudentsTable from '@/components/StudentsTable';
 import Header from '@/components/ui/header';
+import { StudentFilterValues } from '@/types/student';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export default function Student() {
+	const [page, setPage] = useState(1);
+	const pageSize = 50;
+
+	const defaultFilterValue = 'All';
+	const [search, setSearch] = useState<StudentFilterValues['search']>();
+	const [course, setCourse] = useState<StudentFilterValues['course']>();
+	const [gender, setGender] = useState<StudentFilterValues['gender']>();
+	const [year, setYear] = useState<StudentFilterValues['year']>();
+
 	const {
 		data: studentsFetchResult,
 		isLoading: studentsLoading,
 		error: studentsError,
 	} = useQuery({
-		queryKey: ['students'],
-		queryFn: fetchStudents,
+		queryKey: ['students', { search, course, gender, year, page, pageSize }],
+		queryFn: () =>
+			fetchStudents({ search, gender, year, course }, page, pageSize),
 	});
 
-	if (studentsLoading) {
-		return <p>Loading...</p>;
-	}
+	const {
+		data: courses,
+		isLoading: cLoading,
+		error: cError,
+	} = useQuery({
+		queryKey: ['students_courses'],
+		queryFn: fetchAvailableCourses,
+	});
 
-	if (studentsError || studentsFetchResult === undefined) {
+	const onFilterChange = (filters: StudentFilterValues) => {
+		setSearch(filters.search);
+		setCourse(
+			filters.course === defaultFilterValue ? undefined : filters.course
+		);
+		setGender(
+			filters.gender === defaultFilterValue ? undefined : filters.gender
+		);
+		setYear(filters.year === defaultFilterValue ? undefined : filters.year);
+	};
+
+	if (studentsError || cError) {
 		return <p>Error</p>;
 	}
+	useEffect(() => {
+		console.log('Page: ', page);
+	}, [page]);
+
+	console.log(studentsFetchResult);
 
 	return (
 		<SidebarPageLayout>
@@ -31,7 +74,56 @@ export default function Student() {
 				<Header>Student List</Header>
 				<AddStudentForm />
 			</StickyHeader>
-			<StudentsTable students={studentsFetchResult} />
+			<StudentFilter
+				courses={[defaultFilterValue].concat(courses ?? [])}
+				onChange={onFilterChange}
+			/>
+			<StudentsTable students={studentsFetchResult?.data} />
+			{studentsLoading || (cLoading && <p>Loading...</p>)}
+
+			{studentsFetchResult && (
+				<Pagination className='pb-5'>
+					<PaginationContent>
+						<PaginationItem
+							onClick={() => {
+								if (studentsFetchResult.prev === -1) return;
+								setPage(page - 1);
+							}}
+						>
+							<PaginationPrevious />
+						</PaginationItem>
+
+						<PaginationItem>
+							{studentsFetchResult.prev === -1 ? (
+								<PaginationEllipsis />
+							) : (
+								<PaginationLink>{studentsFetchResult.prev}</PaginationLink>
+							)}
+						</PaginationItem>
+
+						<PaginationItem>
+							<PaginationLink isActive>{page}</PaginationLink>
+						</PaginationItem>
+
+						<PaginationItem>
+							{studentsFetchResult.next === -1 ? (
+								<PaginationEllipsis />
+							) : (
+								<PaginationLink>{studentsFetchResult.next}</PaginationLink>
+							)}
+						</PaginationItem>
+
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => {
+									if (studentsFetchResult.next === -1) return;
+									setPage(page + 1);
+								}}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
+			)}
 		</SidebarPageLayout>
 	);
 }

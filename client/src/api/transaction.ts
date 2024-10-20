@@ -18,7 +18,7 @@ export const fetchTransactions = async (): Promise<
 
 export const submitTransactionForm = async (
 	formData: TransactionFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<Transaction> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/transaction', formData);
 
@@ -31,7 +31,7 @@ export const submitTransactionForm = async (
 export const submitUpdateTransactionForm = async (
 	transactionID: string,
 	formData: TransactionFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<Transaction> | undefined> => {
 	try {
 		const { data } = await axiosInstance.put(
 			`/transaction/${transactionID}`,
@@ -59,7 +59,7 @@ export const fetchTransactionByID = async (
 export const submitUpdateTransactionAmountForm = async (
 	transactionID: string,
 	formData: UpdateTransactionAmountFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<Transaction> | undefined> => {
 	try {
 		const { data } = await axiosInstance.put(
 			`/transaction/${transactionID}/amount`,
@@ -77,7 +77,7 @@ export const submitUpdateTransactionAmountForm = async (
 
 export const requestDeleteTransaction = async (
 	transactionID: string
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<Transaction> | undefined> => {
 	try {
 		const { data } = await axiosInstance.delete(
 			`/transaction/${transactionID}`

@@ -35,7 +35,7 @@ export const fetchCategoryAndTransactions = async (
 
 export const submitCategoryForm = async (
 	formData: CategoryFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<Category> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post(`/category`, formData);
 

@@ -1,6 +1,11 @@
-export type APIResponse = {
+export type APIResponse<T> = {
 	success: boolean;
-	data: any;
+	data: T;
 	message: string;
 	error?: string;
+};
+
+export type APIPaginatedResponse<T> = APIResponse<T> & {
+	next: number;
+	prev: number;
 };

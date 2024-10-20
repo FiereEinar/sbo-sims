@@ -3,8 +3,10 @@ import {
 	create_student,
 	delete_student,
 	get_all_students,
+	get_available_course,
 	get_student,
 	get_student_transaction,
+	load_all_students,
 	update_student,
 } from '../controllers/studentController';
 import {
@@ -16,6 +18,10 @@ import { auth } from '../middlewares/auth';
 const router = express.Router();
 
 router.get('/', get_all_students);
+
+router.get('/courses', get_available_course);
+
+router.get('/load-students', load_all_students);
 
 router.get('/:studentID', get_student);
 

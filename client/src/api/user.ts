@@ -2,10 +2,11 @@ import { SignupFormValues } from '@/components/forms/SignupForm';
 import { APIResponse } from '@/types/api-response';
 import axiosInstance from './axiosInstance';
 import { LoginFormValues } from '@/components/forms/LoginForm';
+import { User } from '@/types/user';
 
 export const submitSignupForm = async (
 	formData: SignupFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<User> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/auth/signup', formData);
 
@@ -17,7 +18,7 @@ export const submitSignupForm = async (
 
 export const submitLoginForm = async (
 	formData: LoginFormValues
-): Promise<APIResponse | undefined> => {
+): Promise<APIResponse<User> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/auth/login', formData);
 

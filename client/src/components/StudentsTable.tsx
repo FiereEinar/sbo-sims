@@ -34,10 +34,11 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[200px]'>Student ID</TableHead>
+					<TableHead className='w-[100px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Full name</TableHead>
 					<TableHead className='w-[200px]'>Course</TableHead>
 					<TableHead className='w-[100px]'>Year</TableHead>
+					<TableHead className='w-[100px]'>Gender</TableHead>
 					<TableHead className='w-[100px]'>Transactions made</TableHead>
 					<TableHead className='w-[200px] text-right '>
 						Transactions amount
@@ -62,7 +63,8 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 						</TableCell>
 						<TableCell className=''>{student.course}</TableCell>
 						<TableCell className=''>{student.year}</TableCell>
-						<TableCell className=''>{student.totalTransactions}</TableCell>
+						<TableCell className=''>{student.gender}</TableCell>
+						<TableCell className=''>{student.totalTransactions ?? 0}</TableCell>
 						<TableCell className='text-right'>
 							{student.totalTransactionsAmount ?? 0}
 						</TableCell>
@@ -72,7 +74,7 @@ export default function StudentsTable({ students }: StudentsTableProps) {
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={5}>Total</TableCell>
+					<TableCell colSpan={6}>Total</TableCell>
 					<TableCell className='text-right'>{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

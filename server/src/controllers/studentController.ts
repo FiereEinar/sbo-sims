@@ -4,38 +4,65 @@ import Transaction from '../models/transaction';
 import Category from '../models/category';
 import { createStudentBody } from '../types/student';
 import { validationResult } from 'express-validator';
-import { UpdateQuery } from 'mongoose';
-import CustomResponse from '../types/response';
+import { FilterQuery, UpdateQuery } from 'mongoose';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
+import { loadStudents } from '../students/load-students';
+import student from '../models/student';
 
 /**
  * GET - fetch all students
  */
 export const get_all_students = asyncHandler(async (req, res) => {
-	// const students = await Student.find();
-	const students = await Student.aggregate([
-		{
-			$lookup: {
-				from: 'transactions', // collection name of the Transaction model
-				localField: '_id',
-				foreignField: 'owner', // transaction field that links to the student
-				as: 'transactions',
-			},
-		},
-		{
-			$addFields: {
-				totalTransactions: { $size: '$transactions' }, // count the number of transactions
-				totalTransactionsAmount: { $sum: '$transactions.amount' },
-			},
-		},
-		{
-			$project: {
-				transactions: 0, // exclude the transactions array from the result
-			},
-		},
-	]);
+	const { page, pageSize, search, course, year, gender } = req.query;
 
-	res.json(new CustomResponse(true, students, 'All students'));
+	const pageNum = page ? parseInt(page as string) : 1;
+	const pageSizeNum = pageSize ? parseInt(pageSize as string) : 100;
+
+	const filters: FilterQuery<IStudent>[] = [];
+
+	if (search) {
+		const searchRegex = new RegExp(search as string, 'i');
+		filters.push({
+			$or: [
+				{ studentID: { $regex: searchRegex } },
+				{ firstname: { $regex: searchRegex } },
+				{ lastname: { $regex: searchRegex } },
+				{ middlename: { $regex: searchRegex } },
+			],
+		});
+	}
+	if (course) filters.push({ course: course });
+	if (year) filters.push({ year: parseInt(year as string) });
+	if (gender) filters.push({ gender: gender });
+
+	const skipAmount = (pageNum - 1 > 0 ? pageNum - 1 : 0) * pageSizeNum;
+
+	const students = await Student.find({
+		$and: filters,
+	})
+		.skip(skipAmount)
+		.limit(pageSizeNum)
+		.exec();
+
+	const next =
+		(await Student.countDocuments()) > skipAmount + pageSizeNum
+			? pageNum + 1
+			: -1;
+	const prev = pageNum > 1 ? pageNum - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(true, students, 'All students', next, prev)
+	);
+});
+
+/**
+ * GET - get all the distinc courses of students
+ */
+export const get_available_course = asyncHandler(async (req, res) => {
+	const courses = await Student.find().distinct('course');
+
+	res.json(new CustomResponse(true, courses, 'Students courses'));
 });
 
 /**
@@ -240,4 +267,9 @@ export const delete_student = asyncHandler(async (req, res) => {
 	const result = await Student.findByIdAndDelete(student._id);
 
 	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
+});
+
+export const load_all_students = asyncHandler(async (req, res) => {
+	// await loadStudents();
+	res.json({ message: 'done' });
 });

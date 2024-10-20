@@ -37,9 +37,9 @@ export default function TransactionsTable({
 			<TableHeader>
 				<TableRow>
 					<TableHead className='w-[200px]'>Student ID</TableHead>
-					<TableHead className='w-[200px]'>Date</TableHead>
+					<TableHead className='w-[250px]'>Date</TableHead>
 					<TableHead className='w-[200px]'>Category</TableHead>
-					<TableHead className='w-[200px] text-right'>Status</TableHead>
+					<TableHead className='w-[150px]'>Status</TableHead>
 					<TableHead className='w-[200px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
@@ -57,7 +57,7 @@ export default function TransactionsTable({
 								<DateText date={new Date(transaction.date)} />
 							</TableCell>
 							<TableCell className=''>{transaction.category.name}</TableCell>
-							<TableCell className='text-right'>
+							<TableCell className=''>
 								{transaction.amount >= transaction.category.fee ? (
 									<p className='text-green-500'>Paid</p>
 								) : (

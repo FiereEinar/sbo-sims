@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export default function Student() {
 	const {
-		data: students,
+		data: studentsFetchResult,
 		isLoading: studentsLoading,
 		error: studentsError,
 	} = useQuery({
@@ -20,7 +20,7 @@ export default function Student() {
 		return <p>Loading...</p>;
 	}
 
-	if (studentsError || students === undefined) {
+	if (studentsError || studentsFetchResult === undefined) {
 		return <p>Error</p>;
 	}
 
@@ -31,7 +31,7 @@ export default function Student() {
 				<Header>Student List</Header>
 				<AddStudentForm />
 			</StickyHeader>
-			<StudentsTable students={students} />
+			<StudentsTable students={studentsFetchResult} />
 		</SidebarPageLayout>
 	);
 }

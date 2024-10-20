@@ -27,4 +27,10 @@ const StudentSchema = new Schema<IStudent>({
 	course: { type: String, required: true },
 });
 
+StudentSchema.index({ '$**': 'text' });
+
+StudentSchema.virtual('fullname').get(function () {
+	return `${this.firstname} ${this.middlename} ${this.lastname}`;
+});
+
 export default mongoose.model('Student', StudentSchema);

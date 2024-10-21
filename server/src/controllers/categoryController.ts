@@ -89,6 +89,10 @@ export const get_category = asyncHandler(async (req, res) => {
 		.populate({
 			model: Category,
 			path: 'category',
+			populate: {
+				model: Organization,
+				path: 'organization',
+			},
 		})
 		.populate({
 			model: Student,
@@ -131,7 +135,14 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
 		category: category._id,
 	})
 		.populate({ model: Student, path: 'owner' })
-		.populate({ model: Category, path: 'category' })
+		.populate({
+			model: Category,
+			path: 'category',
+			populate: {
+				model: Organization,
+				path: 'organization',
+			},
+		})
 		.exec();
 
 	res.json(

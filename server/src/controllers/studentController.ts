@@ -15,11 +15,17 @@ import { loadStudents } from '../students/load-students';
 export const get_all_students = asyncHandler(async (req, res) => {
 	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
 
-	const pageNum = page ? parseInt(page as string) : 1;
-	const pageSizeNum = pageSize ? parseInt(pageSize as string) : 100;
+	const defaultPage = 1;
+	const defaultPageSize = 100;
+
+	const pageNum = page ? parseInt(page as string) : defaultPage;
+	const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
 
 	const filters: FilterQuery<IStudent>[] = [];
 
+	if (course) filters.push({ course: course });
+	if (year) filters.push({ year: parseInt(year as string) });
+	if (gender) filters.push({ gender: gender });
 	if (search) {
 		const searchRegex = new RegExp(search as string, 'i');
 		filters.push({
@@ -31,11 +37,8 @@ export const get_all_students = asyncHandler(async (req, res) => {
 			],
 		});
 	}
-	if (course) filters.push({ course: course });
-	if (year) filters.push({ year: parseInt(year as string) });
-	if (gender) filters.push({ gender: gender });
 
-	const skipAmount = (pageNum - 1 > 0 ? pageNum - 1 : 0) * pageSizeNum;
+	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
 	const students = await Student.find({ $and: filters })
 		.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
@@ -44,8 +47,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 		.exec();
 
 	const next =
-		(await Student.countDocuments({ $and: filters })) >
-			skipAmount + pageSizeNum && !search?.length
+		(await Student.countDocuments({ $and: filters })) > skipAmount + pageSizeNum
 			? pageNum + 1
 			: -1;
 	const prev = pageNum > 1 ? pageNum - 1 : -1;

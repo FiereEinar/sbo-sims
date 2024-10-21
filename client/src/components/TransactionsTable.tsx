@@ -36,11 +36,12 @@ export default function TransactionsTable({
 			{/* <TableCaption>A list of your recent invoices.</TableCaption> */}
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[200px]'>Student ID</TableHead>
+					<TableHead className='w-[100px]'>Student ID</TableHead>
+					<TableHead className='w-[100px]'>Course</TableHead>
 					<TableHead className='w-[250px]'>Date</TableHead>
-					<TableHead className='w-[200px]'>Category</TableHead>
-					<TableHead className='w-[150px]'>Status</TableHead>
-					<TableHead className='w-[200px] text-right'>Amount</TableHead>
+					<TableHead className='w-[400px]'>Category</TableHead>
+					<TableHead className='w-[50px]'>Status</TableHead>
+					<TableHead className='w-[100px] text-right'>Amount</TableHead>
 				</TableRow>
 			</TableHeader>
 
@@ -53,10 +54,14 @@ export default function TransactionsTable({
 							key={transaction._id}
 						>
 							<TableCell className=''>{transaction.owner.studentID}</TableCell>
+							<TableCell className=''>{transaction.owner.course}</TableCell>
 							<TableCell className=''>
 								<DateText date={new Date(transaction.date)} />
 							</TableCell>
-							<TableCell className=''>{transaction.category.name}</TableCell>
+							<TableCell className=''>
+								{transaction.category.organization.name} -{' '}
+								{transaction.category.name}
+							</TableCell>
 							<TableCell className=''>
 								{transaction.amount >= transaction.category.fee ? (
 									<p className='text-green-500'>Paid</p>
@@ -74,7 +79,7 @@ export default function TransactionsTable({
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={4}>Total</TableCell>
+					<TableCell colSpan={5}>Total</TableCell>
 					<TableCell className='text-right'>P{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

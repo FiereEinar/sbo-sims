@@ -25,6 +25,8 @@ export default function CategoryInfo() {
 		return <p>Error</p>;
 	}
 
+	console.log(data);
+
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />

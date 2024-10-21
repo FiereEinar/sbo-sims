@@ -21,6 +21,10 @@ export const get_all_transactions = asyncHandler(async (req, res) => {
 		.populate({
 			model: Category,
 			path: 'category',
+			populate: {
+				model: Organization,
+				path: 'organization',
+			},
 		})
 		.populate({
 			model: Student,

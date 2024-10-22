@@ -56,7 +56,6 @@ export default function AddTransactionForm({
 
 	const { refetch } = useQuery({
 		queryKey: ['transactions'],
-		queryFn: fetchTransactions,
 	});
 
 	const { data: transactionData, refetch: tRefetch } = useQuery({
@@ -99,14 +98,14 @@ export default function AddTransactionForm({
 				return;
 			}
 
-			if (date) {
-				const now = new Date();
-				data.date = date;
-				data.date.setHours(now.getHours());
-				data.date.setMinutes(now.getMinutes());
-				data.date.setSeconds(now.getSeconds());
-			}
-
+			data.date = date?.toISOString();
+			// if (date) {
+			// 	const now = new Date();
+			// 	data.date.setHours(now.getHours());
+			// 	data.date.setMinutes(now.getMinutes());
+			// 	data.date.setSeconds(now.getSeconds());
+			// }
+			console.log('Form date: ', data.date);
 			data.categoryID = category;
 
 			let result;
@@ -130,7 +129,8 @@ export default function AddTransactionForm({
 			}
 
 			mode === 'add' ? refetch() : tRefetch();
-			navigate(`/transaction/${result.data._id ?? ''}`);
+			// navigate(`/transaction/${result.data._id ?? ''}`);
+			navigate(`/transaction`);
 			reset();
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit transaction form' });
@@ -210,6 +210,7 @@ export default function AddTransactionForm({
 						date={date}
 						setDate={setDate}
 						error={errors.date?.message?.toString()}
+						note='(Defaults to now when empty)'
 					/>
 
 					<CategoryPicker

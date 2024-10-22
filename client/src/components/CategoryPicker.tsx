@@ -33,8 +33,8 @@ export default function CategoryPicker({
 					<SelectValue placeholder='Select a category' />
 				</SelectTrigger>
 				<SelectContent>
-					{categories.map((category) => (
-						<SelectItem key={category._id} value={category._id}>
+					{categories.map((category, i) => (
+						<SelectItem key={category._id ?? i} value={category._id}>
 							{category.organization.name} - {category.name}
 						</SelectItem>
 					))}

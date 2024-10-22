@@ -15,6 +15,7 @@ type StudentFilterProps = {
 	onChange: (filters: StudentFilterValues) => void;
 	courses: string[];
 };
+
 export default function StudentFilter({
 	onChange,
 	courses,

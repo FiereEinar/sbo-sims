@@ -10,18 +10,22 @@ type DatePickerProps = {
 	date: Date | undefined;
 	setDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
 	error: string | undefined;
+	note?: string;
 };
 
-export default function DatePicker({ date, setDate, error }: DatePickerProps) {
+export default function DatePicker({
+	date,
+	setDate,
+	error,
+	note,
+}: DatePickerProps) {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<div className='text-muted-foreground space-y-1'>
+				<div className='text-muted-foreground space-y-2'>
 					<Label className='flex gap-1 items-center'>
 						Date:
-						<p className='text-xs text-muted-foreground'>
-							(Leave empty to default to now)
-						</p>
+						{note && <p className='text-xs text-muted-foreground'>{note}</p>}
 					</Label>
 					<Button
 						type='button'
@@ -41,7 +45,11 @@ export default function DatePicker({ date, setDate, error }: DatePickerProps) {
 				<Calendar
 					mode='single'
 					selected={date}
-					onSelect={setDate}
+					onSelect={(date) => {
+						console.log(date);
+						console.log(date?.toISOString());
+						setDate(date);
+					}}
 					initialFocus
 				/>
 			</PopoverContent>

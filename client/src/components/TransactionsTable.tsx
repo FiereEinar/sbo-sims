@@ -13,10 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import DateText from './ui/date-text';
 
 type TransactionsTableProps = {
-	transactions: Transaction[];
+	transactions?: Transaction[];
+	isLoading: boolean;
 };
+
 export default function TransactionsTable({
 	transactions,
+	isLoading,
 }: TransactionsTableProps) {
 	const navigate = useNavigate();
 	const [totalAmount, setTotalAmount] = useState(0);
@@ -46,35 +49,48 @@ export default function TransactionsTable({
 			</TableHeader>
 
 			<TableBody>
-				{transactions.map((transaction) => {
-					return (
-						<TableRow
-							onClick={() => navigate(`/transaction/${transaction._id}`)}
-							className='cursor-pointer'
-							key={transaction._id}
-						>
-							<TableCell className=''>{transaction.owner.studentID}</TableCell>
-							<TableCell className=''>{transaction.owner.course}</TableCell>
-							<TableCell className=''>
-								<DateText date={new Date(transaction.date)} />
-							</TableCell>
-							<TableCell className=''>
-								{transaction.category.organization.name} -{' '}
-								{transaction.category.name}
-							</TableCell>
-							<TableCell className=''>
-								{transaction.amount >= transaction.category.fee ? (
-									<p className='text-green-500'>Paid</p>
-								) : (
-									<p className='text-yellow-500'>Partial</p>
-								)}
-							</TableCell>
-							<TableCell className='text-right'>
-								P{transaction.amount}
-							</TableCell>
-						</TableRow>
-					);
-				})}
+				{isLoading && (
+					<TableRow>
+						<TableCell colSpan={7}>Loading...</TableCell>
+					</TableRow>
+				)}
+				{!transactions?.length && !isLoading && (
+					<TableRow>
+						<TableCell colSpan={7}>No transactions</TableCell>
+					</TableRow>
+				)}
+				{transactions &&
+					transactions.map((transaction) => {
+						return (
+							<TableRow
+								onClick={() => navigate(`/transaction/${transaction._id}`)}
+								className='cursor-pointer'
+								key={transaction._id}
+							>
+								<TableCell className=''>
+									{transaction.owner.studentID}
+								</TableCell>
+								<TableCell className=''>{transaction.owner.course}</TableCell>
+								<TableCell className=''>
+									<DateText date={new Date(transaction.date)} />
+								</TableCell>
+								<TableCell className=''>
+									{transaction.category.organization.name} -{' '}
+									{transaction.category.name}
+								</TableCell>
+								<TableCell className=''>
+									{transaction.amount >= transaction.category.fee ? (
+										<p className='text-green-500'>Paid</p>
+									) : (
+										<p className='text-yellow-500'>Partial</p>
+									)}
+								</TableCell>
+								<TableCell className='text-right'>
+									P{transaction.amount}
+								</TableCell>
+							</TableRow>
+						);
+					})}
 			</TableBody>
 
 			<TableFooter>

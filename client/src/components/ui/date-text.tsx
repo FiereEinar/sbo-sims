@@ -7,9 +7,7 @@ export default function DateText({ date, prefix }: DateTextProps) {
 	return (
 		<p>
 			{prefix}
-			{date.toLocaleDateString()}
-			{' - '}
-			{date.toLocaleTimeString()}
+			{date.toDateString()}
 		</p>
 	);
 }

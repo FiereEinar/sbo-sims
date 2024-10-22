@@ -11,9 +11,9 @@ export const createTransactionValidation = [
 
 	body('date')
 		.optional()
-		.isISO8601()
-		.toDate()
-		.withMessage('Date must be a valid date'),
+		// .isISO8601()
+		.toDate(),
+	// .withMessage('Date must be a valid date'),
 
 	body('description').trim().escape().optional(),
 

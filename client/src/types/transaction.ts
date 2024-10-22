@@ -16,3 +16,19 @@ export type TransactionsData = {
 	totalTransactions: number;
 	totalTransactionsAmount: number;
 };
+
+export type TransactionPeriodFilter =
+	| 'all'
+	| 'today'
+	| 'weekly'
+	| 'monthly'
+	| 'yearly';
+
+export type TransactionsFilterValues = {
+	// search?: string;
+	course?: string;
+	period?: TransactionPeriodFilter;
+	category?: string;
+	status?: boolean;
+	date?: Date;
+};

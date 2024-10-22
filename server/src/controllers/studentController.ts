@@ -20,6 +20,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 
 	const pageNum = page ? parseInt(page as string) : defaultPage;
 	const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
+	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
 	const filters: FilterQuery<IStudent>[] = [];
 
@@ -37,8 +38,6 @@ export const get_all_students = asyncHandler(async (req, res) => {
 			],
 		});
 	}
-
-	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
 	const students = await Student.find({ $and: filters })
 		.sort({ firstname: sortBy === 'dec' ? -1 : 1 })

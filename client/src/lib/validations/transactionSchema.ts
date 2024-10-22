@@ -9,7 +9,7 @@ export const transactionSchema = z.object({
 		.refine((val) => parseInt(val, 10) > 0, {
 			message: 'Please enter a non-negative number',
 		}),
-	date: z.date().optional(),
+	date: z.string().optional(),
 	categoryID: z.string().optional(),
 	studentID: z.string().min(1, 'Enter student ID'),
 	description: z.string().optional(),

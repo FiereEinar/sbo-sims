@@ -71,8 +71,6 @@ export default function Student() {
 		return <p>Error</p>;
 	}
 
-	console.log(studentsFetchResult);
-
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />

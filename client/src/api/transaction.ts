@@ -1,16 +1,28 @@
-import { Transaction } from '@/types/transaction';
+import { Transaction, TransactionsFilterValues } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
-import { APIResponse } from '@/types/api-response';
+import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
 import { TransactionFormValues } from '@/components/forms/AddTransactionForm';
 import { UpdateTransactionAmountFormValues } from '@/components/forms/UpdateTransactionAmountForm';
 
-export const fetchTransactions = async (): Promise<
-	Transaction[] | undefined
-> => {
+export const fetchTransactions = async (
+	filters: TransactionsFilterValues,
+	page: number = 1,
+	pageSize: number = 50
+): Promise<APIPaginatedResponse<Transaction[]> | undefined> => {
 	try {
-		const { data } = await axiosInstance.get('/transaction');
+		let url = `/transaction?page=${page}&pageSize=${pageSize}`;
+		// if (filters.search) url = url + `&search=${filters.search}`;
+		if (filters.course) url += `&course=${filters.course}`;
+		if (filters.date) url += `&date=${filters.date.toISOString()}`;
+		if (filters.category) url += `&category=${filters.category}`;
+		if (filters.status !== undefined) url += `&status=${filters.status}`;
+		if (filters.period) url += `&period=${filters.period}`;
 
-		return data.data;
+		const { data } = await axiosInstance.get<
+			APIPaginatedResponse<Transaction[]>
+		>(url);
+
+		return data;
 	} catch (err: any) {
 		console.error('Failed to fetch transaction', err);
 	}

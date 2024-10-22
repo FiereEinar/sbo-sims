@@ -7,17 +7,78 @@ import {
 	updateTransactionAmountBody,
 } from '../types/transaction';
 import { validationResult } from 'express-validator';
-import mongoose, { UpdateQuery } from 'mongoose';
-import CustomResponse from '../types/response';
+import mongoose, { FilterQuery, UpdateQuery } from 'mongoose';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest } from '../types/request';
 import Organization from '../models/organization';
+import { subDays, subWeeks, subMonths, subYears } from 'date-fns';
 
 /**
  * GET - fetch all transactions made
  * TODO: implement paganation
+ *
+ * can't directly implement pagination and filtering at the same time
+ * I commented it for the mean time
+ *
+ * some values that are used in filtering needs to be populated first before they can used as filters
+ * so all datas needs to be fetched from db first, which defeats the purpose of pagination
  */
 export const get_all_transactions = asyncHandler(async (req, res) => {
-	const transactions = await Transaction.find()
+	const {
+		page,
+		pageSize,
+		search,
+		course,
+		date,
+		sortByDate,
+		category,
+		status,
+		period,
+	} = req.query;
+
+	// const defaultPage = 1;
+	// const defaultPageSize = 100;
+
+	const isPaid = JSON.parse((status as string) ?? 'false');
+	// const pageNum = page ? parseInt(page as string) : defaultPage;
+	// const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
+	// const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
+
+	const filters: FilterQuery<ITransaction>[] = [];
+
+	const currentDate = new Date();
+
+	if (period === 'today') {
+		filters.push({
+			date: {
+				$gte: subDays(currentDate, 1).toISOString(),
+			},
+		});
+	} else if (period === 'weekly') {
+		filters.push({
+			date: {
+				$gte: subWeeks(currentDate, 1).toISOString(),
+			},
+		});
+	} else if (period === 'monthly') {
+		filters.push({
+			date: {
+				$gte: subMonths(currentDate, 1).toISOString(),
+			},
+		});
+	} else if (period === 'yearly') {
+		filters.push({
+			date: {
+				$gte: subYears(currentDate, 1).toISOString(),
+			},
+		});
+	}
+
+	if (date) filters.push({ date: date });
+	if (category) filters.push({ category: category });
+	// is it possible to put the sort by period here? or do i have to put it after fetching all transactions?
+
+	const transactions = await Transaction.find({ $and: filters })
 		.populate({
 			model: Category,
 			path: 'category',
@@ -29,9 +90,56 @@ export const get_all_transactions = asyncHandler(async (req, res) => {
 		.populate({
 			model: Student,
 			path: 'owner',
-		});
+		})
+		.sort({ date: sortByDate === 'asc' ? 1 : -1 })
+		// .skip(skipAmount)
+		// .limit(pageSizeNum)
+		.exec();
 
-	res.json(new CustomResponse(true, transactions, 'All transactions'));
+	let filteredTransactions = transactions;
+
+	if (course) {
+		filteredTransactions = filteredTransactions.filter(
+			(transaction) => transaction.owner.course === course
+		);
+	}
+
+	if (status) {
+		if (isPaid) {
+			filteredTransactions = filteredTransactions.filter(
+				(transaction) => transaction.amount >= transaction.category.fee
+			);
+		} else {
+			filteredTransactions = filteredTransactions.filter(
+				(transaction) => transaction.amount < transaction.category.fee
+			);
+		}
+	}
+
+	// if (search) {
+	// 	const searchRegex = new RegExp(search as string, 'i');
+	// 	filteredTransactions = filteredTransactions.filter((transaction) =>
+	// 		searchRegex.test(transaction.owner.studentID)
+	// 	);
+	// }
+
+	// const next =
+	// 	(await Transaction.countDocuments({ $and: filters })) >
+	// 	skipAmount + pageSizeNum
+	// 		? pageNum + 1
+	// 		: -1;
+	// const prev = pageNum > 1 ? pageNum - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(
+			true,
+			filteredTransactions,
+			'All transactions',
+			// REMINDER: put next & prev here
+			-1,
+			-1
+		)
+	);
 });
 
 /**
@@ -184,7 +292,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		category: categoryID,
 		owner: student._id,
 		description: description,
-		date: date,
+		date: date?.toISOString(),
 		governor: category.organization.governor,
 		treasurer: category.organization.treasurer,
 	});

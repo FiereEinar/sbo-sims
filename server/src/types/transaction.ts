@@ -9,3 +9,14 @@ export type createTransactionBody = {
 export type updateTransactionAmountBody = {
 	amount: number;
 };
+
+export type TransactionPeriodFilter = 'all' | 'today' | 'weekly' | 'monthly';
+
+// export type TransactionsFilterValues = {
+// 	// search?: string;
+// 	course?: string;
+// 	period?: TransactionPeriodFilter;
+// 	category?: string;
+// 	status?: boolean;
+// 	date?: Date;
+// };

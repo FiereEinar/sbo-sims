@@ -14,7 +14,6 @@ export const fetchStudents = async (
 	pageSize: number = 50
 ): Promise<APIPaginatedResponse<StudentWithTransactions[]> | undefined> => {
 	try {
-		console.log(filters);
 		let url = `/student?page=${page}&pageSize=${pageSize}`;
 		if (filters.search) url = url + `&search=${filters.search}`;
 		if (filters.course) url = url + `&course=${filters.course}`;
@@ -22,12 +21,9 @@ export const fetchStudents = async (
 		if (filters.gender) url = url + `&gender=${filters.gender}`;
 		if (filters.sortBy) url = url + `&sortBy=${filters.sortBy}`;
 
-		console.log('url: ', url);
 		const { data } = await axiosInstance.get<
 			APIPaginatedResponse<StudentWithTransactions[]>
 		>(url);
-
-		console.log(data);
 
 		return data;
 	} catch (err: any) {

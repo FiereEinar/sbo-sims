@@ -1,6 +1,10 @@
+import axiosInstance from '@/api/axiosInstance';
 import { fetchCategories } from '@/api/category';
 import { fetchAvailableCourses } from '@/api/student';
-import { fetchTransactions } from '@/api/transaction';
+import {
+	fetchTransactions,
+	generateTransactionsFilterURL,
+} from '@/api/transaction';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -94,7 +98,35 @@ export default function Transaction() {
 						);
 					}}
 				/>
-				<Button variant='secondary'>Download</Button>
+				<Button
+					onClick={async () => {
+						try {
+							const url = generateTransactionsFilterURL(
+								{ course, date, category, status, period },
+								`/transaction/download?page=1`
+							);
+
+							console.log(url);
+
+							const result = await axiosInstance.get(url, {
+								responseType: 'blob',
+							});
+							console.log(result);
+
+							// Create a URL for the blob and trigger the download
+							const blob = new Blob([result.data], { type: 'text/csv' });
+							const link = document.createElement('a');
+							link.href = URL.createObjectURL(blob);
+							link.download = 'transactions.csv';
+							link.click();
+						} catch (err: any) {
+							console.error('Error downloading the file: ', err);
+						}
+					}}
+					variant='secondary'
+				>
+					Download
+				</Button>
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

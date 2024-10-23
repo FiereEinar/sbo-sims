@@ -4,6 +4,7 @@ import {
 	delete_transaction,
 	get_all_transactions,
 	get_transaction,
+	get_transaction_list_file,
 	update_transaction,
 	update_transaction_amount,
 } from '../controllers/transactionController';
@@ -11,10 +12,13 @@ import {
 	createTransactionValidation,
 	updateTransactionAmountValidation,
 } from '../middlewares/validations/transactionValidation';
+import { transactionQueryFilter } from '../middlewares/transactions-filter';
 
 const router = express.Router();
 
-router.get('/', get_all_transactions);
+router.get('/', transactionQueryFilter, get_all_transactions);
+
+router.get('/download', transactionQueryFilter, get_transaction_list_file);
 
 router.get('/:transactionID', get_transaction);
 

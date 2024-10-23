@@ -4,19 +4,31 @@ import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
 import { TransactionFormValues } from '@/components/forms/AddTransactionForm';
 import { UpdateTransactionAmountFormValues } from '@/components/forms/UpdateTransactionAmountForm';
 
+export const generateTransactionsFilterURL = (
+	filters: TransactionsFilterValues,
+	baseURL: string
+): string => {
+	let url = `${baseURL}`;
+	// if (filters.search) url = url + `&search=${filters.search}`;
+	if (filters.course) url += `&course=${filters.course}`;
+	if (filters.date) url += `&date=${filters.date.toISOString()}`;
+	if (filters.category) url += `&category=${filters.category}`;
+	if (filters.status !== undefined) url += `&status=${filters.status}`;
+	if (filters.period) url += `&period=${filters.period}`;
+
+	return url;
+};
+
 export const fetchTransactions = async (
 	filters: TransactionsFilterValues,
 	page: number = 1,
 	pageSize: number = 50
 ): Promise<APIPaginatedResponse<Transaction[]> | undefined> => {
 	try {
-		let url = `/transaction?page=${page}&pageSize=${pageSize}`;
-		// if (filters.search) url = url + `&search=${filters.search}`;
-		if (filters.course) url += `&course=${filters.course}`;
-		if (filters.date) url += `&date=${filters.date.toISOString()}`;
-		if (filters.category) url += `&category=${filters.category}`;
-		if (filters.status !== undefined) url += `&status=${filters.status}`;
-		if (filters.period) url += `&period=${filters.period}`;
+		const url = generateTransactionsFilterURL(
+			filters,
+			`/transaction?page=${page}&pageSize=${pageSize}`
+		);
 
 		const { data } = await axiosInstance.get<
 			APIPaginatedResponse<Transaction[]>

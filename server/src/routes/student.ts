@@ -24,7 +24,7 @@ router.get('/courses', get_available_course);
 
 // router.get('/load-students', load_all_students);
 
-router.get('/:studentID', isValidMongooseId('studentID'), get_student);
+router.get('/:studentID', get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 

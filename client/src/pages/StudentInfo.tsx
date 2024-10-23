@@ -18,7 +18,7 @@ export default function StudentInfo() {
 		isLoading: studentLoading,
 		error: studentError,
 	} = useQuery({
-		queryKey: [`student_${studentID}`],
+		queryKey: [`student`, { studentID }],
 		queryFn: () => fetchStudentByID(studentID),
 	});
 
@@ -31,7 +31,9 @@ export default function StudentInfo() {
 		queryFn: () => fetchStudentTransactions(studentID),
 	});
 
-	if (studentLoading || transactionsLoading) {
+	console.log(studentData);
+
+	if (studentLoading) {
 		return <p>Loading...</p>;
 	}
 
@@ -39,7 +41,7 @@ export default function StudentInfo() {
 		return <p>Error</p>;
 	}
 
-	if (!studentData || !studentTransactions) {
+	if (!studentData) {
 		return <p>No student found</p>;
 	}
 
@@ -57,7 +59,10 @@ export default function StudentInfo() {
 				<hr />
 				<div>
 					<h1 className='text-muted-foreground'>Previous transactions made:</h1>
-					<TransactionsTable transactions={studentTransactions} />
+					<TransactionsTable
+						isLoading={transactionsLoading}
+						transactions={studentTransactions}
+					/>
 				</div>
 			</div>
 		</SidebarPageLayout>

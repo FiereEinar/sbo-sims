@@ -9,7 +9,7 @@ import {
 import { validationResult } from 'express-validator';
 import mongoose, { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
-import { CustomRequest } from '../types/request';
+import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import Organization from '../models/organization';
 import {
 	startOfDay,
@@ -18,141 +18,67 @@ import {
 	startOfYear,
 	addDays,
 } from 'date-fns';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * GET - fetch all transactions made
- * TODO: implement paganation
- *
- * can't directly implement pagination and filtering at the same time
- * I commented it for the mean time
- *
- * some values that are used in filtering needs to be populated first before they can used as filters
- * so all datas needs to be fetched from db first, which defeats the purpose of pagination
  */
-export const get_all_transactions = asyncHandler(async (req, res) => {
-	const {
-		page,
-		pageSize,
-		search,
-		course,
-		date,
-		sortByDate,
-		category,
-		status,
-		period,
-	} = req.query;
-
-	// const defaultPage = 1;
-	// const defaultPageSize = 100;
-
-	const isPaid = JSON.parse((status as string) ?? 'false');
-	// const pageNum = page ? parseInt(page as string) : defaultPage;
-	// const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
-	// const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
-
-	const filters: FilterQuery<ITransaction>[] = [];
-
-	const currentDate = new Date();
-
-	if (period === 'today') {
-		filters.push({
-			date: {
-				$gte: startOfDay(currentDate).toISOString(),
-			},
-		});
-	} else if (period === 'weekly') {
-		filters.push({
-			date: {
-				$gte: startOfWeek(currentDate).toISOString(),
-			},
-		});
-	} else if (period === 'monthly') {
-		filters.push({
-			date: {
-				$gte: startOfMonth(currentDate).toISOString(),
-			},
-		});
-	} else if (period === 'yearly') {
-		filters.push({
-			date: {
-				$gte: startOfYear(currentDate).toISOString(),
-			},
-		});
-	}
-
-	if (date)
-		filters.push({
-			date: {
-				$gte: startOfDay(new Date(date as string)).toISOString(),
-				$lt: startOfDay(addDays(new Date(date as string), 1)).toISOString(),
-			},
-		});
-	if (category) filters.push({ category: category });
-	// is it possible to put the sort by period here? or do i have to put it after fetching all transactions?
-
-	const transactions = await Transaction.find({ $and: filters })
-		.populate({
-			model: Category,
-			path: 'category',
-			populate: {
-				model: Organization,
-				path: 'organization',
-			},
-		})
-		.populate({
-			model: Student,
-			path: 'owner',
-		})
-		.sort({ date: sortByDate === 'asc' ? 1 : -1 })
-		// .skip(skipAmount)
-		// .limit(pageSizeNum)
-		.exec();
-
-	let filteredTransactions = transactions;
-
-	if (course) {
-		filteredTransactions = filteredTransactions.filter(
-			(transaction) => transaction.owner.course === course
+export const get_all_transactions = asyncHandler(
+	async (req: TransactionQueryFilterRequest, res) => {
+		res.json(
+			new CustomPaginatedResponse(
+				true,
+				req.filteredTransactions,
+				'All transactions',
+				// REMINDER: put next & prev here
+				-1,
+				-1
+			)
 		);
 	}
+);
 
-	if (status) {
-		if (isPaid) {
-			filteredTransactions = filteredTransactions.filter(
-				(transaction) => transaction.amount >= transaction.category.fee
-			);
-		} else {
-			filteredTransactions = filteredTransactions.filter(
-				(transaction) => transaction.amount < transaction.category.fee
-			);
+/**
+ * GET - get a csv file result of transactions
+ */
+export const get_transaction_list_file = asyncHandler(
+	async (req: TransactionQueryFilterRequest, res) => {
+		try {
+			if (req.filteredTransactions) {
+				const filePath = path.join(__dirname, 'filtered-transactions.csv');
+
+				// const filePath = 'test.csv';
+
+				console.log(filePath);
+
+				const header = 'Student ID,Course,Date,Category,Status,Amount\n';
+				fs.writeFileSync(filePath, header, 'utf8');
+
+				req.filteredTransactions.forEach((transaction) => {
+					const paidStatus =
+						transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+
+					const row = `${transaction.owner.studentID},${
+						transaction.owner.course
+					},${transaction.date?.toISOString()},${
+						transaction.category.organization.name
+					} - ${transaction.category.name},${paidStatus},${
+						transaction.amount
+					}\n`;
+
+					fs.appendFileSync(filePath, row, 'utf8');
+				});
+
+				res.sendFile(filePath);
+
+				// fs.unlinkSync(filePath);
+			}
+		} catch (error: any) {
+			console.error('Failed to generate file', error);
 		}
 	}
-
-	// if (search) {
-	// 	const searchRegex = new RegExp(search as string, 'i');
-	// 	filteredTransactions = filteredTransactions.filter((transaction) =>
-	// 		searchRegex.test(transaction.owner.studentID)
-	// 	);
-	// }
-
-	// const next =
-	// 	(await Transaction.countDocuments({ $and: filters })) >
-	// 	skipAmount + pageSizeNum
-	// 		? pageNum + 1
-	// 		: -1;
-	// const prev = pageNum > 1 ? pageNum - 1 : -1;
-
-	res.json(
-		new CustomPaginatedResponse(
-			true,
-			filteredTransactions,
-			'All transactions',
-			// REMINDER: put next & prev here
-			-1,
-			-1
-		)
-	);
-});
+);
 
 /**
  * GET - get a specific transaction based on ID from params
@@ -206,18 +132,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		description,
 		studentID,
 	}: createTransactionBody = req.body;
-
-	// check if the given category ID is valid
-	if (!mongoose.isValidObjectId(categoryID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${categoryID} is not a valid category ID`
-			)
-		);
-		return;
-	}
 
 	// check if the category exists
 	const category = await Category.findById(categoryID).populate({

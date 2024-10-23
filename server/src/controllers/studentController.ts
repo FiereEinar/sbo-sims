@@ -8,6 +8,7 @@ import { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
 import { loadStudents } from '../students/load-students';
+import Organization from '../models/organization';
 
 /**
  * GET - fetch all students
@@ -110,7 +111,11 @@ export const get_student_transaction = asyncHandler(async (req, res) => {
 		owner: student._id,
 	})
 		.populate({ model: Student, path: 'owner' })
-		.populate({ model: Category, path: 'category' })
+		.populate({
+			model: Category,
+			path: 'category',
+			populate: { model: Organization, path: 'organization' },
+		})
 		.exec();
 
 	res.json(

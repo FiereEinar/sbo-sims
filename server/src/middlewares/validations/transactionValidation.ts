@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { isValidMongooseId } from './validation';
 
 export const createTransactionValidation = [
 	body('amount').isNumeric().toInt(),
@@ -22,6 +23,8 @@ export const createTransactionValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('Student ID must not be empty'),
+
+	isValidMongooseId('transactionID'),
 ];
 
 export const updateTransactionAmountValidation = [

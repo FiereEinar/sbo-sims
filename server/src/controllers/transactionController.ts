@@ -11,7 +11,7 @@ import mongoose, { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest } from '../types/request';
 import Organization from '../models/organization';
-import { subDays, subWeeks, subMonths, subYears } from 'date-fns';
+import { startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
 
 /**
  * GET - fetch all transactions made
@@ -51,25 +51,25 @@ export const get_all_transactions = asyncHandler(async (req, res) => {
 	if (period === 'today') {
 		filters.push({
 			date: {
-				$gte: subDays(currentDate, 1).toISOString(),
+				$gte: startOfDay(currentDate).toISOString(),
 			},
 		});
 	} else if (period === 'weekly') {
 		filters.push({
 			date: {
-				$gte: subWeeks(currentDate, 1).toISOString(),
+				$gte: startOfWeek(currentDate).toISOString(),
 			},
 		});
 	} else if (period === 'monthly') {
 		filters.push({
 			date: {
-				$gte: subMonths(currentDate, 1).toISOString(),
+				$gte: startOfMonth(currentDate).toISOString(),
 			},
 		});
 	} else if (period === 'yearly') {
 		filters.push({
 			date: {
-				$gte: subYears(currentDate, 1).toISOString(),
+				$gte: startOfYear(currentDate).toISOString(),
 			},
 		});
 	}

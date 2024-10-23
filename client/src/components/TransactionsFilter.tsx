@@ -44,9 +44,9 @@ export default function TransactionsFilter({
 	const periodsOptions = [
 		{ value: 'all', label: 'All' },
 		{ value: 'today', label: 'Today' },
-		{ value: 'weekly', label: 'Last Week' },
-		{ value: 'monthly', label: 'Last Month' },
-		{ value: 'yearly', label: 'Last Year' },
+		{ value: 'weekly', label: 'This Week' },
+		{ value: 'monthly', label: 'This Month' },
+		{ value: 'yearly', label: 'This Year' },
 	];
 
 	useEffect(() => {

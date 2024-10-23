@@ -46,8 +46,6 @@ export default function DatePicker({
 					mode='single'
 					selected={date}
 					onSelect={(date) => {
-						console.log(date);
-						console.log(date?.toISOString());
 						setDate(date);
 					}}
 					initialFocus

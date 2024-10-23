@@ -11,7 +11,13 @@ import mongoose, { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest } from '../types/request';
 import Organization from '../models/organization';
-import { startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import {
+	startOfDay,
+	startOfWeek,
+	startOfMonth,
+	startOfYear,
+	addDays,
+} from 'date-fns';
 
 /**
  * GET - fetch all transactions made
@@ -74,7 +80,13 @@ export const get_all_transactions = asyncHandler(async (req, res) => {
 		});
 	}
 
-	if (date) filters.push({ date: date });
+	if (date)
+		filters.push({
+			date: {
+				$gte: startOfDay(new Date(date as string)).toISOString(),
+				$lt: startOfDay(addDays(new Date(date as string), 1)).toISOString(),
+			},
+		});
 	if (category) filters.push({ category: category });
 	// is it possible to put the sort by period here? or do i have to put it after fetching all transactions?
 
@@ -417,13 +429,13 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	// create and save the transaction
+	// create update query and save the transaction
 	const update: UpdateQuery<ITransaction> = {
 		amount: amount,
 		category: categoryID,
 		owner: student._id,
 		description: description,
-		date: date,
+		date: date?.toISOString(),
 	};
 
 	const result = await Transaction.findByIdAndUpdate(transactionID, update, {

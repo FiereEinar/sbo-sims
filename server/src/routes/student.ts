@@ -14,6 +14,7 @@ import {
 	updateStudentValidation,
 } from '../middlewares/validations';
 import { auth } from '../middlewares/auth';
+import { isValidMongooseId } from '../middlewares/validations/validation';
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/courses', get_available_course);
 
 // router.get('/load-students', load_all_students);
 
-router.get('/:studentID', get_student);
+router.get('/:studentID', isValidMongooseId('studentID'), get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 

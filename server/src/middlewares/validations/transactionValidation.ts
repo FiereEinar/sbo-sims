@@ -27,5 +27,4 @@ export const createTransactionValidation = [
 
 export const updateTransactionAmountValidation = [
 	body('amount').isNumeric().toInt(),
-	isValidMongooseId('transactionID'),
 ];

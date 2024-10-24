@@ -38,6 +38,7 @@ router.put(
 
 router.put(
 	'/:transactionID/amount',
+	isValidMongooseId('transactionID'),
 	updateTransactionAmountValidation,
 	update_transaction_amount
 );

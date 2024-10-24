@@ -4,7 +4,6 @@ import { validationResult } from 'express-validator';
 import CustomResponse from '../types/response';
 import mongoose from 'mongoose';
 import Category from '../models/category';
-import { ICategoryWithTransactions } from '../types/category';
 
 /**
  * GET - get all organizations and its categories
@@ -35,17 +34,6 @@ export const get_all_organizations = asyncHandler(async (req, res) => {
 export const get_organization = asyncHandler(async (req, res) => {
 	const { organizationID } = req.params;
 
-	if (!mongoose.isValidObjectId(organizationID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${organizationID} is not a valid organization ID`
-			)
-		);
-		return;
-	}
-
 	const organization = await Organization.findById(organizationID);
 
 	if (organization === null) {
@@ -67,17 +55,6 @@ export const get_organization = asyncHandler(async (req, res) => {
  */
 export const get_organization_categories = asyncHandler(async (req, res) => {
 	const { organizationID } = req.params;
-
-	if (!mongoose.isValidObjectId(organizationID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${organizationID} is not a valid organization ID`
-			)
-		);
-		return;
-	}
 
 	const org = await Organization.findById(organizationID);
 	if (org === null) {

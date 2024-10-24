@@ -6,8 +6,6 @@ import Transaction from '../models/transaction';
 import Student from '../models/student';
 import CustomResponse from '../types/response';
 import Organization from '../models/organization';
-import { ICategoryWithTransactions } from '../types/category';
-import organization from '../models/organization';
 import { createCategoryBody } from '../types/organization';
 
 /**
@@ -56,14 +54,6 @@ export const get_all_category = asyncHandler(async (req, res) => {
 export const get_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 
-	// check if the given ID is valid
-	if (!mongoose.isValidObjectId(categoryID)) {
-		res.json(
-			new CustomResponse(false, null, `${categoryID} is not a valid ID`)
-		);
-		return;
-	}
-
 	// check if the given category exists
 	const category = await Category.findById(categoryID)
 		.populate({
@@ -109,14 +99,6 @@ export const get_category = asyncHandler(async (req, res) => {
  */
 export const get_category_transactions = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
-
-	// check if the given ID is valid
-	if (!mongoose.isValidObjectId(categoryID)) {
-		res.json(
-			new CustomResponse(false, null, `${categoryID} is not a valid ID`)
-		);
-		return;
-	}
 
 	// check if the given category exists
 	const category = await Category.findById(categoryID);
@@ -200,18 +182,6 @@ export const create_category = asyncHandler(async (req, res) => {
 export const delete_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 
-	// check if the given ID is valid
-	if (!mongoose.isValidObjectId(categoryID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${categoryID} is not a valid category ID`
-			)
-		);
-		return;
-	}
-
 	const result = await Category.findByIdAndDelete(categoryID);
 	if (result === null) {
 		res.json(
@@ -233,18 +203,6 @@ export const delete_category = asyncHandler(async (req, res) => {
 export const update_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 	const { name }: Omit<ICategory, '_id'> = req.body;
-
-	// check if the given ID is valid
-	if (!mongoose.isValidObjectId(categoryID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${categoryID} is not a valid category ID`
-			)
-		);
-		return;
-	}
 
 	// check for validation errors
 	const errors = validationResult(req);

@@ -9,12 +9,11 @@ import {
 	load_all_students,
 	update_student,
 } from '../controllers/studentController';
+import { auth } from '../middlewares/auth';
 import {
 	createStudentValidation,
 	updateStudentValidation,
-} from '../middlewares/validations';
-import { auth } from '../middlewares/auth';
-import { isValidMongooseId } from '../middlewares/validations/validation';
+} from '../middlewares/validations/studentValidation';
 
 const router = express.Router();
 

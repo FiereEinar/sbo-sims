@@ -20,7 +20,7 @@ import {
 
 export default function Student() {
 	const [page, setPage] = useState(1);
-	const pageSize = 50;
+	const pageSize = 10;
 
 	const defaultFilterValue = 'All';
 	const [search, setSearch] = useState<StudentFilterValues['search']>();

@@ -23,10 +23,9 @@ export const createTransactionValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('Student ID must not be empty'),
-
-	isValidMongooseId('transactionID'),
 ];
 
 export const updateTransactionAmountValidation = [
 	body('amount').isNumeric().toInt(),
+	isValidMongooseId('transactionID'),
 ];

@@ -48,10 +48,6 @@ export const get_transaction_list_file = asyncHandler(
 			if (req.filteredTransactions) {
 				const filePath = path.join(__dirname, 'filtered-transactions.csv');
 
-				// const filePath = 'test.csv';
-
-				console.log(filePath);
-
 				const header = 'Student ID,Course,Date,Category,Status,Amount\n';
 				fs.writeFileSync(filePath, header, 'utf8');
 
@@ -72,7 +68,7 @@ export const get_transaction_list_file = asyncHandler(
 
 				res.sendFile(filePath);
 
-				// fs.unlinkSync(filePath);
+				fs.unlinkSync(filePath);
 			}
 		} catch (error: any) {
 			console.error('Failed to generate file', error);
@@ -85,13 +81,6 @@ export const get_transaction_list_file = asyncHandler(
  */
 export const get_transaction = asyncHandler(async (req, res) => {
 	const { transactionID } = req.params;
-
-	if (!mongoose.isValidObjectId(transactionID)) {
-		res.json(
-			new CustomResponse(false, null, `${transactionID} is not a valid ID`)
-		);
-		return;
-	}
 
 	const transaction = await Transaction.findById(transactionID)
 		.populate({
@@ -235,18 +224,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
 export const delete_transaction = asyncHandler(async (req, res) => {
 	const { transactionID } = req.params;
 
-	// check if the given ID is valid
-	if (!mongoose.isValidObjectId(transactionID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${transactionID} is not a valid transaction ID`
-			)
-		);
-		return;
-	}
-
 	const result = await Transaction.findByIdAndDelete(transactionID);
 	if (result === null) {
 		res.json(
@@ -276,18 +253,6 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		description,
 		studentID,
 	}: createTransactionBody = req.body;
-
-	// check if the given transaction ID is valid
-	if (!mongoose.isValidObjectId(transactionID)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`${transactionID} is not a valid transaction ID`
-			)
-		);
-		return;
-	}
 
 	// check if the category exists
 	const category = await Category.findById(categoryID);
@@ -366,18 +331,6 @@ export const update_transaction_amount = asyncHandler(
 	async (req: CustomRequest, res) => {
 		const { transactionID } = req.params;
 		const { amount }: updateTransactionAmountBody = req.body;
-
-		// check if the given transaction ID is valid
-		if (!mongoose.isValidObjectId(transactionID)) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`${transactionID} is not a valid transaction ID`
-				)
-			);
-			return;
-		}
 
 		const transaction = await Transaction.findById(transactionID)
 			.populate({

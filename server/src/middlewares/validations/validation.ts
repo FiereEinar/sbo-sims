@@ -10,5 +10,7 @@ export const isValidMongooseId = (stringID: string) => {
 			res.json(new CustomResponse(false, null, `${id} is not a valid ID`));
 			return;
 		}
+
+		next();
 	};
 };

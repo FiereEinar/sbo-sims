@@ -89,7 +89,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 
 			if (!result.success) {
 				setError('root', {
-					message: `${result.message} - ${result.error ?? ''}`,
+					message: `${result.message} ${result.error ?? ''}`,
 				});
 				return;
 			}

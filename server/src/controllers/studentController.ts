@@ -3,7 +3,6 @@ import Student, { IStudent } from '../models/student';
 import Transaction from '../models/transaction';
 import Category from '../models/category';
 import { createStudentBody } from '../types/student';
-import { validationResult } from 'express-validator';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
@@ -138,20 +137,6 @@ export const create_student = asyncHandler(async (req, res) => {
 		middlename,
 	}: createStudentBody = req.body;
 
-	// check for errors in validation
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
-
 	if (email?.length && !validateEmail(email)) {
 		res.json(
 			new CustomResponse(
@@ -174,6 +159,13 @@ export const create_student = asyncHandler(async (req, res) => {
 				null,
 				`Student with ID: ${studentID} already exists`
 			)
+		);
+		return;
+	}
+
+	if (gender !== 'M' && gender !== 'F') {
+		res.json(
+			new CustomResponse(false, null, `Student gender can only be M or F`)
 		);
 		return;
 	}
@@ -201,20 +193,6 @@ export const update_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
 	const { firstname, lastname, email }: Omit<createStudentBody, 'studentID'> =
 		req.body;
-
-	// check for errors in validation
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
 
 	if (email?.length && !validateEmail(email)) {
 		res.json(

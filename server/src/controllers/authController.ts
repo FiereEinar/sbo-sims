@@ -1,15 +1,10 @@
 import asyncHandler from 'express-async-handler';
 import { CustomRequest } from '../types/request';
 import { loginUserBody, signupUserBody } from '../types/user';
-import cloudinary from '../utils/cloudinary';
-import fs from 'fs/promises';
-import { validationResult } from 'express-validator';
 import CustomResponse from '../types/response';
 import User from '../models/user';
 import bcrypt from 'bcryptjs';
-import { validateEmail } from '../utils/utils';
 import jwt from 'jsonwebtoken';
-import student from '../models/student';
 import { appCookieName } from '../constants';
 
 /**

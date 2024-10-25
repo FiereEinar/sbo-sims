@@ -15,13 +15,13 @@ router.get('/', get_all_organizations);
 
 router.get(
 	'/:organizationID',
-	isValidMongooseId('organizationID'),
+	isValidMongooseId('organizationID', { from: 'params' }),
 	get_organization
 );
 
 router.get(
 	'/:organizationID/categories',
-	isValidMongooseId('organizationID'),
+	isValidMongooseId('organizationID', { from: 'params' }),
 	get_organization_categories
 );
 
@@ -29,7 +29,7 @@ router.post('/', createOrganizationValidation, create_organization);
 
 router.delete(
 	'/:organizationID',
-	isValidMongooseId('organizationID'),
+	isValidMongooseId('organizationID', { from: 'params' }),
 	delete_organization
 );
 

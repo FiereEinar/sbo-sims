@@ -1,8 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Organization, { IOrganization } from '../models/organization';
-import { validationResult } from 'express-validator';
 import CustomResponse from '../types/response';
-import mongoose from 'mongoose';
 import Category from '../models/category';
 
 /**
@@ -109,20 +107,6 @@ export const get_organization_categories = asyncHandler(async (req, res) => {
 export const create_organization = asyncHandler(async (req, res) => {
 	const { name, governor, treasurer, departments }: Omit<IOrganization, '_id'> =
 		req.body;
-
-	// check for validation errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
 
 	if (departments.length === 0) {
 		res.json(

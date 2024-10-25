@@ -6,18 +6,10 @@ import {
 	createTransactionBody,
 	updateTransactionAmountBody,
 } from '../types/transaction';
-import { validationResult } from 'express-validator';
-import mongoose, { FilterQuery, UpdateQuery } from 'mongoose';
+import { UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import Organization from '../models/organization';
-import {
-	startOfDay,
-	startOfWeek,
-	startOfMonth,
-	startOfYear,
-	addDays,
-} from 'date-fns';
 import fs from 'fs';
 import path from 'path';
 
@@ -156,20 +148,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	// check for errors in validation
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
-
 	// check if the student with the given ID exists
 	const student = await Student.findOne({ studentID: studentID }).exec();
 	if (student === null) {
@@ -285,20 +263,6 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	// check for errors in validation
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
-
 	// check if the student with the given ID exists
 	const student = await Student.findOne({ studentID: studentID }).exec();
 	if (student === null) {
@@ -368,20 +332,6 @@ export const update_transaction_amount = asyncHandler(
 		// check if the amount paid is non-negative
 		if (amount <= 0) {
 			res.json(new CustomResponse(false, null, `Enter a valid amount`));
-			return;
-		}
-
-		// check for errors in validation
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in body validation',
-					errors.array()[0].msg
-				)
-			);
 			return;
 		}
 

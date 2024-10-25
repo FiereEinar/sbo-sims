@@ -1,7 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Category, { ICategory } from '../models/category';
 import mongoose, { UpdateQuery } from 'mongoose';
-import { validationResult } from 'express-validator';
 import Transaction from '../models/transaction';
 import Student from '../models/student';
 import CustomResponse from '../types/response';
@@ -138,20 +137,6 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
 export const create_category = asyncHandler(async (req, res) => {
 	const { name, fee, organizationID }: createCategoryBody = req.body;
 
-	// check for validation errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
-
 	// check if the organization exists
 	const existingOrganization = await Organization.findById(organizationID);
 	if (existingOrganization === null) {
@@ -203,20 +188,6 @@ export const delete_category = asyncHandler(async (req, res) => {
 export const update_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 	const { name }: Omit<ICategory, '_id'> = req.body;
-
-	// check for validation errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in body validation',
-				errors.array()[0].msg
-			)
-		);
-		return;
-	}
 
 	// create and save the category
 	const update: UpdateQuery<ICategory> = {

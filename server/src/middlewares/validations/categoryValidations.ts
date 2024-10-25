@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { isFormBodyValidated, isValidMongooseId } from './validation';
 
 export const createCategoryValidation = [
 	body('name')
@@ -14,4 +15,8 @@ export const createCategoryValidation = [
 		.withMessage('Organization ID must not be empty'),
 
 	body('fee').isNumeric().toInt(),
+
+	isValidMongooseId('organizationID', { from: 'body' }),
+
+	isFormBodyValidated,
 ];

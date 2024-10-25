@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { isValidMongooseId } from './validation';
+import { isFormBodyValidated, isValidMongooseId } from './validation';
 
 export const createTransactionValidation = [
 	body('amount').isNumeric().toInt(),
@@ -10,11 +10,7 @@ export const createTransactionValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Category ID must not be empty'),
 
-	body('date')
-		.optional()
-		// .isISO8601()
-		.toDate(),
-	// .withMessage('Date must be a valid date'),
+	body('date').optional().toDate(),
 
 	body('description').trim().escape().optional(),
 
@@ -23,8 +19,14 @@ export const createTransactionValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('Student ID must not be empty'),
+
+	isValidMongooseId('categoryID', { from: 'body' }),
+
+	isFormBodyValidated,
 ];
 
 export const updateTransactionAmountValidation = [
 	body('amount').isNumeric().toInt(),
+
+	isFormBodyValidated,
 ];

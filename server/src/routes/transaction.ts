@@ -23,7 +23,7 @@ router.get('/download', transactionQueryFilter, get_transaction_list_file);
 
 router.get(
 	'/:transactionID',
-	isValidMongooseId('transactionID'),
+	isValidMongooseId('transactionID', { from: 'params' }),
 	get_transaction
 );
 
@@ -31,21 +31,21 @@ router.post('/', createTransactionValidation, create_transaction);
 
 router.put(
 	'/:transactionID',
-	isValidMongooseId('transactionID'),
+	isValidMongooseId('transactionID', { from: 'params' }),
 	createTransactionValidation,
 	update_transaction
 );
 
 router.put(
 	'/:transactionID/amount',
-	isValidMongooseId('transactionID'),
+	isValidMongooseId('transactionID', { from: 'params' }),
 	updateTransactionAmountValidation,
 	update_transaction_amount
 );
 
 router.delete(
 	'/:transactionID',
-	isValidMongooseId('transactionID'),
+	isValidMongooseId('transactionID', { from: 'params' }),
 	delete_transaction
 );
 

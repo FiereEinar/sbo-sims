@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { isFormBodyValidated } from './validation';
 
 export const createStudentValidation = [
 	body('studentID')
@@ -40,6 +41,8 @@ export const createStudentValidation = [
 	body('email').trim().escape().optional(),
 
 	body('middlename').trim().escape().optional(),
+
+	isFormBodyValidated,
 ];
 
 export const updateStudentValidation = [
@@ -58,4 +61,6 @@ export const updateStudentValidation = [
 		.toLowerCase(),
 
 	body('email').trim().escape().optional(),
+
+	isFormBodyValidated,
 ];

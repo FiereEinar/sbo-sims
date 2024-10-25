@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { isFormBodyValidated } from './validation';
 
 export const createOrganizationValidation = [
 	body('name')
@@ -22,4 +23,6 @@ export const createOrganizationValidation = [
 		.toLowerCase(),
 
 	body('departments').toArray().isArray(),
+
+	isFormBodyValidated,
 ];

@@ -1,9 +1,10 @@
 import asyncHandler from 'express-async-handler';
 import { CustomRequest } from '../types/request';
 import { NextFunction, Response } from 'express';
-import { appCookieName } from '../constants';
+import { appCookieName, originalDbName } from '../constants';
 import jwt from 'jsonwebtoken';
-import User from '../models/user';
+import { UserSchema } from '../models/user';
+import { getDatabaseConnection } from '../database/databaseManager';
 
 export const auth = asyncHandler(
 	async (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -25,13 +26,22 @@ export const auth = asyncHandler(
 
 			const data = payload as { studentID: string };
 
+			const mongoURI = process.env.MONGO_URI;
+
+			const connection = await getDatabaseConnection(
+				originalDbName,
+				mongoURI as string
+			);
+
+			const User = connection.model('User', UserSchema);
+
 			const user = await User.findOne({ studentID: data.studentID });
 			if (user === null) {
 				res.sendStatus(403);
 				return;
 			}
 
-			req.user = user;
+			req.currentUser = user;
 			next();
 		});
 	}

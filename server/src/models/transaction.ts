@@ -15,7 +15,7 @@ export interface ITransaction {
 	treasurer: string;
 }
 
-const TransactionSchema = new Schema<ITransaction>({
+export const TransactionSchema = new Schema<ITransaction>({
 	amount: { type: Number, minlength: 1, required: true },
 	owner: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
 	category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
@@ -25,4 +25,4 @@ const TransactionSchema = new Schema<ITransaction>({
 	treasurer: { type: String, required: true },
 });
 
-export default mongoose.model('Transaction', TransactionSchema);
+// export default mongoose.model('Transaction', TransactionSchema);

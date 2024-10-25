@@ -1,9 +1,19 @@
 import mongoose from 'mongoose';
 import fs from 'fs';
-import Student from '../models/student';
 import csvParser from 'csv-parser';
+import { getDatabaseConnection } from '../database/databaseManager';
+import { DB_MODEL, originalDbName } from '../constants';
+import { StudentSchema } from '../models/student';
 
 export const loadStudents = async (): Promise<void> => {
+	const dbURI = process.env.MONGO_URI;
+
+	const connection = await getDatabaseConnection(
+		originalDbName,
+		dbURI as string
+	);
+	const Student = connection.model(DB_MODEL.STUDENT, StudentSchema);
+
 	// const csvFilePaths = ['./src/students/STUDENTS_LIST_BSEMC-DAT.csv'];
 	const csvFilePaths = [
 		'./src/students/STUDENTS_LIST_BSAT.csv',

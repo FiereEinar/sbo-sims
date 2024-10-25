@@ -11,11 +11,11 @@ export interface IOrganization {
 	departments: string[];
 }
 
-const OrganizationSchema = new Schema<IOrganization>({
+export const OrganizationSchema = new Schema<IOrganization>({
 	name: { type: String, required: true },
 	governor: { type: String, required: true },
 	treasurer: { type: String, required: true },
 	departments: { type: [String] },
 });
 
-export default mongoose.model('Organization', OrganizationSchema);
+// export default mongoose.model('Organization', OrganizationSchema);

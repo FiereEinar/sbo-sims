@@ -16,7 +16,7 @@ export interface ICategory {
 	year: YearLevel;
 }
 
-const CategorySchema = new Schema<ICategory>({
+export const CategorySchema = new Schema<ICategory>({
 	name: { type: String, required: true },
 	fee: { type: Number, required: true },
 	organization: {
@@ -26,4 +26,4 @@ const CategorySchema = new Schema<ICategory>({
 	},
 });
 
-export default mongoose.model('Category', CategorySchema);
+// export default mongoose.model('Category', CategorySchema);

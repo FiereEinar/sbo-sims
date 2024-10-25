@@ -30,5 +30,5 @@ export const signupSchema = z
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: 'Password must match',
-		path: ['password'],
+		path: ['confirmPassword'],
 	});

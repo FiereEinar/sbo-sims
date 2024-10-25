@@ -16,7 +16,7 @@ export interface IStudent {
 	email?: string;
 }
 
-const StudentSchema = new Schema<IStudent>({
+export const StudentSchema = new Schema<IStudent>({
 	studentID: { type: String, required: true },
 	firstname: { type: String, required: true },
 	lastname: { type: String, required: true },
@@ -33,4 +33,4 @@ StudentSchema.virtual('fullname').get(function () {
 	return `${this.firstname} ${this.middlename} ${this.lastname}`;
 });
 
-export default mongoose.model('Student', StudentSchema);
+// export default mongoose.model('Student', StudentSchema);

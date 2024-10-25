@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Input } from './ui/input';
 import { Label } from './ui/label';
 import {
 	Select,
@@ -8,7 +7,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
-import { useDebounce } from '@/hooks/useDebounce';
 import {
 	TransactionPeriodFilter,
 	TransactionsFilterValues,
@@ -51,7 +49,7 @@ export default function TransactionsFilter({
 
 	useEffect(() => {
 		onChange({ course, date, category, status, period });
-	}, [course, date, category, status, period]);
+	}, [onChange, course, date, category, status, period]);
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>

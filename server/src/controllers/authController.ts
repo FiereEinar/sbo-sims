@@ -2,7 +2,6 @@ import asyncHandler from 'express-async-handler';
 import { CustomRequest } from '../types/request';
 import { loginUserBody, signupUserBody } from '../types/user';
 import CustomResponse from '../types/response';
-import User from '../models/user';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { appCookieName } from '../constants';
@@ -20,6 +19,14 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 		studentID,
 	}: signupUserBody = req.body;
 
+	if (!req.UserModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'UserModel not attached'));
+
+		return;
+	}
+
 	let profileURL =
 		'https://res.cloudinary.com/diirvhsym/image/upload/v1728426644/user/zl85ljimxkrs1uqnqrvu.webp';
 	let profilePublicID = 'user/al85leemxkrs2qwnqrvU';
@@ -30,7 +37,7 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	const hashedPassword = await bcrypt.hash(password, parseInt(salt));
 
 	// create and save the user
-	const user = new User({
+	const user = new req.UserModel({
 		firstname: firstname,
 		lastname: lastname,
 		studentID: studentID,
@@ -50,10 +57,18 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * POST - user login
  */
-export const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID, password }: loginUserBody = req.body;
 
-	const user = await User.findOne({ studentID: studentID }).exec();
+	if (!req.UserModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'UserModel not attached'));
+
+		return;
+	}
+
+	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
 	if (user === null) {
 		res.json(new CustomResponse(false, null, `Incorrect Student ID`));
 		return;
@@ -91,12 +106,20 @@ export const login = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req: CustomRequest, res) => {
 	const token = req.cookies[appCookieName] as string;
 
+	if (!req.UserModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'UserModel not attached'));
+
+		return;
+	}
+
 	if (token === undefined) {
 		res.sendStatus(204);
 		return;
 	}
 
-	const user = await User.findOne({ token: token });
+	const user = await req.UserModel.findOne({ token: token });
 	if (user) {
 		user.token = '';
 		await user.save();
@@ -126,14 +149,22 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	if (!secretKey) throw new Error('JWT secret key not found');
 
 	jwt.verify(token, secretKey, async (err, payload) => {
+		if (!req.UserModel) {
+			res
+				.status(500)
+				.json(new CustomResponse(false, null, 'UserModel not attached'));
+
+			return;
+		}
+
 		if (err) {
 			res.sendStatus(403);
 			return;
 		}
 
 		const data = payload as { studentID: string };
-
-		const user = await User.findOne({ studentID: data.studentID });
+		req.UserModel;
+		const user = await req.UserModel.findOne({ studentID: data.studentID });
 		if (user === null) {
 			res.sendStatus(403);
 			return;

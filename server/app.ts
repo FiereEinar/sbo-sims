@@ -4,8 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
-import connectToDB from './src/database/mongodb';
-connectToDB();
+import connectToMongoDB from './src/database/mongodb';
+connectToMongoDB();
 
 import studentRouter from './src/routes/student';
 import transactionRouter from './src/routes/transaction';

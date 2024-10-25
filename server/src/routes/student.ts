@@ -17,15 +17,15 @@ import {
 
 const router = express.Router();
 
-router.get('/', get_all_students);
+router.get('/', auth, get_all_students);
 
-router.get('/courses', get_available_course);
+router.get('/courses', auth, get_available_course);
 
 // router.get('/load-students', load_all_students);
 
-router.get('/:studentID', get_student);
+router.get('/:studentID', auth, get_student);
 
-router.get('/:studentID/transaction', get_student_transaction);
+router.get('/:studentID/transaction', auth, get_student_transaction);
 
 router.post('/', auth, createStudentValidation, create_student);
 

@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import { FilterQuery } from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import Transaction, { ITransaction } from '../models/transaction';
 import Category from '../models/category';
 import Student from '../models/student';

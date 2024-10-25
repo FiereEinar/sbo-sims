@@ -21,15 +21,4 @@ router.get('/logout', logout);
 
 router.get('/check-auth', check_auth);
 
-router.get('/file', (req, res) => {
-	const filePath = path.join(
-		__dirname,
-		'../',
-		'students',
-		'STUDENTS_LIST_BSIT.csv'
-	);
-	console.log(filePath);
-	res.sendFile(filePath);
-});
-
 export default router;

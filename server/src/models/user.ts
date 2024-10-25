@@ -12,6 +12,8 @@ export interface IUser extends Entity {
 	role: 'admin' | 'regular';
 	bio: string;
 	token: string;
+	activeSchoolYearDB: string;
+	activeSemDB: '1' | '2';
 }
 
 const UserSchema = new Schema<IUser>({

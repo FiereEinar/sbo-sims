@@ -6,7 +6,7 @@ import {
 	createTransactionBody,
 	updateTransactionAmountBody,
 } from '../types/transaction';
-import { UpdateQuery } from 'mongoose';
+import mongoose, { UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import Organization from '../models/organization';

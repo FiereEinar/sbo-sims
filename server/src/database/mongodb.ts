@@ -2,9 +2,11 @@ import mongoose from 'mongoose';
 
 const mongoDB = process.env.MONGO_URI;
 
-export async function main(): Promise<void> {
-	if (mongoDB === undefined) throw new Error('MONGO URI not found');
-	await mongoose.connect(mongoDB);
+export default async function connectToMongoDB(): Promise<void> {
+	try {
+		if (mongoDB === undefined) throw new Error('MONGO URI not found');
+		await mongoose.connect(mongoDB);
+	} catch (err: any) {
+		console.error('Failed to connect to MongoDB', err);
+	}
 }
-
-export default () => main().catch((err) => console.log(err));

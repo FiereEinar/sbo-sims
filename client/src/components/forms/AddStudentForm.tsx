@@ -43,7 +43,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 	const navigate = useNavigate();
 
 	const { data: studentData } = useQuery({
-		queryKey: [`student_${student?.studentID}`],
+		queryKey: [QUERY_KEYS.STUDENT, { studentID: student?.studentID }],
 		queryFn: () => fetchStudentByID(student?.studentID ?? ''),
 	});
 
@@ -94,7 +94,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			}
 
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
-			navigate(`/student/${student?.studentID ?? ''}`);
+			navigate(`/student/${student?.studentID ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit student form' });

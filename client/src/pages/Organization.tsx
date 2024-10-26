@@ -4,6 +4,7 @@ import OrganizationTable from '@/components/OrganizationTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Organization() {
@@ -12,7 +13,7 @@ export default function Organization() {
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['organizations'],
+		queryKey: [QUERY_KEYS.ORGANIZATION],
 		queryFn: fetchAllOrganizations,
 	});
 

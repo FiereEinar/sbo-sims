@@ -9,6 +9,7 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
@@ -21,7 +22,7 @@ export default function OrganizationInfo() {
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: [`organization_${organizationID}`],
+		queryKey: [QUERY_KEYS.ORGANIZATION, { organizationID }],
 		queryFn: () => fetchOrganizationByID(organizationID ?? ''),
 	});
 
@@ -30,7 +31,7 @@ export default function OrganizationInfo() {
 		isLoading: cLoading,
 		error: cError,
 	} = useQuery({
-		queryKey: [`organization_${organizationID}_categories`],
+		queryKey: [QUERY_KEYS.ORGANIZATION_CATEGORIES, { organizationID }],
 		queryFn: () => fetchOrganizationCategories(organizationID ?? ''),
 	});
 

@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 				setIsAuthenticated(true);
 			} catch (err: any) {
 				setIsAuthenticated(false);
-				navigate('/login');
+				navigate('/login', { replace: true });
 			}
 		})();
 	}, [navigate]);

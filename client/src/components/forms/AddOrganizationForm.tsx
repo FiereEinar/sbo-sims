@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import InputField from '../InputField';
@@ -16,16 +15,15 @@ import { Button } from '../ui/button';
 import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
-import {
-	fetchAllOrganizations,
-	submitOrganizationForm,
-} from '@/api/organization';
+import { submitOrganizationForm } from '@/api/organization';
 import { useRef, useState } from 'react';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { v4 as uuidv4 } from 'uuid';
 import { Cross2Icon } from '@radix-ui/react-icons';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 export type OrganizationFormValues = z.infer<typeof organizationSchema>;
 
@@ -33,15 +31,11 @@ type organization = {
 	id: string;
 	name: string;
 };
+
 export default function AddOrganizationForm() {
 	const [departments, setDepartments] = useState<organization[]>([]);
 	const [departmentInput, setDepartmentInput] = useState('');
 	const depInputRef = useRef<HTMLInputElement>(null);
-
-	const { refetch } = useQuery({
-		queryKey: ['organizations'],
-		queryFn: fetchAllOrganizations,
-	});
 
 	const {
 		register,
@@ -75,7 +69,7 @@ export default function AddOrganizationForm() {
 				return;
 			}
 
-			refetch();
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION] });
 			reset();
 			setDepartments([]);
 		} catch (err: any) {

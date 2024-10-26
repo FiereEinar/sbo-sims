@@ -1,6 +1,5 @@
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { QueryObserverResult, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
 	AlertDialog,
@@ -14,8 +13,10 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Student } from '@/types/student';
-import { fetchStudentByID, requestDeleteStudent } from '@/api/student';
+import { requestDeleteStudent } from '@/api/student';
 import { AddStudentForm } from '../forms/AddStudentForm';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type EditAndDeleteStudentButtonProps = {
 	student: Student;
@@ -24,25 +25,19 @@ type EditAndDeleteStudentButtonProps = {
 export default function EditAndDeleteStudentButton({
 	student,
 }: EditAndDeleteStudentButtonProps) {
-	const { refetch } = useQuery({
-		queryKey: [`student_${student.studentID}`],
-		queryFn: () => fetchStudentByID(student.studentID),
-	});
-
 	return (
 		<div className='space-x-2 flex'>
 			<EditButton student={student} />
-			<DeleteButton studentID={student.studentID} refetch={refetch} />
+			<DeleteButton studentID={student.studentID} />
 		</div>
 	);
 }
 
 type DeleteButtonProps = {
 	studentID: string;
-	refetch: () => Promise<QueryObserverResult<Student | undefined, Error>>;
 };
 
-function DeleteButton({ studentID, refetch }: DeleteButtonProps) {
+function DeleteButton({ studentID }: DeleteButtonProps) {
 	const { toast } = useToast();
 	const navigate = useNavigate();
 
@@ -66,7 +61,7 @@ function DeleteButton({ studentID, refetch }: DeleteButtonProps) {
 				return;
 			}
 
-			refetch();
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate('/student');
 		} catch (err: any) {
 			toast({

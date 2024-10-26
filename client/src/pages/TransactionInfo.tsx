@@ -8,6 +8,7 @@ import StudentDataCard from '@/components/StudentDataCard';
 import TransactionDataCard from '@/components/TransactionDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
@@ -20,7 +21,7 @@ export default function TransactionInfo() {
 		isLoading: TLoading,
 		error: TError,
 	} = useQuery({
-		queryKey: [`transaction_${transactionID}`],
+		queryKey: [QUERY_KEYS.TRANSACTION, { transactionID }],
 		queryFn: () => fetchTransactionByID(transactionID),
 	});
 
@@ -29,7 +30,7 @@ export default function TransactionInfo() {
 		isLoading: CLoading,
 		error: CError,
 	} = useQuery({
-		queryKey: ['categories'],
+		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
 

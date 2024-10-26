@@ -1,7 +1,4 @@
-import {
-	fetchTransactionByID,
-	submitUpdateTransactionAmountForm,
-} from '@/api/transaction';
+import { submitUpdateTransactionAmountForm } from '@/api/transaction';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Dialog,
@@ -10,7 +7,6 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import { DialogHeader, DialogFooter } from '../ui/dialog';
@@ -18,6 +14,8 @@ import InputField from '../InputField';
 import { z } from 'zod';
 import { Transaction } from '@/types/transaction';
 import ErrorText from '../ui/error-text';
+import { QUERY_KEYS } from '@/constants';
+import { queryClient } from '@/main';
 
 export const updateTransactionAmountSchema = z.object({
 	amount: z
@@ -42,11 +40,6 @@ export default function UpdateTransactionAmountForm({
 	transaction,
 }: UpdateTransactionAmountFormProps) {
 	const remainingAmountToBePaid = transaction.category.fee - transaction.amount;
-
-	const { refetch } = useQuery({
-		queryKey: [`transaction_${transaction._id}`],
-		queryFn: () => fetchTransactionByID(transaction._id),
-	});
 
 	const {
 		register,
@@ -83,7 +76,9 @@ export default function UpdateTransactionAmountForm({
 				return;
 			}
 
-			refetch();
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.TRANSACTION],
+			});
 			reset();
 		} catch (err: any) {
 			setError('root', {

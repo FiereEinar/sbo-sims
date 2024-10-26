@@ -6,6 +6,7 @@ import StickyHeader from '@/components/StickyHeader';
 import StudentDataCard from '@/components/StudentDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
@@ -18,7 +19,7 @@ export default function StudentInfo() {
 		isLoading: studentLoading,
 		error: studentError,
 	} = useQuery({
-		queryKey: [`student`, { studentID }],
+		queryKey: [QUERY_KEYS.STUDENT, { studentID }],
 		queryFn: () => fetchStudentByID(studentID),
 	});
 
@@ -27,7 +28,7 @@ export default function StudentInfo() {
 		isLoading: transactionsLoading,
 		error: transactionsError,
 	} = useQuery({
-		queryKey: [`student_${studentID}_transactions`],
+		queryKey: [QUERY_KEYS.STUDENT_TRANSACTIONS, { studentID }],
 		queryFn: () => fetchStudentTransactions(studentID),
 	});
 

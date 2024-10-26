@@ -1,11 +1,7 @@
 import { Transaction } from '@/types/transaction';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
-import {
-	fetchTransactionByID,
-	requestDeleteTransaction,
-} from '@/api/transaction';
-import { QueryObserverResult, useQuery } from '@tanstack/react-query';
+import { requestDeleteTransaction } from '@/api/transaction';
 import { useNavigate } from 'react-router-dom';
 import {
 	AlertDialog,
@@ -20,6 +16,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import AddTransactionForm from '../forms/AddTransactionForm';
 import { Category } from '@/types/category';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type EditAndDeleteTransactionButtonProps = {
 	transaction: Transaction;
@@ -30,25 +28,19 @@ export default function EditAndDeleteTransactionButton({
 	transaction,
 	categories,
 }: EditAndDeleteTransactionButtonProps) {
-	const { refetch } = useQuery({
-		queryKey: [`transaction_${transaction._id}`],
-		queryFn: () => fetchTransactionByID(transaction._id),
-	});
-
 	return (
 		<div className='space-x-2 flex'>
 			<EditButton transaction={transaction} categories={categories} />
-			<DeleteButton transactionID={transaction._id} refetch={refetch} />
+			<DeleteButton transactionID={transaction._id} />
 		</div>
 	);
 }
 
 type DeleteButtonProps = {
 	transactionID: string;
-	refetch: () => Promise<QueryObserverResult<Transaction | undefined, Error>>;
 };
 
-function DeleteButton({ transactionID, refetch }: DeleteButtonProps) {
+function DeleteButton({ transactionID }: DeleteButtonProps) {
 	const { toast } = useToast();
 	const navigate = useNavigate();
 
@@ -73,7 +65,7 @@ function DeleteButton({ transactionID, refetch }: DeleteButtonProps) {
 				return;
 			}
 
-			refetch();
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
 			navigate('/transaction');
 		} catch (err: any) {
 			toast({

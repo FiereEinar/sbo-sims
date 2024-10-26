@@ -29,6 +29,8 @@ import ErrorText from '../ui/error-text';
 import { fetchStudents } from '@/api/student';
 import _ from 'lodash';
 import { useDebounce } from '@/hooks/useDebounce';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type AddTransactionFormProps = {
 	categories: Category[];
@@ -53,17 +55,13 @@ export default function AddTransactionForm({
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 
-	const { refetch } = useQuery({
-		queryKey: ['transactions'],
-	});
-
-	const { data: transactionData, refetch: tRefetch } = useQuery({
-		queryKey: [`transaction_${transaction?._id}`],
+	const { data: transactionData } = useQuery({
+		queryKey: [QUERY_KEYS.TRANSACTION, { transactionID: transaction?._id }],
 		queryFn: () => fetchTransactionByID(transaction?._id),
 	});
 
 	const { data: studentsFetchResult } = useQuery({
-		queryKey: ['students', { debouncedStudentIdSearch }],
+		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
 		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
 	});
 
@@ -98,13 +96,6 @@ export default function AddTransactionForm({
 			}
 
 			data.date = date?.toISOString();
-			// if (date) {
-			// 	const now = new Date();
-			// 	data.date.setHours(now.getHours());
-			// 	data.date.setMinutes(now.getMinutes());
-			// 	data.date.setSeconds(now.getSeconds());
-			// }
-			console.log('Form date: ', data.date);
 			data.categoryID = category;
 
 			let result;
@@ -127,9 +118,8 @@ export default function AddTransactionForm({
 				return;
 			}
 
-			mode === 'add' ? refetch() : tRefetch();
-			// navigate(`/transaction/${result.data._id ?? ''}`);
-			navigate(`/transaction`);
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
+			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit transaction form' });

@@ -8,6 +8,7 @@ import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
 import { handleDownloadTransactions } from '@/lib/utils';
 import { TransactionsFilterValues } from '@/types/transaction';
@@ -36,7 +37,7 @@ export default function Transaction() {
 		error: transactionsError,
 	} = useQuery({
 		queryKey: [
-			'transactions',
+			QUERY_KEYS.TRANSACTION,
 			{ course, page, pageSize, date, category, status, period },
 		],
 		queryFn: () =>
@@ -52,7 +53,7 @@ export default function Transaction() {
 		isLoading: categoriesLoading,
 		error: categoriesError,
 	} = useQuery({
-		queryKey: ['categories'],
+		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
 
@@ -61,7 +62,7 @@ export default function Transaction() {
 		isLoading: cLoading,
 		error: cError,
 	} = useQuery({
-		queryKey: ['students_courses'],
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
 		queryFn: fetchAvailableCourses,
 	});
 

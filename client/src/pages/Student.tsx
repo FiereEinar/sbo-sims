@@ -17,6 +17,7 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from '@/components/ui/pagination';
+import { QUERY_KEYS } from '@/constants';
 
 export default function Student() {
 	const [page, setPage] = useState(1);
@@ -35,7 +36,7 @@ export default function Student() {
 		error: studentsError,
 	} = useQuery({
 		queryKey: [
-			'students',
+			QUERY_KEYS.STUDENT,
 			{ search, course, gender, year, page, pageSize, sortBy },
 		],
 		queryFn: () =>
@@ -47,7 +48,7 @@ export default function Student() {
 		isLoading: cLoading,
 		error: cError,
 	} = useQuery({
-		queryKey: ['students_courses'],
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
 		queryFn: fetchAvailableCourses,
 	});
 

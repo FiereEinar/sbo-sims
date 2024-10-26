@@ -5,6 +5,7 @@ import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
@@ -13,7 +14,7 @@ export default function Category() {
 		isLoading: cLoading,
 		error: cError,
 	} = useQuery({
-		queryKey: ['categories'],
+		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
 
@@ -22,7 +23,7 @@ export default function Category() {
 		isLoading: oLoading,
 		error: oError,
 	} = useQuery({
-		queryKey: ['organizations'],
+		queryKey: [QUERY_KEYS.ORGANIZATION],
 		queryFn: fetchAllOrganizations,
 	});
 

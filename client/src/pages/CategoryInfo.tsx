@@ -5,6 +5,7 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
+import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
@@ -13,7 +14,7 @@ export default function CategoryInfo() {
 	if (!categoryID) return;
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: [`category_${categoryID}`],
+		queryKey: [QUERY_KEYS.CATEGORY, { categoryID }],
 		queryFn: () => fetchCategoryAndTransactions(categoryID),
 	});
 

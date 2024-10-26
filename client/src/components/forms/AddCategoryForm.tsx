@@ -1,7 +1,6 @@
-import { fetchCategories, submitCategoryForm } from '@/api/category';
+import { submitCategoryForm } from '@/api/category';
 import { categorySchema } from '@/lib/validations/categorySchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import InputField from '../InputField';
@@ -20,6 +19,8 @@ import ErrorText from '../ui/error-text';
 import OrganizationPicker from '../OrganizationPicker';
 import { OrganizationWithCategory } from '@/types/organization';
 import { useState } from 'react';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -31,10 +32,6 @@ export default function AddCategoryForm({
 	organizations,
 }: AddCategoryFormProps) {
 	const [org, setOrg] = useState<string>();
-	const { refetch } = useQuery({
-		queryKey: ['categories'],
-		queryFn: fetchCategories,
-	});
 
 	const {
 		register,
@@ -71,7 +68,7 @@ export default function AddCategoryForm({
 				return;
 			}
 
-			refetch();
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CATEGORY] });
 			reset();
 			setOrg('');
 		} catch (err: any) {

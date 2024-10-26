@@ -5,7 +5,7 @@ type SidebarLinkProps = {
 	link: {
 		path: string;
 		name: string;
-		icon: string;
+		icon: iconKeys | string;
 	};
 };
 

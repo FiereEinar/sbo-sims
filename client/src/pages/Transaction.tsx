@@ -1,6 +1,10 @@
+import axiosInstance from '@/api/axiosInstance';
 import { fetchCategories } from '@/api/category';
 import { fetchAvailableCourses } from '@/api/student';
-import { fetchTransactions } from '@/api/transaction';
+import {
+	fetchTransactions,
+	generateTransactionsFilterURL,
+} from '@/api/transaction';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -10,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
-import { handleDownloadTransactions } from '@/lib/utils';
 import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -74,7 +77,27 @@ export default function Transaction() {
 		return <p>Error</p>;
 	}
 
-	console.log(fetchTransactionsResult);
+	const handleDownloadTransactions = async () => {
+		try {
+			const url = generateTransactionsFilterURL(
+				{ course, date, category, status, period },
+				`/transaction/download?page=1`
+			);
+
+			const result = await axiosInstance.get(url, {
+				responseType: 'blob',
+			});
+
+			// Create a URL for the blob and trigger the download
+			const blob = new Blob([result.data], { type: 'text/csv' });
+			const link = document.createElement('a');
+			link.href = URL.createObjectURL(blob);
+			link.download = 'transactions.csv';
+			link.click();
+		} catch (err: any) {
+			console.error('Error downloading the file: ', err);
+		}
+	};
 
 	return (
 		<SidebarPageLayout>
@@ -100,7 +123,7 @@ export default function Transaction() {
 					}}
 				/>
 				<Button
-					onClick={() => {
+					onClick={async () => {
 						if (!fetchTransactionsResult?.data.length) {
 							toast({
 								title: 'Unable to download',
@@ -109,13 +132,7 @@ export default function Transaction() {
 							return;
 						}
 
-						handleDownloadTransactions({
-							course,
-							date,
-							category,
-							status,
-							period,
-						});
+						await handleDownloadTransactions();
 					}}
 					variant='secondary'
 				>

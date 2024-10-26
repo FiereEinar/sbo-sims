@@ -34,30 +34,37 @@ export const get_all_transactions = asyncHandler(
 export const get_transaction_list_file = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
 		try {
-			if (req.filteredTransactions) {
-				console.log(req.filteredTransactions);
-				const filePath = path.join(__dirname, 'filtered-transactions.csv');
+			console.log(req.filteredTransactions);
+			const filePath = path.join(__dirname, 'filtered-transactions.csv');
 
-				const header = 'Student ID,Course,Date,Category,Status,Amount\n';
-				await fs.writeFile(filePath, header, 'utf8');
+			const header = 'Student ID,Course,Date,Category,Status,Amount\n';
+			await fs.writeFile(filePath, header, { encoding: 'utf8' });
 
-				req.filteredTransactions.forEach(async (transaction) => {
-					const paidStatus =
-						transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+			const writeToFile = async () => {
+				if (req.filteredTransactions) {
+					req.filteredTransactions.forEach(async (transaction) => {
+						const paidStatus =
+							transaction.amount >= transaction.category.fee
+								? 'Paid'
+								: 'Partial';
 
-					const row = `${transaction.owner.studentID},${
-						transaction.owner.course
-					},${transaction.date?.toISOString()},${
-						transaction.category.name
-					},${paidStatus},${transaction.amount}\n`;
+						const row = `${transaction.owner.studentID},${
+							transaction.owner.course
+						},${transaction.date?.toISOString()},${
+							transaction.category.name
+						},${paidStatus},${transaction.amount}\n`;
 
-					await fs.appendFile(filePath, row, 'utf8');
-				});
+						console.log(row);
 
-				res.sendFile(filePath);
+						await fs.appendFile(filePath, row, { encoding: 'utf8' });
+					});
+				}
+			};
 
+			await writeToFile();
+			res.sendFile(filePath, async () => {
 				// await fs.unlink(filePath);
-			}
+			});
 		} catch (error: any) {
 			console.error('Failed to generate file', error);
 		}

@@ -7,11 +7,13 @@ import ErrorText from '../ui/error-text';
 import { submitLoginForm } from '@/api/user';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginSchema } from '@/lib/validations/loginSchema';
+import { useUserStore } from '@/store/user';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
 	const navigate = useNavigate();
+	const setUser = useUserStore((state) => state.setUser);
 
 	const {
 		register,
@@ -36,6 +38,7 @@ export default function LoginForm() {
 				return;
 			}
 
+			setUser(result.data);
 			navigate('/');
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit signup form' });

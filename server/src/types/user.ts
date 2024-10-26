@@ -11,3 +11,10 @@ export type loginUserBody = {
 	studentID: string;
 	password: string;
 };
+
+export type updateUserBody = Entity & {
+	studentID: string;
+	bio?: string;
+	activeSchoolYearDB: string;
+	activeSemDB: string;
+};

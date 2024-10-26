@@ -97,7 +97,7 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 		maxAge: 1000 * 60 * 60 * 24, // 1 day
 	});
 
-	res.json(new CustomResponse(true, null, 'Login successfull'));
+	res.json(new CustomResponse(true, user, 'Login successfull'));
 });
 
 /**
@@ -163,13 +163,13 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 		}
 
 		const data = payload as { studentID: string };
-		req.UserModel;
+
 		const user = await req.UserModel.findOne({ studentID: data.studentID });
 		if (user === null) {
 			res.sendStatus(403);
 			return;
 		}
 
-		res.sendStatus(200);
+		res.status(200).json(user);
 	});
 });

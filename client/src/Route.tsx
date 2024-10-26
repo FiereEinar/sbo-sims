@@ -13,6 +13,7 @@ import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import Organization from './pages/Organization';
 import OrganizationInfo from './pages/OrganizationInfo';
+import Settings from './pages/Settings';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -60,6 +61,10 @@ export default function Route() {
 				{
 					path: '/organization/:organizationID',
 					element: <OrganizationInfo />,
+				},
+				{
+					path: '/settings',
+					element: <Settings />,
 				},
 			],
 		},

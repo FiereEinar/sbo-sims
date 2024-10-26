@@ -2,17 +2,22 @@ import axiosInstance from '@/api/axiosInstance';
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trefoil } from 'ldrs';
+import { User } from '@/types/user';
+import { useUserStore } from '@/store/user';
 
 trefoil.register();
 
 export default function ProtectedRoute({ children }: PropsWithChildren) {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const setUser = useUserStore((state) => state.setUser);
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		(async () => {
 			try {
-				await axiosInstance.get('/auth/check-auth');
+				const { data } = await axiosInstance.get<User>('/auth/check-auth');
+
+				setUser(data);
 				setIsAuthenticated(true);
 			} catch (err: any) {
 				setIsAuthenticated(false);

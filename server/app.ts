@@ -9,6 +9,7 @@ dotenv.config();
 
 import authRouter from './src/routes/auth';
 import studentRouter from './src/routes/student';
+import userRouter from './src/routes/user';
 import transactionRouter from './src/routes/transaction';
 import categoryRouter from './src/routes/category';
 import organizationRouter from './src/routes/organization';
@@ -39,6 +40,7 @@ app.use('/auth', authRouter);
 app.use(auth);
 app.use(attachDatabaseModels);
 app.use('/student', studentRouter);
+app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);

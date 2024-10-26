@@ -12,4 +12,6 @@ export type User = MongoEntity & {
 	role: 'admin' | 'regular';
 	bio: string;
 	token: string;
+	activeSchoolYearDB: string;
+	activeSemDB: '1' | '2';
 };

@@ -39,7 +39,7 @@ export default function StudentFilter({
 
 	useEffect(() => {
 		onChange({ search: debouncedSearch, course, gender, year, sortBy });
-	}, [debouncedSearch, course, gender, year, sortBy]);
+	}, [onChange, debouncedSearch, course, gender, year, sortBy]);
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>

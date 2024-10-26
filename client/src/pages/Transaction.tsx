@@ -1,10 +1,6 @@
-import axiosInstance from '@/api/axiosInstance';
 import { fetchCategories } from '@/api/category';
 import { fetchAvailableCourses } from '@/api/student';
-import {
-	fetchTransactions,
-	generateTransactionsFilterURL,
-} from '@/api/transaction';
+import { fetchTransactions } from '@/api/transaction';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -12,11 +8,15 @@ import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
+import { useToast } from '@/hooks/use-toast';
+import { handleDownloadTransactions } from '@/lib/utils';
 import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export default function Transaction() {
+	const { toast } = useToast();
+
 	const defaultFilterValue = 'All';
 	const [page, setPage] = useState(1);
 	const pageSize = 50;
@@ -99,29 +99,22 @@ export default function Transaction() {
 					}}
 				/>
 				<Button
-					onClick={async () => {
-						try {
-							const url = generateTransactionsFilterURL(
-								{ course, date, category, status, period },
-								`/transaction/download?page=1`
-							);
-
-							console.log(url);
-
-							const result = await axiosInstance.get(url, {
-								responseType: 'blob',
+					onClick={() => {
+						if (!fetchTransactionsResult?.data.length) {
+							toast({
+								title: 'Unable to download',
+								description: "There's no transactions to download",
 							});
-							console.log(result);
-
-							// Create a URL for the blob and trigger the download
-							const blob = new Blob([result.data], { type: 'text/csv' });
-							const link = document.createElement('a');
-							link.href = URL.createObjectURL(blob);
-							link.download = 'transactions.csv';
-							link.click();
-						} catch (err: any) {
-							console.error('Error downloading the file: ', err);
+							return;
 						}
+
+						handleDownloadTransactions({
+							course,
+							date,
+							category,
+							status,
+							period,
+						});
 					}}
 					variant='secondary'
 				>

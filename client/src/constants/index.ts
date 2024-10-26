@@ -25,3 +25,10 @@ export const navbarLinks = [
 		icon: 'organization',
 	},
 ];
+
+export const QUERY_KEYS = {
+	STUDENT: 'students',
+	TRANSACTION: 'transactions',
+	ORGANIZATION: 'organizations',
+	CATEGORY: 'categories',
+};

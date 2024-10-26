@@ -4,17 +4,22 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
-import connectToMongoDB from './src/database/mongodb';
-connectToMongoDB();
+// import connectToMongoDB from './src/database/mongodb';
+// connectToMongoDB();
 
+import authRouter from './src/routes/auth';
 import studentRouter from './src/routes/student';
 import transactionRouter from './src/routes/transaction';
 import categoryRouter from './src/routes/category';
-import authRouter from './src/routes/auth';
 import organizationRouter from './src/routes/organization';
 
 import { notFoundHandler } from './src/middlewares/not-found';
 import { errorHandler } from './src/middlewares/error';
+import { auth } from './src/middlewares/auth';
+import {
+	attachDatabaseModels,
+	attachOriginalDatabaseModels,
+} from './src/middlewares/attach-database-models';
 
 const app = express();
 app.use(
@@ -28,12 +33,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use(attachOriginalDatabaseModels);
+app.use('/auth', authRouter);
+// All routes from here requires the user to be authenticated
+app.use(auth);
+app.use(attachDatabaseModels);
 app.use('/student', studentRouter);
 app.use('/transaction', transactionRouter);
 app.use('/category', categoryRouter);
-app.use('/auth', authRouter);
 app.use('/organization', organizationRouter);
 
+// Error handlers
 app.use(notFoundHandler);
 app.use(errorHandler);
 

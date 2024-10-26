@@ -24,6 +24,9 @@ import { Student } from '@/types/student';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import ErrorText from '../ui/error-text';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
+import _ from 'lodash';
 
 export type StudentFormValues = z.infer<typeof studentSchema>;
 
@@ -39,11 +42,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 
 	const navigate = useNavigate();
 
-	const { refetch } = useQuery({
-		queryKey: ['students'],
-	});
-
-	const { data: studentData, refetch: sRefetch } = useQuery({
+	const { data: studentData } = useQuery({
 		queryKey: [`student_${student?.studentID}`],
 		queryFn: () => fetchStudentByID(student?.studentID ?? ''),
 	});
@@ -62,15 +61,15 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 	useEffect(() => {
 		if (studentData) {
 			setValue('email', studentData.email);
-			setValue('firstname', studentData.firstname);
-			setValue('lastname', studentData.lastname);
+			setValue('firstname', _.startCase(studentData.firstname));
+			setValue('lastname', _.startCase(studentData.lastname));
 			setValue('studentID', studentData.studentID);
 			setValue('middlename', studentData.middlename);
 			setValue('course', studentData.course);
 			setValue('gender', studentData.gender);
 			setValue('year', studentData.year?.toString());
 		}
-	}, [studentData]);
+	}, [studentData, setValue]);
 
 	const onSubmit = async (data: StudentFormValues) => {
 		try {
@@ -94,7 +93,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 				return;
 			}
 
-			mode === 'add' ? refetch() : sRefetch();
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate(`/student/${student?.studentID ?? ''}`);
 			reset();
 		} catch (err: any) {

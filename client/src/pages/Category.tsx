@@ -34,6 +34,8 @@ export default function Category() {
 		return <p>Error</p>;
 	}
 
+	console.log(categories);
+
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />

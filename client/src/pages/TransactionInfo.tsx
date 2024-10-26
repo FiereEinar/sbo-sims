@@ -65,7 +65,7 @@ export default function TransactionInfo() {
 			<div className='flex justify-end'>
 				<UpdateTransactionAmountForm transaction={transaction} />
 			</div>
-			<TransactionsTable transactions={[transaction]} />
+			<TransactionsTable isLoading={TLoading} transactions={[transaction]} />
 		</SidebarPageLayout>
 	);
 }

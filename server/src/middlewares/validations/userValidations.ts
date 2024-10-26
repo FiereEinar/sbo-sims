@@ -4,7 +4,6 @@ import { NextFunction, Response } from 'express';
 import CustomResponse from '../../types/response';
 import { validateEmail } from '../../utils/utils';
 import { signupUserBody } from '../../types/user';
-import User from '../../models/user';
 import asyncHandler from 'express-async-handler';
 
 const signupExtraValidation = asyncHandler(
@@ -18,6 +17,14 @@ const signupExtraValidation = asyncHandler(
 			email,
 			studentID,
 		}: signupUserBody = req.body;
+
+		if (!req.UserModel) {
+			res
+				.status(500)
+				.json(new CustomResponse(false, null, 'UserModel not attached'));
+
+			return;
+		}
 
 		// check for errors in form validation
 		const errors = validationResult(req);
@@ -57,33 +64,6 @@ const signupExtraValidation = asyncHandler(
 			return;
 		}
 
-		const existingUser = await User.findOne({
-			$or: [{ studentID: studentID }, { email: email }],
-		}).exec();
-
-		if (existingUser) {
-			if (existingUser.studentID === studentID) {
-				res.json(
-					new CustomResponse(
-						false,
-						null,
-						'Error in form validation',
-						`A student with ID '${studentID}' already exist`
-					)
-				);
-			} else {
-				res.json(
-					new CustomResponse(
-						false,
-						null,
-						'Error in form validation',
-						`A student with email '${email}' already exist`
-					)
-				);
-			}
-			return;
-		}
-
 		if (parseInt(studentID).toString().length !== 10) {
 			res.json(
 				new CustomResponse(
@@ -91,6 +71,22 @@ const signupExtraValidation = asyncHandler(
 					null,
 					'Error in form validation',
 					`Student ID must be 10 numbers and should not contain characters to be valid`
+				)
+			);
+			return;
+		}
+
+		const existingUser = await req.UserModel.findOne({
+			studentID: studentID,
+		}).exec();
+
+		if (existingUser) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in form validation',
+					`A user with ID '${studentID}' already exist`
 				)
 			);
 			return;

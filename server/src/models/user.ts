@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Entity } from '../types/entity';
 import { Image } from '../types/image';
-
+import { getYear } from 'date-fns';
 const Schema = mongoose.Schema;
 
 export interface IUser extends Entity {
@@ -16,7 +16,7 @@ export interface IUser extends Entity {
 	activeSemDB: '1' | '2';
 }
 
-const UserSchema = new Schema<IUser>({
+export const UserSchema = new Schema<IUser>({
 	studentID: { type: String, required: true },
 	firstname: { type: String, minlength: 1, maxlength: 50, required: true },
 	lastname: { type: String, minlength: 1, maxlength: 50, required: true },
@@ -29,6 +29,8 @@ const UserSchema = new Schema<IUser>({
 	role: { type: String, enum: ['admin', 'regular'], default: 'regular' },
 	bio: { type: String, default: '' },
 	token: { type: String, default: '' },
+	activeSchoolYearDB: { type: String, default: getYear(new Date()).toString() },
+	activeSemDB: { type: String, enum: ['1', '2'], default: '1' },
 });
 
-export default mongoose.model('User', UserSchema);
+// export default mongoose.model('User', UserSchema);

@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 				navigate('/login');
 			}
 		})();
-	}, []);
+	}, [navigate]);
 
 	if (!isAuthenticated) {
 		return (

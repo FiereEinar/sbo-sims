@@ -1,77 +1,106 @@
 import asyncHandler from 'express-async-handler';
-import Student, { IStudent } from '../models/student';
-import Transaction from '../models/transaction';
-import Category from '../models/category';
+import { IStudent } from '../models/student';
 import { createStudentBody } from '../types/student';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
 import { loadStudents } from '../students/load-students';
-import Organization from '../models/organization';
+import { CustomRequest } from '../types/request';
 
 /**
  * GET - fetch all students
  */
-export const get_all_students = asyncHandler(async (req, res) => {
-	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
+export const get_all_students = asyncHandler(
+	async (req: CustomRequest, res) => {
+		const { page, pageSize, search, course, year, gender, sortBy } = req.query;
+		if (!req.StudentModel) {
+			res
+				.status(500)
+				.json(new CustomResponse(false, null, 'StudentModel not attached'));
 
-	const defaultPage = 1;
-	const defaultPageSize = 100;
+			return;
+		}
 
-	const pageNum = page ? parseInt(page as string) : defaultPage;
-	const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
-	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
+		const defaultPage = 1;
+		const defaultPageSize = 100;
 
-	const filters: FilterQuery<IStudent>[] = [];
+		const pageNum = page ? parseInt(page as string) : defaultPage;
+		const pageSizeNum = pageSize
+			? parseInt(pageSize as string)
+			: defaultPageSize;
+		const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
-	if (course) filters.push({ course: course });
-	if (year) filters.push({ year: parseInt(year as string) });
-	if (gender) filters.push({ gender: gender });
-	if (search) {
-		const searchRegex = new RegExp(search as string, 'i');
-		filters.push({
-			$or: [
-				{ studentID: { $regex: searchRegex } },
-				{ firstname: { $regex: searchRegex } },
-				{ lastname: { $regex: searchRegex } },
-				{ middlename: { $regex: searchRegex } },
-			],
-		});
+		const filters: FilterQuery<IStudent>[] = [];
+
+		if (course) filters.push({ course: course });
+		if (year) filters.push({ year: parseInt(year as string) });
+		if (gender) filters.push({ gender: gender });
+		if (search) {
+			const searchRegex = new RegExp(search as string, 'i');
+			filters.push({
+				$or: [
+					{ studentID: { $regex: searchRegex } },
+					{ firstname: { $regex: searchRegex } },
+					{ lastname: { $regex: searchRegex } },
+					{ middlename: { $regex: searchRegex } },
+				],
+			});
+		}
+
+		const students = await req.StudentModel.find({ $and: filters })
+			.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
+			.skip(skipAmount)
+			.limit(pageSizeNum)
+			.exec();
+
+		const next =
+			(await req.StudentModel.countDocuments({ $and: filters })) >
+			skipAmount + pageSizeNum
+				? pageNum + 1
+				: -1;
+		const prev = pageNum > 1 ? pageNum - 1 : -1;
+
+		res.json(
+			new CustomPaginatedResponse(true, students, 'All students', next, prev)
+		);
 	}
-
-	const students = await Student.find({ $and: filters })
-		.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
-		.skip(skipAmount)
-		.limit(pageSizeNum)
-		.exec();
-
-	const next =
-		(await Student.countDocuments({ $and: filters })) > skipAmount + pageSizeNum
-			? pageNum + 1
-			: -1;
-	const prev = pageNum > 1 ? pageNum - 1 : -1;
-
-	res.json(
-		new CustomPaginatedResponse(true, students, 'All students', next, prev)
-	);
-});
+);
 
 /**
  * GET - get all the distinc courses of students
  */
-export const get_available_course = asyncHandler(async (req, res) => {
-	const courses = await Student.find().distinct('course');
+export const get_available_course = asyncHandler(
+	async (req: CustomRequest, res) => {
+		if (!req.StudentModel) {
+			res
+				.status(500)
+				.json(new CustomResponse(false, null, 'StudentModel not attached'));
 
-	res.json(new CustomResponse(true, courses, 'Students courses'));
-});
+			return;
+		}
+
+		const courses = await req.StudentModel.find().distinct('course');
+
+		res.json(new CustomResponse(true, courses, 'Students courses'));
+	}
+);
 
 /**
  * GET - fetch student data
  */
-export const get_student = asyncHandler(async (req, res) => {
+export const get_student = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID } = req.params;
+	if (!req.StudentModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'StudentModel not attached'));
 
-	const student = await Student.findOne({ studentID: studentID }).exec();
+		return;
+	}
+
+	const student = await req.StudentModel.findOne({
+		studentID: studentID,
+	}).exec();
 
 	if (student === null) {
 		res.json(
@@ -90,42 +119,59 @@ export const get_student = asyncHandler(async (req, res) => {
 /**
  * GET - fetch the transactions that a student have made
  */
-export const get_student_transaction = asyncHandler(async (req, res) => {
-	const { studentID } = req.params;
+export const get_student_transaction = asyncHandler(
+	async (req: CustomRequest, res) => {
+		const { studentID } = req.params;
+		if (!req.StudentModel || !req.TransactionModel) {
+			res
+				.status(500)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'StudentModel & TransactionModel not attached'
+					)
+				);
 
-	const student = await Student.findOne({ studentID: studentID }).exec();
+			return;
+		}
 
-	if (student === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Student with ID ${studentID} does not exist`
-			)
-		);
-		return;
-	}
+		const student = await req.StudentModel.findOne({
+			studentID: studentID,
+		}).exec();
 
-	const studentTransactions = await Transaction.find({
-		owner: student._id,
-	})
-		.populate({ model: Student, path: 'owner' })
-		.populate({
-			model: Category,
-			path: 'category',
-			populate: { model: Organization, path: 'organization' },
+		if (student === null) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					`Student with ID ${studentID} does not exist`
+				)
+			);
+			return;
+		}
+
+		const studentTransactions = await req.TransactionModel.find({
+			owner: student._id,
 		})
-		.exec();
+			.populate({ model: req.StudentModel, path: 'owner' })
+			.populate({
+				model: req.CategoryModel,
+				path: 'category',
+				populate: { model: req.OrganizationModel, path: 'organization' },
+			})
+			.exec();
 
-	res.json(
-		new CustomResponse(true, studentTransactions, 'Student transactions')
-	);
-});
+		res.json(
+			new CustomResponse(true, studentTransactions, 'Student transactions')
+		);
+	}
+);
 
 /**
  * POST - create a student
  */
-export const create_student = asyncHandler(async (req, res) => {
+export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 	const {
 		studentID,
 		firstname,
@@ -136,6 +182,13 @@ export const create_student = asyncHandler(async (req, res) => {
 		year,
 		middlename,
 	}: createStudentBody = req.body;
+	if (!req.StudentModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'StudentModel not attached'));
+
+		return;
+	}
 
 	if (email?.length && !validateEmail(email)) {
 		res.json(
@@ -149,7 +202,7 @@ export const create_student = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	const existingStudentWithID = await Student.findOne({
+	const existingStudentWithID = await req.StudentModel.findOne({
 		studentID: studentID,
 	}).exec();
 	if (existingStudentWithID !== null) {
@@ -171,7 +224,7 @@ export const create_student = asyncHandler(async (req, res) => {
 	}
 
 	// create the student and save
-	const student = new Student({
+	const student = new req.StudentModel({
 		studentID: studentID,
 		firstname: firstname,
 		lastname: lastname,
@@ -189,10 +242,18 @@ export const create_student = asyncHandler(async (req, res) => {
 /**
  * PUT - update a student by studentID in params
  */
-export const update_student = asyncHandler(async (req, res) => {
+export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID } = req.params;
 	const { firstname, lastname, email }: Omit<createStudentBody, 'studentID'> =
 		req.body;
+
+	if (!req.StudentModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'StudentModel not attached'));
+
+		return;
+	}
 
 	if (email?.length && !validateEmail(email)) {
 		res.json(
@@ -207,7 +268,7 @@ export const update_student = asyncHandler(async (req, res) => {
 	}
 
 	// check if a student with the given ID exists
-	const student = await Student.findOne({ studentID: studentID });
+	const student = await req.StudentModel.findOne({ studentID: studentID });
 	if (student === null) {
 		res.json(
 			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
@@ -223,9 +284,13 @@ export const update_student = asyncHandler(async (req, res) => {
 	};
 
 	// update the student
-	const updatedStudent = await Student.findByIdAndUpdate(student._id, update, {
-		new: true,
-	}).exec();
+	const updatedStudent = await req.StudentModel.findByIdAndUpdate(
+		student._id,
+		update,
+		{
+			new: true,
+		}
+	).exec();
 
 	res.json(
 		new CustomResponse(true, updatedStudent, 'Student updated successfully')
@@ -235,11 +300,19 @@ export const update_student = asyncHandler(async (req, res) => {
 /**
  * DELETE - delete a student by studentID in params
  */
-export const delete_student = asyncHandler(async (req, res) => {
+export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID } = req.params;
 
+	if (!req.StudentModel) {
+		res
+			.status(500)
+			.json(new CustomResponse(false, null, 'StudentModel not attached'));
+
+		return;
+	}
+
 	// check if a student with the given ID exists
-	const student = await Student.findOne({ studentID: studentID });
+	const student = await req.StudentModel.findOne({ studentID: studentID });
 	if (student === null) {
 		res.json(
 			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
@@ -247,7 +320,7 @@ export const delete_student = asyncHandler(async (req, res) => {
 		return;
 	}
 
-	const result = await Student.findByIdAndDelete(student._id);
+	const result = await req.StudentModel.findByIdAndDelete(student._id);
 
 	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });

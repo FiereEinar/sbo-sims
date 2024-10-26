@@ -25,8 +25,6 @@ export default function CategoryInfo() {
 		return <p>Error</p>;
 	}
 
-	console.log(data);
-
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />
@@ -46,7 +44,10 @@ export default function CategoryInfo() {
 				</div>
 				<EditAndDeleteButton />
 			</StickyHeader>
-			<TransactionsTable transactions={data.categoryTransactions} />
+			<TransactionsTable
+				isLoading={isLoading}
+				transactions={data.categoryTransactions}
+			/>
 		</SidebarPageLayout>
 	);
 }

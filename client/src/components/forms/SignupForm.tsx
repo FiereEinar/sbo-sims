@@ -7,10 +7,12 @@ import { signupSchema } from '@/lib/validations/signupSchema';
 import ErrorText from '../ui/error-text';
 import { submitSignupForm } from '@/api/user';
 import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
+	const { toast } = useToast();
 	const navigate = useNavigate();
 
 	const {
@@ -36,6 +38,10 @@ export default function SignupForm() {
 				return;
 			}
 
+			toast({
+				title: 'Signed up successfully!',
+				description: 'Login with your created account to proceed.',
+			});
 			navigate('/login');
 		} catch (err: any) {
 			setError('root', { message: 'Failed to submit signup form' });

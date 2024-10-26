@@ -9,7 +9,6 @@ import {
 	load_all_students,
 	update_student,
 } from '../controllers/studentController';
-import { auth } from '../middlewares/auth';
 import {
 	createStudentValidation,
 	updateStudentValidation,
@@ -17,20 +16,20 @@ import {
 
 const router = express.Router();
 
-router.get('/', auth, get_all_students);
+router.get('/', get_all_students);
 
-router.get('/courses', auth, get_available_course);
+router.get('/courses', get_available_course);
 
 // router.get('/load-students', load_all_students);
 
-router.get('/:studentID', auth, get_student);
+router.get('/:studentID', get_student);
 
-router.get('/:studentID/transaction', auth, get_student_transaction);
+router.get('/:studentID/transaction', get_student_transaction);
 
-router.post('/', auth, createStudentValidation, create_student);
+router.post('/', createStudentValidation, create_student);
 
-router.put('/:studentID', auth, updateStudentValidation, update_student);
+router.put('/:studentID', updateStudentValidation, update_student);
 
-router.delete('/:studentID', auth, delete_student);
+router.delete('/:studentID', delete_student);
 
 export default router;

@@ -1,9 +1,6 @@
 import asyncHandler from 'express-async-handler';
-import mongoose, { FilterQuery } from 'mongoose';
-import Transaction, { ITransaction } from '../models/transaction';
-import Category from '../models/category';
-import Student from '../models/student';
-import Organization from '../models/organization';
+import { FilterQuery } from 'mongoose';
+import { ITransaction } from '../models/transaction';
 import {
 	addDays,
 	startOfDay,
@@ -12,6 +9,8 @@ import {
 	startOfYear,
 } from 'date-fns';
 import { TransactionQueryFilterRequest } from '../types/request';
+import CustomResponse from '../types/response';
+import { getDateFilterByPeriod } from '../utils/utils';
 
 /**
  * GET - fetch all transactions made
@@ -36,7 +35,13 @@ export const transactionQueryFilter = asyncHandler(
 			status,
 			period,
 		} = req.query;
+		if (!req.TransactionModel) {
+			res
+				.status(500)
+				.json(new CustomResponse(false, null, 'TransactionModel not attached'));
 
+			return;
+		}
 		// const defaultPage = 1;
 		// const defaultPageSize = 100;
 
@@ -47,33 +52,8 @@ export const transactionQueryFilter = asyncHandler(
 
 		const filters: FilterQuery<ITransaction>[] = [];
 
-		const currentDate = new Date();
-
-		if (period === 'today') {
-			filters.push({
-				date: {
-					$gte: startOfDay(currentDate).toISOString(),
-				},
-			});
-		} else if (period === 'weekly') {
-			filters.push({
-				date: {
-					$gte: startOfWeek(currentDate).toISOString(),
-				},
-			});
-		} else if (period === 'monthly') {
-			filters.push({
-				date: {
-					$gte: startOfMonth(currentDate).toISOString(),
-				},
-			});
-		} else if (period === 'yearly') {
-			filters.push({
-				date: {
-					$gte: startOfYear(currentDate).toISOString(),
-				},
-			});
-		}
+		const periodFilter = getDateFilterByPeriod(period as string);
+		if (periodFilter) filters.push(periodFilter);
 
 		if (date)
 			filters.push({
@@ -85,17 +65,17 @@ export const transactionQueryFilter = asyncHandler(
 		if (category) filters.push({ category: category });
 		// is it possible to put the sort by period here? or do i have to put it after fetching all transactions?
 
-		const transactions = await Transaction.find({ $and: filters })
+		const transactions = await req.TransactionModel.find({ $and: filters })
 			.populate({
-				model: Category,
+				model: req.CategoryModel,
 				path: 'category',
 				populate: {
-					model: Organization,
+					model: req.OrganizationModel,
 					path: 'organization',
 				},
 			})
 			.populate({
-				model: Student,
+				model: req.StudentModel,
 				path: 'owner',
 			})
 			.sort({ date: sortByDate === 'asc' ? 1 : -1 })

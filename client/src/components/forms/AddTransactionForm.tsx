@@ -1,6 +1,5 @@
 import {
 	fetchTransactionByID,
-	fetchTransactions,
 	submitTransactionForm,
 	submitUpdateTransactionForm,
 } from '@/api/transaction';
@@ -88,7 +87,7 @@ export default function AddTransactionForm({
 			setValue('studentID', transactionData.owner.studentID);
 			setValue('description', transactionData.description);
 		}
-	}, [transactionData]);
+	}, [transactionData, setValue]);
 
 	// TODO: create another input field for time
 	const onSubmit = async (data: TransactionFormValues) => {

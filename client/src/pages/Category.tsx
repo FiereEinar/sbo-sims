@@ -1,5 +1,4 @@
 import { fetchCategories } from '@/api/category';
-import { fetchAllOrganizations } from '@/api/organization';
 import CategoriesTable from '@/components/CategoriesTable';
 import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
@@ -18,20 +17,11 @@ export default function Category() {
 		queryFn: fetchCategories,
 	});
 
-	const {
-		data: organizations,
-		isLoading: oLoading,
-		error: oError,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.ORGANIZATION],
-		queryFn: fetchAllOrganizations,
-	});
-
-	if (cLoading || oLoading) {
+	if (cLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (cError || oError || !categories || !organizations) {
+	if (cError || !categories) {
 		return <p>Error</p>;
 	}
 
@@ -42,7 +32,7 @@ export default function Category() {
 			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Category Page</Header>
-				<AddCategoryForm organizations={organizations} />
+				<AddCategoryForm />
 			</StickyHeader>
 			<CategoriesTable categories={categories} />
 		</SidebarPageLayout>

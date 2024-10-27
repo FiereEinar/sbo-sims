@@ -42,3 +42,31 @@ export const submitCategoryForm = async (
 		console.error('Failed to submit category form', err);
 	}
 };
+
+export const requestDeleteCategory = async (
+	categoryID: string
+): Promise<APIResponse<Category> | undefined> => {
+	try {
+		const { data } = await axiosInstance.delete(`/category/${categoryID}`);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to send request to delete category', err);
+	}
+};
+
+export const submitUpdateCategoryForm = async (
+	categoryID: string,
+	formData: CategoryFormValues
+): Promise<APIResponse<Category> | undefined> => {
+	try {
+		const { data } = await axiosInstance.put(
+			`/category/${categoryID}`,
+			formData
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to submit update category form', err);
+	}
+};

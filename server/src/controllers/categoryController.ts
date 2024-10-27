@@ -4,6 +4,7 @@ import { UpdateQuery } from 'mongoose';
 import CustomResponse from '../types/response';
 import { createCategoryBody } from '../types/organization';
 import { CustomRequest } from '../types/request';
+import { updateCategoryBody } from '../types/category';
 
 /**
  * GET - fetch all categories
@@ -221,7 +222,7 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
  */
 export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 	const { categoryID } = req.params;
-	const { name }: Omit<ICategory, '_id'> = req.body;
+	const { name, fee, organizationID }: updateCategoryBody = req.body;
 
 	if (!req.CategoryModel) {
 		res
@@ -231,9 +232,23 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
+	const organization = await req.OrganizationModel?.findById(organizationID);
+	if (!organization) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				`Organization with ID: ${organizationID} not found`
+			)
+		);
+		return;
+	}
+
 	// create and save the category
 	const update: UpdateQuery<ICategory> = {
 		name: name,
+		fee: fee,
+		organization: organizationID,
 	};
 
 	const result = await req.CategoryModel.findByIdAndUpdate(categoryID, update, {

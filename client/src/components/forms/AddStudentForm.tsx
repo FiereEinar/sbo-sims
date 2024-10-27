@@ -37,7 +37,9 @@ type AddStudentFormProps = {
 
 export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 	if (student === undefined && mode === 'edit') {
-		throw new Error('No student data provided while form mode is on edit');
+		throw new Error(
+			'No student data provided while student form mode is on edit'
+		);
 	}
 
 	const navigate = useNavigate();
@@ -76,7 +78,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			let result;
 
 			if (mode === 'add') result = await submitStudentForm(data);
-			else if (mode === 'edit')
+			if (mode === 'edit')
 				result = await submitUpdateStudentForm(student?.studentID ?? '', data);
 
 			if (!result) {

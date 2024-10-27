@@ -49,15 +49,21 @@ export default function StudentInfo() {
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />
+
 			<BackButton />
+
 			<div className='space-y-3'>
 				<StickyHeader>
 					<Header>Student Info</Header>
 					<EditAndDeleteStudentButton student={studentData} />
 				</StickyHeader>
+
 				<hr />
+
 				<StudentDataCard studentID={studentID} studentData={studentData} />
+
 				<hr />
+
 				<div>
 					<h1 className='text-muted-foreground'>Previous transactions made:</h1>
 					<TransactionsTable

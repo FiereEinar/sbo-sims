@@ -63,7 +63,6 @@ export const transactionQueryFilter = asyncHandler(
 				},
 			});
 		if (category) filters.push({ category: category });
-		// is it possible to put the sort by period here? or do i have to put it after fetching all transactions?
 
 		const transactions = await req.TransactionModel.find({ $and: filters })
 			.populate({

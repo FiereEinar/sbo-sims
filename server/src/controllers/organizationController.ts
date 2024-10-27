@@ -99,43 +99,12 @@ export const get_organization_categories = asyncHandler(
 			return;
 		}
 
-		const categories = await req.CategoryModel.aggregate([
-			{
-				$match: {
-					organization: org._id,
-				},
-			},
-			{
-				$lookup: {
-					from: 'transactions', // collection name of the Transaction model
-					localField: '_id',
-					foreignField: 'category', // transaction field that links to the student
-					as: 'transactions',
-				},
-			},
-			{
-				$lookup: {
-					from: 'organizations',
-					localField: 'organization',
-					foreignField: '_id',
-					as: 'organization',
-				},
-			},
-			{
-				$addFields: {
-					totalTransactions: { $size: '$transactions' }, // count the number of transactions
-					totalTransactionsAmount: { $sum: '$transactions.amount' },
-				},
-			},
-			{
-				$unwind: '$organization',
-			},
-			{
-				$project: {
-					transactions: 0, // exclude the transactions array from the result
-				},
-			},
-		]);
+		const categories = await req.CategoryModel.find({
+			organization: org._id,
+		}).populate({
+			model: req.OrganizationModel,
+			path: 'organization',
+		});
 
 		res.json(new CustomResponse(true, categories, 'Organizations categories'));
 	}

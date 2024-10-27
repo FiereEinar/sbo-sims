@@ -8,26 +8,14 @@ import {
 	TableFooter,
 	Table,
 } from './ui/table';
-import { CategoryWithTransactions } from '@/types/category';
-import { useEffect, useState } from 'react';
+import { Category } from '@/types/category';
 
 interface CategoriesTableProps {
-	categories: CategoryWithTransactions[];
+	categories: Category[];
 }
 
 export default function CategoriesTable({ categories }: CategoriesTableProps) {
-	const [totalAmount, setTotalAmount] = useState(0);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (categories) {
-			setTotalAmount(
-				categories.reduce((prevAmount, curr) => {
-					return prevAmount + curr.totalTransactionsAmount || 0;
-				}, 0)
-			);
-		}
-	}, [categories]);
 
 	return (
 		<Table>
@@ -53,10 +41,8 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 						<TableCell className=''>{category.organization.name}</TableCell>
 						<TableCell className=''>{category.name}</TableCell>
 						<TableCell className=''>{category.fee}</TableCell>
-						<TableCell className=''>{category.totalTransactions}</TableCell>
-						<TableCell className='text-right'>
-							{category.totalTransactionsAmount ?? 0}
-						</TableCell>
+						<TableCell className=''>TODO: implement</TableCell>
+						<TableCell className='text-right'>TODO: implement</TableCell>
 					</TableRow>
 				))}
 			</TableBody>
@@ -64,7 +50,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 			<TableFooter>
 				<TableRow>
 					<TableCell colSpan={4}>Total</TableCell>
-					<TableCell className='text-right'>{totalAmount}</TableCell>
+					<TableCell className='text-right'>TODO: implement</TableCell>
 				</TableRow>
 			</TableFooter>
 		</Table>

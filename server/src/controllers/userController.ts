@@ -27,7 +27,7 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	const year = parseInt(activeSchoolYearDB);
-	console.log(year);
+
 	if (year < 2000 || year > 3000) {
 		res.json(
 			new CustomResponse(false, null, 'Year must only be between 2000 and 3000')

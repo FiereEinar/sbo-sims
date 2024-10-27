@@ -1,12 +1,10 @@
 import { Transaction } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
-import { Category, CategoryWithTransactions } from '@/types/category';
+import { Category } from '@/types/category';
 import { CategoryFormValues } from '@/components/forms/AddCategoryForm';
 import { APIResponse } from '@/types/api-response';
 
-export const fetchCategories = async (): Promise<
-	CategoryWithTransactions[] | undefined
-> => {
+export const fetchCategories = async (): Promise<Category[] | undefined> => {
 	try {
 		const { data } = await axiosInstance.get(`/category`);
 

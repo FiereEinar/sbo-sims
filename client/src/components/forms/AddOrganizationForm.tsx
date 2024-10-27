@@ -16,26 +16,17 @@ import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
 import { submitOrganizationForm } from '@/api/organization';
-import { useRef, useState } from 'react';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Cross2Icon } from '@radix-ui/react-icons';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
+import { Department } from '@/types/deparment';
+import DepartmentInputField from '../DepartmentInputField';
 
 export type OrganizationFormValues = z.infer<typeof organizationSchema>;
 
-type organization = {
-	id: string;
-	name: string;
-};
-
 export default function AddOrganizationForm() {
-	const [departments, setDepartments] = useState<organization[]>([]);
-	const [departmentInput, setDepartmentInput] = useState('');
-	const depInputRef = useRef<HTMLInputElement>(null);
+	const [departments, setDepartments] = useState<Department[]>([]);
 
 	const {
 		register,
@@ -64,7 +55,7 @@ export default function AddOrganizationForm() {
 
 			if (!result.success) {
 				setError('root', {
-					message: `${result.message}\n${result.error ?? ''}`,
+					message: `${result.message}. ${result.error ?? ''}`,
 				});
 				return;
 			}
@@ -79,14 +70,12 @@ export default function AddOrganizationForm() {
 		}
 	};
 
-	const onDepartmentAdd = () => {
-		if (departmentInput.length === 0) return;
+	const onDepartmentAdd = (value: string) => {
+		if (value.length === 0) return;
 		setDepartments((prev) => [
 			...prev,
-			{ name: departmentInput.toUpperCase(), id: uuidv4() },
+			{ name: value.toUpperCase(), id: uuidv4() },
 		]);
-		setDepartmentInput('');
-		if (depInputRef.current) depInputRef.current.focus();
 	};
 
 	const onDepartmentRemove = (id: string) => {
@@ -139,50 +128,12 @@ export default function AddOrganizationForm() {
 						id='treasurer'
 					/>
 
-					<div className='space-y-1 text-muted-foreground'>
-						<Label htmlFor='departments'>Departments: </Label>
-						<div className='flex'>
-							<Input
-								id='departments'
-								ref={depInputRef}
-								value={departmentInput}
-								onChange={(e) => setDepartmentInput(e.target.value)}
-								onKeyUpCapture={(e) => {
-									if (e.key === 'Enter') onDepartmentAdd();
-								}}
-								className='rounded-r-none'
-								placeholder='Add departments under this Organization'
-							/>
-							<Button
-								onClick={onDepartmentAdd}
-								className='rounded-l-none'
-								type='button'
-								variant='secondary'
-							>
-								Add
-							</Button>
-						</div>
-						<div className=' w-full flex flex-wrap'>
-							{departments.map((dep) => (
-								<Badge
-									className='flex justify-between size-fit pr-1 mb-1 mx-[2px]'
-									key={dep.id}
-								>
-									<p>{dep.name}</p>
-									<button
-										onClick={() => onDepartmentRemove(dep.id)}
-										type='button'
-									>
-										<Cross2Icon className='h-4 w-4' />
-									</button>
-								</Badge>
-							))}
-						</div>
-
-						{errors.departments && errors.departments.message && (
-							<ErrorText>{errors.departments.message.toString()}</ErrorText>
-						)}
-					</div>
+					{/* D */}
+					<DepartmentInputField
+						onSubmit={onDepartmentAdd}
+						onRemove={onDepartmentRemove}
+						selectedDepartments={departments}
+					/>
 
 					{errors.root && errors.root.message && (
 						<ErrorText>{errors.root.message.toString()}</ErrorText>

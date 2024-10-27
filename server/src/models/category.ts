@@ -12,8 +12,6 @@ export interface ICategory {
 	name: string;
 	fee: number;
 	organization: IOrganization;
-	semester: Semester;
-	year: YearLevel;
 }
 
 export const CategorySchema = new Schema<ICategory>({

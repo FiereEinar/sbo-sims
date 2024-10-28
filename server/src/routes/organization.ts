@@ -5,6 +5,7 @@ import {
 	get_all_organizations,
 	get_organization,
 	get_organization_categories,
+	update_organization,
 } from '../controllers/organizationController';
 import { createOrganizationValidation } from '../middlewares/validations/organizationValidations';
 import { isValidMongooseId } from '../middlewares/validations/validation';
@@ -31,6 +32,13 @@ router.delete(
 	'/:organizationID',
 	isValidMongooseId('organizationID', { from: 'params' }),
 	delete_organization
+);
+
+router.put(
+	'/:organizationID',
+	isValidMongooseId('organizationID', { from: 'params' }),
+	createOrganizationValidation,
+	update_organization
 );
 
 export default router;

@@ -128,7 +128,7 @@ export default function AddCategoryForm({
 				{mode === 'add' ? (
 					<Button className='flex justify-center gap-1' size='sm'>
 						<Plus />
-						<p>Add Student</p>
+						<p>Add Category</p>
 					</Button>
 				) : (
 					<Button className='flex gap-1' size='sm' variant='ocean'>

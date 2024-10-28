@@ -3,7 +3,7 @@ import {
 	fetchOrganizationCategories,
 } from '@/api/organization';
 import BackButton from '@/components/buttons/BackButton';
-import EditAndDeleteButton from '@/components/buttons/EditAndDeleteButton';
+import EditAndDeleteOrganizationButton from '@/components/buttons/EditAndDeleteOrganizationButton';
 import CategoriesTable from '@/components/CategoriesTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -49,7 +49,7 @@ export default function OrganizationInfo() {
 			<BackButton />
 			<StickyHeader>
 				<Header>{organization.name}</Header>
-				<EditAndDeleteButton />
+				<EditAndDeleteOrganizationButton organizationID={organization._id} />
 			</StickyHeader>
 			<hr />
 			<div>

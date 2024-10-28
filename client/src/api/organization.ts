@@ -56,3 +56,33 @@ export const fetchOrganizationCategories = async (
 		console.error('Failed to fetch organizations categories', err);
 	}
 };
+
+export const requestDeleteOrganization = async (
+	organizationID: string
+): Promise<APIResponse<Organization> | undefined> => {
+	try {
+		const { data } = await axiosInstance.delete(
+			`/organization/${organizationID}`
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to send request to delete organization', err);
+	}
+};
+
+export const submitUpdateOrganizationForm = async (
+	organizationID: string,
+	formData: OrganizationFormValues
+): Promise<APIResponse<Organization> | undefined> => {
+	try {
+		const { data } = await axiosInstance.put(
+			`/organization/${organizationID}`,
+			formData
+		);
+
+		return data;
+	} catch (err: any) {
+		console.error('Failed to submit update organization form', err);
+	}
+};

@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import { IOrganization } from '../models/organization';
 import CustomResponse from '../types/response';
 import { CustomRequest } from '../types/request';
+import { UpdateQuery } from 'mongoose';
 
 /**
  * GET - get all organizations and its categories
@@ -197,6 +198,73 @@ export const delete_organization = asyncHandler(
 
 		res.json(
 			new CustomResponse(true, result, 'Organization deleted successfully')
+		);
+	}
+);
+
+/**
+ * PUT - update an organization by ID
+ */
+export const update_organization = asyncHandler(
+	async (req: CustomRequest, res) => {
+		const { organizationID } = req.params;
+
+		const {
+			name,
+			governor,
+			treasurer,
+			departments,
+		}: Omit<IOrganization, '_id'> = req.body;
+
+		if (!req.OrganizationModel) {
+			res
+				.status(500)
+				.json(
+					new CustomResponse(false, null, 'OrganizationModel not attached')
+				);
+
+			return;
+		}
+
+		if (departments.length === 0) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					'Enter atleast 1 department for this organization'
+				)
+			);
+			return;
+		}
+
+		departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
+
+		const update: UpdateQuery<IOrganization> = {
+			name: name,
+			governor: governor,
+			treasurer: treasurer,
+			departments: departments,
+		};
+
+		const result = await req.OrganizationModel.findByIdAndUpdate(
+			organizationID,
+			update,
+			{ new: true }
+		).exec();
+
+		if (!result) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					`Organization with ID: ${organizationID} does not exist`
+				)
+			);
+			return;
+		}
+
+		res.json(
+			new CustomResponse(true, result, 'Organization created successfully')
 		);
 	}
 );

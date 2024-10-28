@@ -46,6 +46,7 @@ function DeleteButton({ organizationID }: DeleteButtonProps) {
 
 			if (!result) {
 				toast({
+					variant: 'destructive',
 					title: 'Failed to delete organization',
 					description:
 						'A network error occured while trying to delete organization',
@@ -55,6 +56,7 @@ function DeleteButton({ organizationID }: DeleteButtonProps) {
 
 			if (!result.success) {
 				toast({
+					variant: 'destructive',
 					title: 'Failed to delete organization',
 					description: `${result.message}. ${result.error ?? ''}`,
 				});
@@ -66,6 +68,7 @@ function DeleteButton({ organizationID }: DeleteButtonProps) {
 		} catch (err: any) {
 			console.error('Failed to delete organization', err);
 			toast({
+				variant: 'destructive',
 				title: 'Failed to delete organization',
 				description:
 					'A network error occured while trying to delete organization',

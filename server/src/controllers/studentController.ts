@@ -311,16 +311,29 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	// check if a student with the given ID exists
-	const student = await req.StudentModel.findOne({ studentID: studentID });
-	if (student === null) {
+	const transactions = await req.TransactionModel?.find({
+		owner: studentID,
+	}).exec();
+
+	if (transactions && transactions.length > 0) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'The student has existing transactions record, make sure to handle and delete them first'
+			)
+		);
+		return;
+	}
+
+	const result = await req.StudentModel.findByIdAndDelete(studentID);
+
+	if (result === null) {
 		res.json(
 			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
 		);
 		return;
 	}
-
-	const result = await req.StudentModel.findByIdAndDelete(student._id);
 
 	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });

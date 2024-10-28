@@ -202,6 +202,21 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
+	const transactions = await req.TransactionModel?.find({
+		category: categoryID,
+	}).exec();
+
+	if (transactions && transactions?.length > 0) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'The category has existing transactions, make sure to handle and delete them first'
+			)
+		);
+		return;
+	}
+
 	const result = await req.CategoryModel.findByIdAndDelete(categoryID);
 	if (result === null) {
 		res.json(

@@ -182,6 +182,21 @@ export const delete_organization = asyncHandler(
 			return;
 		}
 
+		const categories = await req.CategoryModel?.find({
+			organization: organizationID,
+		}).exec();
+
+		if (categories && categories.length > 0) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					'The organization has existing categories, make sure to handle and delete them first'
+				)
+			);
+			return;
+		}
+
 		const result = await req.OrganizationModel.findByIdAndDelete(
 			organizationID
 		);

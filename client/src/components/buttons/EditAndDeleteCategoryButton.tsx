@@ -47,6 +47,7 @@ function DeleteButton({ categoryID }: DeleteButtonProps) {
 
 			if (!result) {
 				toast({
+					variant: 'destructive',
 					title: 'Failed to delete category',
 					description:
 						'A network error occured while trying to delete category',
@@ -56,6 +57,7 @@ function DeleteButton({ categoryID }: DeleteButtonProps) {
 
 			if (!result.success) {
 				toast({
+					variant: 'destructive',
 					title: 'Failed to delete category',
 					description: `${result.message}. ${result.error ?? ''}`,
 				});
@@ -67,6 +69,7 @@ function DeleteButton({ categoryID }: DeleteButtonProps) {
 		} catch (err: any) {
 			console.error('Failed to delete category', err);
 			toast({
+				variant: 'destructive',
 				title: 'Failed to delete category',
 				description: 'A network error occured while trying to delete category',
 			});

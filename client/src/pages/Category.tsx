@@ -29,7 +29,7 @@ export default function Category() {
 		<SidebarPageLayout>
 			<div className='mt-5' />
 			<StickyHeader>
-				<Header>Category Page</Header>
+				<Header>Categories</Header>
 				<AddCategoryForm />
 			</StickyHeader>
 			<CategoriesTable categories={categories} />

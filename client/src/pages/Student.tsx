@@ -76,7 +76,7 @@ export default function Student() {
 		<SidebarPageLayout>
 			<div className='mt-5' />
 			<StickyHeader>
-				<Header>Student List</Header>
+				<Header>Students</Header>
 				<AddStudentForm />
 			</StickyHeader>
 			<StudentFilter

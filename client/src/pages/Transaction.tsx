@@ -103,7 +103,7 @@ export default function Transaction() {
 		<SidebarPageLayout>
 			<div className='mt-5' />
 			<StickyHeader>
-				<Header>Transactions List</Header>
+				<Header>Transactions</Header>
 				<AddTransactionForm categories={categories} />
 			</StickyHeader>
 

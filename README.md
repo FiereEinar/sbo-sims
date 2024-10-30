@@ -12,6 +12,7 @@ A simple and intuitive web application designed to help you easily track student
 - **Event & Category Creation**: Create custom events or categories for which students will be making payments.
 - **Transaction Management**: Track, update, and manage all student transactions efficiently.
 - **Organization Management**: Manage what organization facilitates certain events & categories.
+- **Dynamic Database**: Dynamically change which database to fetch data from based on user settings, which allows a more modular way storing information.
 - **Authentication & Authorization**: Secure login and user management to ensure only authorized users can access or modify data.
 
 ## Technologies Used
@@ -23,7 +24,6 @@ A simple and intuitive web application designed to help you easily track student
 - **Tailwind CSS**
 - **Vite**
 - **Shadcn**
-- **Vercel**
 
 ### Backend
 
@@ -33,7 +33,6 @@ A simple and intuitive web application designed to help you easily track student
 - **MongoDB**
 - **Mongoose**
 - **Cloudinary**
-- **Vercel**
 
 ## Libraries Used
 
@@ -45,6 +44,8 @@ A simple and intuitive web application designed to help you easily track student
 - **[react-query](https://www.npmjs.com/package/react-query):** Data fetching and caching.
 - **[axios](https://axios-http.com/docs/intro):** Promise-based HTTP client.
 - **[date-fns](https://date-fns.org/docs/Getting-Started):** JavaScript date utility library.
+- **[zustand](https://zustand.docs.pmnd.rs/getting-started/introduction):** React state management library
+- **[lodash](https://lodash.com):** A modern JavaScript utility library
 
 ### Backend
 
@@ -56,3 +57,5 @@ A simple and intuitive web application designed to help you easily track student
 - **[multer](https://www.npmjs.com/package/multer):** File upload middleware for Node.js.
 - **[express-async-handler](https://www.npmjs.com/package/express-async-handler):** Asynchronous error handling middleware.
 - **[cors](https://www.npmjs.com/package/cors):** Middleware for enabling CORS.
+- **[date-fns](https://date-fns.org/docs/Getting-Started):** JavaScript date utility library.
+- **[csv-parser](https://www.npmjs.com/package/csv-parser):** CSV parsing utility tool.

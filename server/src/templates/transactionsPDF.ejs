@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Transaction Report</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				margin: 20px;
+			}
+			h1 {
+				text-align: center;
+				color: #333;
+			}
+			.header {
+				text-align: center;
+			}
+			.header p {
+				font-size: 16px;
+				color: #666;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			th,
+			td {
+				border: 1px solid #ddd;
+				padding: 10px;
+				text-align: center;
+			}
+			th {
+				background-color: #f4f4f4;
+				color: #333;
+				font-weight: bold;
+			}
+			tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+			.status {
+				font-weight: bold;
+				color: #fff;
+				padding: 5px 10px;
+				border-radius: 4px;
+			}
+			.status.paid {
+				background-color: #4caf50;
+			}
+			.status.partial {
+				background-color: #ff9800;
+			}
+			.status.cancelled {
+				background-color: #f44336;
+			}
+			.total-row {
+				font-weight: bold;
+				background-color: #f4f4f4;
+			}
+			.total-label {
+				text-align: left;
+				padding-right: 15px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="header">
+			<h2>Transaction Report for <%= period %></h2>
+			<p><strong>Date:</strong> <%= dateToday %></p>
+		</div>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Student ID</th>
+					<th>Fullname</th>
+					<th>Course</th>
+					<th>Year</th>
+					<th>Date</th>
+					<th>Organization</th>
+					<th>Category</th>
+					<th>Status</th>
+					<th>Amount</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% transactions.forEach(item => { %>
+				<tr>
+					<td><%= item.studentID %></td>
+					<td><%= item.fullname %></td>
+					<td><%= item.course %></td>
+					<td><%= item.year %></td>
+					<td><%= item.date %></td>
+					<td><%= item.organization %></td>
+					<td><%= item.category %></td>
+					<td>
+						<span class="status <%= item.status.toLowerCase() %>">
+							<%= item.status %>
+						</span>
+					</td>
+					<td>P<%= item.amount %></td>
+				</tr>
+				<% }); %>
+			</tbody>
+
+			<tfoot>
+				<tr class="total-row">
+					<td colspan="8" class="total-label">Total Amount:</td>
+					<td>P<%= totalAmount %></td>
+				</tr>
+			</tfoot>
+		</table>
+	</body>
+</html>

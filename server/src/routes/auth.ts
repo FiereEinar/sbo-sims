@@ -9,7 +9,6 @@ import {
 	logout,
 	signup,
 } from '../controllers/authController';
-import path from 'path';
 
 const router = express.Router();
 

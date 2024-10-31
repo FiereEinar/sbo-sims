@@ -20,3 +20,22 @@ export type TransactionPeriodFilter = 'all' | 'today' | 'weekly' | 'monthly';
 // 	status?: boolean;
 // 	date?: Date;
 // };
+
+export type EJSTransaction = {
+	studentID: string;
+	fullname: string;
+	course: string;
+	year: string;
+	date: string;
+	organization: string;
+	category: string;
+	status: string;
+	amount: string;
+};
+
+export type TransactionEJSVariables = {
+	period: string;
+	dateToday: string;
+	totalAmount: number;
+	transactions: EJSTransaction[];
+};

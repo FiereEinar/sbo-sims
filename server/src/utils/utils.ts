@@ -39,3 +39,16 @@ export const getDateFilterByPeriod = (
 		};
 	}
 };
+
+export const getPeriodLabel = (period: string): string | undefined => {
+	switch (period) {
+		case 'today':
+			return 'Today';
+		case 'weekly':
+			return 'This Week';
+		case 'monthly':
+			return 'This Month';
+		case 'yearly':
+			return 'This Year';
+	}
+};

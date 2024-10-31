@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import {
 	createTransactionBody,
+	EJSTransaction,
+	TransactionEJSVariables,
 	updateTransactionAmountBody,
 } from '../types/transaction';
 import mongoose, { UpdateQuery } from 'mongoose';
@@ -9,6 +11,11 @@ import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import fs from 'fs/promises';
 import path from 'path';
 import { ITransaction } from '../models/transaction';
+import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
+import ejs from 'ejs';
+import { format } from 'date-fns';
+import _ from 'lodash';
+import { getPeriodLabel } from '../utils/utils';
 
 /**
  * GET - fetch all transactions made
@@ -33,40 +40,61 @@ export const get_all_transactions = asyncHandler(
  */
 export const get_transaction_list_file = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
-		try {
-			console.log(req.filteredTransactions);
-			const filePath = path.join(__dirname, 'filtered-transactions.csv');
+		if (req.filteredTransactions) {
+			const template = await fs.readFile(
+				path.join(__dirname, '../', 'templates', 'transactionsPDF.ejs'),
+				{ encoding: 'utf8' }
+			);
 
-			const header = 'Student ID,Course,Date,Category,Status,Amount\n';
-			await fs.writeFile(filePath, header, { encoding: 'utf8' });
-
-			const writeToFile = async () => {
-				if (req.filteredTransactions) {
-					req.filteredTransactions.forEach(async (transaction) => {
-						const paidStatus =
-							transaction.amount >= transaction.category.fee
-								? 'Paid'
-								: 'Partial';
-
-						const row = `${transaction.owner.studentID},${
-							transaction.owner.course
-						},${transaction.date?.toISOString()},${
-							transaction.category.name
-						},${paidStatus},${transaction.amount}\n`;
-
-						console.log(row);
-
-						await fs.appendFile(filePath, row, { encoding: 'utf8' });
-					});
-				}
+			let EJSData: TransactionEJSVariables = {
+				dateToday: format(new Date(), 'MMMM dd, yyyy'),
+				period: getPeriodLabel(req.query.period as string) ?? 'Today',
+				totalAmount: 0,
+				transactions: [],
 			};
 
-			await writeToFile();
-			res.sendFile(filePath, async () => {
-				// await fs.unlink(filePath);
+			req.filteredTransactions.forEach((transaction) => {
+				const tDate = transaction.date
+					? format(transaction.date ?? undefined, 'mm/dd/yyyy')
+					: 'No date provided';
+
+				const tStatus =
+					transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+
+				const t: EJSTransaction = {
+					amount: transaction.amount.toString(),
+					category: `${_.startCase(transaction.category.name)}`,
+					organization: `${_.startCase(
+						transaction.category.organization.name
+					)}`,
+					course: transaction.owner.course.toUpperCase(),
+					date: tDate,
+					fullname: _.startCase(
+						`${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`
+					),
+					status: tStatus,
+					studentID: transaction.owner.studentID,
+					year: transaction.owner.year.toString(),
+				};
+
+				EJSData.transactions.push(t);
+				EJSData.totalAmount += transaction.amount;
 			});
-		} catch (error: any) {
-			console.error('Failed to generate file', error);
+
+			const html = ejs.render(template, EJSData);
+
+			await convertToPdf(html);
+
+			res.sendFile(
+				path.join(__dirname, '../', '../', pdfOutputPath),
+				async (err) => {
+					if (err) {
+						res.sendStatus(500);
+						return;
+					}
+					await fs.unlink(pdfOutputPath);
+				}
+			);
 		}
 	}
 );

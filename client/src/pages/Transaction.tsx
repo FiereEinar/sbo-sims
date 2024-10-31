@@ -89,10 +89,10 @@ export default function Transaction() {
 			});
 
 			// Create a URL for the blob and trigger the download
-			const blob = new Blob([result.data], { type: 'text/csv' });
+			const blob = new Blob([result.data], { type: 'application/pdf' });
 			const link = document.createElement('a');
 			link.href = URL.createObjectURL(blob);
-			link.download = 'transactions.csv';
+			link.download = 'transactions.pdf';
 			link.click();
 		} catch (err: any) {
 			console.error('Error downloading the file: ', err);

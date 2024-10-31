@@ -29,6 +29,7 @@ export default function DepartmentInputField({
 		queryFn: fetchAvailableCourses,
 	});
 
+	// REMINDER: match this function in the onClick handler in available courses dropdown
 	const onInputSubmit = () => {
 		onSubmit(departmentInput);
 		setDepartmentInput('');
@@ -44,6 +45,7 @@ export default function DepartmentInputField({
 						id='departments'
 						ref={depInputRef}
 						value={departmentInput}
+						autoComplete='off'
 						onChange={(e) => setDepartmentInput(e.target.value)}
 						onKeyUpCapture={(e) => {
 							if (e.key === 'Enter') onInputSubmit();
@@ -60,13 +62,18 @@ export default function DepartmentInputField({
 						Add
 					</Button>
 				</div>
+				{/* Available courses dropdown */}
 				<div className='relative w-full'>
 					{availableCourses && departmentInput && (
 						<SelectContainer>
 							{availableCourses.map((course) => (
 								<SelectContainerItem
 									type='button'
-									onClick={onInputSubmit}
+									onClick={() => {
+										onSubmit(course);
+										setDepartmentInput('');
+										if (depInputRef.current) depInputRef.current.focus();
+									}}
 									key={course}
 								>
 									{course}

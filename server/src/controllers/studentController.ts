@@ -311,8 +311,17 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
+	const student = await req.StudentModel.findOne({ studentID: studentID });
+
+	if (student === null) {
+		res.json(
+			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
+		);
+		return;
+	}
+
 	const transactions = await req.TransactionModel?.find({
-		owner: studentID,
+		owner: student._id,
 	}).exec();
 
 	if (transactions && transactions.length > 0) {
@@ -326,19 +335,14 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	const result = await req.StudentModel.findByIdAndDelete(studentID);
-
-	if (result === null) {
-		res.json(
-			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
-		);
-		return;
-	}
+	const result = await req.StudentModel.findByIdAndDelete(student._id);
 
 	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });
 
-export const load_all_students = asyncHandler(async (req, res) => {
-	await loadStudents();
-	res.json({ message: 'done' });
-});
+export const load_all_students = asyncHandler(
+	async (req: CustomRequest, res) => {
+		await loadStudents(req, res);
+		res.json({ message: 'done' });
+	}
+);

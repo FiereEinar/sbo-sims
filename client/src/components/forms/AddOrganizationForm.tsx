@@ -183,7 +183,6 @@ export default function AddOrganizationForm({
 						id='treasurer'
 					/>
 
-					{/* D */}
 					<DepartmentInputField
 						onSubmit={onDepartmentAdd}
 						onRemove={onDepartmentRemove}

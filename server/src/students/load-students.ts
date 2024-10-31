@@ -1,25 +1,18 @@
-import mongoose from 'mongoose';
 import fs from 'fs';
 import csvParser from 'csv-parser';
-import { getDatabaseConnection } from '../database/databaseManager';
-import { DB_MODEL, originalDbName } from '../constants';
-import { StudentSchema } from '../models/student';
+import { CustomRequest } from '../types/request';
+import { Response } from 'express';
 
-export const loadStudents = async (): Promise<void> => {
-	const dbURI = process.env.MONGO_URI;
-
-	const connection = await getDatabaseConnection(
-		originalDbName,
-		dbURI as string
-	);
-	const Student = connection.model(DB_MODEL.STUDENT, StudentSchema);
-
-	// const csvFilePaths = ['./src/students/STUDENTS_LIST_BSEMC-DAT.csv'];
+export const loadStudents = async (
+	req: CustomRequest,
+	res: Response
+): Promise<void> => {
 	const csvFilePaths = [
 		'./src/students/STUDENTS_LIST_BSAT.csv',
 		'./src/students/STUDENTS_LIST_BSIT.csv',
 		'./src/students/STUDENTS_LIST_BSET.csv',
 		'./src/students/STUDENTS_LIST_BSFT.csv',
+		'./src/students/STUDENTS_LIST_BSEMC-DAT.csv',
 	];
 
 	csvFilePaths.forEach((csvFilePath) => {
@@ -27,7 +20,12 @@ export const loadStudents = async (): Promise<void> => {
 			.pipe(csvParser())
 			.on('data', async (row) => {
 				try {
-					const newStudent = new Student({
+					if (!req.StudentModel) {
+						console.log('StudentModel not attached');
+						return;
+					}
+
+					const newStudent = new req.StudentModel({
 						firstname: row.firstname,
 						lastname: row.lastname,
 						studentID: row.studentID,
@@ -37,8 +35,6 @@ export const loadStudents = async (): Promise<void> => {
 						email: '',
 						middlename: row.middlename,
 					});
-
-					// console.log(newStudent);
 
 					await newStudent.save();
 					console.log(`Saved student: ${row.studentID}`);

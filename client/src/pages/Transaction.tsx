@@ -23,7 +23,7 @@ export default function Transaction() {
 
 	const defaultFilterValue = 'All';
 	const [page, setPage] = useState(1);
-	const pageSize = 50;
+	const pageSize = 10;
 
 	const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
 	const [status, setStatus] = useState<TransactionsFilterValues['status']>();

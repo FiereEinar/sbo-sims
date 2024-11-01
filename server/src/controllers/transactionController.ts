@@ -5,7 +5,7 @@ import {
 	TransactionEJSVariables,
 	updateTransactionAmountBody,
 } from '../types/transaction';
-import mongoose, { UpdateQuery } from 'mongoose';
+import { UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import fs from 'fs/promises';
@@ -13,9 +13,10 @@ import path from 'path';
 import { ITransaction } from '../models/transaction';
 import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
 import ejs from 'ejs';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import _ from 'lodash';
 import { getPeriodLabel } from '../utils/utils';
+import { ICategory } from '../models/category';
 
 /**
  * GET - fetch all transactions made
@@ -96,6 +97,122 @@ export const get_transaction_list_file = asyncHandler(
 				}
 			);
 		}
+	}
+);
+
+/**
+ * GET - dashboard data
+ */
+export const get_dashboard_data = asyncHandler(
+	async (req: CustomRequest, res) => {
+		/**
+		 * Transactions related logic
+		 */
+		const result = await req.TransactionModel?.find();
+		let totalRevenue = 0;
+
+		result?.map((t) => {
+			totalRevenue += t.amount;
+		});
+
+		const transactions = await req.TransactionModel?.aggregate([
+			{
+				$group: {
+					_id: '$date',
+					totalAmount: { $sum: '$amount' },
+				},
+			},
+			{
+				$project: {
+					_id: 0,
+					date: '$_id',
+					totalAmount: 1,
+				},
+			},
+			{
+				$sort: { date: 1 },
+			},
+			{
+				$limit: 90, // 3 months
+			},
+		]);
+
+		const transactionsToday = await req.TransactionModel?.countDocuments({
+			date: { $gte: startOfDay(new Date().toISOString()) },
+		});
+
+		/**
+		 * Categories related logic
+		 */
+		type CategoryObjResponse = {
+			category: ICategory;
+			totalAmount: number;
+			totalTransactions: number;
+		};
+
+		const categories = await req.CategoryModel?.find({}).populate({
+			model: req.OrganizationModel,
+			path: 'organization',
+		});
+
+		const categoriesMap: { [key: string]: CategoryObjResponse } = {};
+
+		categories?.map(
+			(cat) =>
+				(categoriesMap[cat._id] = {
+					category: cat,
+					totalAmount: 0,
+					totalTransactions: 0,
+				} as CategoryObjResponse)
+		);
+
+		const allTransactions = await req.TransactionModel?.find({})
+			.populate({
+				model: req.CategoryModel,
+				path: 'category',
+				populate: {
+					model: req.OrganizationModel,
+					path: 'organization',
+				},
+			})
+			.populate({
+				model: req.StudentModel,
+				path: 'owner',
+			});
+
+		allTransactions?.map((trans) => {
+			const c = categoriesMap[trans.category._id];
+			if (c === undefined) return;
+
+			c.totalAmount += trans.amount;
+			c.totalTransactions++;
+
+			categoriesMap[trans.category._id] = c;
+		});
+
+		const categoriesArray: CategoryObjResponse[] = [
+			...Object.values(categoriesMap),
+		];
+
+		/**
+		 * Students related logic
+		 */
+		const totalStudents = await req.StudentModel?.countDocuments();
+
+		res.json(
+			new CustomResponse(
+				true,
+				{
+					totalRevenue,
+					totalTransaction: result?.length ?? 0,
+					transactionsToday,
+					totalStudents,
+					transactions,
+					categories: categoriesArray,
+				},
+				'Dashboard data'
+			)
+		);
 	}
 );
 

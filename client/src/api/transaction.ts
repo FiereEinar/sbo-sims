@@ -3,6 +3,7 @@ import axiosInstance from './axiosInstance';
 import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
 import { TransactionFormValues } from '@/components/forms/AddTransactionForm';
 import { UpdateTransactionAmountFormValues } from '@/components/forms/UpdateTransactionAmountForm';
+import { DashboardData } from '@/pages/Dashboard';
 
 export const generateTransactionsFilterURL = (
 	filters: TransactionsFilterValues,
@@ -108,6 +109,20 @@ export const requestDeleteTransaction = async (
 		);
 
 		return data;
+	} catch (err: any) {
+		console.error('Failed to send request on delete transaction', err);
+	}
+};
+
+export const fetchDashboardData = async (): Promise<
+	DashboardData | undefined
+> => {
+	try {
+		const { data } = await axiosInstance.get<APIResponse<DashboardData>>(
+			`/transaction/dashboard-data`
+		);
+
+		return data.data;
 	} catch (err: any) {
 		console.error('Failed to send request on delete transaction', err);
 	}

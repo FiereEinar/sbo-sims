@@ -42,13 +42,16 @@ export const transactionQueryFilter = asyncHandler(
 
 			return;
 		}
-		// const defaultPage = 1;
-		// const defaultPageSize = 100;
+
+		const defaultPage = 1;
+		const defaultPageSize = 100;
 
 		const isPaid = JSON.parse((status as string) ?? 'false');
-		// const pageNum = page ? parseInt(page as string) : defaultPage;
-		// const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
-		// const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
+		const pageNum = page ? parseInt(page as string) : defaultPage;
+		const pageSizeNum = pageSize
+			? parseInt(pageSize as string)
+			: defaultPageSize;
+		const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
 		const filters: FilterQuery<ITransaction>[] = [];
 
@@ -101,6 +104,8 @@ export const transactionQueryFilter = asyncHandler(
 				);
 			}
 		}
+
+		filteredTransactions = filteredTransactions.splice(skipAmount, pageSizeNum);
 
 		// if (search) {
 		// 	const searchRegex = new RegExp(search as string, 'i');

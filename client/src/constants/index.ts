@@ -34,4 +34,5 @@ export const QUERY_KEYS = {
 	CATEGORY: 'categories',
 	STUDENT_COURSES: 'student_courses',
 	STUDENT_TRANSACTIONS: 'student_transactions',
+	DASHBOARD_DATA: 'dashboard_data',
 };

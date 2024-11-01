@@ -3,6 +3,7 @@ import {
 	create_transaction,
 	delete_transaction,
 	get_all_transactions,
+	get_dashboard_data,
 	get_transaction,
 	get_transaction_list_file,
 	update_transaction,
@@ -20,6 +21,8 @@ const router = express.Router();
 router.get('/', transactionQueryFilter, get_all_transactions);
 
 router.get('/download', transactionQueryFilter, get_transaction_list_file);
+
+router.get('/dashboard-data', get_dashboard_data);
 
 router.get(
 	'/:transactionID',

@@ -3,6 +3,8 @@ import { IOrganization } from '../models/organization';
 import CustomResponse from '../types/response';
 import { CustomRequest } from '../types/request';
 import { UpdateQuery } from 'mongoose';
+import { ICategoryWithTransactions } from '../types/category';
+import { ICategory } from '../models/category';
 
 /**
  * GET - get all organizations and its categories
@@ -35,7 +37,20 @@ export const get_all_organizations = asyncHandler(
 			},
 		]);
 
-		res.json(new CustomResponse(true, organizations, 'Organizations'));
+		const organizationsWithCategories = await Promise.all(
+			organizations.map(async (org) => {
+				const categories = await req.CategoryModel?.find({
+					organization: org._id,
+				}).exec();
+
+				org.categories = categories;
+				return org;
+			})
+		);
+
+		res.json(
+			new CustomResponse(true, organizationsWithCategories, 'Organizations')
+		);
 	}
 );
 
@@ -100,12 +115,35 @@ export const get_organization_categories = asyncHandler(
 			return;
 		}
 
-		const categories = await req.CategoryModel.find({
-			organization: org._id,
-		}).populate({
-			model: req.OrganizationModel,
-			path: 'organization',
-		});
+		const categories =
+			await req.CategoryModel.aggregate<ICategoryWithTransactions>([
+				{
+					$match: {
+						organization: org._id,
+					},
+				},
+				{
+					$lookup: {
+						from: 'transactions',
+						localField: '_id',
+						foreignField: 'category',
+						as: 'transaction',
+					},
+				},
+				{
+					$addFields: {
+						totalTransactions: { $size: '$transaction' },
+						totalTransactionsAmount: { $sum: '$transaction.amount' },
+					},
+				},
+				{
+					$project: {
+						transaction: 0,
+					},
+				},
+			]);
+
+		categories.forEach((category) => (category.organization = org));
 
 		res.json(new CustomResponse(true, categories, 'Organizations categories'));
 	}

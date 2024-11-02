@@ -42,7 +42,7 @@ export default function OrganizationTable({
 						<TableCell className=''>{_.startCase(org.governor)}</TableCell>
 						<TableCell className=''>{_.startCase(org.treasurer)}</TableCell>
 						<TableCell className='text-right'>
-							{org.categories.length}
+							{org.categories?.length ?? 0}
 						</TableCell>
 					</TableRow>
 				))}

@@ -40,8 +40,6 @@ export default function Dashboard() {
 		queryFn: () => fetchDashboardData(),
 	});
 
-	console.log(dashboardData);
-
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />

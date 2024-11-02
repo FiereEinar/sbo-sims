@@ -23,21 +23,25 @@ import { ICategory } from '../models/category';
  */
 export const get_all_transactions = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
+		const splicedFilteredTransactions = req.filteredTransactions?.splice(
+			req.skipAmount ?? 0,
+			req.pageSizeNum
+		);
+
 		res.json(
 			new CustomPaginatedResponse(
 				true,
-				req.filteredTransactions,
+				splicedFilteredTransactions,
 				'All transactions',
-				// REMINDER: put next & prev here
-				-1,
-				-1
+				req.nextPage ?? -1,
+				req.prevPage ?? -1
 			)
 		);
 	}
 );
 
 /**
- * GET - get a csv file result of transactions
+ * GET - get a pdf file result of transactions
  */
 export const get_transaction_list_file = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
@@ -56,7 +60,10 @@ export const get_transaction_list_file = asyncHandler(
 
 			req.filteredTransactions.forEach((transaction) => {
 				const tDate = transaction.date
-					? format(transaction.date ?? undefined, 'mm/dd/yyyy')
+					? format(
+							new Date(transaction.date.toISOString()) ?? undefined,
+							'MM/dd/yyyy'
+					  )
 					: 'No date provided';
 
 				const tStatus =

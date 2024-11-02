@@ -1,27 +1,11 @@
 import asyncHandler from 'express-async-handler';
 import { FilterQuery } from 'mongoose';
 import { ITransaction } from '../models/transaction';
-import {
-	addDays,
-	startOfDay,
-	startOfMonth,
-	startOfWeek,
-	startOfYear,
-} from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
 import { TransactionQueryFilterRequest } from '../types/request';
 import CustomResponse from '../types/response';
 import { getDateFilterByPeriod } from '../utils/utils';
 
-/**
- * GET - fetch all transactions made
- * TODO: implement paganation
- *
- * can't directly implement pagination and filtering at the same time
- * I commented it for the mean time
- *
- * some values that are used in filtering needs to be populated first before they can used as filters
- * so all datas needs to be fetched from db first, which defeats the purpose of pagination
- */
 export const transactionQueryFilter = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res, next) => {
 		const {
@@ -81,8 +65,6 @@ export const transactionQueryFilter = asyncHandler(
 				path: 'owner',
 			})
 			.sort({ date: sortByDate === 'asc' ? 1 : -1 })
-			// .skip(skipAmount)
-			// .limit(pageSizeNum)
 			.exec();
 
 		let filteredTransactions = transactions;
@@ -105,23 +87,17 @@ export const transactionQueryFilter = asyncHandler(
 			}
 		}
 
-		filteredTransactions = filteredTransactions.splice(skipAmount, pageSizeNum);
+		const filteredTransactionsLength = filteredTransactions.length;
 
-		// if (search) {
-		// 	const searchRegex = new RegExp(search as string, 'i');
-		// 	filteredTransactions = filteredTransactions.filter((transaction) =>
-		// 		searchRegex.test(transaction.owner.studentID)
-		// 	);
-		// }
-
-		// const next =
-		// 	(await Transaction.countDocuments({ $and: filters })) >
-		// 	skipAmount + pageSizeNum
-		// 		? pageNum + 1
-		// 		: -1;
-		// const prev = pageNum > 1 ? pageNum - 1 : -1;
+		const nextPage =
+			filteredTransactionsLength > skipAmount + pageSizeNum ? pageNum + 1 : -1;
+		const prevPage = pageNum > 1 ? pageNum - 1 : -1;
 
 		req.filteredTransactions = filteredTransactions;
+		req.nextPage = nextPage;
+		req.prevPage = prevPage;
+		req.skipAmount = skipAmount;
+		req.pageSizeNum = pageSizeNum;
 		next();
 	}
 );

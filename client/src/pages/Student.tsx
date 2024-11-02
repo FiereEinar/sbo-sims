@@ -8,16 +8,8 @@ import Header from '@/components/ui/header';
 import { StudentFilterValues } from '@/types/student';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import {
-	Pagination,
-	PaginationContent,
-	PaginationEllipsis,
-	PaginationItem,
-	PaginationLink,
-	PaginationNext,
-	PaginationPrevious,
-} from '@/components/ui/pagination';
 import { QUERY_KEYS } from '@/constants';
+import PaginationController from '@/components/PaginationController';
 
 export default function Student() {
 	const [page, setPage] = useState(1);
@@ -90,47 +82,14 @@ export default function Student() {
 			{studentsLoading || (cLoading && <p>Loading...</p>)}
 
 			{studentsFetchResult && (
-				<Pagination className='pb-5'>
-					<PaginationContent>
-						<PaginationItem
-							onClick={() => {
-								if (studentsFetchResult.prev === -1) return;
-								setPage(page - 1);
-							}}
-						>
-							<PaginationPrevious />
-						</PaginationItem>
-
-						<PaginationItem>
-							{studentsFetchResult.prev === -1 ? (
-								<PaginationEllipsis />
-							) : (
-								<PaginationLink>{studentsFetchResult.prev}</PaginationLink>
-							)}
-						</PaginationItem>
-
-						<PaginationItem>
-							<PaginationLink isActive>{page}</PaginationLink>
-						</PaginationItem>
-
-						<PaginationItem>
-							{studentsFetchResult.next === -1 ? (
-								<PaginationEllipsis />
-							) : (
-								<PaginationLink>{studentsFetchResult.next}</PaginationLink>
-							)}
-						</PaginationItem>
-
-						<PaginationItem>
-							<PaginationNext
-								onClick={() => {
-									if (studentsFetchResult.next === -1) return;
-									setPage(page + 1);
-								}}
-							/>
-						</PaginationItem>
-					</PaginationContent>
-				</Pagination>
+				<div className='absolute w-full p-5 bottom-0'>
+					<PaginationController
+						currentPage={page}
+						nextPage={studentsFetchResult.next}
+						prevPage={studentsFetchResult.prev}
+						setPage={setPage}
+					/>
+				</div>
 			)}
 		</SidebarPageLayout>
 	);

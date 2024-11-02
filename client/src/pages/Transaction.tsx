@@ -6,6 +6,7 @@ import {
 	generateTransactionsFilterURL,
 } from '@/api/transaction';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
+import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
@@ -143,6 +144,17 @@ export default function Transaction() {
 				isLoading={transactionsLoading}
 				transactions={fetchTransactionsResult?.data}
 			/>
+
+			{fetchTransactionsResult && (
+				<div className='absolute w-full p-5 bottom-0'>
+					<PaginationController
+						currentPage={page}
+						nextPage={fetchTransactionsResult.next}
+						prevPage={fetchTransactionsResult.prev}
+						setPage={setPage}
+					/>
+				</div>
+			)}
 		</SidebarPageLayout>
 	);
 }

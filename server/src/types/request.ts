@@ -17,4 +17,8 @@ export interface CustomRequest extends Request {
 
 export type TransactionQueryFilterRequest = CustomRequest & {
 	filteredTransactions?: ITransaction[];
+	nextPage?: number;
+	prevPage?: number;
+	skipAmount?: number;
+	pageSizeNum?: number;
 };

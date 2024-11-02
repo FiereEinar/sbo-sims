@@ -16,6 +16,8 @@ export type Student = MongoEntity & {
 export type StudentWithTransactions = Student & TransactionsData;
 
 export type StudentFilterValues = {
+	page?: number;
+	pageSize?: number;
 	search?: string;
 	gender?: 'All' | 'M' | 'F';
 	course?: string;

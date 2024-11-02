@@ -10,36 +10,38 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
+import { useStudentFilterStore } from '@/store/studentsFilter';
+import { useQuery } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants';
+import { fetchAvailableCourses } from '@/api/student';
 
-type StudentFilterProps = {
-	onChange: (filters: StudentFilterValues) => void;
-	courses: string[];
-};
+type StudentFilterProps = {};
 
-export default function StudentFilter({
-	onChange,
-	courses,
-}: StudentFilterProps) {
-	const [search, setSearch] = useState<StudentFilterValues['search']>('');
-	const debouncedSearch = useDebounce(search);
+export default function StudentFilter({}: StudentFilterProps) {
+	const { setFilters, course, gender, year, search, page, pageSize } =
+		useStudentFilterStore((state) => state);
 
-	const [course, setCourse] = useState<StudentFilterValues['course']>(
-		courses[0]
-	);
+	const [localSearch, setLocalSearch] = useState(search);
+	const debouncedSearch = useDebounce(localSearch);
 
-	const [gender, setGender] = useState<StudentFilterValues['gender']>('All');
-	const gendersOptions = ['All', 'M', 'F'];
-
-	const [year, setYear] = useState<StudentFilterValues['year']>('All');
-	const yearsOptions = ['All', '1', '2', '3', '4'];
-
-	// having issues implementing this, it just defaults to acsending for now
-	const [sortBy, setSortBy] = useState<StudentFilterValues['sortBy']>('asc');
-	const sortingOptions = ['asc', 'dec'];
+	const { data: courses } = useQuery({
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
+		queryFn: fetchAvailableCourses,
+	});
 
 	useEffect(() => {
-		onChange({ search: debouncedSearch, course, gender, year, sortBy });
-	}, [onChange, debouncedSearch, course, gender, year, sortBy]);
+		setFilters({
+			search: debouncedSearch,
+			course,
+			gender,
+			year,
+			page: 1,
+			pageSize,
+		});
+	}, [debouncedSearch]);
+
+	const gendersOptions = ['All', 'M', 'F'];
+	const yearsOptions = ['All', '1', '2', '3', '4'];
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>
@@ -48,8 +50,8 @@ export default function StudentFilter({
 				<Label className='ml-1'>Search:</Label>
 				<Input
 					type='text'
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
+					value={localSearch}
+					onChange={(e) => setLocalSearch(e.target.value)}
 					className='w-[300px]'
 					placeholder='Search for student ID or Fullname'
 				/>
@@ -60,17 +62,27 @@ export default function StudentFilter({
 				<Label className='ml-1'>Course:</Label>
 				<Select
 					defaultValue={course}
-					onValueChange={(value) => setCourse(value)}
+					onValueChange={(value) =>
+						setFilters({
+							search: debouncedSearch,
+							course: value,
+							gender,
+							year,
+							page,
+							pageSize,
+						})
+					}
 				>
 					<SelectTrigger className='w-full'>
 						<SelectValue placeholder='Course' />
 					</SelectTrigger>
 					<SelectContent>
-						{courses.map((course, i) => (
-							<SelectItem key={i} value={course}>
-								{course}
-							</SelectItem>
-						))}
+						{courses &&
+							['All'].concat(courses).map((course, i) => (
+								<SelectItem key={i} value={course}>
+									{course}
+								</SelectItem>
+							))}
 					</SelectContent>
 				</Select>
 			</div>
@@ -81,7 +93,14 @@ export default function StudentFilter({
 				<Select
 					defaultValue={year}
 					onValueChange={(value) =>
-						setYear(value as StudentFilterValues['year'])
+						setFilters({
+							search: debouncedSearch,
+							course,
+							gender,
+							page,
+							pageSize,
+							year: value as StudentFilterValues['year'],
+						})
 					}
 				>
 					<SelectTrigger className='w-full'>
@@ -103,7 +122,14 @@ export default function StudentFilter({
 				<Select
 					defaultValue={gender}
 					onValueChange={(value) =>
-						setGender(value as StudentFilterValues['gender'])
+						setFilters({
+							search: debouncedSearch,
+							course,
+							gender: value as StudentFilterValues['gender'],
+							year,
+							page,
+							pageSize,
+						})
 					}
 				>
 					<SelectTrigger className='w-full'>

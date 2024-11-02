@@ -1,26 +1,18 @@
-import { fetchAvailableCourses, fetchStudents } from '@/api/student';
+import { fetchStudents } from '@/api/student';
 import { AddStudentForm } from '@/components/forms/AddStudentForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import StudentFilter from '@/components/StudentFilter';
 import StudentsTable from '@/components/StudentsTable';
 import Header from '@/components/ui/header';
-import { StudentFilterValues } from '@/types/student';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { QUERY_KEYS } from '@/constants';
 import PaginationController from '@/components/PaginationController';
+import { useStudentFilterStore } from '@/store/studentsFilter';
 
 export default function Student() {
-	const [page, setPage] = useState(1);
-	const pageSize = 10;
-
-	const defaultFilterValue = 'All';
-	const [search, setSearch] = useState<StudentFilterValues['search']>();
-	const [course, setCourse] = useState<StudentFilterValues['course']>();
-	const [gender, setGender] = useState<StudentFilterValues['gender']>();
-	const [sortBy, setSortBy] = useState<StudentFilterValues['sortBy']>('asc');
-	const [year, setYear] = useState<StudentFilterValues['year']>();
+	const { page, pageSize, setPage, course, gender, search, sortBy, year } =
+		useStudentFilterStore((state) => state);
 
 	const {
 		data: studentsFetchResult,
@@ -35,32 +27,7 @@ export default function Student() {
 			fetchStudents({ search, gender, year, course, sortBy }, page, pageSize),
 	});
 
-	const {
-		data: courses,
-		isLoading: cLoading,
-		error: cError,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.STUDENT_COURSES],
-		queryFn: fetchAvailableCourses,
-	});
-
-	const onFilterChange = (filters: StudentFilterValues) => {
-		setSearch(filters.search);
-		setSortBy(filters.sortBy);
-		setCourse(
-			filters.course === defaultFilterValue ? undefined : filters.course
-		);
-		setGender(
-			filters.gender === defaultFilterValue ? undefined : filters.gender
-		);
-		setYear(filters.year === defaultFilterValue ? undefined : filters.year);
-	};
-
-	useEffect(() => {
-		setPage(1);
-	}, [search]);
-
-	if (studentsError || cError) {
+	if (studentsError) {
 		return <p>Error</p>;
 	}
 
@@ -71,20 +38,17 @@ export default function Student() {
 				<Header>Students</Header>
 				<AddStudentForm />
 			</StickyHeader>
-			<StudentFilter
-				courses={[defaultFilterValue].concat(courses ?? [])}
-				onChange={onFilterChange}
-			/>
+			<StudentFilter />
 			<StudentsTable
 				isLoading={studentsLoading}
 				students={studentsFetchResult?.data}
 			/>
-			{studentsLoading || (cLoading && <p>Loading...</p>)}
+			{studentsLoading && <p>Loading...</p>}
 
 			{studentsFetchResult && (
 				<div className='absolute w-full p-5 bottom-0'>
 					<PaginationController
-						currentPage={page}
+						currentPage={page ?? 1}
 						nextPage={studentsFetchResult.next}
 						prevPage={studentsFetchResult.prev}
 						setPage={setPage}

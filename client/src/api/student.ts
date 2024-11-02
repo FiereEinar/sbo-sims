@@ -14,6 +14,15 @@ export const fetchStudents = async (
 	pageSize: number = 50
 ): Promise<APIPaginatedResponse<StudentWithTransactions[]> | undefined> => {
 	try {
+		const defaultFilterValue = 'All';
+
+		filters.course =
+			filters.course === defaultFilterValue ? undefined : filters.course;
+		filters.year =
+			filters.year === defaultFilterValue ? undefined : filters.year;
+		filters.gender =
+			filters.gender === defaultFilterValue ? undefined : filters.gender;
+
 		let url = `/student?page=${page}&pageSize=${pageSize}`;
 		if (filters.search) url = url + `&search=${filters.search}`;
 		if (filters.course) url = url + `&course=${filters.course}`;

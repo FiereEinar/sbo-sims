@@ -4,7 +4,6 @@ import CustomResponse from '../types/response';
 import { CustomRequest } from '../types/request';
 import { UpdateQuery } from 'mongoose';
 import { ICategoryWithTransactions } from '../types/category';
-import { ICategory } from '../models/category';
 
 /**
  * GET - get all organizations and its categories

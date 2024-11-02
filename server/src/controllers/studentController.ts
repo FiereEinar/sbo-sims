@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import { IStudent } from '../models/student';
 import { createStudentBody } from '../types/student';
-import { FilterQuery, UpdateQuery } from 'mongoose';
+import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
 import { loadStudents } from '../students/load-students';
@@ -47,11 +47,53 @@ export const get_all_students = asyncHandler(
 			});
 		}
 
-		const students = await req.StudentModel.find({ $and: filters })
-			.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
-			.skip(skipAmount)
-			.limit(pageSizeNum)
-			.exec();
+		const aggregatePipeline: PipelineStage[] = [
+			{
+				$lookup: {
+					from: 'transactions',
+					localField: '_id',
+					foreignField: 'owner',
+					as: 'transactions',
+				},
+			},
+			{
+				$addFields: {
+					totalTransactions: { $size: '$transactions' },
+					totalTransactionsAmount: { $sum: '$transactions.amount' },
+				},
+			},
+			{
+				$project: {
+					transactions: 0,
+				},
+			},
+			{
+				$sort: {
+					firstname: sortBy === 'dec' ? -1 : 1,
+				},
+			},
+			{
+				$skip: skipAmount,
+			},
+			{
+				$limit: pageSizeNum,
+			},
+		];
+
+		if (filters.length > 0) {
+			aggregatePipeline.unshift({
+				$match: {
+					$and: filters,
+				},
+			});
+		}
+
+		const students = await req.StudentModel.aggregate(aggregatePipeline);
+		// const students = await req.StudentModel.find({ $and: filters })
+		// 	.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
+		// 	.skip(skipAmount)
+		// 	.limit(pageSizeNum)
+		// 	.exec();
 
 		const next =
 			(await req.StudentModel.countDocuments({ $and: filters })) >

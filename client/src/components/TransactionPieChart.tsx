@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchDashboardData } from '@/api/transaction';
 import _ from 'lodash';
+import { numberWithCommas } from '@/lib/utils';
 
 export const description = 'A donut chart with text';
 
@@ -123,7 +124,7 @@ export default function TransactionPieChart() {
 													y={viewBox.cy}
 													className='fill-foreground text-3xl font-bold'
 												>
-													{dashboardData?.totalRevenue.toLocaleString()}
+													{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
 												</tspan>
 												<tspan
 													x={viewBox.cx}

@@ -13,7 +13,7 @@ import path from 'path';
 import { ITransaction } from '../models/transaction';
 import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
 import ejs from 'ejs';
-import { format, startOfDay } from 'date-fns';
+import { addDays, format, startOfDay } from 'date-fns';
 import _ from 'lodash';
 import { getPeriodLabel } from '../utils/utils';
 import { ICategory } from '../models/category';
@@ -145,7 +145,10 @@ export const get_dashboard_data = asyncHandler(
 		]);
 
 		const transactionsToday = await req.TransactionModel?.countDocuments({
-			date: { $gte: startOfDay(new Date().toISOString()) },
+			$and: [
+				{ date: { $gte: startOfDay(new Date()) } },
+				{ date: { $lt: startOfDay(addDays(new Date(), 1)) } },
+			],
 		});
 
 		/**

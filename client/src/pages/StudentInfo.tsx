@@ -32,8 +32,6 @@ export default function StudentInfo() {
 		queryFn: () => fetchStudentTransactions(studentID),
 	});
 
-	console.log(studentData);
-
 	if (studentLoading) {
 		return <p>Loading...</p>;
 	}

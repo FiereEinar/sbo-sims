@@ -16,10 +16,8 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart';
-import { fetchDashboardData } from '@/api/transaction';
-import { QUERY_KEYS } from '@/constants';
-import { useQuery } from '@tanstack/react-query';
-import { DashboardDataTransaction } from '@/pages/Dashboard';
+import { DashboardData, DashboardDataTransaction } from '@/pages/Dashboard';
+import { numberWithCommas } from '@/lib/utils';
 
 export const description = 'An interactive bar chart';
 
@@ -35,13 +33,12 @@ const chartConfig = {
 
 type ChartData = DashboardDataTransaction[];
 
-export default function BarCharts() {
-	const [chartData, setChartData] = React.useState<ChartData>([]);
+type BarChartsProps = {
+	dashboardData?: DashboardData;
+};
 
-	const { data: dashboardData } = useQuery({
-		queryKey: [QUERY_KEYS.DASHBOARD_DATA],
-		queryFn: () => fetchDashboardData(),
-	});
+export default function BarCharts({ dashboardData }: BarChartsProps) {
+	const [chartData, setChartData] = React.useState<ChartData>([]);
 
 	React.useEffect(() => {
 		if (dashboardData) {
@@ -66,7 +63,7 @@ export default function BarCharts() {
 					>
 						<span className='text-xs text-muted-foreground'>Total</span>
 						<span className='text-lg font-bold leading-none sm:text-3xl'>
-							P{dashboardData?.totalRevenue ?? 0}
+							P{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
 						</span>
 					</button>
 				</div>

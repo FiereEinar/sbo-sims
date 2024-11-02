@@ -1,4 +1,4 @@
-import { fetchCategories } from '@/api/category';
+import { fetchCategoriesWithTransactions } from '@/api/category';
 import CategoriesTable from '@/components/CategoriesTable';
 import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
@@ -13,8 +13,8 @@ export default function Category() {
 		isLoading: cLoading,
 		error: cError,
 	} = useQuery({
-		queryKey: [QUERY_KEYS.CATEGORY],
-		queryFn: fetchCategories,
+		queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
+		queryFn: fetchCategoriesWithTransactions,
 	});
 
 	if (cLoading) {

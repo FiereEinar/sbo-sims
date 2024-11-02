@@ -1,6 +1,6 @@
 import { Transaction } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
-import { Category } from '@/types/category';
+import { Category, CategoryWithTransactions } from '@/types/category';
 import { CategoryFormValues } from '@/components/forms/AddCategoryForm';
 import { APIResponse } from '@/types/api-response';
 
@@ -11,6 +11,18 @@ export const fetchCategories = async (): Promise<Category[] | undefined> => {
 		return data.data;
 	} catch (err: any) {
 		console.error('Failed to fetch categories', err);
+	}
+};
+
+export const fetchCategoriesWithTransactions = async (): Promise<
+	CategoryWithTransactions[] | undefined
+> => {
+	try {
+		const { data } = await axiosInstance.get(`/category/with-transactions`);
+
+		return data.data;
+	} catch (err: any) {
+		console.error('Failed to fetch categories with transactions', err);
 	}
 };
 

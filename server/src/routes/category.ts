@@ -4,6 +4,7 @@ import {
 	create_category,
 	delete_category,
 	get_all_category,
+	get_all_category_with_transactions_data,
 	get_category,
 	get_category_transactions,
 	update_category,
@@ -13,6 +14,8 @@ import { isValidMongooseId } from '../middlewares/validations/validation';
 const router = express.Router();
 
 router.get('/', get_all_category);
+
+router.get('/with-transactions', get_all_category_with_transactions_data);
 
 router.get(
 	'/:categoryID',

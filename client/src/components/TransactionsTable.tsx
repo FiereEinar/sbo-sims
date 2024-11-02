@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DateText from './ui/date-text';
+import { numberWithCommas } from '@/lib/utils';
 
 type TransactionsTableProps = {
 	transactions?: Transaction[];
@@ -86,7 +87,7 @@ export default function TransactionsTable({
 									)}
 								</TableCell>
 								<TableCell className='text-right'>
-									P{transaction.amount}
+									P{numberWithCommas(transaction.amount)}
 								</TableCell>
 							</TableRow>
 						);
@@ -96,7 +97,9 @@ export default function TransactionsTable({
 			<TableFooter>
 				<TableRow>
 					<TableCell colSpan={5}>Total</TableCell>
-					<TableCell className='text-right'>P{totalAmount}</TableCell>
+					<TableCell className='text-right'>
+						P{numberWithCommas(totalAmount)}
+					</TableCell>
 				</TableRow>
 			</TableFooter>
 		</Table>

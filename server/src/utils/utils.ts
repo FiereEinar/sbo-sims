@@ -1,4 +1,10 @@
-import { startOfDay, startOfMonth, startOfWeek, startOfYear } from 'date-fns';
+import {
+	addDays,
+	startOfDay,
+	startOfMonth,
+	startOfWeek,
+	startOfYear,
+} from 'date-fns';
 import { FilterQuery } from 'mongoose';
 import { ITransaction } from '../models/transaction';
 
@@ -17,6 +23,7 @@ export const getDateFilterByPeriod = (
 		return {
 			date: {
 				$gte: startOfDay(currentDate).toISOString(),
+				$lt: startOfDay(addDays(currentDate, 1)).toISOString(),
 			},
 		};
 	} else if (period === 'weekly') {

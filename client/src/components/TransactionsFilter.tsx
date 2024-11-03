@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Label } from './ui/label';
 import {
 	Select,
@@ -7,37 +6,49 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
-import {
-	TransactionPeriodFilter,
-	TransactionsFilterValues,
-} from '@/types/transaction';
+import { TransactionPeriodFilter } from '@/types/transaction';
 import DatePicker from './DatePicker';
 import CategoryPicker from './CategoryPicker';
 import { Category } from '@/types/category';
 import _ from 'lodash';
+import { useTransactionFilterStore } from '@/store/transactionsFilter';
+import { useQuery } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants';
+import { fetchAvailableCourses } from '@/api/student';
 
 type TransactionsFilterProps = {
-	onChange: (filters: TransactionsFilterValues) => void;
-	courses: string[];
 	categories: Category[];
 };
 
 export default function TransactionsFilter({
-	courses,
-	onChange,
 	categories,
 }: TransactionsFilterProps) {
-	const [date, setDate] = useState<TransactionsFilterValues['date']>();
-	const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
-	const [status, setStatus] = useState<TransactionsFilterValues['status']>();
-	const [category, setCategory] =
-		useState<TransactionsFilterValues['category']>();
-	// const [search, setSearch] = useState<TransactionsFilterValues['search']>('');
-	// const debouncedSearch = useDebounce(search);
+	const {
+		setCategory,
+		setPeriod,
+		setCourse,
+		setDate,
+		setStatus,
+		course,
+		date,
+		category,
+	} = useTransactionFilterStore((state) => state);
 
-	const [course, setCourse] = useState<TransactionsFilterValues['course']>(
-		courses[0]
-	);
+	const { data: courses } = useQuery({
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
+		queryFn: fetchAvailableCourses,
+	});
+	// const [date, setDate] = useState<TransactionsFilterValues['date']>();
+	// const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
+	// const [status, setStatus] = useState<TransactionsFilterValues['status']>();
+	// const [category, setCategory] =
+	// 	useState<TransactionsFilterValues['category']>();
+	// // const [search, setSearch] = useState<TransactionsFilterValues['search']>('');
+	// // const debouncedSearch = useDebounce(search);
+
+	// const [course, setCourse] = useState<TransactionsFilterValues['course']>(
+	// 	courses[0]
+	// );
 
 	const periodsOptions = [
 		{ value: 'all', label: 'All' },
@@ -47,9 +58,9 @@ export default function TransactionsFilter({
 		{ value: 'yearly', label: 'This Year' },
 	];
 
-	useEffect(() => {
-		onChange({ course, date, category, status, period });
-	}, [onChange, course, date, category, status, period]);
+	// useEffect(() => {
+	// 	onChange({ course, date, category, status, period });
+	// }, [onChange, course, date, category, status, period]);
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>
@@ -96,11 +107,12 @@ export default function TransactionsFilter({
 						<SelectValue placeholder='Course' />
 					</SelectTrigger>
 					<SelectContent>
-						{courses.map((course, i) => (
-							<SelectItem key={i} value={course}>
-								{course}
-							</SelectItem>
-						))}
+						{courses &&
+							['All'].concat(courses).map((course, i) => (
+								<SelectItem key={i} value={course}>
+									{course}
+								</SelectItem>
+							))}
 					</SelectContent>
 				</Select>
 			</div>
@@ -112,11 +124,11 @@ export default function TransactionsFilter({
 			<div className='space-x-1 flex justify-end items-end'>
 				<CategoryPicker
 					error={undefined}
-					defaultValue={category}
+					defaultValue={category ?? 'All'}
 					setCategory={setCategory}
 					categories={[
 						{
-							_id: undefined,
+							_id: 'All',
 							name: 'All',
 							__v: 0,
 							fee: 0,

@@ -9,6 +9,13 @@ export const generateTransactionsFilterURL = (
 	filters: TransactionsFilterValues,
 	baseURL: string
 ): string => {
+	const defaultFilterValue = 'All';
+
+	filters.course =
+		filters.course === defaultFilterValue ? undefined : filters.course;
+	filters.category =
+		filters.category === defaultFilterValue ? undefined : filters.category;
+
 	let url = `${baseURL}`;
 	// if (filters.search) url = url + `&search=${filters.search}`;
 	if (filters.course) url += `&course=${filters.course}`;

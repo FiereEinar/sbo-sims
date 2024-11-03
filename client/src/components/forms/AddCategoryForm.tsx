@@ -107,7 +107,7 @@ export default function AddCategoryForm({
 				return;
 			}
 
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CATEGORY] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CATEGORY] });
 			reset();
 			setOrg('');
 		} catch (err: any) {

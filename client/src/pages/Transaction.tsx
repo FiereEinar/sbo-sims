@@ -1,6 +1,5 @@
 import axiosInstance from '@/api/axiosInstance';
 import { fetchCategories } from '@/api/category';
-import { fetchAvailableCourses } from '@/api/student';
 import {
 	fetchTransactions,
 	generateTransactionsFilterURL,
@@ -15,25 +14,26 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
-import { TransactionsFilterValues } from '@/types/transaction';
+import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 
 export default function Transaction() {
+	const { category, course, date, page, pageSize, period, status, setPage } =
+		useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
 
-	const defaultFilterValue = 'All';
-	const [page, setPage] = useState(1);
-	const pageSize = 10;
+	// const defaultFilterValue = 'All';
+	// const [page, setPage] = useState(1);
+	// const pageSize = 10;
 
-	const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
-	const [status, setStatus] = useState<TransactionsFilterValues['status']>();
-	const [category, setCategory] =
-		useState<TransactionsFilterValues['category']>();
-	const [date, setDate] = useState<TransactionsFilterValues['date']>();
-	// const [search, setSearch] = useState<TransactionsFilterValues['search']>();
-	const [course, setCourse] =
-		useState<TransactionsFilterValues['course']>(defaultFilterValue);
+	// const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
+	// const [status, setStatus] = useState<TransactionsFilterValues['status']>();
+	// const [category, setCategory] =
+	// 	useState<TransactionsFilterValues['category']>();
+	// const [date, setDate] = useState<TransactionsFilterValues['date']>();
+	// // const [search, setSearch] = useState<TransactionsFilterValues['search']>();
+	// const [course, setCourse] =
+	// 	useState<TransactionsFilterValues['course']>(defaultFilterValue);
 
 	const {
 		data: fetchTransactionsResult,
@@ -61,20 +61,11 @@ export default function Transaction() {
 		queryFn: fetchCategories,
 	});
 
-	const {
-		data: courses,
-		isLoading: cLoading,
-		error: cError,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.STUDENT_COURSES],
-		queryFn: fetchAvailableCourses,
-	});
-
-	if (categoriesLoading || cLoading) {
+	if (categoriesLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (transactionsError || categoriesError || cError || !categories) {
+	if (transactionsError || categoriesError || !categories) {
 		return <p>Error</p>;
 	}
 
@@ -109,20 +100,7 @@ export default function Transaction() {
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
-				<TransactionsFilter
-					categories={categories}
-					courses={[defaultFilterValue].concat(courses ?? [])}
-					onChange={(filters) => {
-						// setSearch(filters.search);
-						setStatus(filters.status);
-						setPeriod(filters.period);
-						setCategory(filters.category);
-						setDate(filters.date);
-						setCourse(
-							filters.course === defaultFilterValue ? undefined : filters.course
-						);
-					}}
-				/>
+				<TransactionsFilter categories={categories} />
 				<Button
 					onClick={async () => {
 						if (!fetchTransactionsResult?.data.length) {
@@ -148,7 +126,7 @@ export default function Transaction() {
 			{fetchTransactionsResult && (
 				<div className='absolute w-full p-5 bottom-0'>
 					<PaginationController
-						currentPage={page}
+						currentPage={page ?? 1}
 						nextPage={fetchTransactionsResult.next}
 						prevPage={fetchTransactionsResult.prev}
 						setPage={setPage}

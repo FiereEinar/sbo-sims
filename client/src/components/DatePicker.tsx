@@ -8,7 +8,9 @@ import { cn } from '@/lib/utils';
 
 type DatePickerProps = {
 	date: Date | undefined;
-	setDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+	setDate:
+		| React.Dispatch<React.SetStateAction<Date | undefined>>
+		| ((date?: Date) => void);
 	error: string | undefined;
 	note?: string;
 };

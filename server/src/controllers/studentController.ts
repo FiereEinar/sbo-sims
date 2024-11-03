@@ -89,11 +89,6 @@ export const get_all_students = asyncHandler(
 		}
 
 		const students = await req.StudentModel.aggregate(aggregatePipeline);
-		// const students = await req.StudentModel.find({ $and: filters })
-		// 	.sort({ firstname: sortBy === 'dec' ? -1 : 1 })
-		// 	.skip(skipAmount)
-		// 	.limit(pageSizeNum)
-		// 	.exec();
 
 		const next =
 			(await req.StudentModel.countDocuments({ $and: filters })) >

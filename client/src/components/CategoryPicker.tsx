@@ -10,7 +10,9 @@ import {
 import ErrorText from './ui/error-text';
 
 type CategoryPickerProps = {
-	setCategory: React.Dispatch<React.SetStateAction<string | undefined>>;
+	setCategory:
+		| React.Dispatch<React.SetStateAction<string | undefined>>
+		| ((category: string) => void);
 	categories: Category[];
 	error: string | undefined;
 	defaultValue?: string;
@@ -26,7 +28,7 @@ export default function CategoryPicker({
 		<div className='text-muted-foreground space-y-1'>
 			<Label>Category:</Label>
 			<Select
-				defaultValue={defaultValue}
+				defaultValue={defaultValue ?? 'All'}
 				onValueChange={(value) => setCategory(value)}
 			>
 				<SelectTrigger className='w-full'>
@@ -35,7 +37,8 @@ export default function CategoryPicker({
 				<SelectContent>
 					{categories.map((category, i) => (
 						<SelectItem key={category._id ?? i} value={category._id}>
-							{category.organization.name} - {category.name}
+							{category.organization.name}{' '}
+							{category.organization.name ? '-' : ''} {category.name}
 						</SelectItem>
 					))}
 				</SelectContent>

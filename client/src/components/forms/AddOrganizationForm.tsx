@@ -108,7 +108,9 @@ export default function AddOrganizationForm({
 				return;
 			}
 
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION] });
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.ORGANIZATION],
+			});
 			reset();
 			setDepartments([]);
 		} catch (err: any) {
@@ -136,7 +138,7 @@ export default function AddOrganizationForm({
 				{mode === 'add' ? (
 					<Button className='flex justify-center gap-1' size='sm'>
 						<Plus />
-						<p>Add Student</p>
+						<p>Add Organization</p>
 					</Button>
 				) : (
 					<Button className='flex gap-1' size='sm' variant='ocean'>

@@ -26,6 +26,8 @@ export type TransactionPeriodFilter =
 
 export type TransactionsFilterValues = {
 	// search?: string;
+	page?: number;
+	pageSize?: number;
 	course?: string;
 	period?: TransactionPeriodFilter;
 	category?: string;

@@ -7,6 +7,9 @@ type Image = {
 
 export type User = MongoEntity & {
 	studentID: string;
+	firstname: string;
+	lastname: string;
+	email: string;
 	password: string;
 	profile: Image;
 	role: 'admin' | 'regular';

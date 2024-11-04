@@ -18,8 +18,16 @@ import { fetchAvailableCourses } from '@/api/student';
 type StudentFilterProps = {};
 
 export default function StudentFilter({}: StudentFilterProps) {
-	const { setFilters, course, gender, year, search, page, pageSize } =
-		useStudentFilterStore((state) => state);
+	const {
+		setSearch,
+		setCourse,
+		setYear,
+		setGender,
+		course,
+		gender,
+		year,
+		search,
+	} = useStudentFilterStore((state) => state);
 
 	const [localSearch, setLocalSearch] = useState(search);
 	const debouncedSearch = useDebounce(localSearch);
@@ -30,14 +38,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 	});
 
 	useEffect(() => {
-		setFilters({
-			search: debouncedSearch,
-			course,
-			gender,
-			year,
-			page: 1,
-			pageSize,
-		});
+		setSearch(debouncedSearch ?? '');
 	}, [debouncedSearch]);
 
 	const gendersOptions = ['All', 'M', 'F'];
@@ -62,16 +63,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 				<Label className='ml-1'>Course:</Label>
 				<Select
 					defaultValue={course}
-					onValueChange={(value) =>
-						setFilters({
-							search: debouncedSearch,
-							course: value,
-							gender,
-							year,
-							page,
-							pageSize,
-						})
-					}
+					onValueChange={(value) => setCourse(value)}
 				>
 					<SelectTrigger className='w-full'>
 						<SelectValue placeholder='Course' />
@@ -93,14 +85,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 				<Select
 					defaultValue={year}
 					onValueChange={(value) =>
-						setFilters({
-							search: debouncedSearch,
-							course,
-							gender,
-							page,
-							pageSize,
-							year: value as StudentFilterValues['year'],
-						})
+						setYear(value as StudentFilterValues['year'])
 					}
 				>
 					<SelectTrigger className='w-full'>
@@ -122,14 +107,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 				<Select
 					defaultValue={gender}
 					onValueChange={(value) =>
-						setFilters({
-							search: debouncedSearch,
-							course,
-							gender: value as StudentFilterValues['gender'],
-							year,
-							page,
-							pageSize,
-						})
+						setGender(value as StudentFilterValues['gender'])
 					}
 				>
 					<SelectTrigger className='w-full'>

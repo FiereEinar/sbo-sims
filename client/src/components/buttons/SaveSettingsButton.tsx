@@ -29,8 +29,6 @@ export default function SaveSettingsButton() {
 				currentUser
 			);
 
-			console.log(result);
-
 			if (!result.success) {
 				toast({
 					variant: 'destructive',

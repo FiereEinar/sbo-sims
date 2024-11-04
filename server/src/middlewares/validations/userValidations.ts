@@ -197,7 +197,7 @@ export const updateUserValidation = [
 		.trim()
 		.escape()
 		.isLength({ min: 1 })
-		.withMessage('School year must not be empty'),
+		.withMessage('School semester must not be empty'),
 
 	isFormBodyValidated,
 ];

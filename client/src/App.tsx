@@ -5,7 +5,7 @@ function App() {
 	return (
 		<main className='transition-all bg-background flex h-dvh'>
 			<LeftSidebar />
-			<div className='px-5 overflow-y-auto'>
+			<div className='pl-5 overflow-y-auto'>
 				<Outlet />
 			</div>
 		</main>

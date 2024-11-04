@@ -27,7 +27,7 @@ export default function ApplicationSettingsForm() {
 				<Label className='ml-1'>School Year:</Label>
 				<Input
 					value={parseInt(
-						user?.activeSchoolYearDB ?? getYear(new Date()).toString()
+						user?.activeSchoolYearDB || getYear(new Date()).toString()
 					)}
 					onChange={(e) =>
 						setUser({ ...user, activeSchoolYearDB: e.target.value } as User)
@@ -45,7 +45,7 @@ export default function ApplicationSettingsForm() {
 					}
 				>
 					<SelectTrigger className='w-full'>
-						<SelectValue placeholder='Course' />
+						<SelectValue placeholder='Semester' />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value='1'>1st sem</SelectItem>
@@ -54,7 +54,7 @@ export default function ApplicationSettingsForm() {
 				</Select>
 			</div>
 
-			<div>
+			<div className='flex justify-end'>
 				<SaveSettingsButton />
 			</div>
 		</div>

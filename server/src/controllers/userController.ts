@@ -35,9 +35,11 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	if (activeSemDB !== '1' && activeSemDB !== '2') {
-		res.json(new CustomResponse(false, null, 'Semester can only be 1 or 2'));
-		return;
+	if (activeSemDB.length > 0) {
+		if (activeSemDB !== '1' && activeSemDB !== '2') {
+			res.json(new CustomResponse(false, null, 'Semester can only be 1 or 2'));
+			return;
+		}
 	}
 
 	const update: UpdateQuery<IUser> = {
@@ -46,8 +48,8 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 		studentID: studentID,
 		bio: bio,
 		email: email,
-		activeSchoolYearDB: activeSchoolYearDB,
-		activeSemDB: activeSemDB,
+		activeSchoolYearDB: activeSchoolYearDB || user.activeSchoolYearDB,
+		activeSemDB: activeSemDB || user.activeSemDB,
 	};
 
 	const result = await req.UserModel?.findByIdAndUpdate(user._id, update, {

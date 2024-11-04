@@ -7,10 +7,12 @@ export default function Settings() {
 		<SidebarPageLayout>
 			<div className='mt-5' />
 
-			<div className='flex flex-col pb-5 justify-between text-muted-foreground items-endflex-wrap gap-10 w-[800px]'>
-				<ApplicationSettingsForm />
-				<hr />
-				<UpdateUserForm />
+			<div className='w-dvw'>
+				<div className='flex flex-col pb-5 justify-between text-muted-foreground items-end gap-10 w-[800px]'>
+					<ApplicationSettingsForm />
+					<hr className='w-full' />
+					<UpdateUserForm />
+				</div>
 			</div>
 		</SidebarPageLayout>
 	);

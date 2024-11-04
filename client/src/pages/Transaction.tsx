@@ -22,19 +22,6 @@ export default function Transaction() {
 		useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
 
-	// const defaultFilterValue = 'All';
-	// const [page, setPage] = useState(1);
-	// const pageSize = 10;
-
-	// const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
-	// const [status, setStatus] = useState<TransactionsFilterValues['status']>();
-	// const [category, setCategory] =
-	// 	useState<TransactionsFilterValues['category']>();
-	// const [date, setDate] = useState<TransactionsFilterValues['date']>();
-	// // const [search, setSearch] = useState<TransactionsFilterValues['search']>();
-	// const [course, setCourse] =
-	// 	useState<TransactionsFilterValues['course']>(defaultFilterValue);
-
 	const {
 		data: fetchTransactionsResult,
 		isLoading: transactionsLoading,

@@ -70,6 +70,7 @@ export default function AddTransactionForm({
 		register,
 		handleSubmit,
 		setValue,
+		getValues,
 		setError,
 		reset,
 		formState: { errors, isSubmitting },
@@ -169,9 +170,9 @@ export default function AddTransactionForm({
 							label='Student ID:'
 							autoComplete={false}
 							id='studentID'
-							onChange={(e) => {
-								setValue('studentID', e.target.value);
-								setStudentIdSearch(e.target.value);
+							onChange={() => {
+								setValue('studentID', getValues('studentID'));
+								setStudentIdSearch(getValues('studentID'));
 							}}
 						/>
 						<div className='relative w-full'>

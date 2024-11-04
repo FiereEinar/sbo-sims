@@ -16,7 +16,7 @@ interface InputFieldProps<T extends FieldValues> {
 	type?: React.HTMLInputTypeAttribute | undefined;
 	placeholder?: string;
 	id: string;
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	onChange?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	autoComplete?: boolean;
 }
 
@@ -38,7 +38,8 @@ export default function InputField<T extends FieldValues>({
 				{...registerFn(name)}
 				type={type}
 				autoComplete={autoComplete ? 'on' : 'off'}
-				onChange={onChange}
+				// onChange={onChange}
+				onKeyDownCapture={onChange}
 				id={id}
 				placeholder={placeholder}
 			/>

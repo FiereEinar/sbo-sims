@@ -15,10 +15,12 @@ import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export default function Transaction() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const [isDownloading, setIsDownloading] = useState(false);
 	const { category, course, date, page, pageSize, period, status, setPage } =
 		useTransactionFilterStore((state) => state);
@@ -88,7 +90,7 @@ export default function Transaction() {
 			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Transactions</Header>
-				<AddTransactionForm categories={categories} />
+				{userRole === 'admin' && <AddTransactionForm categories={categories} />}
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>

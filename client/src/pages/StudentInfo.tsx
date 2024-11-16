@@ -7,10 +7,12 @@ import StudentDataCard from '@/components/StudentDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export default function StudentInfo() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const { studentID } = useParams();
 	if (studentID === undefined) return;
 
@@ -53,7 +55,9 @@ export default function StudentInfo() {
 			<div className='space-y-3'>
 				<StickyHeader>
 					<Header>Student Info</Header>
-					<EditAndDeleteStudentButton student={studentData} />
+					{userRole === 'admin' && (
+						<EditAndDeleteStudentButton student={studentData} />
+					)}
 				</StickyHeader>
 
 				<hr />

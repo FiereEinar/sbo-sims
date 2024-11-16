@@ -5,9 +5,11 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Organization() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const {
 		data: organizations,
 		isLoading,
@@ -30,7 +32,7 @@ export default function Organization() {
 			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Organizations</Header>
-				<AddOrganizationForm />
+				{userRole === 'admin' && <AddOrganizationForm />}
 			</StickyHeader>
 
 			<OrganizationTable organizations={organizations} />

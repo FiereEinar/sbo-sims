@@ -9,10 +9,12 @@ import TransactionDataCard from '@/components/TransactionDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export default function TransactionInfo() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const { transactionID } = useParams();
 	if (!transactionID) return;
 
@@ -48,10 +50,12 @@ export default function TransactionInfo() {
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>
-				<EditAndDeleteTransactionButton
-					categories={categories}
-					transaction={transaction}
-				/>
+				{userRole === 'admin' && (
+					<EditAndDeleteTransactionButton
+						categories={categories}
+						transaction={transaction}
+					/>
+				)}
 			</div>
 			<hr />
 			<TransactionDataCard transaction={transaction} />

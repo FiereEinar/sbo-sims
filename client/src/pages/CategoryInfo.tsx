@@ -6,10 +6,12 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsTable from '@/components/TransactionsTable';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export default function CategoryInfo() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const { categoryID } = useParams();
 	if (!categoryID) return;
 
@@ -34,7 +36,9 @@ export default function CategoryInfo() {
 
 			<StickyHeader>
 				<CategoryDataCard category={data.category} />
-				<EditAndDeleteCategoryButton category={data.category} />
+				{userRole === 'admin' && (
+					<EditAndDeleteCategoryButton category={data.category} />
+				)}
 			</StickyHeader>
 
 			<TransactionsTable

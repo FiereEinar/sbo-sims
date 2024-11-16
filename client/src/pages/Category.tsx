@@ -5,9 +5,11 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const {
 		data: categories,
 		isLoading: cLoading,
@@ -30,7 +32,7 @@ export default function Category() {
 			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Categories</Header>
-				<AddCategoryForm />
+				{userRole === 'admin' && <AddCategoryForm />}
 			</StickyHeader>
 			<CategoriesTable categories={categories} />
 		</SidebarPageLayout>

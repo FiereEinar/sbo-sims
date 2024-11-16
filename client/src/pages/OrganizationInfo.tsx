@@ -10,11 +10,13 @@ import StickyHeader from '@/components/StickyHeader';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
 
 export default function OrganizationInfo() {
+	const userRole = useUserStore((state) => state.user?.role);
 	const { organizationID } = useParams();
 
 	const {
@@ -49,7 +51,9 @@ export default function OrganizationInfo() {
 			<BackButton />
 			<StickyHeader>
 				<Header>{organization.name}</Header>
-				<EditAndDeleteOrganizationButton organizationID={organization._id} />
+				{userRole === 'admin' && (
+					<EditAndDeleteOrganizationButton organizationID={organization._id} />
+				)}
 			</StickyHeader>
 			<hr />
 			<div>

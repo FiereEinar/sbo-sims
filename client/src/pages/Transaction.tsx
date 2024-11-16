@@ -16,8 +16,10 @@ import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export default function Transaction() {
+	const [isDownloading, setIsDownloading] = useState(false);
 	const { category, course, date, page, pageSize, period, status, setPage } =
 		useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
@@ -58,6 +60,7 @@ export default function Transaction() {
 
 	const handleDownloadTransactions = async () => {
 		try {
+			setIsDownloading(true);
 			const url = generateTransactionsFilterURL(
 				{ course, date, category, status, period },
 				`/transaction/download?page=1`
@@ -75,6 +78,8 @@ export default function Transaction() {
 			link.click();
 		} catch (err: any) {
 			console.error('Error downloading the file: ', err);
+		} finally {
+			setIsDownloading(false);
 		}
 	};
 
@@ -89,6 +94,7 @@ export default function Transaction() {
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter categories={categories} />
 				<Button
+					disabled={isDownloading}
 					onClick={async () => {
 						if (!fetchTransactionsResult?.data.length) {
 							toast({

@@ -7,6 +7,19 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        appear: {
+          from: {
+            opacity: 0,
+          },
+          to: {
+            opacity: 1
+          }
+        }
+      },
+      animation: {
+        appear: 'appear 0.2s ease-in-out'
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

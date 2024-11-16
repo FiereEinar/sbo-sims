@@ -281,8 +281,15 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
  */
 export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID } = req.params;
-	const { firstname, lastname, email }: Omit<createStudentBody, 'studentID'> =
-		req.body;
+	const {
+		firstname,
+		lastname,
+		email,
+		middlename,
+		course,
+		gender,
+		year,
+	}: Omit<createStudentBody, 'studentID'> = req.body;
 
 	if (!req.StudentModel) {
 		res
@@ -313,11 +320,22 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
+	if (gender !== 'M' && gender !== 'F') {
+		res.json(
+			new CustomResponse(false, null, `Student gender can only be M or F`)
+		);
+		return;
+	}
+
 	// create the update query
 	const update: UpdateQuery<IStudent> = {
 		firstname: firstname,
 		lastname: lastname,
 		email: email,
+		middlename: middlename,
+		course: course,
+		year: year,
+		gender: gender,
 	};
 
 	// update the student

@@ -132,7 +132,9 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 						errors={errors}
 						label='Student ID:'
 						id='studentID'
+						isDisabled={mode === 'edit'}
 					/>
+
 					<InputField<StudentFormValues>
 						name='firstname'
 						registerFn={register}

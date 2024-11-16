@@ -10,6 +10,7 @@ import {
 	update_category,
 } from '../controllers/categoryController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
+import { adminAuth } from '../middlewares/adminAuth';
 
 const router = express.Router();
 
@@ -29,10 +30,11 @@ router.get(
 	get_category_transactions
 );
 
-router.post('/', createCategoryValidation, create_category);
+router.post('/', adminAuth, createCategoryValidation, create_category);
 
 router.put(
 	'/:categoryID',
+	adminAuth,
 	isValidMongooseId('categoryID', { from: 'params' }),
 	createCategoryValidation,
 	update_category
@@ -40,6 +42,7 @@ router.put(
 
 router.delete(
 	'/:categoryID',
+	adminAuth,
 	isValidMongooseId('categoryID', { from: 'params' }),
 	delete_category
 );

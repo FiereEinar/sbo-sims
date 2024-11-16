@@ -15,6 +15,7 @@ import {
 } from '../middlewares/validations/transactionValidation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { isValidMongooseId } from '../middlewares/validations/validation';
+import { adminAuth } from '../middlewares/adminAuth';
 
 const router = express.Router();
 
@@ -30,10 +31,11 @@ router.get(
 	get_transaction
 );
 
-router.post('/', createTransactionValidation, create_transaction);
+router.post('/', adminAuth, createTransactionValidation, create_transaction);
 
 router.put(
 	'/:transactionID',
+	adminAuth,
 	isValidMongooseId('transactionID', { from: 'params' }),
 	createTransactionValidation,
 	update_transaction
@@ -41,6 +43,7 @@ router.put(
 
 router.put(
 	'/:transactionID/amount',
+	adminAuth,
 	isValidMongooseId('transactionID', { from: 'params' }),
 	updateTransactionAmountValidation,
 	update_transaction_amount
@@ -48,6 +51,7 @@ router.put(
 
 router.delete(
 	'/:transactionID',
+	adminAuth,
 	isValidMongooseId('transactionID', { from: 'params' }),
 	delete_transaction
 );

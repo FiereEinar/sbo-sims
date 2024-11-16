@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import { ITransaction } from './transaction';
-import { Entity } from '../types/entity';
 
 const Schema = mongoose.Schema;
 

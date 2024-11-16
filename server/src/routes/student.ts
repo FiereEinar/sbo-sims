@@ -13,6 +13,7 @@ import {
 	createStudentValidation,
 	updateStudentValidation,
 } from '../middlewares/validations/studentValidation';
+import { adminAuth } from '../middlewares/adminAuth';
 
 const router = express.Router();
 
@@ -26,10 +27,10 @@ router.get('/:studentID', get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 
-router.post('/', createStudentValidation, create_student);
+router.post('/', adminAuth, createStudentValidation, create_student);
 
-router.put('/:studentID', updateStudentValidation, update_student);
+router.put('/:studentID', adminAuth, updateStudentValidation, update_student);
 
-router.delete('/:studentID', delete_student);
+router.delete('/:studentID', adminAuth, delete_student);
 
 export default router;

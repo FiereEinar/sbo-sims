@@ -11,10 +11,58 @@ import { User } from '@/types/user';
 import { Input } from '../ui/input';
 import { getYear } from 'date-fns';
 import Header from '../ui/header';
-import SaveSettingsButton from '../buttons/SaveSettingsButton';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '@/api/axiosInstance';
+import { queryClient } from '@/main';
+import { useState } from 'react';
+import { Button } from '../ui/button';
+import { APIResponse } from '@/types/api-response';
 
 export default function ApplicationSettingsForm() {
-	const { user, setUser } = useUserStore((state) => state);
+	const { toast } = useToast();
+	const navigate = useNavigate();
+
+	const { user: currentUser, setUser } = useUserStore((state) => state);
+	const [localUser, setLocalUser] = useState(currentUser);
+
+	const onSave = async () => {
+		try {
+			if (!currentUser) {
+				toast({
+					variant: 'destructive',
+					title: 'No data for current user',
+					description: 'Login first to continue',
+				});
+				navigate('/login');
+				return;
+			}
+
+			const { data: result } = await axiosInstance.put<APIResponse<User>>(
+				`/user/${currentUser._id}`,
+				localUser
+			);
+
+			if (!result.success) {
+				toast({
+					variant: 'destructive',
+					title: 'Failed to save settings',
+					description: `${result.message}. ${result.error ?? ''}`,
+				});
+				return;
+			}
+
+			setUser(result.data);
+			toast({ title: 'Settings saved successfully!' });
+			queryClient.resetQueries();
+		} catch (err: any) {
+			console.error('Failed to save settings', err);
+			toast({
+				title: 'Failed to save settings',
+				variant: 'destructive',
+			});
+		}
+	};
 
 	return (
 		<div className='flex flex-col gap-3 w-full'>
@@ -27,10 +75,13 @@ export default function ApplicationSettingsForm() {
 				<Label className='ml-1'>School Year:</Label>
 				<Input
 					value={parseInt(
-						user?.activeSchoolYearDB || getYear(new Date()).toString()
+						localUser?.activeSchoolYearDB || getYear(new Date()).toString()
 					)}
 					onChange={(e) =>
-						setUser({ ...user, activeSchoolYearDB: e.target.value } as User)
+						setLocalUser({
+							...localUser,
+							activeSchoolYearDB: e.target.value,
+						} as User)
 					}
 					type='number'
 				/>
@@ -39,9 +90,9 @@ export default function ApplicationSettingsForm() {
 			<div className='space-x-1'>
 				<Label className='ml-1'>Semester:</Label>
 				<Select
-					defaultValue={user?.activeSemDB ?? '1'}
+					defaultValue={localUser?.activeSemDB ?? '1'}
 					onValueChange={(value) =>
-						setUser({ ...user, activeSemDB: value } as User)
+						setLocalUser({ ...localUser, activeSemDB: value } as User)
 					}
 				>
 					<SelectTrigger className='w-full'>
@@ -55,7 +106,9 @@ export default function ApplicationSettingsForm() {
 			</div>
 
 			<div className='flex justify-end'>
-				<SaveSettingsButton />
+				<Button onClick={onSave} size='sm'>
+					Save Changes
+				</Button>
 			</div>
 		</div>
 	);

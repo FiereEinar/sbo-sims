@@ -6,7 +6,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
-import { TransactionPeriodFilter } from '@/types/transaction';
+import {
+	TransactionPeriodFilter,
+	TransactionsFilterValues,
+} from '@/types/transaction';
 import DatePicker from './DatePicker';
 import CategoryPicker from './CategoryPicker';
 import { Category } from '@/types/category';
@@ -15,6 +18,9 @@ import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchAvailableCourses } from '@/api/student';
+import { Input } from './ui/input';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect, useState } from 'react';
 
 type TransactionsFilterProps = {
 	categories: Category[];
@@ -29,6 +35,8 @@ export default function TransactionsFilter({
 		setCourse,
 		setDate,
 		setStatus,
+		setSearch,
+		search,
 		course,
 		date,
 		category,
@@ -38,17 +46,10 @@ export default function TransactionsFilter({
 		queryKey: [QUERY_KEYS.STUDENT_COURSES],
 		queryFn: fetchAvailableCourses,
 	});
-	// const [date, setDate] = useState<TransactionsFilterValues['date']>();
-	// const [period, setPeriod] = useState<TransactionsFilterValues['period']>();
-	// const [status, setStatus] = useState<TransactionsFilterValues['status']>();
-	// const [category, setCategory] =
-	// 	useState<TransactionsFilterValues['category']>();
-	// // const [search, setSearch] = useState<TransactionsFilterValues['search']>('');
-	// // const debouncedSearch = useDebounce(search);
 
-	// const [course, setCourse] = useState<TransactionsFilterValues['course']>(
-	// 	courses[0]
-	// );
+	const [localSearch, setLocalSearch] =
+		useState<TransactionsFilterValues['search']>(search);
+	const debouncedSearch = useDebounce(localSearch);
 
 	const periodsOptions = [
 		{ value: 'all', label: 'All' },
@@ -58,23 +59,23 @@ export default function TransactionsFilter({
 		{ value: 'yearly', label: 'This Year' },
 	];
 
-	// useEffect(() => {
-	// 	onChange({ course, date, category, status, period });
-	// }, [onChange, course, date, category, status, period]);
+	useEffect(() => {
+		setSearch(debouncedSearch ?? '');
+	}, [debouncedSearch, setSearch]);
 
 	return (
 		<div className='flex gap-2 text-muted-foreground'>
 			{/* Search */}
-			{/* <div className='space-x-1'>
+			<div className='space-x-1'>
 				<Label className='ml-1'>Search:</Label>
 				<Input
 					type='text'
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
+					value={localSearch}
+					onChange={(e) => setLocalSearch(e.target.value)}
 					className='w-[300px]'
-					placeholder='Search for student ID'
+					placeholder='Search for name or student ID'
 				/>
-			</div> */}
+			</div>
 
 			{/* Period */}
 			<div className='flex flex-col justify-end items-start gap-2'>

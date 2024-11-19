@@ -17,7 +17,7 @@ export const generateTransactionsFilterURL = (
 		filters.category === defaultFilterValue ? undefined : filters.category;
 
 	let url = `${baseURL}`;
-	// if (filters.search) url = url + `&search=${filters.search}`;
+	if (filters.search) url += `&search=${filters.search}`;
 	if (filters.course) url += `&course=${filters.course}`;
 	if (filters.date) url += `&date=${filters.date.toISOString()}`;
 	if (filters.category) url += `&category=${filters.category}`;

@@ -25,7 +25,7 @@ export type TransactionPeriodFilter =
 	| 'yearly';
 
 export type TransactionsFilterValues = {
-	// search?: string;
+	search?: string;
 	page?: number;
 	pageSize?: number;
 	course?: string;

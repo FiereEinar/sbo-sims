@@ -26,7 +26,7 @@ export const transactionQueryFilter = asyncHandler(
 
 			return;
 		}
-
+		console.log(search);
 		const defaultPage = 1;
 		const defaultPageSize = 100;
 
@@ -68,6 +68,14 @@ export const transactionQueryFilter = asyncHandler(
 			.exec();
 
 		let filteredTransactions = transactions;
+
+		if (search?.length) {
+			filteredTransactions = filteredTransactions.filter((transaction) => {
+				const fullname = `${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`;
+
+				return fullname.toLowerCase().includes(search.toString().toLowerCase());
+			});
+		}
 
 		if (course) {
 			filteredTransactions = filteredTransactions.filter(

@@ -22,8 +22,17 @@ import { useState } from 'react';
 export default function Transaction() {
 	const userRole = useUserStore((state) => state.user?.role);
 	const [isDownloading, setIsDownloading] = useState(false);
-	const { category, course, date, page, pageSize, period, status, setPage } =
-		useTransactionFilterStore((state) => state);
+	const {
+		search,
+		category,
+		course,
+		date,
+		page,
+		pageSize,
+		period,
+		status,
+		setPage,
+	} = useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
 
 	const {
@@ -33,11 +42,11 @@ export default function Transaction() {
 	} = useQuery({
 		queryKey: [
 			QUERY_KEYS.TRANSACTION,
-			{ course, page, pageSize, date, category, status, period },
+			{ search, course, page, pageSize, date, category, status, period },
 		],
 		queryFn: () =>
 			fetchTransactions(
-				{ course, date, category, status, period },
+				{ search, course, date, category, status, period },
 				page,
 				pageSize
 			),

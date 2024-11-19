@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DateText from './ui/date-text';
 import { numberWithCommas } from '@/lib/utils';
+import _ from 'lodash';
 
 type TransactionsTableProps = {
 	transactions?: Transaction[];
@@ -41,9 +42,10 @@ export default function TransactionsTable({
 			<TableHeader>
 				<TableRow>
 					<TableHead className='w-[100px]'>Student ID</TableHead>
-					<TableHead className='w-[100px]'>Course</TableHead>
-					<TableHead className='w-[250px]'>Date</TableHead>
-					<TableHead className='w-[400px]'>Category</TableHead>
+					<TableHead className='w-[200px]'>Fullname</TableHead>
+					<TableHead className='w-[75px]'>Course</TableHead>
+					<TableHead className='w-[175px]'>Date</TableHead>
+					<TableHead className='w-[300px]'>Category</TableHead>
 					<TableHead className='w-[50px]'>Status</TableHead>
 					<TableHead className='w-[100px] text-right'>Amount</TableHead>
 				</TableRow>
@@ -71,6 +73,13 @@ export default function TransactionsTable({
 								<TableCell className=''>
 									{transaction.owner.studentID}
 								</TableCell>
+								<TableCell className=''>
+									{_.startCase(
+										`${transaction.owner.firstname} ${
+											transaction.owner.middlename ?? ''
+										} ${transaction.owner.lastname}`
+									)}
+								</TableCell>
 								<TableCell className=''>{transaction.owner.course}</TableCell>
 								<TableCell className=''>
 									<DateText date={new Date(transaction.date)} />
@@ -96,7 +105,7 @@ export default function TransactionsTable({
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={5}>Total</TableCell>
+					<TableCell colSpan={6}>Total</TableCell>
 					<TableCell className='text-right'>
 						P{numberWithCommas(totalAmount)}
 					</TableCell>

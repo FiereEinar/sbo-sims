@@ -15,7 +15,6 @@ export const convertToPdf = async (
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
 	await page.setContent(html, { waitUntil: 'domcontentloaded' });
-
 	await page.pdf(options);
 
 	await browser.close();

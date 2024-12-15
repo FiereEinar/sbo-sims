@@ -43,7 +43,7 @@ export default function Student() {
 			</StickyHeader>
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<StudentFilter />
-				<ImportStudentsButton />
+				{userRole === 'admin' && <ImportStudentsButton />}
 			</div>
 			<StudentsTable
 				isLoading={studentsLoading}

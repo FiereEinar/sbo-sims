@@ -11,10 +11,18 @@ const filetypeMap: { [key: string]: string } = {
 	svg: 'image/svg+xml',
 };
 
+const margin = 30;
+
 const defaultOptions: PDFOptions = {
 	format: 'A4',
 	printBackground: true,
 	path: pdfOutputPath,
+	margin: {
+		bottom: margin,
+		top: margin,
+		right: margin,
+		left: margin,
+	},
 };
 
 export const convertToPdf = async (

@@ -37,11 +37,9 @@ export default function LeftSidebar() {
 			</div>
 
 			<div className='flex flex-col justify-between gap-3'>
-				{currentUser && currentUser.role === 'admin' && (
-					<SidebarLink
-						link={{ icon: 'settings', name: 'Settings', path: '/settings' }}
-					/>
-				)}
+				<SidebarLink
+					link={{ icon: 'settings', name: 'Settings', path: '/settings' }}
+				/>
 				<DarkModeToggle text='Toggle Theme' />
 				<LogoutButton />
 			</div>

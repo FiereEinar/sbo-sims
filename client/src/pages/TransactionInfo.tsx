@@ -68,7 +68,9 @@ export default function TransactionInfo() {
 			/>
 			<hr />
 			<div className='flex justify-end'>
-				<UpdateTransactionAmountForm transaction={transaction} />
+				{userRole === 'admin' && (
+					<UpdateTransactionAmountForm transaction={transaction} />
+				)}
 			</div>
 			<TransactionsTable isLoading={TLoading} transactions={[transaction]} />
 		</SidebarPageLayout>

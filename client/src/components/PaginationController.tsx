@@ -22,7 +22,7 @@ export default function PaginationController({
 	setPage,
 }: PaginationControllerProps) {
 	return (
-		<Pagination>
+		<Pagination className='select-none'>
 			<PaginationContent>
 				<PaginationItem
 					onClick={() => {

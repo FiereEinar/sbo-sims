@@ -1,27 +1,20 @@
-import axiosInstance from '@/api/axiosInstance';
 import { fetchCategories } from '@/api/category';
-import {
-	fetchTransactions,
-	generateTransactionsFilterURL,
-} from '@/api/transaction';
+import { fetchTransactions } from '@/api/transaction';
+import DownloadTransactionsButton from '@/components/buttons/DownloadTransactionsButton';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
-import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
-import { useToast } from '@/hooks/use-toast';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 
 export default function Transaction() {
 	const userRole = useUserStore((state) => state.user?.role);
-	const [isDownloading, setIsDownloading] = useState(false);
 	const {
 		search,
 		category,
@@ -33,7 +26,6 @@ export default function Transaction() {
 		status,
 		setPage,
 	} = useTransactionFilterStore((state) => state);
-	const { toast } = useToast();
 
 	const {
 		data: fetchTransactionsResult,
@@ -69,31 +61,6 @@ export default function Transaction() {
 		return <p>Error</p>;
 	}
 
-	const handleDownloadTransactions = async () => {
-		try {
-			setIsDownloading(true);
-			const url = generateTransactionsFilterURL(
-				{ course, date, category, status, period },
-				`/transaction/download?page=1`
-			);
-
-			const result = await axiosInstance.get(url, {
-				responseType: 'blob',
-			});
-
-			// Create a URL for the blob and trigger the download
-			const blob = new Blob([result.data], { type: 'application/pdf' });
-			const link = document.createElement('a');
-			link.href = URL.createObjectURL(blob);
-			link.download = 'transactions.pdf';
-			link.click();
-		} catch (err: any) {
-			console.error('Error downloading the file: ', err);
-		} finally {
-			setIsDownloading(false);
-		}
-	};
-
 	return (
 		<SidebarPageLayout>
 			<div className='mt-5' />
@@ -104,23 +71,7 @@ export default function Transaction() {
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter categories={categories} />
-				<Button
-					disabled={isDownloading}
-					onClick={async () => {
-						if (!fetchTransactionsResult?.data.length) {
-							toast({
-								title: 'Unable to download',
-								description: "There's no transactions to download",
-							});
-							return;
-						}
-
-						await handleDownloadTransactions();
-					}}
-					variant='secondary'
-				>
-					Download
-				</Button>
+				<DownloadTransactionsButton />
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

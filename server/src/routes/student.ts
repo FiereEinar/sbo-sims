@@ -6,7 +6,7 @@ import {
 	get_available_course,
 	get_student,
 	get_student_transaction,
-	load_all_students,
+	post_csv_students,
 	update_student,
 } from '../controllers/studentController';
 import {
@@ -14,6 +14,7 @@ import {
 	updateStudentValidation,
 } from '../middlewares/validations/studentValidation';
 import { adminAuth } from '../middlewares/adminAuth';
+import upload from '../utils/multer';
 
 const router = express.Router();
 
@@ -21,13 +22,13 @@ router.get('/', get_all_students);
 
 router.get('/courses', get_available_course);
 
-// router.get('/load-students', load_all_students);
-
 router.get('/:studentID', get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 
 router.post('/', adminAuth, createStudentValidation, create_student);
+
+router.post('/import', adminAuth, upload.single('csv_file'), post_csv_students);
 
 router.put('/:studentID', adminAuth, updateStudentValidation, update_student);
 

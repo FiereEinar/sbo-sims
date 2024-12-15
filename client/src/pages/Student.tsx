@@ -10,6 +10,7 @@ import { QUERY_KEYS } from '@/constants';
 import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useUserStore } from '@/store/user';
+import ImportStudentsButton from '@/components/buttons/ImportStudentsButton';
 
 export default function Student() {
 	const userRole = useUserStore((state) => state.user?.role);
@@ -40,7 +41,10 @@ export default function Student() {
 				<Header>Students</Header>
 				{userRole === 'admin' && <AddStudentForm />}
 			</StickyHeader>
-			<StudentFilter />
+			<div className='flex justify-between items-end flex-wrap gap-3'>
+				<StudentFilter />
+				<ImportStudentsButton />
+			</div>
 			<StudentsTable
 				isLoading={studentsLoading}
 				students={studentsFetchResult?.data}

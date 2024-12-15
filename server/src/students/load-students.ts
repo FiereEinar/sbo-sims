@@ -44,7 +44,6 @@ export const loadStudents = async (
 			})
 			.on('end', () => {
 				console.log('CSV file processing completed');
-				// mongoose.connection.close();
 			})
 			.on('error', (error) => {
 				console.error('Error reading CSV file:', error);

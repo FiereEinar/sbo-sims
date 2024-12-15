@@ -140,7 +140,7 @@ export default function AddCategoryForm({
 
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
-					<DialogTitle>Add Category</DialogTitle>
+					<DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} Category</DialogTitle>
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 

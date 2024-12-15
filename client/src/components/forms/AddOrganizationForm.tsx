@@ -150,7 +150,9 @@ export default function AddOrganizationForm({
 
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
-					<DialogTitle>Add Organization</DialogTitle>
+					<DialogTitle>
+						{mode === 'add' ? 'Add' : 'Edit'} Organization
+					</DialogTitle>
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 

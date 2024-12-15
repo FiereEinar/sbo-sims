@@ -4,8 +4,9 @@ import { createStudentBody } from '../types/student';
 import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
-import { loadStudents } from '../students/load-students';
 import { CustomRequest } from '../types/request';
+import { loadStudents } from '../services/csvLoader';
+import fs from 'fs/promises';
 
 /**
  * GET - fetch all students
@@ -100,6 +101,46 @@ export const get_all_students = asyncHandler(
 		res.json(
 			new CustomPaginatedResponse(true, students, 'All students', next, prev)
 		);
+	}
+);
+
+/**
+ * POST - import student from a csv file
+ */
+export const post_csv_students = asyncHandler(
+	async (req: CustomRequest, res) => {
+		const file = req.file;
+
+		if (file === undefined) {
+			res.json(
+				new CustomResponse(false, null, 'Server did not recieve any file')
+			);
+			return;
+		}
+
+		if (file.mimetype !== 'text/csv') {
+			res.json(new CustomResponse(false, null, 'File should be in csv format'));
+			return;
+		}
+
+		const valid = await loadStudents(req, file.path);
+
+		if (!valid) {
+			res.json(
+				new CustomResponse(
+					false,
+					null,
+					'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
+				)
+			);
+			await fs.unlink(file.path);
+			return;
+		}
+
+		await loadStudents(req, file.path, true);
+		await fs.unlink(file.path);
+
+		res.json(new CustomResponse(true, null, 'File imported successfully'));
 	}
 );
 
@@ -394,10 +435,3 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 
 	res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });
-
-export const load_all_students = asyncHandler(
-	async (req: CustomRequest, res) => {
-		await loadStudents(req, res);
-		res.json({ message: 'done' });
-	}
-);

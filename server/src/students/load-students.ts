@@ -37,7 +37,6 @@ export const loadStudents = async (
 					});
 
 					await newStudent.save();
-					console.log(`Saved student: ${row.studentID}`);
 				} catch (err) {
 					console.error(`Failed to save student: ${row.studentID}`, err);
 				}

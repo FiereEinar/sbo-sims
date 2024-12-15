@@ -27,7 +27,6 @@ export default function ImportStudentsButton() {
 				'/student/import',
 				formData
 			);
-			console.log(data);
 
 			if (!data.success) {
 				toast({

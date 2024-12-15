@@ -26,7 +26,7 @@ export const transactionQueryFilter = asyncHandler(
 
 			return;
 		}
-		console.log(search);
+
 		const defaultPage = 1;
 		const defaultPageSize = 100;
 

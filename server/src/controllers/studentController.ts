@@ -110,7 +110,6 @@ export const get_all_students = asyncHandler(
 export const post_csv_students = asyncHandler(
 	async (req: CustomRequest, res) => {
 		const file = req.file;
-
 		if (file === undefined) {
 			res.json(
 				new CustomResponse(false, null, 'Server did not recieve any file')
@@ -283,6 +282,7 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 	const existingStudentWithID = await req.StudentModel.findOne({
 		studentID: studentID,
 	}).exec();
+
 	if (existingStudentWithID !== null) {
 		res.json(
 			new CustomResponse(

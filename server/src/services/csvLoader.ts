@@ -8,7 +8,6 @@ export const loadStudents = async (
 	save?: boolean
 ): Promise<boolean> => {
 	try {
-		// Wrap CSV parsing in a promise to ensure proper error handling
 		await new Promise<void>((resolve, reject) => {
 			fs.createReadStream(filepath)
 				.pipe(csvParser())
@@ -18,7 +17,7 @@ export const loadStudents = async (
 							throw new Error('StudentModel not attached');
 						}
 
-						// Validate CSV headers
+						// requried csv headers
 						const requiredHeaders = [
 							'firstname',
 							'lastname',
@@ -56,13 +55,13 @@ export const loadStudents = async (
 							`Error processing student row: ${JSON.stringify(row)}`,
 							err
 						);
-						reject(err); // Reject the promise if any error occurs
+						reject(err);
 					}
 				})
-				.on('end', () => resolve()) // Resolve the promise on successful completion
+				.on('end', () => resolve())
 				.on('error', (error) => {
 					console.error('Error reading CSV file:', error);
-					reject(error); // Reject the promise if the stream encounters an error
+					reject(error);
 				});
 		});
 	} catch (error) {

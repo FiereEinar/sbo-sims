@@ -154,7 +154,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 							name='middlename'
 							registerFn={register}
 							errors={errors}
-							label='Middlename: (optional)'
+							label='Middlename:'
 							id='middlename'
 						/>
 

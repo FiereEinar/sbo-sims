@@ -51,8 +51,8 @@ export default function Dashboard() {
 				<Header>Dashboard</Header>
 			</StickyHeader>
 
-			<div className='flex gap-3'>
-				<div className='flex flex-col gap-3'>
+			<div className='flex flex-col md:flex-row gap-3'>
+				<div className='flex flex-col-reverse sm:flex-col gap-3'>
 					<DashboardInfoGrid dashboardData={dashboardData} />
 					<BarCharts dashboardData={dashboardData} />
 				</div>
@@ -74,7 +74,7 @@ type DashboardInfoGridProps = {
 
 function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 	return (
-		<div className='grid grid-cols-4 gap-3'>
+		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3'>
 			<DashboardInfoCard
 				title='Total Revenue'
 				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}

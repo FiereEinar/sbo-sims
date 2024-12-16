@@ -52,7 +52,7 @@ export default function CategoryInfo() {
 			<TransactionsTable isLoading={isLoading} transactions={data.data} />
 
 			{data && (
-				<div className='absolute w-full p-5 bottom-0'>
+				<div className='md:absolute w-full p-5 md:bottom-0'>
 					<PaginationController
 						currentPage={page ?? 1}
 						nextPage={data.next}

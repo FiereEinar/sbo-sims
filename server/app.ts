@@ -4,9 +4,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
-// import connectToMongoDB from './src/database/mongodb';
-// connectToMongoDB();
-
 import authRouter from './src/routes/auth';
 import studentRouter from './src/routes/student';
 import userRouter from './src/routes/user';
@@ -25,6 +22,7 @@ import {
 const app = express();
 app.use(
 	cors({
+		// origin: 'http://192.168.1.9:5173',
 		origin: 'http://localhost:5173',
 		credentials: true,
 	})

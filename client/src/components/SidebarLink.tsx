@@ -15,7 +15,9 @@ export default function SidebarLink({ link }: SidebarLinkProps) {
 			title={link.name}
 			to={link.path}
 			className={({ isActive }) =>
-				`hover:opacity-90 ${isActive ? 'text-primary1 active-link' : ''}`
+				`hover:opacity-90 select-none ${
+					isActive ? 'text-primary1 active-link' : ''
+				}`
 			}
 		>
 			<div className='flex items-center gap-1'>

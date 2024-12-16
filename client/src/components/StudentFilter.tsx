@@ -45,7 +45,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 	const yearsOptions = ['All', '1', '2', '3', '4'];
 
 	return (
-		<div className='flex gap-2 text-muted-foreground'>
+		<div className='flex flex-wrap gap-2 text-muted-foreground'>
 			{/* Search */}
 			<div className='space-x-1'>
 				<Label className='ml-1'>Search:</Label>
@@ -53,7 +53,7 @@ export default function StudentFilter({}: StudentFilterProps) {
 					type='text'
 					value={localSearch}
 					onChange={(e) => setLocalSearch(e.target.value)}
-					className='w-[300px]'
+					className='w-[250px]'
 					placeholder='Search for student ID or Fullname'
 				/>
 			</div>

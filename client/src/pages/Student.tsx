@@ -36,7 +36,7 @@ export default function Student() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
+			<div className='sm:mt-5' />
 			<StickyHeader>
 				<Header>Students</Header>
 				{userRole === 'admin' && <AddStudentForm />}
@@ -52,7 +52,7 @@ export default function Student() {
 			{studentsLoading && <p>Loading...</p>}
 
 			{studentsFetchResult && (
-				<div className='absolute w-full p-5 bottom-0'>
+				<div className='md:absolute w-full p-5 md:bottom-0'>
 					<PaginationController
 						currentPage={page ?? 1}
 						nextPage={studentsFetchResult.next}

@@ -47,7 +47,6 @@ export default function OrganizationInfo() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<BackButton />
 			<StickyHeader>
 				<Header>{organization.name}</Header>

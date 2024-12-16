@@ -36,7 +36,6 @@ export default function Student() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='sm:mt-5' />
 			<StickyHeader>
 				<Header>Students</Header>
 				{userRole === 'admin' && <AddStudentForm />}

@@ -46,7 +46,6 @@ export default function TransactionInfo() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>

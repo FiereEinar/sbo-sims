@@ -38,10 +38,7 @@ export default function CategoryInfo() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
-
 			<BackButton />
-
 			<StickyHeader>
 				<CategoryDataCard category={data.data[0].category} />
 				{userRole === 'admin' && (

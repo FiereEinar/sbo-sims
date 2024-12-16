@@ -29,7 +29,6 @@ export default function Category() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Categories</Header>
 				{userRole === 'admin' && <AddCategoryForm />}

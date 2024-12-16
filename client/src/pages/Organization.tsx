@@ -29,7 +29,6 @@ export default function Organization() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Organizations</Header>
 				{userRole === 'admin' && <AddOrganizationForm />}

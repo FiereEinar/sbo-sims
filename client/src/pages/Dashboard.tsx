@@ -26,9 +26,11 @@ export type DashboardDataCategory = {
 
 export type DashboardData = {
 	totalRevenue: number;
+	totalRevenueLastMonth: number;
 	totalStudents: number;
 	transactionsToday: number;
 	totalTransaction: number;
+	totalTransactionLastMonth: number;
 	transactions: DashboardDataTransaction[];
 	categories: DashboardDataCategory[];
 };
@@ -46,12 +48,11 @@ export default function Dashboard() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Dashboard</Header>
 			</StickyHeader>
 
-			<div className='flex flex-col md:flex-row gap-3'>
+			<div className='flex flex-col md:flex-row gap-3 '>
 				<div className='flex flex-col-reverse sm:flex-col gap-3'>
 					<DashboardInfoGrid dashboardData={dashboardData} />
 					<BarCharts dashboardData={dashboardData} />
@@ -73,16 +74,32 @@ type DashboardInfoGridProps = {
 };
 
 function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
+	const revenueDifference =
+		(dashboardData?.totalRevenue ?? 0) -
+		(dashboardData?.totalRevenueLastMonth ?? 0);
+
+	const revenueIncreaseInPercentage =
+		(revenueDifference / (dashboardData?.totalRevenue ?? 0)) * 100;
+
+	const transactionDifference =
+		(dashboardData?.totalTransaction ?? 0) -
+		(dashboardData?.totalTransactionLastMonth ?? 0);
+
+	const transactionIncreaseInPercentage =
+		(transactionDifference / (dashboardData?.totalTransaction ?? 0)) * 100;
+
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3'>
 			<DashboardInfoCard
 				title='Total Revenue'
 				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}
+				increase={revenueIncreaseInPercentage}
 			/>
 
 			<DashboardInfoCard
 				title='Total Transactions'
 				value={numberWithCommas(dashboardData?.totalTransaction ?? 0)}
+				increase={transactionIncreaseInPercentage}
 			/>
 
 			<DashboardInfoCard

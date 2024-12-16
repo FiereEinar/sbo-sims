@@ -13,7 +13,15 @@ import path from 'path';
 import { ITransaction } from '../models/transaction';
 import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
 import ejs from 'ejs';
-import { addDays, format, startOfDay } from 'date-fns';
+import {
+	addDays,
+	addMonths,
+	constructNow,
+	format,
+	isBefore,
+	isLastDayOfMonth,
+	startOfDay,
+} from 'date-fns';
 import _ from 'lodash';
 import { getPeriodLabel } from '../utils/utils';
 import { ICategory } from '../models/category';
@@ -117,9 +125,19 @@ export const get_dashboard_data = asyncHandler(
 		 */
 		const result = await req.TransactionModel?.find();
 		let totalRevenue = 0;
+		let totalRevenueLastMonth = 0;
+		let totalTransactionLastMonth = 0;
+
+		const prevMonth = new Date();
+		prevMonth.setMonth(prevMonth.getMonth()); // reduces the month by 1
+		prevMonth.setDate(0);
 
 		result?.map((t) => {
 			totalRevenue += t.amount;
+			if (isBefore(t.date as Date, prevMonth)) {
+				totalRevenueLastMonth += t.amount;
+				totalTransactionLastMonth++;
+			}
 		});
 
 		const transactions = await req.TransactionModel?.aggregate([
@@ -214,7 +232,9 @@ export const get_dashboard_data = asyncHandler(
 				true,
 				{
 					totalRevenue,
+					totalRevenueLastMonth,
 					totalTransaction: result?.length ?? 0,
+					totalTransactionLastMonth,
 					transactionsToday,
 					totalStudents,
 					transactions,

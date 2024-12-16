@@ -63,7 +63,6 @@ export default function Transaction() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
 			<StickyHeader>
 				<Header>Transactions</Header>
 				{userRole === 'admin' && <AddTransactionForm categories={categories} />}

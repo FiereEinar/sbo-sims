@@ -48,10 +48,7 @@ export default function StudentInfo() {
 
 	return (
 		<SidebarPageLayout>
-			<div className='mt-5' />
-
 			<BackButton />
-
 			<div className='space-y-3'>
 				<StickyHeader>
 					<Header>Student Info</Header>

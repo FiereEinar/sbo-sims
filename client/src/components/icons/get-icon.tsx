@@ -1,6 +1,8 @@
 import Back from './back';
 import Category from './category';
 import Dashboard from './dashboard';
+import Dollar from './dollar';
+import Ledger from './ledger';
 import Logout from './logout';
 import Menu from './menu';
 import Money from './money';
@@ -8,6 +10,7 @@ import Organization from './organization';
 import Person from './person';
 import Plus from './plus';
 import Settings from './settings';
+import Today from './today';
 
 export type iconKeys =
 	| 'dashboard'
@@ -19,6 +22,9 @@ export type iconKeys =
 	| 'back'
 	| 'organization'
 	| 'settings'
+	| 'ledger'
+	| 'dollar'
+	| 'today'
 	| 'menu';
 
 type GetIconProps = {
@@ -37,6 +43,9 @@ export default function GetIcon({ iconKey }: GetIconProps) {
 	icons.set('plus', <Plus />);
 	icons.set('organization', <Organization />);
 	icons.set('settings', <Settings />);
+	icons.set('ledger', <Ledger />);
+	icons.set('dollar', <Dollar />);
+	icons.set('today', <Today />);
 	icons.set('menu', <Menu />);
 
 	return icons.get(iconKey);

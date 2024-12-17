@@ -11,69 +11,121 @@
 				box-sizing: border-box;
 				font-size: small;
 			}
+
 			body {
 				font-family: Arial, sans-serif;
 			}
+
+			.header-logo {
+				width: 5rem;
+				height: 5rem;
+			}
+
 			h1 {
 				text-align: center;
 				color: #333;
 			}
+
+			h2 {
+				font-size: medium;
+			}
+
 			.header {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 5rem;
+			}
+
+			.header > div > * {
 				text-align: center;
 			}
+
 			.header p {
 				color: #666;
 			}
+
 			table {
 				width: 100%;
 				border-collapse: collapse;
 				margin-top: 20px;
 			}
+
 			th,
 			td {
 				border: 1px solid #ddd;
 				padding: 10px;
 				text-align: center;
 			}
+
 			th {
 				background-color: #f4f4f4;
 				color: #333;
 				font-weight: bold;
 			}
-			tr:nth-child(even) {
+
+			/* tr:nth-child(even) {
 				background-color: #f9f9f9;
-			}
-			.status {
+			} */
+
+			/* .status {
 				font-weight: bold;
 				color: #fff;
 				padding: 5px 10px;
 				border-radius: 4px;
-			}
-			.status.paid {
+			} */
+
+			/* .status.paid {
 				background-color: #4caf50;
 			}
+
 			.status.partial {
 				background-color: #ff9800;
 			}
+
 			.status.cancelled {
 				background-color: #f44336;
-			}
+			} */
+
 			.total-row {
 				font-weight: bold;
 				background-color: #f4f4f4;
 			}
+
 			.total-label {
 				text-align: left;
 				padding-right: 15px;
+			}
+
+			.signature {
+				display: flex;
+				justify-content: space-between;
+				margin-top: 5rem;
+			}
+
+			.signature > div > u {
+				width: 10rem;
+			}
+
+			.signature > div {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="header">
-			<!-- <img src="SBO_LOGO.png" alt="" /> -->
-			<h2>Transactions Report</h2>
-			<!-- <h2>Transaction Report for <%= period %></h2> -->
-			<p>Date: <%= dateToday %></p>
+			<img class="header-logo" src="SBO_LOGO.png" alt="" />
+			<div>
+				<!-- <h2>Transaction Report for <%= period %></h2> -->
+				<h2>Bukidnon State Univerity</h2>
+				<h2>Student Body Organization</h2>
+				<h2>Transactions Report</h2>
+				<p>For <%= dateToday %></p>
+			</div>
+			<img class="header-logo" src="BUKSU_LOGO.png" alt="" />
 		</div>
 
 		<table>
@@ -117,5 +169,19 @@
 				</tr>
 			</div>
 		</table>
+
+		<div class="signature">
+			<div>
+				<p>_______________________</p>
+				<p>Louie Jay Labastida</p>
+				<h3>Advicer</h3>
+			</div>
+
+			<div>
+				<p>_______________________</p>
+				<p>Jhon Lester Ybanez</p>
+				<h3>SBO Mayor</h3>
+			</div>
+		</div>
 	</body>
 </html>

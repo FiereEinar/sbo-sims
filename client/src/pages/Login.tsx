@@ -11,7 +11,7 @@ import {
 export default function Login() {
 	return (
 		<main className='transition-all bg-background relative h-dvh flex justify-center items-center'>
-			<Card className='w-[450px]'>
+			<Card className='w-[95%] sm:w-[450px]'>
 				<CardHeader>
 					<CardTitle>Login</CardTitle>
 					<CardDescription>Enter your credentials to proceed.</CardDescription>

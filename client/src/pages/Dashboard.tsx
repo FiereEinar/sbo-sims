@@ -1,6 +1,10 @@
 import { fetchDashboardData, fetchTransactions } from '@/api/transaction';
 import BarCharts from '@/components/BarChart';
 import DashboardInfoCard from '@/components/DashboardInfoCard';
+import Dollar from '@/components/icons/dollar';
+import Ledger from '@/components/icons/ledger';
+import Person from '@/components/icons/person';
+import Today from '@/components/icons/today';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionPieChart from '@/components/TransactionPieChart';
@@ -52,7 +56,7 @@ export default function Dashboard() {
 				<Header>Dashboard</Header>
 			</StickyHeader>
 
-			<div className='flex flex-col md:flex-row gap-3 '>
+			<div className='flex flex-col md:flex-row gap-3 w-[93dvw] sm:w-full'>
 				<div className='flex flex-col-reverse sm:flex-col gap-3'>
 					<DashboardInfoGrid dashboardData={dashboardData} />
 					<BarCharts dashboardData={dashboardData} />
@@ -94,21 +98,25 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 				title='Total Revenue'
 				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}
 				increase={revenueIncreaseInPercentage}
+				icon={<Dollar />}
 			/>
 
 			<DashboardInfoCard
 				title='Total Transactions'
 				value={numberWithCommas(dashboardData?.totalTransaction ?? 0)}
 				increase={transactionIncreaseInPercentage}
+				icon={<Ledger />}
 			/>
 
 			<DashboardInfoCard
 				title='Total Students'
 				value={numberWithCommas(dashboardData?.totalStudents ?? 0)}
+				icon={<Person />}
 			/>
 			<DashboardInfoCard
 				title='Transactions Today'
 				value={numberWithCommas(dashboardData?.transactionsToday ?? 0)}
+				icon={<Today />}
 			/>
 		</div>
 	);

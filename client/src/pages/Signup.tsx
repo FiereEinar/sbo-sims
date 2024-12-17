@@ -11,7 +11,7 @@ import {
 export default function Signup() {
 	return (
 		<main className='transition-all bg-background relative h-dvh flex justify-center items-center'>
-			<Card className='w-[450px]'>
+			<Card className='w-[95%] sm:w-[450px]'>
 				<CardHeader>
 					<CardTitle>Sign Up</CardTitle>
 					<CardDescription>Create an account to proceed.</CardDescription>

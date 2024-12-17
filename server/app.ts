@@ -22,8 +22,8 @@ import {
 const app = express();
 app.use(
 	cors({
-		origin: 'http://192.168.1.11:5173',
-		// origin: 'http://localhost:5173',
+		// origin: 'http://192.168.1.11:5173',
+		origin: 'http://localhost:5173',
 		credentials: true,
 	})
 );
@@ -52,8 +52,6 @@ app.use('/organization', organizationRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(3000, '0.0.0.0', () =>
-	console.log('Server is running on PORT 3000')
-);
+app.listen(3000, () => console.log('Server is running on PORT 3000'));
 
 export default app;

@@ -26,7 +26,7 @@ export const auth = asyncHandler(
 
 			const data = payload as { studentID: string };
 
-			const mongoURI = process.env.MONGO_URI;
+			const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 
 			const connection = await getDatabaseConnection(
 				originalDbName,

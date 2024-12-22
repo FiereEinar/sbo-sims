@@ -1,0 +1,52 @@
+name: transaction-app
+
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - transaction-app
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - transaction-app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+
+  frontent:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    networks:
+      - transaction-app
+    ports:
+      - '5173:5173'
+    command: npm run host
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
+networks:
+  transaction-app:
+    driver: bridge

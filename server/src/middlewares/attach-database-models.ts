@@ -21,7 +21,7 @@ export const attachDatabaseModels = async (
 		}
 
 		const dbName = `${currentUser.activeSemDB}${currentUser.activeSchoolYearDB}`;
-		const mongoURI = process.env.MONGO_URI;
+		const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 
 		const dynamicConnection = await getDatabaseConnection(
 			dbName,
@@ -50,7 +50,7 @@ export const attachOriginalDatabaseModels = async (
 	next: NextFunction
 ) => {
 	try {
-		const mongoURI = process.env.MONGO_URI;
+		const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 		const originalConnection = await getDatabaseConnection(
 			originalDbName,
 			mongoURI as string

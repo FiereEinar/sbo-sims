@@ -64,7 +64,10 @@ export const convertToPdf = async (
 		$(this).attr('src', local_src);
 	});
 
-	const browser = await puppeteer.launch({ headless: true });
+	const browser = await puppeteer.launch({
+		headless: true,
+		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	});
 	const page = await browser.newPage();
 	await page.emulateMediaType('print');
 	await page.setContent($.html(), { waitUntil: 'domcontentloaded' });

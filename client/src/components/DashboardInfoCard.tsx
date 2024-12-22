@@ -16,7 +16,7 @@ export default function DashboardInfoCard({
 			<div>
 				<p className='text-sm text-muted-foreground'>{title}</p>
 				<h1 className='text-2xl font-bold'>{value}</h1>
-				{increase && (
+				{increase && increase > 0 && (
 					<p
 						className={`text-xs ${
 							increase > 0 ? 'text-green-500' : 'text-muted-foreground'

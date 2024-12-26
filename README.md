@@ -14,6 +14,8 @@ A simple and intuitive web application designed to help you easily track student
 - **Organization Management**: Manage what organization facilitates certain events & categories.
 - **Dynamic Database**: Dynamically change which database to fetch data from based on user settings, which allows a more modular way storing information.
 - **Authentication & Authorization**: Secure login and user management to ensure only authorized users can access or modify data.
+- **Transaction PDF Report**: Download a PDF of transactions report
+- **Import Students**: Import a list of students via CSV file
 
 ## Technologies Used
 

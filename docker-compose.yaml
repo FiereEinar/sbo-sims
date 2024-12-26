@@ -45,8 +45,24 @@ services:
     depends_on:
       - api
 
+  # caddy:
+  #   image: caddy:2.9-alpine
+  #   ports:
+  #     - '80:80'
+  #     - '443:443'
+  #   volumes:
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   networks:
+  #     - transaction-app
+  #   depends_on:
+  #     - frontent
+  #     - api
+
 volumes:
   mongo_data:
+  # caddy_data:
+  # caddy_config:
 networks:
   transaction-app:
     driver: bridge

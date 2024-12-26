@@ -1,0 +1,13 @@
+{
+  local_certs
+}
+
+sbo.localhost {
+  encode gzip
+  reverse_proxy frontent:5173
+}
+
+sbo.api.localhost {
+  encode gzip
+  reverse_proxy api:3000
+}

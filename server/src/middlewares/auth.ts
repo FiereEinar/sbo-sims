@@ -5,6 +5,7 @@ import { appCookieName, originalDbName } from '../constants';
 import jwt from 'jsonwebtoken';
 import { UserSchema } from '../models/user';
 import { getDatabaseConnection } from '../database/databaseManager';
+import { ME_CONFIG_MONGODB_URL } from '../constants/env';
 
 export const auth = asyncHandler(
 	async (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -26,11 +27,9 @@ export const auth = asyncHandler(
 
 			const data = payload as { studentID: string };
 
-			const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
-
 			const connection = await getDatabaseConnection(
 				originalDbName,
-				mongoURI as string
+				ME_CONFIG_MONGODB_URL
 			);
 
 			const User = connection.model('User', UserSchema);

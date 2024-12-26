@@ -18,6 +18,7 @@ import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
 } from './src/middlewares/attach-database-models';
+import { PORT } from './src/constants/env';
 
 const app = express();
 app.use(
@@ -33,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-	res.json({
+	res.status(200).json({
 		message: 'skibidi toilet i miss her',
 	});
 });
@@ -52,6 +53,6 @@ app.use('/organization', organizationRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(3000, () => console.log('Server is running on PORT 3000'));
+app.listen(PORT, () => console.log(`Server is running on PORT ${PORT}`));
 
 export default app;

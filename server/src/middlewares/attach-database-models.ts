@@ -7,6 +7,7 @@ import { StudentSchema } from '../models/student';
 import { CategorySchema } from '../models/category';
 import { TransactionSchema } from '../models/transaction';
 import { OrganizationSchema } from '../models/organization';
+import { ME_CONFIG_MONGODB_URL } from '../constants/env';
 
 export const attachDatabaseModels = async (
 	req: CustomRequest,
@@ -21,11 +22,10 @@ export const attachDatabaseModels = async (
 		}
 
 		const dbName = `${currentUser.activeSemDB}${currentUser.activeSchoolYearDB}`;
-		const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 
 		const dynamicConnection = await getDatabaseConnection(
 			dbName,
-			mongoURI as string
+			ME_CONFIG_MONGODB_URL
 		);
 
 		req.StudentModel = dynamicConnection.model(DB_MODEL.STUDENT, StudentSchema);
@@ -50,10 +50,9 @@ export const attachOriginalDatabaseModels = async (
 	next: NextFunction
 ) => {
 	try {
-		const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 		const originalConnection = await getDatabaseConnection(
 			originalDbName,
-			mongoURI as string
+			ME_CONFIG_MONGODB_URL
 		);
 
 		req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);

@@ -4,21 +4,21 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
-import authRouter from './src/routes/auth';
-import studentRouter from './src/routes/student';
-import userRouter from './src/routes/user';
-import transactionRouter from './src/routes/transaction';
-import categoryRouter from './src/routes/category';
-import organizationRouter from './src/routes/organization';
+import authRouter from './routes/auth';
+import studentRouter from './routes/student';
+import userRouter from './routes/user';
+import transactionRouter from './routes/transaction';
+import categoryRouter from './routes/category';
+import organizationRouter from './routes/organization';
 
-import { notFoundHandler } from './src/middlewares/not-found';
-import { errorHandler } from './src/middlewares/error';
-import { auth } from './src/middlewares/auth';
+import { notFoundHandler } from './middlewares/not-found';
+import { errorHandler } from './middlewares/error';
+import { auth } from './middlewares/auth';
 import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
-} from './src/middlewares/attach-database-models';
-import { PORT } from './src/constants/env';
+} from './middlewares/attach-database-models';
+import { PORT } from './constants/env';
 
 const app = express();
 app.use(
@@ -35,7 +35,7 @@ app.use(cookieParser());
 
 app.get('/', (req, res) => {
 	res.status(200).json({
-		message: 'skibidi toilet i miss her',
+		message: 'skibidi toilet i miss her so much',
 	});
 });
 app.use(attachOriginalDatabaseModels);

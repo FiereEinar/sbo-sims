@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"dev": "nodemon app.ts",
+		"dev": "nodemon --watch src --legacy-watch ./src/app.ts",
 		"build": "rimraf dist && tsc"
 	},
 	"keywords": [],

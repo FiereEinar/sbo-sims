@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { ICategory } from '../models/category';
 import { IOrganization } from '../models/organization';
 import { IStudent } from '../models/student';
+import { ISession } from '../models/session';
 
 export interface CustomRequest extends Request {
 	currentUser?: IUser;
@@ -13,6 +14,7 @@ export interface CustomRequest extends Request {
 	TransactionModel?: Model<ITransaction>;
 	CategoryModel?: Model<ICategory>;
 	OrganizationModel?: Model<IOrganization>;
+	SessionModel?: Model<ISession>;
 }
 
 export type TransactionQueryFilterRequest = CustomRequest & {

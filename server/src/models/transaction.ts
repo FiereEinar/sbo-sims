@@ -4,7 +4,7 @@ import { IStudent } from './student';
 
 const Schema = mongoose.Schema;
 
-export interface ITransaction {
+export interface ITransaction extends mongoose.Document {
 	_id: string;
 	owner: IStudent;
 	amount: number;
@@ -24,5 +24,3 @@ export const TransactionSchema = new Schema<ITransaction>({
 	governor: { type: String, required: true },
 	treasurer: { type: String, required: true },
 });
-
-// export default mongoose.model('Transaction', TransactionSchema);

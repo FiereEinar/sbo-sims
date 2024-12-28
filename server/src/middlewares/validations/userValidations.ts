@@ -1,101 +1,5 @@
-import { body, validationResult } from 'express-validator';
-import { CustomRequest } from '../../types/request';
-import { NextFunction, Response } from 'express';
-import CustomResponse from '../../types/response';
-import { validateEmail } from '../../utils/utils';
-import { signupUserBody } from '../../types/user';
-import asyncHandler from 'express-async-handler';
+import { body } from 'express-validator';
 import { isFormBodyValidated } from './validation';
-
-const signupExtraValidation = asyncHandler(
-	async (req: CustomRequest, res: Response, next: NextFunction) => {
-		const {
-			firstname,
-			lastname,
-			bio,
-			password,
-			confirmPassword,
-			email,
-			studentID,
-		}: signupUserBody = req.body;
-
-		if (!req.UserModel) {
-			res
-				.status(500)
-				.json(new CustomResponse(false, null, 'UserModel not attached'));
-
-			return;
-		}
-
-		// check for errors in form validation
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					errors.array()[0].msg
-				)
-			);
-			return;
-		}
-
-		if (password !== confirmPassword) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					'Passwords must match'
-				)
-			);
-			return;
-		}
-
-		if (email?.length && !validateEmail(email)) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					'Email must be valid'
-				)
-			);
-			return;
-		}
-
-		if (parseInt(studentID).toString().length !== 10) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					`Student ID must be 10 numbers and should not contain characters to be valid`
-				)
-			);
-			return;
-		}
-
-		const existingUser = await req.UserModel.findOne({
-			studentID: studentID,
-		}).exec();
-
-		if (existingUser) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					`A user with ID '${studentID}' already exist`
-				)
-			);
-			return;
-		}
-
-		next();
-	}
-);
 
 export const signupValidation = [
 	body('studentID')
@@ -139,7 +43,7 @@ export const signupValidation = [
 
 	body('email').trim().escape().optional(),
 
-	signupExtraValidation,
+	isFormBodyValidated,
 ];
 
 export const loginValidation = [

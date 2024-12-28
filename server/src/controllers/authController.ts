@@ -3,37 +3,105 @@ import { CustomRequest } from '../types/request';
 import { loginUserBody, signupUserBody } from '../types/user';
 import CustomResponse from '../types/response';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { appCookieName } from '../constants';
+import { accessTokenCookieName, refreshTokenCookieName } from '../constants';
+import { validateEmail } from '../utils/utils';
+import { BCRYPT_SALT, JWT_REFRESH_SECRET_KEY } from '../constants/env';
+import { FORBIDDEN, NO_CONTENT, OK, UNAUTHORIZED } from '../constants/http';
+import {
+	getAccessTokenOptions,
+	getRefreshTokenOptions,
+	setAuthCookie,
+} from '../utils/cookie';
+import {
+	RefreshTokenPayload,
+	refreshTokenSignOptions,
+	signToken,
+	verifyToken,
+} from '../utils/jwt';
+import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
 
 /**
  * POST - user signup
  */
 export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	const {
-		firstname,
-		lastname,
+		confirmPassword,
 		password,
-		bio,
 		email,
 		studentID,
+		firstname,
+		lastname,
+		bio,
 	}: signupUserBody = req.body;
 
+	// check if UserModel is attached to the request
 	if (!req.UserModel) {
-		res
-			.status(500)
-			.json(new CustomResponse(false, null, 'UserModel not attached'));
+		throw new Error('UserModel not attached');
+	}
 
+	// check if passwords match
+	if (password !== confirmPassword) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				'Passwords must match'
+			)
+		);
 		return;
 	}
 
+	// check for errors in form validation
+	if (email?.length && !validateEmail(email)) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				'Email must be valid'
+			)
+		);
+		return;
+	}
+
+	// check if studentID is valid
+	if (parseInt(studentID).toString().length !== 10) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				`Student ID must be 10 numbers and should not contain characters to be valid`
+			)
+		);
+		return;
+	}
+
+	// check if studentID already exist
+	const existingUser = await req.UserModel.findOne({
+		studentID: studentID,
+	}).exec();
+
+	if (existingUser) {
+		res.json(
+			new CustomResponse(
+				false,
+				null,
+				'Error in form validation',
+				`A user with ID '${studentID}' already exist`
+			)
+		);
+		return;
+	}
+
+	// set default profile picture
 	let profileURL =
 		'https://res.cloudinary.com/diirvhsym/image/upload/v1728426644/user/zl85ljimxkrs1uqnqrvu.webp';
 	let profilePublicID = 'user/al85leemxkrs2qwnqrvU';
 
-	const salt = process.env.BCRYPT_SALT;
-	if (!salt) throw new Error('Bcrypt salt not found');
-
+	// hash the password
+	const salt = BCRYPT_SALT;
 	const hashedPassword = await bcrypt.hash(password, parseInt(salt));
 
 	// create and save the user
@@ -51,7 +119,10 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	});
 	await user.save();
 
-	res.json(new CustomResponse(true, user, 'User signed up successfully'));
+	// hide the password
+	let userCopy = user.omitPassword();
+
+	res.json(new CustomResponse(true, userCopy, 'User signed up successfully'));
 });
 
 /**
@@ -61,115 +132,170 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID, password }: loginUserBody = req.body;
 
 	if (!req.UserModel) {
-		res
-			.status(500)
-			.json(new CustomResponse(false, null, 'UserModel not attached'));
-
-		return;
+		throw new Error('UserModel not attached');
 	}
 
+	if (!req.SessionModel) {
+		throw new Error('SessionModel not attached');
+	}
+
+	// check if studentID is valid
 	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
 	if (user === null) {
 		res.json(new CustomResponse(false, null, `Incorrect Student ID`));
 		return;
 	}
 
+	// check if password is correct
 	const match = await bcrypt.compare(password, user.password);
 	if (!match) {
 		res.json(new CustomResponse(false, null, 'Incorrect password'));
 		return;
 	}
 
-	const secretKey = process.env.JWT_SECRET_KEY;
-	if (!secretKey) throw new Error('JWT secret key not found');
-
-	const token = jwt.sign({ studentID: user.studentID }, secretKey, {
-		expiresIn: '1d',
+	// create and save the session
+	const session = new req.SessionModel({
+		userID: user._id,
+		expiresAt: thirtyDaysFromNow(),
 	});
+	await session.save();
 
-	user.token = token;
-	await user.save();
+	const sessionID = session._id as string;
+	const userID = user._id as string;
 
-	res.cookie(appCookieName, token, {
-		httpOnly: true,
-		sameSite: 'lax',
-		secure: false,
-		maxAge: 1000 * 60 * 60 * 24, // 1 day
-	});
+	// create and set the access token and refresh token
+	const accessToken = signToken({ sessionID, userID });
+	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
+	setAuthCookie({ res, accessToken, refreshToken });
 
-	res.json(new CustomResponse(true, user, 'Login successfull'));
+	res.json(new CustomResponse(true, user.omitPassword(), 'Login successfull'));
 });
 
 /**
  * GET - user logout
  */
 export const logout = asyncHandler(async (req: CustomRequest, res) => {
-	const token = req.cookies[appCookieName] as string;
+	const accessToken = req.cookies[accessTokenCookieName] as string;
 
-	if (!req.UserModel) {
-		res
-			.status(500)
-			.json(new CustomResponse(false, null, 'UserModel not attached'));
+	if (!req.SessionModel) {
+		throw new Error('SessionModel not attached');
+	}
 
+	// check if token is present
+	if (accessToken === undefined) {
+		res.sendStatus(NO_CONTENT);
 		return;
 	}
 
-	if (token === undefined) {
-		res.sendStatus(204);
+	const { payload } = verifyToken(accessToken);
+
+	if (payload) {
+		await req.SessionModel.findByIdAndDelete({ _id: payload.sessionID });
+	}
+
+	// clear the cookie
+	res.clearCookie(accessTokenCookieName, getAccessTokenOptions());
+
+	res.sendStatus(OK);
+});
+
+/**
+ * GET - refresh access token
+ */
+export const refresh = asyncHandler(async (req: CustomRequest, res) => {
+	if (!req.SessionModel) {
+		throw new Error('SessionModel not attached');
+	}
+
+	// get the refresh token
+	const refreshToken = req.cookies[refreshTokenCookieName] as string;
+
+	if (!refreshToken) {
+		res.sendStatus(UNAUTHORIZED);
 		return;
 	}
 
-	const user = await req.UserModel.findOne({ token: token });
-	if (user) {
-		user.token = '';
-		await user.save();
-	}
-
-	res.clearCookie(appCookieName, {
-		httpOnly: true,
-		sameSite: 'lax',
-		secure: false,
+	// verify the refresh token
+	const { payload } = verifyToken<RefreshTokenPayload>(refreshToken, {
+		secret: JWT_REFRESH_SECRET_KEY,
 	});
 
-	res.sendStatus(200);
+	if (!payload) {
+		res.sendStatus(UNAUTHORIZED);
+		return;
+	}
+
+	const session = await req.SessionModel.findById(payload.sessionID);
+	const now = Date.now();
+
+	// check if session is valid
+	if (!session || session.expiresAt.getTime() < now) {
+		res.sendStatus(UNAUTHORIZED);
+		return;
+	}
+
+	// check if session needs refresh
+	const sessionNeedsRefresh = session.expiresAt.getTime() - now < ONE_DAY_MS;
+	if (sessionNeedsRefresh) {
+		session.expiresAt = thirtyDaysFromNow();
+		await session.save();
+	}
+
+	// create and set the new access token and refresh token
+	const newRefreshToken = sessionNeedsRefresh
+		? signToken({ sessionID: session._id as string }, refreshTokenSignOptions)
+		: undefined;
+
+	const accessToken = signToken({
+		sessionID: session._id as string,
+		userID: session.userID as unknown as string,
+	});
+
+	if (newRefreshToken) {
+		res.cookie(
+			refreshTokenCookieName,
+			newRefreshToken,
+			getRefreshTokenOptions()
+		);
+	}
+
+	res
+		.status(OK)
+		.cookie(accessTokenCookieName, accessToken, getAccessTokenOptions())
+		.json(new CustomResponse(true, null, 'Token refreshed'));
 });
 
 /**
  * GET - check if authenticated
  */
 export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
-	const token = req.cookies[appCookieName] as string;
+	if (!req.UserModel || !req.SessionModel) {
+		throw new Error('UserModel and SessionModel not attached');
+	}
 
+	const token = req.cookies[accessTokenCookieName] as string;
+
+	// check if token is present
 	if (token === undefined) {
-		res.sendStatus(401);
+		res.sendStatus(UNAUTHORIZED);
 		return;
 	}
 
-	const secretKey = process.env.JWT_SECRET_KEY;
-	if (!secretKey) throw new Error('JWT secret key not found');
+	// verify the token
+	const { error, payload } = verifyToken(token);
 
-	jwt.verify(token, secretKey, async (err, payload) => {
-		if (!req.UserModel) {
-			res
-				.status(500)
-				.json(new CustomResponse(false, null, 'UserModel not attached'));
+	if (error || !payload) {
+		res.sendStatus(FORBIDDEN);
+		return;
+	}
 
-			return;
-		}
+	const user = await req.UserModel.findById(payload.userID as string);
+	const session = await req.SessionModel.findById(payload.sessionID);
 
-		if (err) {
-			res.sendStatus(403);
-			return;
-		}
+	if (!session || user === null) {
+		res.sendStatus(FORBIDDEN);
+		return;
+	}
 
-		const data = payload as { studentID: string };
-
-		const user = await req.UserModel.findOne({ studentID: data.studentID });
-		if (user === null) {
-			res.sendStatus(403);
-			return;
-		}
-
-		res.status(200).json(user);
-	});
+	res.status(OK).json(user.omitPassword());
 });

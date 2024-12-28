@@ -7,7 +7,7 @@ export type YearLevel = 1 | 2 | 3 | 4;
 
 export type Semester = '1st' | '2nd';
 
-export interface ICategory {
+export interface ICategory extends mongoose.Document {
 	_id: string;
 	name: string;
 	fee: number;
@@ -23,5 +23,3 @@ export const CategorySchema = new Schema<ICategory>({
 		required: true,
 	},
 });
-
-// export default mongoose.model('Category', CategorySchema);

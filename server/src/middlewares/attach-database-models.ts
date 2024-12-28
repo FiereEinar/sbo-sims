@@ -8,6 +8,7 @@ import { CategorySchema } from '../models/category';
 import { TransactionSchema } from '../models/transaction';
 import { OrganizationSchema } from '../models/organization';
 import { ME_CONFIG_MONGODB_URL } from '../constants/env';
+import { SessionSchema } from '../models/session';
 
 export const attachDatabaseModels = async (
 	req: CustomRequest,
@@ -56,6 +57,10 @@ export const attachOriginalDatabaseModels = async (
 		);
 
 		req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);
+		req.SessionModel = originalConnection.model(
+			DB_MODEL.SESSION,
+			SessionSchema
+		);
 		req.OrganizationModel = originalConnection.model(
 			DB_MODEL.ORGANIZATION,
 			OrganizationSchema

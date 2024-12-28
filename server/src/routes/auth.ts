@@ -7,6 +7,7 @@ import {
 	check_auth,
 	login,
 	logout,
+	refresh,
 	signup,
 } from '../controllers/authController';
 
@@ -15,6 +16,8 @@ const router = express.Router();
 router.post('/login', loginValidation, login);
 
 router.post('/signup', signupValidation, signup);
+
+router.get('/refresh', refresh);
 
 router.get('/logout', logout);
 

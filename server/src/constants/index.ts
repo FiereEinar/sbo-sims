@@ -1,5 +1,6 @@
-export const appCookieName = 'transaction_app_token';
-
+// export const appCookieName = 'transaction_app_token';
+export const accessTokenCookieName = 'transaction_access_token';
+export const refreshTokenCookieName = 'transaction_refresh_token';
 export const originalDbName = 'transactionsdb';
 
 export const DB_MODEL = {
@@ -8,4 +9,9 @@ export const DB_MODEL = {
 	TRANSACTION: 'Transaction',
 	ORGANIZATION: 'Organization',
 	CATEGORY: 'Category',
+	SESSION: 'Session',
+};
+
+export const AppErrorCodes = {
+	InvalidAccessToken: 'InvalidAccessToken',
 };

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-export interface IStudent {
+export interface IStudent extends mongoose.Document {
 	_id: string;
 	studentID: string;
 	firstname: string;
@@ -30,5 +30,3 @@ StudentSchema.index({ '$**': 'text' });
 StudentSchema.virtual('fullname').get(function () {
 	return `${this.firstname} ${this.middlename} ${this.lastname}`;
 });
-
-// export default mongoose.model('Student', StudentSchema);

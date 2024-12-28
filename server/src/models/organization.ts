@@ -3,7 +3,7 @@ import { ICategory } from './category';
 
 const Schema = mongoose.Schema;
 
-export interface IOrganization {
+export interface IOrganization extends mongoose.Document {
 	_id: string;
 	name: string;
 	governor: string;
@@ -17,5 +17,3 @@ export const OrganizationSchema = new Schema<IOrganization>({
 	treasurer: { type: String, required: true },
 	departments: { type: [String] },
 });
-
-// export default mongoose.model('Organization', OrganizationSchema);

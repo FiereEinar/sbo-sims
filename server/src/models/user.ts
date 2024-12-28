@@ -1,12 +1,14 @@
-import mongoose, { Document } from 'mongoose';
-import { Entity } from '../types/entity';
+import mongoose from 'mongoose';
 import { Image } from '../types/image';
 import { getYear } from 'date-fns';
 const Schema = mongoose.Schema;
 
-export interface IUser extends Entity {
+export interface IUser extends mongoose.Document {
 	_id: string;
 	studentID: string;
+	firstname: string;
+	lastname: string;
+	email: string;
 	password: string;
 	profile: Image;
 	role: 'admin' | 'regular';
@@ -14,9 +16,10 @@ export interface IUser extends Entity {
 	token: string;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
+	omitPassword: () => Omit<IUser, 'password'>;
 }
 
-export const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema<IUser>({
 	studentID: { type: String, required: true },
 	firstname: { type: String, minlength: 1, maxlength: 50, required: true },
 	lastname: { type: String, minlength: 1, maxlength: 50, required: true },
@@ -33,4 +36,10 @@ export const UserSchema = new Schema<IUser>({
 	activeSemDB: { type: String, enum: ['1', '2'], default: '1' },
 });
 
-// export default mongoose.model('User', UserSchema);
+UserSchema.methods.omitPassword = function () {
+	const user = this.toObject();
+	delete user.password;
+	return user;
+};
+
+export { UserSchema };

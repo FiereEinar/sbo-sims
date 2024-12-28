@@ -1,47 +1,53 @@
 import asyncHandler from 'express-async-handler';
 import { CustomRequest } from '../types/request';
 import { NextFunction, Response } from 'express';
-import { appCookieName, originalDbName } from '../constants';
-import jwt from 'jsonwebtoken';
-import { UserSchema } from '../models/user';
-import { getDatabaseConnection } from '../database/databaseManager';
-import { ME_CONFIG_MONGODB_URL } from '../constants/env';
+import { accessTokenCookieName, AppErrorCodes } from '../constants';
+import { FORBIDDEN, UNAUTHORIZED } from '../constants/http';
+import { verifyToken } from '../utils/jwt';
+import CustomResponse from '../types/response';
 
 export const auth = asyncHandler(
 	async (req: CustomRequest, res: Response, next: NextFunction) => {
-		const token = req.cookies[appCookieName] as string;
+		if (!req.UserModel) {
+			throw new Error('UserModel not attached');
+		}
 
+		const throwUnauthorized = () => {
+			res
+				.status(UNAUTHORIZED)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'Unauthorized',
+						AppErrorCodes.InvalidAccessToken
+					)
+				);
+		};
+
+		// get token from cookies
+		const token = req.cookies[accessTokenCookieName] as string;
+
+		// check if token is present
 		if (token === undefined) {
-			res.sendStatus(401);
+			throwUnauthorized();
 			return;
 		}
 
-		const secretKey = process.env.JWT_SECRET_KEY;
-		if (!secretKey) throw new Error('JWT secret key not found');
+		const { error, payload } = verifyToken(token);
 
-		jwt.verify(token, secretKey, async (err, payload) => {
-			if (err) {
-				res.sendStatus(403);
-				return;
-			}
+		if (error || !payload) {
+			throwUnauthorized();
+			return;
+		}
 
-			const data = payload as { studentID: string };
+		const user = await req.UserModel.findById(payload.userID as string);
+		if (user === null) {
+			throwUnauthorized();
+			return;
+		}
 
-			const connection = await getDatabaseConnection(
-				originalDbName,
-				ME_CONFIG_MONGODB_URL
-			);
-
-			const User = connection.model('User', UserSchema);
-
-			const user = await User.findOne({ studentID: data.studentID });
-			if (user === null) {
-				res.sendStatus(403);
-				return;
-			}
-
-			req.currentUser = user;
-			next();
-		});
+		req.currentUser = user;
+		next();
 	}
 );

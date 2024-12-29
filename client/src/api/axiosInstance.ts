@@ -21,10 +21,6 @@ axiosInstance.interceptors.response.use(
 		const { config, response } = error;
 		const { status, data } = response || {};
 
-		console.log('status:', status);
-		console.log('data:', data);
-		console.log('response:', response);
-
 		// try to refresh the access token behind the scenes
 		if (status === UNAUTHORIZED && data?.error === 'InvalidAccessToken') {
 			try {

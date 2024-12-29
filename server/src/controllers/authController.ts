@@ -3,7 +3,11 @@ import { CustomRequest } from '../types/request';
 import { loginUserBody, signupUserBody } from '../types/user';
 import CustomResponse from '../types/response';
 import bcrypt from 'bcryptjs';
-import { accessTokenCookieName, refreshTokenCookieName } from '../constants';
+import {
+	accessTokenCookieName,
+	AppErrorCodes,
+	refreshTokenCookieName,
+} from '../constants';
 import { validateEmail } from '../utils/utils';
 import { BCRYPT_SALT, JWT_REFRESH_SECRET_KEY } from '../constants/env';
 import { FORBIDDEN, NO_CONTENT, OK, UNAUTHORIZED } from '../constants/http';
@@ -273,11 +277,24 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 		throw new Error('UserModel and SessionModel not attached');
 	}
 
+	const throwUnauthorized = () => {
+		res
+			.status(UNAUTHORIZED)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Unauthorized',
+					AppErrorCodes.InvalidAccessToken
+				)
+			);
+	};
+
 	const token = req.cookies[accessTokenCookieName] as string;
 
 	// check if token is present
 	if (token === undefined) {
-		res.sendStatus(UNAUTHORIZED);
+		throwUnauthorized();
 		return;
 	}
 
@@ -285,7 +302,7 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	const { error, payload } = verifyToken(token);
 
 	if (error || !payload) {
-		res.sendStatus(FORBIDDEN);
+		throwUnauthorized();
 		return;
 	}
 
@@ -293,7 +310,7 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	const session = await req.SessionModel.findById(payload.sessionID);
 
 	if (!session || user === null) {
-		res.sendStatus(FORBIDDEN);
+		throwUnauthorized();
 		return;
 	}
 

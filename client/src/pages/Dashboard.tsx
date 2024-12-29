@@ -78,19 +78,18 @@ type DashboardInfoGridProps = {
 };
 
 function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
-	const revenueDifference =
-		(dashboardData?.totalRevenue ?? 0) -
-		(dashboardData?.totalRevenueLastMonth ?? 0);
+	const totalRevenue = dashboardData?.totalRevenue ?? 0;
+	const totalRevenueLastMonth = dashboardData?.totalRevenueLastMonth ?? 0;
+	const totalTransaction = dashboardData?.totalTransaction ?? 0;
+	const totalTransactionLastMonth =
+		dashboardData?.totalTransactionLastMonth ?? 0;
 
-	const revenueIncreaseInPercentage =
-		(revenueDifference / (dashboardData?.totalRevenue ?? 0)) * 100;
+	const revenueDifference = totalRevenue - totalRevenueLastMonth;
+	const revenueIncreaseInPercentage = (revenueDifference / totalRevenue) * 100;
 
-	const transactionDifference =
-		(dashboardData?.totalTransaction ?? 0) -
-		(dashboardData?.totalTransactionLastMonth ?? 0);
-
+	const transactionDifference = totalTransaction - totalTransactionLastMonth;
 	const transactionIncreaseInPercentage =
-		(transactionDifference / (dashboardData?.totalTransaction ?? 0)) * 100;
+		(transactionDifference / totalTransaction) * 100;
 
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3'>

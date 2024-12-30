@@ -28,7 +28,7 @@ export default function CategoryPicker({
 		<div className='text-muted-foreground space-y-1'>
 			<Label>Category:</Label>
 			<Select
-				defaultValue={defaultValue ?? 'All'}
+				defaultValue={defaultValue ?? undefined}
 				onValueChange={(value) => setCategory(value)}
 			>
 				<SelectTrigger className='w-full'>
@@ -36,7 +36,11 @@ export default function CategoryPicker({
 				</SelectTrigger>
 				<SelectContent>
 					{categories.map((category, i) => (
-						<SelectItem key={category._id ?? i} value={category._id}>
+						<SelectItem
+							className='pointer-events-auto'
+							key={category._id ?? i}
+							value={category._id}
+						>
 							{category.organization.name}{' '}
 							{category.organization.name ? '-' : ''} {category.name}
 						</SelectItem>

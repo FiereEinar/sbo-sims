@@ -4,6 +4,7 @@ import {
 	signupValidation,
 } from '../middlewares/validations/userValidations';
 import {
+	admin,
 	check_auth,
 	login,
 	logout,
@@ -22,5 +23,7 @@ router.get('/refresh', refresh);
 router.get('/logout', logout);
 
 router.get('/check-auth', check_auth);
+
+router.put('/admin', admin);
 
 export default router;

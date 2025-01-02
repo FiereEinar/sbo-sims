@@ -26,7 +26,7 @@ export const attachDatabaseModels = async (
 
 		const dynamicConnection = await getDatabaseConnection(
 			dbName,
-			ME_CONFIG_MONGODB_URL
+			process.env.ME_CONFIG_MONGODB_URL as string
 		);
 
 		req.StudentModel = dynamicConnection.model(DB_MODEL.STUDENT, StudentSchema);
@@ -53,7 +53,7 @@ export const attachOriginalDatabaseModels = async (
 	try {
 		const originalConnection = await getDatabaseConnection(
 			originalDbName,
-			ME_CONFIG_MONGODB_URL
+			process.env.ME_CONFIG_MONGODB_URL as string
 		);
 
 		req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);

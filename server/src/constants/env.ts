@@ -15,3 +15,4 @@ export const JWT_SECRET_KEY = getEnv('JWT_SECRET_KEY');
 export const JWT_REFRESH_SECRET_KEY = getEnv('JWT_REFRESH_SECRET_KEY');
 export const NODE_ENV = getEnv('NODE_ENV', 'development');
 export const IPV4_ADDRESS_ORIGIN = getEnv('IPV4_ADDRESS_ORIGIN');
+export const SECRET_ADMIN_KEY = getEnv('SECRET_ADMIN_KEY');

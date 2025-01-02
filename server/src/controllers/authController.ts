@@ -9,7 +9,11 @@ import {
 	refreshTokenCookieName,
 } from '../constants';
 import { validateEmail } from '../utils/utils';
-import { BCRYPT_SALT, JWT_REFRESH_SECRET_KEY } from '../constants/env';
+import {
+	BCRYPT_SALT,
+	JWT_REFRESH_SECRET_KEY,
+	SECRET_ADMIN_KEY,
+} from '../constants/env';
 import { FORBIDDEN, NO_CONTENT, OK, UNAUTHORIZED } from '../constants/http';
 import {
 	cookieOptions,
@@ -168,7 +172,13 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
-	res.json(new CustomResponse(true, user.omitPassword(), 'Login successfull'));
+	res.json(
+		new CustomResponse(
+			true,
+			{ user: user.omitPassword(), accessToken, refreshToken },
+			'Login successfull'
+		)
+	);
 });
 
 /**
@@ -314,4 +324,30 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	res.status(OK).json(user.omitPassword());
+});
+
+export const admin = asyncHandler(async (req: CustomRequest, res) => {
+	const { secretAdminKey, userID } = req.body;
+
+	if (!req.UserModel) {
+		throw new Error('UserModel not attached');
+	}
+
+	if (secretAdminKey !== SECRET_ADMIN_KEY) {
+		res.json(new CustomResponse(false, null, 'Invalid admin key'));
+		return;
+	}
+
+	const user = await req.UserModel.findByIdAndUpdate(
+		userID,
+		{ role: 'admin' },
+		{ new: true }
+	);
+
+	if (!user) {
+		res.json(new CustomResponse(false, null, 'User not found'));
+		return;
+	}
+
+	res.json(new CustomResponse(true, user.omitPassword(), 'Admin found'));
 });

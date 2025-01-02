@@ -18,31 +18,28 @@ import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
-import { PORT } from './constants/env';
+import { PORT as PORT_STRING } from './constants/env';
+const PORT = Number(PORT_STRING);
+import { healthcheck } from './middlewares/healthcheck';
+import { corsOptions } from './utils/cors';
 
 const app = express();
-app.use(
-	cors({
-		// origin: 'http://192.168.1.11:5173',
-		origin: `http://localhost:5173`,
-		credentials: true,
-	})
-);
 
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
-	res.status(200).json({
-		message: 'skibidi toilet i miss her so much',
-	});
-});
+app.get('/', healthcheck);
+
+// Attach global database models to the request object
 app.use(attachOriginalDatabaseModels);
 app.use('/auth', authRouter);
+
 // All routes from here requires the user to be authenticated
 app.use(auth);
-app.use(attachDatabaseModels);
+app.use(attachDatabaseModels); // Attach dynamic database models to the request object
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);
@@ -53,6 +50,8 @@ app.use('/organization', organizationRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server is running on PORT ${PORT}`));
+app.listen(PORT, '0.0.0.0', () =>
+	console.log(`Server is running on PORT ${PORT}`)
+);
 
 export default app;

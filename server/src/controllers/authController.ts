@@ -12,6 +12,7 @@ import { validateEmail } from '../utils/utils';
 import { BCRYPT_SALT, JWT_REFRESH_SECRET_KEY } from '../constants/env';
 import { FORBIDDEN, NO_CONTENT, OK, UNAUTHORIZED } from '../constants/http';
 import {
+	cookieOptions,
 	getAccessTokenOptions,
 	getRefreshTokenOptions,
 	setAuthCookie,
@@ -105,8 +106,7 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	let profilePublicID = 'user/al85leemxkrs2qwnqrvU';
 
 	// hash the password
-	const salt = BCRYPT_SALT;
-	const hashedPassword = await bcrypt.hash(password, parseInt(salt));
+	const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
 
 	// create and save the user
 	const user = new req.UserModel({
@@ -135,12 +135,8 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 export const login = asyncHandler(async (req: CustomRequest, res) => {
 	const { studentID, password }: loginUserBody = req.body;
 
-	if (!req.UserModel) {
-		throw new Error('UserModel not attached');
-	}
-
-	if (!req.SessionModel) {
-		throw new Error('SessionModel not attached');
+	if (!req.UserModel || !req.SessionModel) {
+		throw new Error('UserModel or SessionModel not attached');
 	}
 
 	// check if studentID is valid
@@ -198,7 +194,7 @@ export const logout = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	// clear the cookie
-	res.clearCookie(accessTokenCookieName, getAccessTokenOptions());
+	res.clearCookie(accessTokenCookieName, cookieOptions);
 
 	res.sendStatus(OK);
 });
@@ -294,6 +290,7 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 
 	// check if token is present
 	if (token === undefined) {
+		console.log('Token not found');
 		throwUnauthorized();
 		return;
 	}
@@ -302,6 +299,7 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	const { error, payload } = verifyToken(token);
 
 	if (error || !payload) {
+		console.log('Token not verified');
 		throwUnauthorized();
 		return;
 	}
@@ -310,6 +308,7 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	const session = await req.SessionModel.findById(payload.sessionID);
 
 	if (!session || user === null) {
+		console.log('User or session not found');
 		throwUnauthorized();
 		return;
 	}

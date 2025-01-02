@@ -30,6 +30,7 @@ export const auth = asyncHandler(
 
 		// check if token is present
 		if (token === undefined) {
+			console.log('Token not found');
 			throwUnauthorized();
 			return;
 		}
@@ -37,12 +38,14 @@ export const auth = asyncHandler(
 		const { error, payload } = verifyToken(token);
 
 		if (error || !payload) {
+			console.log('Token not verified');
 			throwUnauthorized();
 			return;
 		}
 
 		const user = await req.UserModel.findById(payload.userID as string);
 		if (user === null) {
+			console.log('User not found');
 			throwUnauthorized();
 			return;
 		}

@@ -67,30 +67,12 @@ describe('POST - Create Student', () => {
 		expect(res.body.success).toBe(true);
 	});
 
-	it('get all students', async () => {
-		const res = await supertest(app)
-			.get('/student')
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
-
-		expect(res.body.success).toBe(true);
-	});
-
-	it('get student by id', async () => {
-		const res = await supertest(app)
-			.get('/student/2301106599')
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
-
-		expect(res.body.success).toBe(true);
-	});
-
-	it('update student by id', async () => {
+	it('should not create a student with the same studentID', async () => {
 		const student = {
 			studentID: '2301106599',
-			firstname: 'Jhon Paul',
+			firstname: 'Jhon',
 			lastname: 'Doe',
-			email: 'jhon@email.com',
+			email: 'jhon2@gmail.com',
 			course: 'BSIT',
 			gender: 'M',
 			middlename: 'G',
@@ -98,11 +80,110 @@ describe('POST - Create Student', () => {
 		};
 
 		const res = await supertest(app)
-			.put('/student/2301106599')
+			.post('/student')
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.send(student)
+			.expect(200); // 200 because the request is successful, but the student is not created
+
+		expect(res.body.success).toBe(false); // student is not created
+	});
+
+	it('should not create a student with invalid data', async () => {
+		const student = {
+			studentID: '2301106599',
+			firstname: 'Jhon',
+			lastname: 'Doe',
+			email: '',
+			course: 'BSIT',
+			gender: 'M',
+			middlename: 'G',
+			year: 1,
+		};
+
+		const res = await supertest(app)
+			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(200);
 
-		expect(res.body.success).toBe(true);
+		expect(res.body.success).toBe(false);
+	});
+
+	it('should not create a student without access token', async () => {
+		const student = {
+			studentID: '2301106599',
+			firstname: 'Jhon',
+			lastname: 'Doe',
+			email: 'jhon@gmail.com',
+			course: 'BSIT',
+			gender: 'M',
+			middlename: 'G',
+			year: 1,
+		};
+
+		const res = await supertest(app).post('/student').send(student).expect(401);
+
+		expect(res.body.success).toBe(false);
+	});
+
+	it('should not create a student with invalid access token', async () => {
+		const student = {
+			studentID: '2301106599',
+			firstname: 'Jhon',
+			lastname: 'Doe',
+			email: 'jhon@gmail.com',
+			course: 'BSIT',
+			gender: 'M',
+			middlename: 'G',
+			year: 1,
+		};
+
+		const res = await supertest(app)
+			.post('/student')
+			.set('Cookie', [`${accessTokenCookieName}=invalid-token`])
+			.send(student)
+			.expect(401);
+
+		expect(res.body.success).toBe(false);
+	});
+
+	it('should not create a student without studentID', async () => {
+		const student = {
+			firstname: 'Jhon',
+			lastname: 'Doe',
+			email: 'jhon@gmail.com',
+			course: 'BSIT',
+			gender: 'M',
+			middlename: 'G',
+			year: 1,
+		};
+
+		const res = await supertest(app)
+			.post('/student')
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.send(student)
+			.expect(200);
+
+		expect(res.body.success).toBe(false);
+	});
+
+	it('should not create a student without firstname', async () => {
+		const student = {
+			studentID: '2301106599',
+			lastname: 'Doe',
+			email: 'jhon@gmail.com',
+			course: 'BSIT',
+			gender: 'M',
+			middlename: 'G',
+			year: 1,
+		};
+
+		const res = await supertest(app)
+			.post('/student')
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.send(student)
+			.expect(200);
+
+		expect(res.body.success).toBe(false);
 	});
 });

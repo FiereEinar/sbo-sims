@@ -361,7 +361,7 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	if (gender !== 'M' && gender !== 'F') {
+	if (gender !== undefined && gender !== 'M' && gender !== 'F') {
 		res.json(
 			new CustomResponse(false, null, `Student gender can only be M or F`)
 		);
@@ -370,13 +370,13 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 
 	// create the update query
 	const update: UpdateQuery<IStudent> = {
-		firstname: firstname,
-		lastname: lastname,
-		email: email,
-		middlename: middlename,
-		course: course,
-		year: year,
-		gender: gender,
+		firstname: firstname || student.firstname,
+		lastname: lastname || student.lastname,
+		email: email || student.email,
+		middlename: middlename || student.middlename,
+		course: course || student.course,
+		year: year || student.year,
+		gender: gender || student.gender,
 	};
 
 	// update the student

@@ -18,7 +18,7 @@ import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
-import { PORT as PORT_STRING } from './constants/env';
+import { NODE_ENV, PORT as PORT_STRING } from './constants/env';
 const PORT = Number(PORT_STRING);
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
@@ -50,8 +50,10 @@ app.use('/organization', organizationRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, '0.0.0.0', () =>
-	console.log(`Server is running on PORT ${PORT}`)
-);
+if (NODE_ENV !== 'test') {
+	app.listen(PORT, '0.0.0.0', () =>
+		console.log(`Server is running on PORT ${PORT}`)
+	);
+}
 
 export default app;

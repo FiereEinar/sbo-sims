@@ -14,7 +14,15 @@ import {
 	JWT_REFRESH_SECRET_KEY,
 	SECRET_ADMIN_KEY,
 } from '../constants/env';
-import { FORBIDDEN, NO_CONTENT, OK, UNAUTHORIZED } from '../constants/http';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	FORBIDDEN,
+	NO_CONTENT,
+	NOT_FOUND,
+	OK,
+	UNAUTHORIZED,
+} from '../constants/http';
 import {
 	cookieOptions,
 	getAccessTokenOptions,
@@ -63,27 +71,31 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 
 	// check for errors in form validation
 	if (email?.length && !validateEmail(email)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				'Email must be valid'
-			)
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in form validation',
+					'Email must be valid'
+				)
+			);
 		return;
 	}
 
 	// check if studentID is valid
 	if (parseInt(studentID).toString().length !== 10) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				`Student ID must be 10 numbers and should not contain characters to be valid`
-			)
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in form validation',
+					`Student ID must be 10 numbers and should not contain characters to be valid`
+				)
+			);
 		return;
 	}
 
@@ -93,14 +105,16 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	}).exec();
 
 	if (existingUser) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				`A user with ID '${studentID}' already exist`
-			)
-		);
+		res
+			.status(CONFLICT)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in form validation',
+					`A user with ID '${studentID}' already exist`
+				)
+			);
 		return;
 	}
 
@@ -146,14 +160,18 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 	// check if studentID is valid
 	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
 	if (user === null) {
-		res.json(new CustomResponse(false, null, `Incorrect Student ID`));
+		res
+			.status(BAD_REQUEST)
+			.json(new CustomResponse(false, null, `Incorrect Student ID`));
 		return;
 	}
 
 	// check if password is correct
 	const match = await bcrypt.compare(password, user.password);
 	if (!match) {
-		res.json(new CustomResponse(false, null, 'Incorrect password'));
+		res
+			.status(BAD_REQUEST)
+			.json(new CustomResponse(false, null, 'Incorrect password'));
 		return;
 	}
 
@@ -334,7 +352,9 @@ export const admin = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	if (secretAdminKey !== SECRET_ADMIN_KEY) {
-		res.json(new CustomResponse(false, null, 'Invalid admin key'));
+		res
+			.status(BAD_REQUEST)
+			.json(new CustomResponse(false, null, 'Invalid admin key'));
 		return;
 	}
 
@@ -345,7 +365,9 @@ export const admin = asyncHandler(async (req: CustomRequest, res) => {
 	);
 
 	if (!user) {
-		res.json(new CustomResponse(false, null, 'User not found'));
+		res
+			.status(NOT_FOUND)
+			.json(new CustomResponse(false, null, 'User not found'));
 		return;
 	}
 

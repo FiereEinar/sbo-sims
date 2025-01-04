@@ -24,19 +24,7 @@ export default function SignupForm() {
 
 	const onSubmit = async (data: SignupFormValues) => {
 		try {
-			const result = await submitSignupForm(data);
-
-			if (!result) {
-				setError('root', { message: 'Failed to submit signup form' });
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message} - ${result.error ?? ''}`,
-				});
-				return;
-			}
+			await submitSignupForm(data);
 
 			toast({
 				title: 'Signed up successfully!',
@@ -44,7 +32,9 @@ export default function SignupForm() {
 			});
 			navigate('/login');
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit signup form' });
+			setError('root', {
+				message: err.message || 'Failed to submit signup form',
+			});
 		}
 	};
 

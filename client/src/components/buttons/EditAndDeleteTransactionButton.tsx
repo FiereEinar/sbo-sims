@@ -46,31 +46,15 @@ function DeleteButton({ transactionID }: DeleteButtonProps) {
 
 	const onDelete = async () => {
 		try {
-			const result = await requestDeleteTransaction(transactionID);
-
-			if (!result) {
-				toast({
-					title: 'Failed to delete transaction',
-					description:
-						'A network error occured while trying to delete transaction',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				toast({
-					title: 'Failed to delete transaction',
-					description: `${result.message} ${result.error ?? ''}`,
-				});
-				return;
-			}
-
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
 			navigate('/transaction');
+
+			await requestDeleteTransaction(transactionID);
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
 		} catch (err: any) {
 			toast({
 				title: 'Failed to delete transaction',
 				description:
+					err.message ||
 					'A network error occured while trying to delete transaction',
 			});
 		}

@@ -71,10 +71,10 @@ export default function AddCategoryForm({
 	});
 
 	useEffect(() => {
-		if (categoryData) {
-			setValue('fee', categoryData.category?.fee?.toString() ?? '');
-			setValue('name', categoryData.category?.name ?? '');
-			setOrg(categoryData.category?.organization?._id ?? '');
+		if (categoryData?.data) {
+			setValue('fee', categoryData.data.category?.fee?.toString() ?? '');
+			setValue('name', categoryData.data.category?.name ?? '');
+			setOrg(categoryData.data.category?.organization?._id ?? '');
 		}
 	}, [categoryData, setValue, setOrg]);
 
@@ -87,31 +87,19 @@ export default function AddCategoryForm({
 
 			data.organizationID = org;
 
-			let result;
-
-			if (mode === 'add') result = await submitCategoryForm(data);
+			if (mode === 'add') await submitCategoryForm(data);
 			if (mode === 'edit')
-				result = await submitUpdateCategoryForm(category?._id ?? '', data);
+				await submitUpdateCategoryForm(category?._id ?? '', data);
 
-			if (!result) {
-				setError('root', {
-					message: 'Something went wrong while trying to submit your form',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message}\n${result.error ?? ''}`,
-				});
-				return;
-			}
-
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CATEGORY] });
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
+			});
 			reset();
 			setOrg('');
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit category form' });
+			setError('root', {
+				message: err.message || 'Failed to submit category form',
+			});
 		}
 	};
 

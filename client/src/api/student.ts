@@ -36,7 +36,7 @@ export const fetchStudents = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to fetch students', err);
+		throw err;
 	}
 };
 
@@ -48,7 +48,7 @@ export const fetchStudentByID = async (
 
 		return data.data;
 	} catch (err: any) {
-		console.error(`Failed to fetch student with ID ${studentID}`, err);
+		throw err;
 	}
 };
 
@@ -62,10 +62,7 @@ export const fetchStudentTransactions = async (
 
 		return data.data;
 	} catch (err: any) {
-		console.error(
-			`Failed to fetch transactions of student with ID ${studentID}`,
-			err
-		);
+		throw err;
 	}
 };
 
@@ -77,7 +74,7 @@ export const submitStudentForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit student form', err);
+		throw err;
 	}
 };
 
@@ -90,7 +87,7 @@ export const submitUpdateStudentForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit update student form', err);
+		throw err;
 	}
 };
 
@@ -102,7 +99,7 @@ export const requestDeleteStudent = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to send request delete student', err);
+		throw err;
 	}
 };
 
@@ -114,6 +111,6 @@ export const fetchAvailableCourses = async (): Promise<
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to fetch student courses', err);
+		throw err;
 	}
 };

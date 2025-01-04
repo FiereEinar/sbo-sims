@@ -94,20 +94,6 @@ export default function AddOrganizationForm({
 					data
 				);
 
-			if (!result) {
-				setError('root', {
-					message: 'Something went wrong while trying to submit your form',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message}. ${result.error ?? ''}`,
-				});
-				return;
-			}
-
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.ORGANIZATION],
 			});
@@ -115,7 +101,7 @@ export default function AddOrganizationForm({
 			setDepartments([]);
 		} catch (err: any) {
 			setError('root', {
-				message: 'Failed to submit create organization form',
+				message: err.message || 'Failed to submit create organization form',
 			});
 		}
 	};

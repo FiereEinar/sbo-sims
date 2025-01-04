@@ -43,35 +43,20 @@ function DeleteButton({ categoryID }: DeleteButtonProps) {
 
 	const onDelete = async () => {
 		try {
-			const result = await requestDeleteCategory(categoryID);
-
-			if (!result) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to delete category',
-					description:
-						'A network error occured while trying to delete category',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to delete category',
-					description: `${result.message}. ${result.error ?? ''}`,
-				});
-				return;
-			}
-
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CATEGORY] });
 			navigate('/category');
+
+			await requestDeleteCategory(categoryID);
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
+			});
 		} catch (err: any) {
 			console.error('Failed to delete category', err);
 			toast({
 				variant: 'destructive',
 				title: 'Failed to delete category',
-				description: 'A network error occured while trying to delete category',
+				description:
+					err.message ||
+					'A network error occured while trying to delete category',
 			});
 		}
 	};

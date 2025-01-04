@@ -1,4 +1,4 @@
-import { fetchTransactions } from '@/api/transaction';
+import { fetchCategoryAndTransactions } from '@/api/category';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteCategoryButton from '@/components/buttons/EditAndDeleteCategoryButton';
 import CategoryDataCard from '@/components/CategoryDataCard';
@@ -21,18 +21,15 @@ export default function CategoryInfo() {
 	if (!categoryID) return;
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: [
-			QUERY_KEYS.TRANSACTION,
-			{ category: categoryID, page, pageSize },
-		],
-		queryFn: () => fetchTransactions({ category: categoryID }, page, pageSize),
+		queryKey: [QUERY_KEYS.CATEGORY, { categoryID, page, pageSize }],
+		queryFn: () => fetchCategoryAndTransactions(categoryID, page, pageSize),
 	});
 
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (error || !data) {
+	if (error || !data || !data.data) {
 		return <p>Error</p>;
 	}
 
@@ -40,13 +37,16 @@ export default function CategoryInfo() {
 		<SidebarPageLayout>
 			<BackButton />
 			<StickyHeader>
-				<CategoryDataCard category={data.data[0].category} />
+				<CategoryDataCard category={data.data.category} />
 				{userRole === 'admin' && (
-					<EditAndDeleteCategoryButton category={data.data[0].category} />
+					<EditAndDeleteCategoryButton category={data.data.category} />
 				)}
 			</StickyHeader>
 
-			<TransactionsTable isLoading={isLoading} transactions={data.data} />
+			<TransactionsTable
+				isLoading={isLoading}
+				transactions={data.data.categoryTransactions}
+			/>
 
 			{data && (
 				<div className='md:absolute w-full p-5 md:bottom-0'>

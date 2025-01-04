@@ -13,6 +13,7 @@ import {
 	createMockStudent,
 	createMockUser,
 } from '..';
+import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -52,7 +53,7 @@ describe('POST - Create Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 	});
@@ -68,7 +69,7 @@ describe('POST - Create Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -84,7 +85,7 @@ describe('POST - Create Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -100,7 +101,7 @@ describe('POST - Create Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});

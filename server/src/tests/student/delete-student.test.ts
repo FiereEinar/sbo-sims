@@ -4,9 +4,16 @@ import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
 import { SECRET_ADMIN_KEY } from '../../constants/env';
+import { NOT_FOUND, OK, UNPROCESSABLE_ENTITY } from '../../constants/http';
+import { ICategory } from '../../models/category';
+import { IOrganization } from '../../models/organization';
+import { create } from 'lodash';
+import { createMockCategory, createMockOrganization } from '..';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
+let category: ICategory;
+let organization: IOrganization;
 
 beforeAll(async () => {
 	mongoServer = await MongoMemoryServer.create();
@@ -30,15 +37,27 @@ beforeAll(async () => {
 	await supertest(app)
 		.put('/auth/admin')
 		.send({ secretAdminKey: SECRET_ADMIN_KEY, userID: res.body.data._id })
-		.expect(200);
+		.expect(OK);
 
 	// sign in mock user
-	res = await supertest(app).post('/auth/login').send(user).expect(200);
+	res = await supertest(app).post('/auth/login').send(user).expect(OK);
 
 	// get access token
 	accessToken = res.body.data.accessToken;
 
 	expect(res.body.success).toBe(true);
+
+	// create a student
+	res = await supertest(app)
+		.post(`/student`)
+		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+		.send(student)
+		.expect(OK);
+
+	expect(res.body.success).toBe(true);
+
+	organization = await createMockOrganization(accessToken);
+	category = await createMockCategory(accessToken, organization._id);
 });
 
 afterAll(async () => {
@@ -56,22 +75,12 @@ const student = {
 	year: 1,
 };
 
-beforeEach(async () => {
-	const res = await supertest(app)
-		.post(`/student`)
-		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-		.send(student)
-		.expect(200);
-
-	expect(res.body.success).toBe(true);
-});
-
 describe('DELETE - Delete Student', () => {
 	it('should delete a student', async () => {
 		const res = await supertest(app)
 			.delete(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 	});
@@ -80,8 +89,40 @@ describe('DELETE - Delete Student', () => {
 		const res = await supertest(app)
 			.delete(`/student/2301106598`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(res.body.success).toBe(false);
+	});
+
+	it('should not delete a student with transactions', async () => {
+		// create a student to delete
+		let res = await supertest(app)
+			.post(`/student`)
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.send(student)
+			.expect(OK);
+
+		expect(res.body.success).toBe(true);
+
+		const transaction = {
+			amount: 100,
+			categoryID: category._id,
+			studentID: student.studentID,
+		};
+
+		res = await supertest(app)
+			.post(`/transaction`)
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.send(transaction)
+			.expect(OK);
+
+		expect(res.body.success).toBe(true);
+
+		const deleteRes = await supertest(app)
+			.delete(`/student/${student.studentID}`)
+			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+			.expect(UNPROCESSABLE_ENTITY);
+
+		expect(deleteRes.body.success).toBe(false);
 	});
 });

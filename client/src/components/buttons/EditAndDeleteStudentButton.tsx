@@ -43,30 +43,17 @@ function DeleteButton({ studentID }: DeleteButtonProps) {
 
 	const onDelete = async () => {
 		try {
-			const result = await requestDeleteStudent(studentID);
-
-			if (!result) {
-				toast({
-					title: 'Failed to delete student',
-					description: 'A network error occured while trying to delete student',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				toast({
-					title: 'Failed to delete student',
-					description: `${result.message} ${result.error ?? ''}`,
-				});
-				return;
-			}
-
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate('/student');
+
+			await requestDeleteStudent(studentID);
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 		} catch (err: any) {
 			toast({
+				variant: 'destructive',
 				title: 'Failed to delete student',
-				description: 'A network error occured while trying to delete student',
+				description:
+					err.message ||
+					'A network error occured while trying to delete student',
 			});
 		}
 	};

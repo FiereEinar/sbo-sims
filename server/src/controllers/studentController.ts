@@ -7,6 +7,13 @@ import { validateEmail } from '../utils/utils';
 import { CustomRequest } from '../types/request';
 import { loadStudents } from '../services/csvLoader';
 import fs from 'fs/promises';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+	UNPROCESSABLE_ENTITY,
+} from '../constants/http';
 
 /**
  * GET - fetch all students
@@ -261,21 +268,23 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 	}: createStudentBody = req.body;
 	if (!req.StudentModel) {
 		res
-			.status(500)
+			.status(INTERNAL_SERVER_ERROR)
 			.json(new CustomResponse(false, null, 'StudentModel not attached'));
 
 		return;
 	}
 
 	if (email?.length && !validateEmail(email)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				'Email must be valid'
-			)
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Error in form validation',
+					'Email must be valid'
+				)
+			);
 		return;
 	}
 
@@ -284,20 +293,24 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 	}).exec();
 
 	if (existingStudentWithID !== null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Student with ID: ${studentID} already exists`
-			)
-		);
+		res
+			.status(CONFLICT)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Student with ID: ${studentID} already exists`
+				)
+			);
 		return;
 	}
 
 	if (gender !== 'M' && gender !== 'F') {
-		res.json(
-			new CustomResponse(false, null, `Student gender can only be M or F`)
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(false, null, `Student gender can only be M or F`)
+			);
 		return;
 	}
 
@@ -401,7 +414,7 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 
 	if (!req.StudentModel) {
 		res
-			.status(500)
+			.status(INTERNAL_SERVER_ERROR)
 			.json(new CustomResponse(false, null, 'StudentModel not attached'));
 
 		return;
@@ -410,9 +423,15 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 	const student = await req.StudentModel.findOne({ studentID: studentID });
 
 	if (student === null) {
-		res.json(
-			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Student with ID: ${studentID} not found`
+				)
+			);
 		return;
 	}
 
@@ -421,13 +440,15 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 	}).exec();
 
 	if (transactions && transactions.length > 0) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'The student has existing transactions record, make sure to handle and delete them first'
-			)
-		);
+		res
+			.status(UNPROCESSABLE_ENTITY)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'The student has existing transactions record, make sure to handle and delete them first'
+				)
+			);
 		return;
 	}
 

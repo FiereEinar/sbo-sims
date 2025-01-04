@@ -44,7 +44,7 @@ export const fetchTransactions = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to fetch transaction', err);
+		throw err;
 	}
 };
 
@@ -56,7 +56,7 @@ export const submitTransactionForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit add transaction form', err);
+		throw err;
 	}
 };
 
@@ -72,7 +72,7 @@ export const submitUpdateTransactionForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit update transaction form', err);
+		throw err;
 	}
 };
 
@@ -84,7 +84,7 @@ export const fetchTransactionByID = async (
 
 		return data.data;
 	} catch (err: any) {
-		console.error(`Failed to fetch transaction with ID ${transactionID}`, err);
+		throw err;
 	}
 };
 
@@ -100,10 +100,7 @@ export const submitUpdateTransactionAmountForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error(
-			`Failed to submit transaction amount update with ID ${transactionID}`,
-			err
-		);
+		throw err;
 	}
 };
 
@@ -117,7 +114,7 @@ export const requestDeleteTransaction = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to send request on delete transaction', err);
+		throw err;
 	}
 };
 
@@ -131,6 +128,6 @@ export const fetchDashboardData = async (): Promise<
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to send request on delete transaction', err);
+		throw err;
 	}
 };

@@ -12,7 +12,7 @@ export const submitSignupForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit signup form', err);
+		throw err;
 	}
 };
 
@@ -24,6 +24,6 @@ export const submitLoginForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit signup form', err);
+		throw err;
 	}
 };

@@ -26,22 +26,14 @@ export default function LoginForm() {
 		try {
 			const result = await submitLoginForm(data);
 
-			if (!result) {
-				setError('root', { message: 'Failed to submit signup form' });
-				return;
+			if (result) {
+				setUser(result.data);
+				navigate('/');
 			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message}`,
-				});
-				return;
-			}
-
-			setUser(result.data);
-			navigate('/');
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit signup form' });
+			setError('root', {
+				message: err.message || 'Failed to submit signup form',
+			});
 		}
 	};
 

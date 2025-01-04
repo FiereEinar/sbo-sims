@@ -4,6 +4,7 @@ import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
 import { SECRET_ADMIN_KEY } from '../../constants/env';
+import { BAD_REQUEST, CONFLICT, OK, UNAUTHORIZED } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -30,7 +31,7 @@ beforeAll(async () => {
 	await supertest(app)
 		.put('/auth/admin')
 		.send({ secretAdminKey: SECRET_ADMIN_KEY, userID: res.body.data._id })
-		.expect(200);
+		.expect(OK);
 
 	// sign in mock user
 	res = await supertest(app).post('/auth/login').send(user).expect(200);
@@ -62,7 +63,7 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 	});
@@ -83,18 +84,18 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
-			.expect(200); // 200 because the request is successful, but the student is not created
+			.expect(CONFLICT);
 
 		expect(res.body.success).toBe(false); // student is not created
 	});
 
 	it('should not create a student with invalid data', async () => {
 		const student = {
-			studentID: '2301106599',
+			studentID: '2301106511',
 			firstname: 'Jhon',
-			lastname: 'Doe',
+			// lastname: 'Doe',
 			email: '',
-			course: 'BSIT',
+			// course: 'BSIT',
 			gender: 'M',
 			middlename: 'G',
 			year: 1,
@@ -104,7 +105,7 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -121,7 +122,10 @@ describe('POST - Create Student', () => {
 			year: 1,
 		};
 
-		const res = await supertest(app).post('/student').send(student).expect(401);
+		const res = await supertest(app)
+			.post('/student')
+			.send(student)
+			.expect(UNAUTHORIZED);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -142,7 +146,7 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=invalid-token`])
 			.send(student)
-			.expect(401);
+			.expect(UNAUTHORIZED);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -162,7 +166,7 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -182,7 +186,7 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});

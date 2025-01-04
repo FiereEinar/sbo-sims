@@ -43,15 +43,6 @@ export default function ApplicationSettingsForm() {
 				localUser
 			);
 
-			if (!result.success) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to save settings',
-					description: `${result.message}. ${result.error ?? ''}`,
-				});
-				return;
-			}
-
 			setUser(result.data);
 			toast({ title: 'Settings saved successfully!' });
 			queryClient.resetQueries();
@@ -59,6 +50,7 @@ export default function ApplicationSettingsForm() {
 			console.error('Failed to save settings', err);
 			toast({
 				title: 'Failed to save settings',
+				description: err.message || 'An error occured while saving settings',
 				variant: 'destructive',
 			});
 		}

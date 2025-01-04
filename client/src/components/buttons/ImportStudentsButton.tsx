@@ -23,20 +23,7 @@ export default function ImportStudentsButton() {
 			const formData = new FormData();
 			if (file) formData.append('csv_file', file);
 
-			const { data } = await axiosInstance.post<APIResponse<null>>(
-				'/student/import',
-				formData
-			);
-
-			if (!data.success) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to import file',
-					description: data.message,
-				});
-
-				return;
-			}
+			await axiosInstance.post<APIResponse<null>>('/student/import', formData);
 
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			toast({
@@ -44,6 +31,11 @@ export default function ImportStudentsButton() {
 			});
 		} catch (err: any) {
 			console.error('Failed to import file', err);
+			toast({
+				variant: 'destructive',
+				title: 'Failed to import file',
+				description: err.message || 'An error occured while importing file',
+			});
 		} finally {
 			setIsLoading(false);
 		}

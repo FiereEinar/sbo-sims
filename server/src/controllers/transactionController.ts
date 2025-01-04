@@ -25,6 +25,12 @@ import {
 import _ from 'lodash';
 import { getPeriodLabel } from '../utils/utils';
 import { ICategory } from '../models/category';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+} from '../constants/http';
 
 /**
  * GET - fetch all transactions made
@@ -303,7 +309,7 @@ export const create_transaction = asyncHandler(
 
 		if (!req.TransactionModel || !req.CategoryModel || !req.StudentModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(
 						false,
@@ -321,31 +327,37 @@ export const create_transaction = asyncHandler(
 			path: 'organization',
 		});
 		if (category === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Category with ID ${categoryID} not found`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Category with ID ${categoryID} not found`
+					)
+				);
 			return;
 		}
 
 		// check if the amount paid is over the amount required for a category
 		if (amount > category.fee) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
+					)
+				);
 			return;
 		}
 
 		// check if the amount paid is non-negative
 		if (amount <= 0) {
-			res.json(new CustomResponse(false, null, `Enter a valid amount`));
+			res
+				.status(BAD_REQUEST)
+				.json(new CustomResponse(false, null, `Enter a valid amount`));
 			return;
 		}
 
@@ -354,13 +366,15 @@ export const create_transaction = asyncHandler(
 			studentID: studentID,
 		}).exec();
 		if (student === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID: ${studentID} not found`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Student with ID: ${studentID} not found`
+					)
+				);
 			return;
 		}
 
@@ -370,21 +384,23 @@ export const create_transaction = asyncHandler(
 			category: category._id,
 		}).exec();
 		if (isAlreadyPaid) {
-			res.json(
-				new CustomResponse(false, null, 'This student has already paid')
-			);
+			res
+				.status(CONFLICT)
+				.json(new CustomResponse(false, null, 'This student has already paid'));
 			return;
 		}
 
 		// check if the student is within the organization
 		if (!category.organization.departments.includes(student.course)) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+					)
+				);
 			return;
 		}
 
@@ -415,7 +431,7 @@ export const delete_transaction = asyncHandler(
 
 		if (!req.TransactionModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(new CustomResponse(false, null, 'TransactionModel not attached'));
 
 			return;
@@ -423,13 +439,15 @@ export const delete_transaction = asyncHandler(
 
 		const result = await req.TransactionModel.findByIdAndDelete(transactionID);
 		if (result === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Transaction with ID: ${transactionID} does not exists`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Transaction with ID: ${transactionID} does not exists`
+					)
+				);
 			return;
 		}
 
@@ -455,7 +473,7 @@ export const update_transaction = asyncHandler(
 
 		if (!req.CategoryModel || !req.StudentModel || !req.TransactionModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(
 						false,
@@ -468,33 +486,43 @@ export const update_transaction = asyncHandler(
 		}
 
 		// check if the category exists
-		const category = await req.CategoryModel.findById(categoryID);
+		const category = await req.CategoryModel.findById(categoryID).populate({
+			model: req.OrganizationModel,
+			path: 'organization',
+		});
+
 		if (category === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Category with ID ${categoryID} not found`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Category with ID ${categoryID} not found`
+					)
+				);
 			return;
 		}
 
 		// check if the amount paid is over the amount required for a category
 		if (amount > category.fee) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`The amount is over the required amount for ${category.name} fee (${category.fee})`
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`The amount is over the required amount for ${category.name} fee (${category.fee})`
+					)
+				);
 			return;
 		}
 
 		// check if the amount paid is non-negative
 		if (amount <= 0) {
-			res.json(new CustomResponse(false, null, `Enter a valid amount`));
+			res
+				.status(BAD_REQUEST)
+				.json(new CustomResponse(false, null, `Enter a valid amount`));
 			return;
 		}
 
@@ -503,13 +531,41 @@ export const update_transaction = asyncHandler(
 			studentID: studentID,
 		}).exec();
 		if (student === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID: ${studentID} not found`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Student with ID: ${studentID} not found`
+					)
+				);
+			return;
+		}
+
+		// check if the student already paid
+		const isAlreadyPaid = await req.TransactionModel.findOne({
+			owner: student._id,
+			category: category._id,
+		}).exec();
+		if (isAlreadyPaid) {
+			res
+				.status(CONFLICT)
+				.json(new CustomResponse(false, null, 'This student has already paid'));
+			return;
+		}
+
+		// check if the student is within the organization
+		if (!category.organization.departments.includes(student.course)) {
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+					)
+				);
 			return;
 		}
 
@@ -544,7 +600,7 @@ export const update_transaction_amount = asyncHandler(
 
 		if (!req.CategoryModel || !req.TransactionModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(
 						false,
@@ -564,13 +620,15 @@ export const update_transaction_amount = asyncHandler(
 			.exec();
 
 		if (transaction === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Transaction with ID: ${transactionID} does not exists`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Transaction with ID: ${transactionID} does not exists`
+					)
+				);
 			return;
 		}
 
@@ -579,19 +637,23 @@ export const update_transaction_amount = asyncHandler(
 
 		// check if the amount paid is over the amount required for a category
 		if (transactionAmountSum > category.fee) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`The amount is over the required amount for ${category.name} fee`
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`The amount is over the required amount for ${category.name} fee`
+					)
+				);
 			return;
 		}
 
 		// check if the amount paid is non-negative
 		if (amount <= 0) {
-			res.json(new CustomResponse(false, null, `Enter a valid amount`));
+			res
+				.status(BAD_REQUEST)
+				.json(new CustomResponse(false, null, `Enter a valid amount`));
 			return;
 		}
 

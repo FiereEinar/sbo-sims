@@ -4,6 +4,12 @@ import CustomResponse from '../types/response';
 import { CustomRequest } from '../types/request';
 import { UpdateQuery } from 'mongoose';
 import { ICategoryWithTransactions } from '../types/category';
+import {
+	BAD_REQUEST,
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+	UNPROCESSABLE_ENTITY,
+} from '../constants/http';
 
 /**
  * GET - get all organizations and its categories
@@ -12,7 +18,7 @@ export const get_all_organizations = asyncHandler(
 	async (req: CustomRequest, res) => {
 		if (!req.OrganizationModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(false, null, 'OrganizationModel not attached')
 				);
@@ -62,7 +68,7 @@ export const get_organization = asyncHandler(
 
 		if (!req.OrganizationModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(false, null, 'OrganizationModel not attached')
 				);
@@ -73,13 +79,15 @@ export const get_organization = asyncHandler(
 		const organization = await req.OrganizationModel.findById(organizationID);
 
 		if (organization === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Organization with ID ${organizationID} does not exist`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Organization with ID ${organizationID} does not exist`
+					)
+				);
 			return;
 		}
 
@@ -96,7 +104,7 @@ export const get_organization_categories = asyncHandler(
 
 		if (!req.OrganizationModel || !req.CategoryModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(
 						false,
@@ -110,7 +118,9 @@ export const get_organization_categories = asyncHandler(
 
 		const org = await req.OrganizationModel.findById(organizationID);
 		if (org === null) {
-			res.json(new CustomResponse(false, null, 'Organization not found'));
+			res
+				.status(NOT_FOUND)
+				.json(new CustomResponse(false, null, 'Organization not found'));
 			return;
 		}
 
@@ -162,7 +172,7 @@ export const create_organization = asyncHandler(
 
 		if (!req.OrganizationModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(false, null, 'OrganizationModel not attached')
 				);
@@ -171,13 +181,15 @@ export const create_organization = asyncHandler(
 		}
 
 		if (departments.length === 0) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Enter atleast 1 department for this organization'
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'Enter atleast 1 department for this organization'
+					)
+				);
 			return;
 		}
 
@@ -211,7 +223,7 @@ export const delete_organization = asyncHandler(
 
 		if (!req.OrganizationModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(false, null, 'OrganizationModel not attached')
 				);
@@ -224,13 +236,15 @@ export const delete_organization = asyncHandler(
 		}).exec();
 
 		if (categories && categories.length > 0) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'The organization has existing categories, make sure to handle and delete them first'
-				)
-			);
+			res
+				.status(UNPROCESSABLE_ENTITY)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'The organization has existing categories, make sure to handle and delete them first'
+					)
+				);
 			return;
 		}
 
@@ -238,13 +252,15 @@ export const delete_organization = asyncHandler(
 			organizationID
 		);
 		if (result === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Organization with ID: ${organizationID} does not exist`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Organization with ID: ${organizationID} does not exist`
+					)
+				);
 			return;
 		}
 
@@ -270,7 +286,7 @@ export const update_organization = asyncHandler(
 
 		if (!req.OrganizationModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(false, null, 'OrganizationModel not attached')
 				);
@@ -279,13 +295,15 @@ export const update_organization = asyncHandler(
 		}
 
 		if (departments.length === 0) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'Enter atleast 1 department for this organization'
-				)
-			);
+			res
+				.status(BAD_REQUEST)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'Enter atleast 1 department for this organization'
+					)
+				);
 			return;
 		}
 
@@ -305,13 +323,15 @@ export const update_organization = asyncHandler(
 		).exec();
 
 		if (!result) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Organization with ID: ${organizationID} does not exist`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Organization with ID: ${organizationID} does not exist`
+					)
+				);
 			return;
 		}
 

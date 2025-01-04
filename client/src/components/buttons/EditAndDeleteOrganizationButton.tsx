@@ -42,35 +42,17 @@ function DeleteButton({ organizationID }: DeleteButtonProps) {
 
 	const onDelete = async () => {
 		try {
-			const result = await requestDeleteOrganization(organizationID);
-
-			if (!result) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to delete organization',
-					description:
-						'A network error occured while trying to delete organization',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				toast({
-					variant: 'destructive',
-					title: 'Failed to delete organization',
-					description: `${result.message}. ${result.error ?? ''}`,
-				});
-				return;
-			}
-
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION] });
 			navigate('/organization');
+
+			await requestDeleteOrganization(organizationID);
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION] });
 		} catch (err: any) {
 			console.error('Failed to delete organization', err);
 			toast({
 				variant: 'destructive',
 				title: 'Failed to delete organization',
 				description:
+					err.message ||
 					'A network error occured while trying to delete organization',
 			});
 		}

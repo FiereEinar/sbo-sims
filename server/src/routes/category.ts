@@ -11,6 +11,7 @@ import {
 } from '../controllers/categoryController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { adminAuth } from '../middlewares/adminAuth';
+import { transactionQueryFilter } from '../middlewares/transactions-filter';
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.get('/with-transactions', get_all_category_with_transactions_data);
 router.get(
 	'/:categoryID',
 	isValidMongooseId('categoryID', { from: 'params' }),
+	transactionQueryFilter,
 	get_category
 );
 

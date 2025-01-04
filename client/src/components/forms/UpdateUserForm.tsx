@@ -24,7 +24,6 @@ export default function UpdateUserForm() {
 	const {
 		register,
 		handleSubmit,
-		setError,
 		formState: { isSubmitting, errors },
 	} = useForm<UpdateUserFormValues>({
 		resolver: zodResolver(updateUserSchema),
@@ -62,13 +61,6 @@ export default function UpdateUserForm() {
 				formData
 			);
 
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message}. ${result.error ?? ''}`,
-				});
-				return;
-			}
-
 			toast({
 				title: 'Changes saved successfully!',
 			});
@@ -78,6 +70,7 @@ export default function UpdateUserForm() {
 				variant: 'destructive',
 				title: 'Failed to save your changes',
 				description:
+					err.message ||
 					'A network problem has occured while trying to save your changes',
 			});
 		}

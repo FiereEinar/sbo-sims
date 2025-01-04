@@ -2,7 +2,7 @@ import { Transaction } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
 import { Category, CategoryWithTransactions } from '@/types/category';
 import { CategoryFormValues } from '@/components/forms/AddCategoryForm';
-import { APIResponse } from '@/types/api-response';
+import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
 
 export const fetchCategories = async (): Promise<Category[] | undefined> => {
 	try {
@@ -10,7 +10,7 @@ export const fetchCategories = async (): Promise<Category[] | undefined> => {
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to fetch categories', err);
+		throw err;
 	}
 };
 
@@ -22,7 +22,7 @@ export const fetchCategoriesWithTransactions = async (): Promise<
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to fetch categories with transactions', err);
+		throw err;
 	}
 };
 
@@ -32,14 +32,18 @@ interface CategoryAndTransactionsObject {
 }
 
 export const fetchCategoryAndTransactions = async (
-	categoryID: string
-): Promise<CategoryAndTransactionsObject | undefined> => {
+	categoryID: string,
+	page: number = 1,
+	pageSize: number = 50
+): Promise<APIPaginatedResponse<CategoryAndTransactionsObject | undefined>> => {
 	try {
-		const { data } = await axiosInstance.get(`/category/${categoryID}`);
+		const { data } = await axiosInstance.get(
+			`/category/${categoryID}?page=${page}&pageSize=${pageSize}&category=${categoryID}`
+		);
 
-		return data.data;
+		return data;
 	} catch (err: any) {
-		console.error('Failed to fetch category and its transaction', err);
+		throw err;
 	}
 };
 
@@ -51,7 +55,7 @@ export const submitCategoryForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit category form', err);
+		throw err;
 	}
 };
 
@@ -63,7 +67,7 @@ export const requestDeleteCategory = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to send request to delete category', err);
+		throw err;
 	}
 };
 
@@ -79,6 +83,6 @@ export const submitUpdateCategoryForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit update category form', err);
+		throw err;
 	}
 };

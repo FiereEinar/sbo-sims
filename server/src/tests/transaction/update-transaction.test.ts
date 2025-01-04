@@ -13,8 +13,8 @@ import {
 	createMockStudent,
 	createMockUser,
 } from '..';
-import { beforeEach } from 'node:test';
 import { ITransaction } from '../../models/transaction';
+import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -49,7 +49,7 @@ beforeAll(async () => {
 		.post(`/transaction`)
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(transactionData)
-		.expect(200);
+		.expect(OK);
 
 	transaction = res2.body.data as ITransaction;
 
@@ -72,7 +72,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 		expect(res.body.data.amount).toBe(updateData.amount);
@@ -91,7 +91,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 		expect(res.body.data.category).toBe(updateData.categoryID);
@@ -110,7 +110,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 		expect(res.body.data.owner).toBe(newStudent._id);
@@ -127,7 +127,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -143,7 +143,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -159,7 +159,7 @@ describe('PUT - Update Transaction', () => {
 			.put(`/transaction/${transaction._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});

@@ -1,5 +1,4 @@
 import {
-	fetchTransactionByID,
 	submitTransactionForm,
 	submitUpdateTransactionForm,
 } from '@/api/transaction';
@@ -56,11 +55,6 @@ export default function AddTransactionForm({
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 
-	const { data: transactionData } = useQuery({
-		queryKey: [QUERY_KEYS.TRANSACTION, { transactionID: transaction?._id }],
-		queryFn: () => fetchTransactionByID(transaction?._id),
-	});
-
 	const { data: studentsFetchResult } = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
 		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
@@ -79,15 +73,15 @@ export default function AddTransactionForm({
 	});
 
 	useEffect(() => {
-		if (transactionData) {
-			setDate(new Date(transactionData.date));
-			setCategory(transactionData.category._id);
+		if (transaction) {
+			setDate(new Date(transaction.date));
+			setCategory(transaction.category._id);
 
-			setValue('amount', transactionData.amount.toString());
-			setValue('studentID', transactionData.owner.studentID);
-			setValue('description', transactionData.description);
+			setValue('amount', transaction.amount.toString());
+			setValue('studentID', transaction.owner.studentID);
+			setValue('description', transaction.description);
 		}
-	}, [transactionData, setValue]);
+	}, [transaction, setValue]);
 
 	// TODO: create another input field for time
 	const onSubmit = async (data: TransactionFormValues) => {
@@ -106,25 +100,13 @@ export default function AddTransactionForm({
 				result = await submitUpdateTransactionForm(transaction._id, data);
 			else if (mode === 'add') result = await submitTransactionForm(data);
 
-			if (!result) {
-				setError('root', {
-					message: 'Something went wrong while trying to submit your form',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message}\n${result.error ?? ''}`,
-				});
-				return;
-			}
-
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
 			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit transaction form' });
+			setError('root', {
+				message: err.message || 'Failed to submit transaction',
+			});
 		}
 	};
 

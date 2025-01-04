@@ -12,12 +12,7 @@ import InputField from '../InputField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { studentSchema } from '@/lib/validations/studentSchema';
-import {
-	fetchStudentByID,
-	submitStudentForm,
-	submitUpdateStudentForm,
-} from '@/api/student';
-import { useQuery } from '@tanstack/react-query';
+import { submitStudentForm, submitUpdateStudentForm } from '@/api/student';
 import { z } from 'zod';
 import Plus from '../icons/plus';
 import { Student } from '@/types/student';
@@ -44,11 +39,6 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 
 	const navigate = useNavigate();
 
-	const { data: studentData } = useQuery({
-		queryKey: [QUERY_KEYS.STUDENT, { studentID: student?.studentID }],
-		queryFn: () => fetchStudentByID(student?.studentID ?? ''),
-	});
-
 	const {
 		register,
 		handleSubmit,
@@ -61,17 +51,17 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 	});
 
 	useEffect(() => {
-		if (studentData) {
-			setValue('email', studentData.email);
-			setValue('firstname', _.startCase(studentData.firstname));
-			setValue('lastname', _.startCase(studentData.lastname));
-			setValue('studentID', studentData.studentID);
-			setValue('middlename', studentData.middlename);
-			setValue('course', studentData.course);
-			setValue('gender', studentData.gender);
-			setValue('year', studentData.year?.toString());
+		if (student) {
+			setValue('email', student.email);
+			setValue('firstname', _.startCase(student.firstname));
+			setValue('lastname', _.startCase(student.lastname));
+			setValue('studentID', student.studentID);
+			setValue('middlename', student.middlename);
+			setValue('course', student.course);
+			setValue('gender', student.gender);
+			setValue('year', student.year?.toString());
 		}
-	}, [studentData, setValue]);
+	}, [student, setValue]);
 
 	const onSubmit = async (data: StudentFormValues) => {
 		try {
@@ -81,25 +71,13 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			if (mode === 'edit')
 				result = await submitUpdateStudentForm(student?.studentID ?? '', data);
 
-			if (!result) {
-				setError('root', {
-					message: 'Something went wrong while trying to submit your form',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message} ${result.error ?? ''}`,
-				});
-				return;
-			}
-
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate(`/student/${student?.studentID ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {
-			setError('root', { message: 'Failed to submit student form' });
+			setError('root', {
+				message: err.message || 'Failed to submit student form',
+			});
 		}
 	};
 

@@ -1,14 +1,18 @@
 import asyncHandler from 'express-async-handler';
 import { ICategory } from '../models/category';
 import { UpdateQuery } from 'mongoose';
-import CustomResponse from '../types/response';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { createCategoryBody } from '../types/organization';
-import { CustomRequest } from '../types/request';
+import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
 import {
 	ICategoryWithTransactions,
 	updateCategoryBody,
 } from '../types/category';
-import { originalDbName } from '../constants';
+import {
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+	UNPROCESSABLE_ENTITY,
+} from '../constants/http';
 
 /**
  * GET - fetch all categories
@@ -17,7 +21,7 @@ export const get_all_category = asyncHandler(
 	async (req: CustomRequest, res) => {
 		if (!req.CategoryModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(new CustomResponse(false, null, 'CategoryModel not attached'));
 
 			return;
@@ -39,7 +43,7 @@ export const get_all_category_with_transactions_data = asyncHandler(
 	async (req: CustomRequest, res) => {
 		if (!req.CategoryModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(new CustomResponse(false, null, 'CategoryModel not attached'));
 
 			return;
@@ -98,62 +102,77 @@ export const get_all_category_with_transactions_data = asyncHandler(
 /**
  * GET - fetch a category by ID in params
  */
-export const get_category = asyncHandler(async (req: CustomRequest, res) => {
-	const { categoryID } = req.params;
+export const get_category = asyncHandler(
+	async (req: TransactionQueryFilterRequest, res) => {
+		const { categoryID } = req.params;
 
-	if (!req.CategoryModel || !req.TransactionModel) {
-		res
-			.status(500)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'CategoryModel | TransactionModel not attached'
-				)
-			);
+		if (!req.CategoryModel || !req.TransactionModel) {
+			res
+				.status(INTERNAL_SERVER_ERROR)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						'CategoryModel | TransactionModel not attached'
+					)
+				);
 
-		return;
-	}
+			return;
+		}
 
-	// check if the given category exists
-	const category = await req.CategoryModel.findById(categoryID)
-		.populate({
-			model: req.OrganizationModel,
-			path: 'organization',
-		})
-		.exec();
-
-	if (category === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Category wit ID: ${categoryID} not found`
-			)
-		);
-		return;
-	}
-
-	const categoryTransactions = await req.TransactionModel.find({
-		category: category._id,
-	})
-		.populate({
-			model: req.CategoryModel,
-			path: 'category',
-			populate: {
+		// check if the given category exists
+		const category = await req.CategoryModel.findById(categoryID)
+			.populate({
 				model: req.OrganizationModel,
 				path: 'organization',
-			},
-		})
-		.populate({
-			model: req.StudentModel,
-			path: 'owner',
-		});
+			})
+			.exec();
 
-	res.json(
-		new CustomResponse(true, { category, categoryTransactions }, 'Category')
-	);
-});
+		if (category === null) {
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Category wit ID: ${categoryID} not found`
+					)
+				);
+			return;
+		}
+
+		// const categoryTransactions = await req.TransactionModel.find({
+		// 	category: category._id,
+		// })
+		// 	.populate({
+		// 		model: req.CategoryModel,
+		// 		path: 'category',
+		// 		populate: {
+		// 			model: req.OrganizationModel,
+		// 			path: 'organization',
+		// 		},
+		// 	})
+		// 	.populate({
+		// 		model: req.StudentModel,
+		// 		path: 'owner',
+		// 	});
+
+		const categoryTransactions = req.filteredTransactions?.splice(
+			req.skipAmount ?? 0,
+			req.pageSizeNum
+		);
+
+		res.json(
+			new CustomPaginatedResponse(
+				true,
+				{ category, categoryTransactions },
+				'Category',
+				req.nextPage ?? -1,
+				req.prevPage ?? -1
+			)
+		);
+	}
+);
 
 /**
  * GET - fetch the transactions made in a category
@@ -164,7 +183,7 @@ export const get_category_transactions = asyncHandler(
 
 		if (!req.CategoryModel || !req.TransactionModel) {
 			res
-				.status(500)
+				.status(INTERNAL_SERVER_ERROR)
 				.json(
 					new CustomResponse(
 						false,
@@ -179,13 +198,15 @@ export const get_category_transactions = asyncHandler(
 		// check if the given category exists
 		const category = await req.CategoryModel.findById(categoryID);
 		if (category === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Category wit ID: ${categoryID} not found`
-				)
-			);
+			res
+				.status(NOT_FOUND)
+				.json(
+					new CustomResponse(
+						false,
+						null,
+						`Category wit ID: ${categoryID} not found`
+					)
+				);
 			return;
 		}
 
@@ -217,7 +238,7 @@ export const create_category = asyncHandler(async (req: CustomRequest, res) => {
 
 	if (!req.CategoryModel || !req.OrganizationModel) {
 		res
-			.status(500)
+			.status(INTERNAL_SERVER_ERROR)
 			.json(
 				new CustomResponse(
 					false,
@@ -234,13 +255,15 @@ export const create_category = asyncHandler(async (req: CustomRequest, res) => {
 		organizationID
 	);
 	if (existingOrganization === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Organization with ID: ${organizationID} does not exist`
-			)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Organization with ID: ${organizationID} does not exist`
+				)
+			);
 		return;
 	}
 
@@ -263,7 +286,7 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
 
 	if (!req.CategoryModel) {
 		res
-			.status(500)
+			.status(INTERNAL_SERVER_ERROR)
 			.json(new CustomResponse(false, null, 'CategoryModel not attached'));
 
 		return;
@@ -274,25 +297,29 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
 	}).exec();
 
 	if (transactions && transactions?.length > 0) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'The category has existing transactions, make sure to handle and delete them first'
-			)
-		);
+		res
+			.status(UNPROCESSABLE_ENTITY)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'The category has existing transactions, make sure to handle and delete them first'
+				)
+			);
 		return;
 	}
 
 	const result = await req.CategoryModel.findByIdAndDelete(categoryID);
 	if (result === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Category with ID ${categoryID} does not exist`
-			)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Category with ID ${categoryID} does not exist`
+				)
+			);
 		return;
 	}
 
@@ -308,7 +335,7 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 
 	if (!req.CategoryModel) {
 		res
-			.status(500)
+			.status(INTERNAL_SERVER_ERROR)
 			.json(new CustomResponse(false, null, 'CategoryModel not attached'));
 
 		return;
@@ -316,13 +343,15 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 
 	const organization = await req.OrganizationModel?.findById(organizationID);
 	if (!organization) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Organization with ID: ${organizationID} not found`
-			)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Organization with ID: ${organizationID} not found`
+				)
+			);
 		return;
 	}
 
@@ -338,13 +367,15 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 	}).exec();
 
 	if (result === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Category with ID: ${categoryID} does not exist`
-			)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					`Category with ID: ${categoryID} does not exist`
+				)
+			);
 		return;
 	}
 

@@ -57,24 +57,7 @@ export default function UpdateTransactionAmountForm({
 	// TODO: create another input field for time
 	const onSubmit = async (data: UpdateTransactionAmountFormValues) => {
 		try {
-			const result = await submitUpdateTransactionAmountForm(
-				transaction._id,
-				data
-			);
-
-			if (!result) {
-				setError('root', {
-					message: 'Something went wrong while trying to submit your form',
-				});
-				return;
-			}
-
-			if (!result.success) {
-				setError('root', {
-					message: `${result.message} ${result.error ?? ''}`,
-				});
-				return;
-			}
+			await submitUpdateTransactionAmountForm(transaction._id, data);
 
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.TRANSACTION],
@@ -82,7 +65,7 @@ export default function UpdateTransactionAmountForm({
 			reset();
 		} catch (err: any) {
 			setError('root', {
-				message: 'Failed to submit add transaction amount form',
+				message: err.message || 'Failed to update transaction amount',
 			});
 		}
 	};

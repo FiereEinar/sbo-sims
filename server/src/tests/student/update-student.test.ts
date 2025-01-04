@@ -4,6 +4,7 @@ import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
 import { SECRET_ADMIN_KEY } from '../../constants/env';
+import { BAD_REQUEST, OK } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -24,16 +25,16 @@ beforeAll(async () => {
 	let res: Response;
 
 	// sign in mock user
-	res = await supertest(app).post('/auth/signup').send(user).expect(200);
+	res = await supertest(app).post('/auth/signup').send(user).expect(OK);
 
 	// set mock user to admin
 	await supertest(app)
 		.put('/auth/admin')
 		.send({ secretAdminKey: SECRET_ADMIN_KEY, userID: res.body.data._id })
-		.expect(200);
+		.expect(OK);
 
 	// sign in mock user
-	res = await supertest(app).post('/auth/login').send(user).expect(200);
+	res = await supertest(app).post('/auth/login').send(user).expect(OK);
 
 	// get access token
 	accessToken = res.body.data.accessToken;
@@ -45,7 +46,7 @@ beforeAll(async () => {
 		.post(`/student`)
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(student)
-		.expect(200);
+		.expect(OK);
 
 	expect(res.body.success).toBe(true);
 });
@@ -65,16 +66,6 @@ const student = {
 	year: 1,
 };
 
-// beforeEach(async () => {
-// 	const res = await supertest(app)
-// 		.post(`/student`)
-// 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-// 		.send(student)
-// 		.expect(200);
-
-// 	expect(res.body.success).toBe(true);
-// });
-
 describe('PUT - Update Student', () => {
 	it('should update a student', async () => {
 		const updatedStudent = {
@@ -86,7 +77,7 @@ describe('PUT - Update Student', () => {
 			.put(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updatedStudent)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 		expect(res.body.data.firstname).toBe(updatedStudent.firstname);
@@ -104,7 +95,7 @@ describe('PUT - Update Student', () => {
 			.put(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updatedStudent)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 		expect(res.body.data.studentID).toBe(student.studentID);
@@ -120,7 +111,7 @@ describe('PUT - Update Student', () => {
 			.put(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updatedStudent)
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});

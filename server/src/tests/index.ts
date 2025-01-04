@@ -7,6 +7,7 @@ import { IOrganization } from '../models/organization';
 import { ICategory } from '../models/category';
 import { IUser } from '../models/user';
 import { SECRET_ADMIN_KEY } from '../constants/env';
+import { OK } from '../constants/http';
 
 export const createMockUser = async (): Promise<{
 	user: IUser;
@@ -21,10 +22,7 @@ export const createMockUser = async (): Promise<{
 		email: 'jhon@gmail.com',
 	};
 
-	let res = await supertest(app)
-		.post('/auth/signup')
-		.send(userData)
-		.expect(200);
+	let res = await supertest(app).post('/auth/signup').send(userData).expect(OK);
 
 	expect(res.body.success).toBe(true);
 
@@ -32,10 +30,10 @@ export const createMockUser = async (): Promise<{
 	await supertest(app)
 		.put('/auth/admin')
 		.send({ secretAdminKey: SECRET_ADMIN_KEY, userID: res.body.data._id })
-		.expect(200);
+		.expect(OK);
 
 	// sign in mock user
-	res = await supertest(app).post('/auth/login').send(userData).expect(200);
+	res = await supertest(app).post('/auth/login').send(userData).expect(OK);
 
 	// get access token
 	const accessToken = res.body.data.accessToken;
@@ -64,7 +62,7 @@ export const createMockStudent = async (
 		.post('/student')
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(studentData)
-		.expect(200);
+		.expect(OK);
 
 	expect(res.body.success).toBe(true);
 
@@ -85,7 +83,7 @@ export const createMockOrganization = async (
 		.post('/organization')
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(organizationData)
-		.expect(200);
+		.expect(OK);
 
 	expect(res.body.success).toBe(true);
 
@@ -106,7 +104,7 @@ export const createMockCategory = async (
 		.post('/category')
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(categoryData)
-		.expect(200);
+		.expect(OK);
 
 	expect(res.body.success).toBe(true);
 

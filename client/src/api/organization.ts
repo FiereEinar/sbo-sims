@@ -12,7 +12,7 @@ export const fetchAllOrganizations = async (): Promise<
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to fetch all organizations', err);
+		throw err;
 	}
 };
 
@@ -24,10 +24,7 @@ export const fetchOrganizationByID = async (
 
 		return data.data;
 	} catch (err: any) {
-		console.error(
-			`Failed to fetch organization with ID ${organizationID}`,
-			err
-		);
+		throw err;
 	}
 };
 
@@ -39,7 +36,7 @@ export const submitOrganizationForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit create organization form', err);
+		throw err;
 	}
 };
 
@@ -53,7 +50,7 @@ export const fetchOrganizationCategories = async (
 
 		return data.data;
 	} catch (err: any) {
-		console.error('Failed to fetch organizations categories', err);
+		throw err;
 	}
 };
 
@@ -67,7 +64,7 @@ export const requestDeleteOrganization = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to send request to delete organization', err);
+		throw err;
 	}
 };
 
@@ -83,6 +80,6 @@ export const submitUpdateOrganizationForm = async (
 
 		return data;
 	} catch (err: any) {
-		console.error('Failed to submit update organization form', err);
+		throw err;
 	}
 };

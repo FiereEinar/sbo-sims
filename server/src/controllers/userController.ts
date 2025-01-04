@@ -4,6 +4,8 @@ import { updateUserBody } from '../types/user';
 import { UpdateQuery } from 'mongoose';
 import { IUser } from '../models/user';
 import CustomResponse from '../types/response';
+import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import { validateEmail } from '../utils/utils';
 
 export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 	const { userID } = req.params;
@@ -20,26 +22,43 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 	const user = await req.UserModel?.findById(userID);
 
 	if (!user) {
-		res.json(
-			new CustomResponse(false, null, `User with ID: ${userID} nto found`)
-		);
+		res
+			.status(NOT_FOUND)
+			.json(
+				new CustomResponse(false, null, `User with ID: ${userID} not found`)
+			);
 		return;
 	}
 
 	const year = parseInt(activeSchoolYearDB);
 
 	if (year < 2000 || year > 3000) {
-		res.json(
-			new CustomResponse(false, null, 'Year must only be between 2000 and 3000')
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(
+					false,
+					null,
+					'Year must only be between 2000 and 3000'
+				)
+			);
 		return;
 	}
 
 	if (activeSemDB.length > 0) {
 		if (activeSemDB !== '1' && activeSemDB !== '2') {
-			res.json(new CustomResponse(false, null, 'Semester can only be 1 or 2'));
+			res
+				.status(BAD_REQUEST)
+				.json(new CustomResponse(false, null, 'Semester can only be 1 or 2'));
 			return;
 		}
+	}
+
+	if (email?.length && !validateEmail(email)) {
+		res
+			.status(BAD_REQUEST)
+			.json(new CustomResponse(false, null, 'Email must be valid'));
+		return;
 	}
 
 	const update: UpdateQuery<IUser> = {

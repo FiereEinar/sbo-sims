@@ -13,6 +13,7 @@ import {
 	createMockStudent,
 	createMockUser,
 } from '..';
+import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -52,14 +53,14 @@ describe('DELETE - Delete Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 
 		const deleteRes = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(OK);
 
 		expect(deleteRes.body.success).toBe(true);
 	});
@@ -68,7 +69,7 @@ describe('DELETE - Delete Transaction', () => {
 		const res = await supertest(app)
 			.delete(`/transaction/123`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(BAD_REQUEST);
 
 		expect(res.body.success).toBe(false);
 	});
@@ -84,21 +85,21 @@ describe('DELETE - Delete Transaction', () => {
 			.post(`/transaction`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
-			.expect(200);
+			.expect(OK);
 
 		expect(res.body.success).toBe(true);
 
 		const deleteRes = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(OK);
 
 		expect(deleteRes.body.success).toBe(true);
 
 		const deleteRes2 = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(200);
+			.expect(NOT_FOUND);
 
 		expect(deleteRes2.body.success).toBe(false);
 	});

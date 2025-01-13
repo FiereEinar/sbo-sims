@@ -6,6 +6,7 @@ import { IUser } from '../models/user';
 import CustomResponse from '../types/response';
 import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import { validateEmail } from '../utils/utils';
+import appAssert from '../errors/appAssert';
 
 export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 	const { userID } = req.params;
@@ -20,45 +21,25 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 	}: updateUserBody = req.body;
 
 	const user = await req.UserModel?.findById(userID);
-
-	if (!user) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(false, null, `User with ID: ${userID} not found`)
-			);
-		return;
-	}
+	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	const year = parseInt(activeSchoolYearDB);
-
-	if (year < 2000 || year > 3000) {
-		res
-			.status(BAD_REQUEST)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Year must only be between 2000 and 3000'
-				)
-			);
-		return;
-	}
+	appAssert(
+		year >= 2000 || year <= 3000,
+		BAD_REQUEST,
+		'Year must only be between 2000 and 3000'
+	);
 
 	if (activeSemDB.length > 0) {
-		if (activeSemDB !== '1' && activeSemDB !== '2') {
-			res
-				.status(BAD_REQUEST)
-				.json(new CustomResponse(false, null, 'Semester can only be 1 or 2'));
-			return;
-		}
+		appAssert(
+			activeSemDB === '1' || activeSemDB === '2',
+			BAD_REQUEST,
+			'Semester can only be 1 or 2'
+		);
 	}
 
-	if (email?.length && !validateEmail(email)) {
-		res
-			.status(BAD_REQUEST)
-			.json(new CustomResponse(false, null, 'Email must be valid'));
-		return;
+	if (email?.length) {
+		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
 	}
 
 	const update: UpdateQuery<IUser> = {

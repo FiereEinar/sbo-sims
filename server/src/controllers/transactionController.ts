@@ -28,9 +28,11 @@ import { ICategory } from '../models/category';
 import {
 	BAD_REQUEST,
 	CONFLICT,
+	CREATED,
 	INTERNAL_SERVER_ERROR,
 	NOT_FOUND,
 } from '../constants/http';
+import appAssert from '../errors/appAssert';
 
 /**
  * GET - fetch all transactions made
@@ -280,16 +282,11 @@ export const get_transaction = asyncHandler(async (req: CustomRequest, res) => {
 			path: 'owner',
 		});
 
-	if (transaction === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Transaction with ID: ${transactionID} not found`
-			)
-		);
-		return;
-	}
+	appAssert(
+		transaction,
+		NOT_FOUND,
+		`Transaction with ID: ${transactionID} not found`
+	);
 
 	res.json(new CustomResponse(true, transaction, 'Transaction'));
 });
@@ -326,83 +323,40 @@ export const create_transaction = asyncHandler(
 			model: req.OrganizationModel,
 			path: 'organization',
 		});
-		if (category === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Category with ID ${categoryID} not found`
-					)
-				);
-			return;
-		}
+		appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
 		// check if the amount paid is over the amount required for a category
-		if (amount > category.fee) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
-					)
-				);
-			return;
-		}
+		appAssert(
+			amount <= category.fee,
+			BAD_REQUEST,
+			`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
+		);
 
 		// check if the amount paid is non-negative
-		if (amount <= 0) {
-			res
-				.status(BAD_REQUEST)
-				.json(new CustomResponse(false, null, `Enter a valid amount`));
-			return;
-		}
+		appAssert(amount > 0, BAD_REQUEST, `Enter a valid amount`);
 
 		// check if the student with the given ID exists
 		const student = await req.StudentModel.findOne({
 			studentID: studentID,
 		}).exec();
-		if (student === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Student with ID: ${studentID} not found`
-					)
-				);
-			return;
-		}
+		appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 		// check if the student already paid
 		const isAlreadyPaid = await req.TransactionModel.findOne({
 			owner: student._id,
 			category: category._id,
 		}).exec();
-		if (isAlreadyPaid) {
-			res
-				.status(CONFLICT)
-				.json(new CustomResponse(false, null, 'This student has already paid'));
-			return;
-		}
+		appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
 
 		// check if the student is within the organization
-		if (!category.organization.departments.includes(student.course)) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
-					)
-				);
-			return;
-		}
+		const isInOrganization = category.organization.departments.includes(
+			student.course
+		);
+		appAssert(
+			isInOrganization,
+			BAD_REQUEST,
+			`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+		);
 
 		// create and save the transaction
 		const transaction = new req.TransactionModel({
@@ -416,9 +370,11 @@ export const create_transaction = asyncHandler(
 		});
 		await transaction.save();
 
-		res.json(
-			new CustomResponse(true, transaction, 'Transaction saved successfully')
-		);
+		res
+			.status(CREATED)
+			.json(
+				new CustomResponse(true, transaction, 'Transaction saved successfully')
+			);
 	}
 );
 
@@ -438,18 +394,11 @@ export const delete_transaction = asyncHandler(
 		}
 
 		const result = await req.TransactionModel.findByIdAndDelete(transactionID);
-		if (result === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Transaction with ID: ${transactionID} does not exists`
-					)
-				);
-			return;
-		}
+		appAssert(
+			result,
+			NOT_FOUND,
+			`Transaction with ID: ${transactionID} does not exists`
+		);
 
 		res.json(
 			new CustomResponse(true, result, 'Transaction deleted successfully')
@@ -490,84 +439,40 @@ export const update_transaction = asyncHandler(
 			model: req.OrganizationModel,
 			path: 'organization',
 		});
-
-		if (category === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Category with ID ${categoryID} not found`
-					)
-				);
-			return;
-		}
+		appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
 		// check if the amount paid is over the amount required for a category
-		if (amount > category.fee) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`The amount is over the required amount for ${category.name} fee (${category.fee})`
-					)
-				);
-			return;
-		}
+		appAssert(
+			amount <= category.fee,
+			BAD_REQUEST,
+			`The amount is over the required amount for ${category.name} fee (${category.fee})`
+		);
 
 		// check if the amount paid is non-negative
-		if (amount <= 0) {
-			res
-				.status(BAD_REQUEST)
-				.json(new CustomResponse(false, null, `Enter a valid amount`));
-			return;
-		}
+		appAssert(amount > 0, BAD_REQUEST, 'Enter a valid amount');
 
 		// check if the student with the given ID exists
 		const student = await req.StudentModel.findOne({
 			studentID: studentID,
 		}).exec();
-		if (student === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Student with ID: ${studentID} not found`
-					)
-				);
-			return;
-		}
+		appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 		// check if the student already paid
 		const isAlreadyPaid = await req.TransactionModel.findOne({
 			owner: student._id,
 			category: category._id,
 		}).exec();
-		if (isAlreadyPaid) {
-			res
-				.status(CONFLICT)
-				.json(new CustomResponse(false, null, 'This student has already paid'));
-			return;
-		}
+		appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
 
 		// check if the student is within the organization
-		if (!category.organization.departments.includes(student.course)) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
-					)
-				);
-			return;
-		}
+		const isInOrganization = category.organization.departments.includes(
+			student.course
+		);
+		appAssert(
+			isInOrganization,
+			BAD_REQUEST,
+			`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+		);
 
 		// create update query and save the transaction
 		const update: UpdateQuery<ITransaction> = {
@@ -619,43 +524,24 @@ export const update_transaction_amount = asyncHandler(
 			})
 			.exec();
 
-		if (transaction === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Transaction with ID: ${transactionID} does not exists`
-					)
-				);
-			return;
-		}
+		appAssert(
+			transaction,
+			NOT_FOUND,
+			`Transaction with ID: ${transactionID} does not exists`
+		);
 
 		const category = transaction.category;
 		const transactionAmountSum = transaction.amount + amount;
 
 		// check if the amount paid is over the amount required for a category
-		if (transactionAmountSum > category.fee) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`The amount is over the required amount for ${category.name} fee`
-					)
-				);
-			return;
-		}
+		appAssert(
+			transactionAmountSum <= category.fee,
+			BAD_REQUEST,
+			`The amount is over the required amount for ${category.name} fee`
+		);
 
 		// check if the amount paid is non-negative
-		if (amount <= 0) {
-			res
-				.status(BAD_REQUEST)
-				.json(new CustomResponse(false, null, `Enter a valid amount`));
-			return;
-		}
+		appAssert(amount > 0, BAD_REQUEST, 'Enter a valid amount');
 
 		const update: UpdateQuery<ITransaction> = {
 			amount: transactionAmountSum,

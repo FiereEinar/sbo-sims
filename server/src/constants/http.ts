@@ -10,8 +10,15 @@ export const CONFLICT = 409;
 export const UNPROCESSABLE_ENTITY = 422;
 
 export const INTERNAL_SERVER_ERROR = 500;
-export const NOT_IMPLEMENTED = 501;
-export const SERVICE_UNAVAILABLE = 503;
-export const GATEWAY_TIMEOUT = 504;
-export const HTTP_VERSION_NOT_SUPPORTED = 505;
-export const NETWORK_AUTHENTICATION_REQUIRED = 511;
+
+export type HttpStatusCode =
+	| typeof OK
+	| typeof CREATED
+	| typeof NO_CONTENT
+	| typeof BAD_REQUEST
+	| typeof UNAUTHORIZED
+	| typeof FORBIDDEN
+	| typeof NOT_FOUND
+	| typeof CONFLICT
+	| typeof UNPROCESSABLE_ENTITY
+	| typeof INTERNAL_SERVER_ERROR;

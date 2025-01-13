@@ -12,6 +12,6 @@ export const DB_MODEL = {
 	SESSION: 'Session',
 };
 
-export const AppErrorCodes = {
-	InvalidAccessToken: 'InvalidAccessToken',
-};
+export enum AppErrorCodes {
+	InvalidAccessToken = 'InvalidAccessToken',
+}

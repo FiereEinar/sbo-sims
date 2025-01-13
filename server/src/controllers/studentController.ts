@@ -14,6 +14,7 @@ import {
 	NOT_FOUND,
 	UNPROCESSABLE_ENTITY,
 } from '../constants/http';
+import appAssert from '../errors/appAssert';
 
 /**
  * GET - fetch all students
@@ -117,31 +118,21 @@ export const get_all_students = asyncHandler(
 export const post_csv_students = asyncHandler(
 	async (req: CustomRequest, res) => {
 		const file = req.file;
-		if (file === undefined) {
-			res.json(
-				new CustomResponse(false, null, 'Server did not recieve any file')
-			);
-			return;
-		}
+		appAssert(file, BAD_REQUEST, 'Server did not recieve any file');
 
-		if (file.mimetype !== 'text/csv') {
-			res.json(new CustomResponse(false, null, 'File should be in csv format'));
-			return;
-		}
+		appAssert(
+			file.mimetype === 'text/csv',
+			BAD_REQUEST,
+			'File should be in csv format'
+		);
 
 		const valid = await loadStudents(req, file.path);
-
-		if (!valid) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
-				)
-			);
-			await fs.unlink(file.path);
-			return;
-		}
+		if (!valid) await fs.unlink(file.path);
+		appAssert(
+			valid,
+			BAD_REQUEST,
+			'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
+		);
 
 		await loadStudents(req, file.path, true);
 		await fs.unlink(file.path);
@@ -185,17 +176,7 @@ export const get_student = asyncHandler(async (req: CustomRequest, res) => {
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
 	}).exec();
-
-	if (student === null) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				`Student with ID ${studentID} does not exist`
-			)
-		);
-		return;
-	}
+	appAssert(student, NOT_FOUND, `Student with ID ${studentID} does not exist`);
 
 	res.json(new CustomResponse(true, student, 'Student data'));
 });
@@ -223,17 +204,11 @@ export const get_student_transaction = asyncHandler(
 		const student = await req.StudentModel.findOne({
 			studentID: studentID,
 		}).exec();
-
-		if (student === null) {
-			res.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID ${studentID} does not exist`
-				)
-			);
-			return;
-		}
+		appAssert(
+			student,
+			NOT_FOUND,
+			`Student with ID ${studentID} does not exist`
+		);
 
 		const studentTransactions = await req.TransactionModel.find({
 			owner: student._id,
@@ -274,45 +249,24 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	if (email?.length && !validateEmail(email)) {
-		res
-			.status(BAD_REQUEST)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					'Email must be valid'
-				)
-			);
-		return;
+	if (email?.length) {
+		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
 	}
 
 	const existingStudentWithID = await req.StudentModel.findOne({
 		studentID: studentID,
 	}).exec();
+	appAssert(
+		existingStudentWithID === null,
+		CONFLICT,
+		`Student with ID: ${studentID} already exists`
+	);
 
-	if (existingStudentWithID !== null) {
-		res
-			.status(CONFLICT)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID: ${studentID} already exists`
-				)
-			);
-		return;
-	}
-
-	if (gender !== 'M' && gender !== 'F') {
-		res
-			.status(BAD_REQUEST)
-			.json(
-				new CustomResponse(false, null, `Student gender can only be M or F`)
-			);
-		return;
-	}
+	appAssert(
+		gender === 'M' || gender === 'F',
+		BAD_REQUEST,
+		`Student gender can only be M or F`
+	);
 
 	// create the student and save
 	const student = new req.StudentModel({
@@ -353,33 +307,19 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 		return;
 	}
 
-	if (email?.length && !validateEmail(email)) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				'Email must be valid'
-			)
-		);
-		return;
+	if (email?.length) {
+		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
 	}
 
 	// check if a student with the given ID exists
 	const student = await req.StudentModel.findOne({ studentID: studentID });
-	if (student === null) {
-		res.json(
-			new CustomResponse(false, null, `Student with ID: ${studentID} not found`)
-		);
-		return;
-	}
+	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-	if (gender !== undefined && gender !== 'M' && gender !== 'F') {
-		res.json(
-			new CustomResponse(false, null, `Student gender can only be M or F`)
-		);
-		return;
-	}
+	appAssert(
+		gender === 'M' || gender === 'F',
+		BAD_REQUEST,
+		`Student gender can only be M or F`
+	);
 
 	// create the update query
 	const update: UpdateQuery<IStudent> = {
@@ -421,36 +361,16 @@ export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	const student = await req.StudentModel.findOne({ studentID: studentID });
-
-	if (student === null) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Student with ID: ${studentID} not found`
-				)
-			);
-		return;
-	}
+	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	const transactions = await req.TransactionModel?.find({
 		owner: student._id,
 	}).exec();
-
-	if (transactions && transactions.length > 0) {
-		res
-			.status(UNPROCESSABLE_ENTITY)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'The student has existing transactions record, make sure to handle and delete them first'
-				)
-			);
-		return;
-	}
+	appAssert(
+		!transactions || transactions.length === 0,
+		UNPROCESSABLE_ENTITY,
+		'The student has existing transactions record, make sure to handle and delete them first'
+	);
 
 	const result = await req.StudentModel.findByIdAndDelete(student._id);
 

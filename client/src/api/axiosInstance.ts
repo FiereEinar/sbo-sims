@@ -22,7 +22,7 @@ axiosInstance.interceptors.response.use(
 		const { status, data } = response || {};
 
 		// try to refresh the access token behind the scenes
-		if (status === UNAUTHORIZED && data?.error === 'InvalidAccessToken') {
+		if (status === UNAUTHORIZED && data?.errorCode === 'InvalidAccessToken') {
 			try {
 				// refresh the access token, then retry the original request
 				await TokenRefreshClient.get('/auth/refresh');

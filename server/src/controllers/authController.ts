@@ -36,6 +36,7 @@ import {
 	verifyToken,
 } from '../utils/jwt';
 import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
+import appAssert from '../errors/appAssert';
 
 /**
  * POST - user signup
@@ -57,66 +58,30 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	// check if passwords match
-	if (password !== confirmPassword) {
-		res.json(
-			new CustomResponse(
-				false,
-				null,
-				'Error in form validation',
-				'Passwords must match'
-			)
-		);
-		return;
-	}
+	appAssert(password === confirmPassword, BAD_REQUEST, 'Password must match');
 
 	// check for errors in form validation
-	if (email?.length && !validateEmail(email)) {
-		res
-			.status(BAD_REQUEST)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					'Email must be valid'
-				)
-			);
-		return;
+	if (email?.length) {
+		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
 	}
 
 	// check if studentID is valid
-	if (parseInt(studentID).toString().length !== 10) {
-		res
-			.status(BAD_REQUEST)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					`Student ID must be 10 numbers and should not contain characters to be valid`
-				)
-			);
-		return;
-	}
+	appAssert(
+		parseInt(studentID).toString().length === 10,
+		BAD_REQUEST,
+		`Student ID must be 10 numbers and should not contain characters to be valid`
+	);
 
 	// check if studentID already exist
 	const existingUser = await req.UserModel.findOne({
 		studentID: studentID,
 	}).exec();
 
-	if (existingUser) {
-		res
-			.status(CONFLICT)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Error in form validation',
-					`A user with ID '${studentID}' already exist`
-				)
-			);
-		return;
-	}
+	appAssert(
+		!existingUser,
+		CONFLICT,
+		`A user with ID '${studentID}' already exist`
+	);
 
 	// set default profile picture
 	let profileURL =
@@ -159,21 +124,11 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 
 	// check if studentID is valid
 	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
-	if (user === null) {
-		res
-			.status(BAD_REQUEST)
-			.json(new CustomResponse(false, null, `Incorrect Student ID`));
-		return;
-	}
+	appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
 	// check if password is correct
 	const match = await bcrypt.compare(password, user.password);
-	if (!match) {
-		res
-			.status(BAD_REQUEST)
-			.json(new CustomResponse(false, null, 'Incorrect password'));
-		return;
-	}
+	appAssert(match, UNAUTHORIZED, 'Incorrect password');
 
 	// create and save the session
 	const session = new req.SessionModel({
@@ -210,10 +165,7 @@ export const logout = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	// check if token is present
-	if (accessToken === undefined) {
-		res.sendStatus(NO_CONTENT);
-		return;
-	}
+	appAssert(accessToken, NO_CONTENT, 'No token');
 
 	const { payload } = verifyToken(accessToken);
 
@@ -237,30 +189,24 @@ export const refresh = asyncHandler(async (req: CustomRequest, res) => {
 
 	// get the refresh token
 	const refreshToken = req.cookies[refreshTokenCookieName] as string;
-
-	if (!refreshToken) {
-		res.sendStatus(UNAUTHORIZED);
-		return;
-	}
+	appAssert(refreshToken, UNAUTHORIZED, 'No refresh token found');
 
 	// verify the refresh token
 	const { payload } = verifyToken<RefreshTokenPayload>(refreshToken, {
 		secret: JWT_REFRESH_SECRET_KEY,
 	});
 
-	if (!payload) {
-		res.sendStatus(UNAUTHORIZED);
-		return;
-	}
+	appAssert(payload, UNAUTHORIZED, 'Token did not return any payload');
 
 	const session = await req.SessionModel.findById(payload.sessionID);
 	const now = Date.now();
 
 	// check if session is valid
-	if (!session || session.expiresAt.getTime() < now) {
-		res.sendStatus(UNAUTHORIZED);
-		return;
-	}
+	appAssert(
+		session && session.expiresAt.getTime() > now,
+		UNAUTHORIZED,
+		'Session expired'
+	);
 
 	// check if session needs refresh
 	const sessionNeedsRefresh = session.expiresAt.getTime() - now < ONE_DAY_MS;
@@ -317,29 +263,32 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	const token = req.cookies[accessTokenCookieName] as string;
 
 	// check if token is present
-	if (token === undefined) {
-		console.log('Token not found');
-		throwUnauthorized();
-		return;
-	}
+	appAssert(
+		token,
+		UNAUTHORIZED,
+		'Token not found',
+		AppErrorCodes.InvalidAccessToken
+	);
 
 	// verify the token
 	const { error, payload } = verifyToken(token);
 
-	if (error || !payload) {
-		console.log('Token not verified');
-		throwUnauthorized();
-		return;
-	}
+	appAssert(
+		!error && payload,
+		UNAUTHORIZED,
+		'Token not verified',
+		AppErrorCodes.InvalidAccessToken
+	);
 
 	const user = await req.UserModel.findById(payload.userID as string);
 	const session = await req.SessionModel.findById(payload.sessionID);
 
-	if (!session || user === null) {
-		console.log('User or session not found');
-		throwUnauthorized();
-		return;
-	}
+	appAssert(
+		session && user,
+		UNAUTHORIZED,
+		'User or session not found',
+		AppErrorCodes.InvalidAccessToken
+	);
 
 	res.status(OK).json(user.omitPassword());
 });
@@ -351,12 +300,11 @@ export const admin = asyncHandler(async (req: CustomRequest, res) => {
 		throw new Error('UserModel not attached');
 	}
 
-	if (secretAdminKey !== SECRET_ADMIN_KEY) {
-		res
-			.status(BAD_REQUEST)
-			.json(new CustomResponse(false, null, 'Invalid admin key'));
-		return;
-	}
+	appAssert(
+		secretAdminKey === SECRET_ADMIN_KEY,
+		BAD_REQUEST,
+		'Invalid admin key'
+	);
 
 	const user = await req.UserModel.findByIdAndUpdate(
 		userID,
@@ -364,12 +312,7 @@ export const admin = asyncHandler(async (req: CustomRequest, res) => {
 		{ new: true }
 	);
 
-	if (!user) {
-		res
-			.status(NOT_FOUND)
-			.json(new CustomResponse(false, null, 'User not found'));
-		return;
-	}
+	appAssert(user, NOT_FOUND, 'User not found');
 
 	res.json(new CustomResponse(true, user.omitPassword(), 'Admin found'));
 });

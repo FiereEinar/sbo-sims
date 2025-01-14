@@ -10,6 +10,7 @@ import {
 	NOT_FOUND,
 	UNPROCESSABLE_ENTITY,
 } from '../constants/http';
+import appAssert from '../errors/appAssert';
 
 /**
  * GET - get all organizations and its categories
@@ -77,19 +78,11 @@ export const get_organization = asyncHandler(
 		}
 
 		const organization = await req.OrganizationModel.findById(organizationID);
-
-		if (organization === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Organization with ID ${organizationID} does not exist`
-					)
-				);
-			return;
-		}
+		appAssert(
+			organization,
+			NOT_FOUND,
+			`Organization with ID ${organizationID} does not exist`
+		);
 
 		res.json(new CustomResponse(true, organization, 'Organization details'));
 	}
@@ -117,12 +110,7 @@ export const get_organization_categories = asyncHandler(
 		}
 
 		const org = await req.OrganizationModel.findById(organizationID);
-		if (org === null) {
-			res
-				.status(NOT_FOUND)
-				.json(new CustomResponse(false, null, 'Organization not found'));
-			return;
-		}
+		appAssert(org, NOT_FOUND, 'Organization not found');
 
 		const categories =
 			await req.CategoryModel.aggregate<ICategoryWithTransactions>([
@@ -180,18 +168,11 @@ export const create_organization = asyncHandler(
 			return;
 		}
 
-		if (departments.length === 0) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'Enter atleast 1 department for this organization'
-					)
-				);
-			return;
-		}
+		appAssert(
+			departments.length > 0,
+			BAD_REQUEST,
+			'Enter atleast 1 department for this organization'
+		);
 
 		departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
@@ -235,34 +216,20 @@ export const delete_organization = asyncHandler(
 			organization: organizationID,
 		}).exec();
 
-		if (categories && categories.length > 0) {
-			res
-				.status(UNPROCESSABLE_ENTITY)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'The organization has existing categories, make sure to handle and delete them first'
-					)
-				);
-			return;
-		}
+		appAssert(
+			!categories || categories.length === 0,
+			UNPROCESSABLE_ENTITY,
+			'The organization has existing categories, make sure to handle and delete them first'
+		);
 
 		const result = await req.OrganizationModel.findByIdAndDelete(
 			organizationID
 		);
-		if (result === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Organization with ID: ${organizationID} does not exist`
-					)
-				);
-			return;
-		}
+		appAssert(
+			result,
+			NOT_FOUND,
+			`Organization with ID: ${organizationID} does not exist`
+		);
 
 		res.json(
 			new CustomResponse(true, result, 'Organization deleted successfully')
@@ -294,18 +261,11 @@ export const update_organization = asyncHandler(
 			return;
 		}
 
-		if (departments.length === 0) {
-			res
-				.status(BAD_REQUEST)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'Enter atleast 1 department for this organization'
-					)
-				);
-			return;
-		}
+		appAssert(
+			departments.length > 0,
+			BAD_REQUEST,
+			'Enter atleast 1 department for this organization'
+		);
 
 		departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
@@ -322,18 +282,11 @@ export const update_organization = asyncHandler(
 			{ new: true }
 		).exec();
 
-		if (!result) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Organization with ID: ${organizationID} does not exist`
-					)
-				);
-			return;
-		}
+		appAssert(
+			result,
+			NOT_FOUND,
+			`Organization with ID: ${organizationID} does not exist`
+		);
 
 		res.json(
 			new CustomResponse(true, result, 'Organization created successfully')

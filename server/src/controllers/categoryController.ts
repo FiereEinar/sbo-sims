@@ -13,6 +13,7 @@ import {
 	NOT_FOUND,
 	UNPROCESSABLE_ENTITY,
 } from '../constants/http';
+import appAssert from '../errors/appAssert';
 
 /**
  * GET - fetch all categories
@@ -128,34 +129,7 @@ export const get_category = asyncHandler(
 			})
 			.exec();
 
-		if (category === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Category wit ID: ${categoryID} not found`
-					)
-				);
-			return;
-		}
-
-		// const categoryTransactions = await req.TransactionModel.find({
-		// 	category: category._id,
-		// })
-		// 	.populate({
-		// 		model: req.CategoryModel,
-		// 		path: 'category',
-		// 		populate: {
-		// 			model: req.OrganizationModel,
-		// 			path: 'organization',
-		// 		},
-		// 	})
-		// 	.populate({
-		// 		model: req.StudentModel,
-		// 		path: 'owner',
-		// 	});
+		appAssert(category, NOT_FOUND, `Category wit ID: ${categoryID} not found`);
 
 		const categoryTransactions = req.filteredTransactions?.splice(
 			req.skipAmount ?? 0,
@@ -197,18 +171,7 @@ export const get_category_transactions = asyncHandler(
 
 		// check if the given category exists
 		const category = await req.CategoryModel.findById(categoryID);
-		if (category === null) {
-			res
-				.status(NOT_FOUND)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						`Category wit ID: ${categoryID} not found`
-					)
-				);
-			return;
-		}
+		appAssert(category, NOT_FOUND, `Category wit ID: ${categoryID} not found`);
 
 		const categoryTransactions = await req.TransactionModel.find({
 			category: category._id,
@@ -251,27 +214,18 @@ export const create_category = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	// check if the organization exists
-	const existingOrganization = await req.OrganizationModel.findById(
-		organizationID
+	const organization = await req.OrganizationModel.findById(organizationID);
+	appAssert(
+		organization,
+		NOT_FOUND,
+		`Organization with ID: ${organizationID} does not exist`
 	);
-	if (existingOrganization === null) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Organization with ID: ${organizationID} does not exist`
-				)
-			);
-		return;
-	}
 
 	// create and save the category
 	const category = new req.CategoryModel({
 		name: name,
 		fee: fee,
-		organization: organizationID,
+		organization: organization._id,
 	});
 	await category.save();
 
@@ -296,32 +250,14 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
 		category: categoryID,
 	}).exec();
 
-	if (transactions && transactions?.length > 0) {
-		res
-			.status(UNPROCESSABLE_ENTITY)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'The category has existing transactions, make sure to handle and delete them first'
-				)
-			);
-		return;
-	}
+	appAssert(
+		!transactions || transactions.length === 0,
+		UNPROCESSABLE_ENTITY,
+		'The category has existing transactions, make sure to handle and delete them first'
+	);
 
 	const result = await req.CategoryModel.findByIdAndDelete(categoryID);
-	if (result === null) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Category with ID ${categoryID} does not exist`
-				)
-			);
-		return;
-	}
+	appAssert(result, NOT_FOUND, `Category with ID ${categoryID} does not exist`);
 
 	res.json(new CustomResponse(true, result, 'Category deleted successfully'));
 });
@@ -342,18 +278,11 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 	}
 
 	const organization = await req.OrganizationModel?.findById(organizationID);
-	if (!organization) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Organization with ID: ${organizationID} not found`
-				)
-			);
-		return;
-	}
+	appAssert(
+		organization,
+		NOT_FOUND,
+		`Organization with ID: ${organizationID} not found`
+	);
 
 	// create and save the category
 	const update: UpdateQuery<ICategory> = {
@@ -366,18 +295,11 @@ export const update_category = asyncHandler(async (req: CustomRequest, res) => {
 		new: true,
 	}).exec();
 
-	if (result === null) {
-		res
-			.status(NOT_FOUND)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					`Category with ID: ${categoryID} does not exist`
-				)
-			);
-		return;
-	}
+	appAssert(
+		result,
+		NOT_FOUND,
+		`Category with ID: ${categoryID} does not exist`
+	);
 
 	res.json(new CustomResponse(true, result, 'Category updated successfully'));
 });

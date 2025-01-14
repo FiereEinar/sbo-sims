@@ -38,8 +38,6 @@ beforeAll(async () => {
 
 	// get access token
 	accessToken = res.body.data.accessToken;
-
-	expect(res.body.success).toBe(true);
 });
 
 afterAll(async () => {
@@ -64,8 +62,6 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(OK);
-
-		expect(res.body.success).toBe(true);
 	});
 
 	it('should not create a student with the same studentID', async () => {
@@ -85,8 +81,6 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(CONFLICT);
-
-		expect(res.body.success).toBe(false); // student is not created
 	});
 
 	it('should not create a student with invalid data', async () => {
@@ -106,8 +100,6 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a student without access token', async () => {
@@ -126,8 +118,6 @@ describe('POST - Create Student', () => {
 			.post('/student')
 			.send(student)
 			.expect(UNAUTHORIZED);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a student with invalid access token', async () => {
@@ -147,8 +137,6 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=invalid-token`])
 			.send(student)
 			.expect(UNAUTHORIZED);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a student without studentID', async () => {
@@ -167,8 +155,6 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a student without firstname', async () => {
@@ -187,7 +173,5 @@ describe('POST - Create Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 });

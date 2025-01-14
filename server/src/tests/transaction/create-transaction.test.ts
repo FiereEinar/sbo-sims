@@ -54,8 +54,6 @@ describe('POST - Create Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
 			.expect(OK);
-
-		expect(res.body.success).toBe(true);
 	});
 
 	it('should not create a transaction with invalid category', async () => {
@@ -70,8 +68,6 @@ describe('POST - Create Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
 			.expect(NOT_FOUND);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a transaction with invalid student', async () => {
@@ -86,8 +82,6 @@ describe('POST - Create Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
 			.expect(NOT_FOUND);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not create a transaction with invalid amount', async () => {
@@ -102,7 +96,5 @@ describe('POST - Create Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(transaction)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 });

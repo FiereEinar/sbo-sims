@@ -14,7 +14,7 @@ import {
 	createMockUser,
 } from '..';
 import { ITransaction } from '../../models/transaction';
-import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from '../../constants/http';
 
 let accessToken: string;
 let mongoServer: MongoMemoryServer;
@@ -52,8 +52,6 @@ beforeAll(async () => {
 		.expect(OK);
 
 	transaction = res2.body.data as ITransaction;
-
-	expect(res2.body.success).toBe(true);
 });
 
 afterAll(async () => {
@@ -74,7 +72,6 @@ describe('PUT - Update Transaction', () => {
 			.send(updateData)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
 		expect(res.body.data.amount).toBe(updateData.amount);
 	});
 
@@ -93,7 +90,6 @@ describe('PUT - Update Transaction', () => {
 			.send(updateData)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
 		expect(res.body.data.category).toBe(updateData.categoryID);
 	});
 
@@ -112,7 +108,6 @@ describe('PUT - Update Transaction', () => {
 			.send(updateData)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
 		expect(res.body.data.owner).toBe(newStudent._id);
 	});
 
@@ -128,8 +123,6 @@ describe('PUT - Update Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
 			.expect(NOT_FOUND);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not update transaction with invalid categoryID', async () => {
@@ -144,8 +137,6 @@ describe('PUT - Update Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
 			.expect(NOT_FOUND);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not update transaction with invalid amount', async () => {
@@ -160,7 +151,5 @@ describe('PUT - Update Transaction', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updateData)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 });

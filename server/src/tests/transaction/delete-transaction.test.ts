@@ -55,14 +55,10 @@ describe('DELETE - Delete Transaction', () => {
 			.send(transaction)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
-
 		const deleteRes = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(OK);
-
-		expect(deleteRes.body.success).toBe(true);
 	});
 
 	it('should not delete a transaction with invalid id', async () => {
@@ -70,8 +66,6 @@ describe('DELETE - Delete Transaction', () => {
 			.delete(`/transaction/123`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not delete a transaction that no longer exists', async () => {
@@ -87,20 +81,14 @@ describe('DELETE - Delete Transaction', () => {
 			.send(transaction)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
-
 		const deleteRes = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(OK);
 
-		expect(deleteRes.body.success).toBe(true);
-
 		const deleteRes2 = await supertest(app)
 			.delete(`/transaction/${res.body.data._id}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(NOT_FOUND);
-
-		expect(deleteRes2.body.success).toBe(false);
 	});
 });

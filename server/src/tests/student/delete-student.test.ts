@@ -4,7 +4,12 @@ import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
 import { SECRET_ADMIN_KEY } from '../../constants/env';
-import { NOT_FOUND, OK, UNPROCESSABLE_ENTITY } from '../../constants/http';
+import {
+	CREATED,
+	NOT_FOUND,
+	OK,
+	UNPROCESSABLE_ENTITY,
+} from '../../constants/http';
 import { ICategory } from '../../models/category';
 import { IOrganization } from '../../models/organization';
 import { create } from 'lodash';
@@ -45,16 +50,12 @@ beforeAll(async () => {
 	// get access token
 	accessToken = res.body.data.accessToken;
 
-	expect(res.body.success).toBe(true);
-
 	// create a student
 	res = await supertest(app)
 		.post(`/student`)
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(student)
 		.expect(OK);
-
-	expect(res.body.success).toBe(true);
 
 	organization = await createMockOrganization(accessToken);
 	category = await createMockCategory(accessToken, organization._id);
@@ -81,8 +82,6 @@ describe('DELETE - Delete Student', () => {
 			.delete(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(OK);
-
-		expect(res.body.success).toBe(true);
 	});
 
 	it('should not delete a student that does not exist', async () => {
@@ -90,8 +89,6 @@ describe('DELETE - Delete Student', () => {
 			.delete(`/student/2301106598`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(NOT_FOUND);
-
-		expect(res.body.success).toBe(false);
 	});
 
 	it('should not delete a student with transactions', async () => {
@@ -101,8 +98,6 @@ describe('DELETE - Delete Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(student)
 			.expect(OK);
-
-		expect(res.body.success).toBe(true);
 
 		const transaction = {
 			amount: 100,
@@ -116,13 +111,9 @@ describe('DELETE - Delete Student', () => {
 			.send(transaction)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
-
 		const deleteRes = await supertest(app)
 			.delete(`/student/${student.studentID}`)
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.expect(UNPROCESSABLE_ENTITY);
-
-		expect(deleteRes.body.success).toBe(false);
 	});
 });

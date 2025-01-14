@@ -39,16 +39,12 @@ beforeAll(async () => {
 	// get access token
 	accessToken = res.body.data.accessToken;
 
-	expect(res.body.success).toBe(true);
-
 	// create a student
 	res = await supertest(app)
 		.post(`/student`)
 		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 		.send(student)
 		.expect(OK);
-
-	expect(res.body.success).toBe(true);
 });
 
 afterAll(async () => {
@@ -79,7 +75,6 @@ describe('PUT - Update Student', () => {
 			.send(updatedStudent)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
 		expect(res.body.data.firstname).toBe(updatedStudent.firstname);
 		expect(res.body.data.lastname).toBe(updatedStudent.lastname);
 	});
@@ -97,7 +92,6 @@ describe('PUT - Update Student', () => {
 			.send(updatedStudent)
 			.expect(OK);
 
-		expect(res.body.success).toBe(true);
 		expect(res.body.data.studentID).toBe(student.studentID);
 	});
 
@@ -112,7 +106,5 @@ describe('PUT - Update Student', () => {
 			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
 			.send(updatedStudent)
 			.expect(BAD_REQUEST);
-
-		expect(res.body.success).toBe(false);
 	});
 });

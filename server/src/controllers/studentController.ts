@@ -249,11 +249,13 @@ export const update_student = asyncHandler(async (req, res) => {
 	const student = await req.StudentModel.findOne({ studentID: studentID });
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-	appAssert(
-		gender === 'M' || gender === 'F',
-		BAD_REQUEST,
-		`Student gender can only be M or F`
-	);
+	if (gender) {
+		appAssert(
+			gender === 'M' || gender === 'F',
+			BAD_REQUEST,
+			`Student gender can only be M or F`
+		);
+	}
 
 	// create the update query
 	const update: UpdateQuery<IStudent> = {

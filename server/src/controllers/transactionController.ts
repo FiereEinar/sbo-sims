@@ -331,11 +331,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	});
 	await transaction.save();
 
-	res
-		.status(CREATED)
-		.json(
-			new CustomResponse(true, transaction, 'Transaction saved successfully')
-		);
+	res.json(
+		new CustomResponse(true, transaction, 'Transaction saved successfully')
+	);
 });
 
 /**
@@ -392,13 +390,6 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-	// check if the student already paid
-	const isAlreadyPaid = await req.TransactionModel.findOne({
-		owner: student._id,
-		category: category._id,
-	}).exec();
-	appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
-
 	// check if the student is within the organization
 	const isInOrganization = category.organization.departments.includes(
 		student.course
@@ -425,6 +416,12 @@ export const update_transaction = asyncHandler(async (req, res) => {
 			new: true,
 		}
 	).exec();
+
+	appAssert(
+		result,
+		NOT_FOUND,
+		`Transaction with ID: ${transactionID} not found`
+	);
 
 	res.json(
 		new CustomResponse(true, result, 'Transaction updated successfully')

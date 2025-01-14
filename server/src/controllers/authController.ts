@@ -136,7 +136,11 @@ export const login = asyncHandler(async (req, res) => {
 	setAuthCookie({ res, accessToken, refreshToken });
 
 	res.json(
-		new CustomResponse(true, { user: user.omitPassword() }, 'Login successfull')
+		new CustomResponse(
+			true,
+			{ user: user.omitPassword(), accessToken },
+			'Login successfull'
+		)
 	);
 });
 

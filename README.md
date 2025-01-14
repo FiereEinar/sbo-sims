@@ -6,6 +6,24 @@ A simple and intuitive web application designed to help you easily track student
 
 🚧 **Under Development**: This application is currently a work in progress, and new features and improvements are being actively added. Some features may be incomplete or subject to change.
 
+## Screenshots
+
+### Dashboard
+
+<img src='./screenshots/dashboard.png'>
+
+### Students Page
+
+<img src='./screenshots/students.png'>
+
+### Transactions Page
+
+<img src='./screenshots/transactions.png'>
+
+### Add Transaction
+
+<img src='./screenshots/add-transactions.png'>
+
 ## Features
 
 - **Student Management**: Easily add, edit, and remove students from the system.
@@ -48,6 +66,7 @@ A simple and intuitive web application designed to help you easily track student
 - **[date-fns](https://date-fns.org/docs/Getting-Started):** JavaScript date utility library.
 - **[zustand](https://zustand.docs.pmnd.rs/getting-started/introduction):** React state management library
 - **[lodash](https://lodash.com):** A modern JavaScript utility library
+- **[zustand](https://zustand-demo.pmnd.rs/):** A small, fast and scalable bearbones state-management solution.
 
 ### Backend
 
@@ -61,3 +80,4 @@ A simple and intuitive web application designed to help you easily track student
 - **[cors](https://www.npmjs.com/package/cors):** Middleware for enabling CORS.
 - **[date-fns](https://date-fns.org/docs/Getting-Started):** JavaScript date utility library.
 - **[csv-parser](https://www.npmjs.com/package/csv-parser):** CSV parsing utility tool.
+- **[puppeteer](https://pptr.dev/):** For generating PDF file for transactions report

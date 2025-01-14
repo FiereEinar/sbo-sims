@@ -94,11 +94,9 @@ export default function AddTransactionForm({
 			data.date = date?.toISOString();
 			data.categoryID = category;
 
-			let result;
-
 			if (transaction && mode === 'edit')
-				result = await submitUpdateTransactionForm(transaction._id, data);
-			else if (mode === 'add') result = await submitTransactionForm(data);
+				await submitUpdateTransactionForm(transaction._id, data);
+			else if (mode === 'add') await submitTransactionForm(data);
 
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
 			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });

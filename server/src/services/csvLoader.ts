@@ -1,9 +1,9 @@
 import fs from 'fs';
 import csvParser from 'csv-parser';
-import { CustomRequest } from '../types/request';
+import { Request } from 'express';
 
 export const loadStudents = async (
-	req: CustomRequest,
+	req: Request,
 	filepath: string,
 	save?: boolean
 ): Promise<boolean> => {
@@ -13,10 +13,6 @@ export const loadStudents = async (
 				.pipe(csvParser())
 				.on('data', async (row) => {
 					try {
-						if (!req.StudentModel) {
-							throw new Error('StudentModel not attached');
-						}
-
 						// requried csv headers
 						const requiredHeaders = [
 							'firstname',

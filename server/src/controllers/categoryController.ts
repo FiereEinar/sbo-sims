@@ -1,55 +1,33 @@
 import asyncHandler from 'express-async-handler';
+import appAssert from '../errors/appAssert';
 import { ICategory } from '../models/category';
 import { UpdateQuery } from 'mongoose';
-import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { createCategoryBody } from '../types/organization';
-import { CustomRequest, TransactionQueryFilterRequest } from '../types/request';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
+import { TransactionQueryFilterRequest } from '../types/request';
+import { NOT_FOUND, UNPROCESSABLE_ENTITY } from '../constants/http';
 import {
 	ICategoryWithTransactions,
 	updateCategoryBody,
 } from '../types/category';
-import {
-	INTERNAL_SERVER_ERROR,
-	NOT_FOUND,
-	UNPROCESSABLE_ENTITY,
-} from '../constants/http';
-import appAssert from '../errors/appAssert';
 
 /**
  * GET - fetch all categories
  */
-export const get_all_category = asyncHandler(
-	async (req: CustomRequest, res) => {
-		if (!req.CategoryModel) {
-			res
-				.status(INTERNAL_SERVER_ERROR)
-				.json(new CustomResponse(false, null, 'CategoryModel not attached'));
+export const get_all_category = asyncHandler(async (req, res) => {
+	const categories = await req.CategoryModel.find().populate({
+		model: req.OrganizationModel,
+		path: 'organization',
+	});
 
-			return;
-		}
-
-		const categories = await req.CategoryModel.find().populate({
-			model: req.OrganizationModel,
-			path: 'organization',
-		});
-
-		res.json(new CustomResponse(true, categories, 'All categories'));
-	}
-);
+	res.json(new CustomResponse(true, categories, 'All categories'));
+});
 
 /**
  * GET - fetch all categories along with its total transactions and total amount
  */
 export const get_all_category_with_transactions_data = asyncHandler(
-	async (req: CustomRequest, res) => {
-		if (!req.CategoryModel) {
-			res
-				.status(INTERNAL_SERVER_ERROR)
-				.json(new CustomResponse(false, null, 'CategoryModel not attached'));
-
-			return;
-		}
-
+	async (req, res) => {
 		const categoriesWithOrg = await req.CategoryModel.find().populate({
 			model: req.OrganizationModel,
 			path: 'organization',
@@ -107,20 +85,6 @@ export const get_category = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
 		const { categoryID } = req.params;
 
-		if (!req.CategoryModel || !req.TransactionModel) {
-			res
-				.status(INTERNAL_SERVER_ERROR)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'CategoryModel | TransactionModel not attached'
-					)
-				);
-
-			return;
-		}
-
 		// check if the given category exists
 		const category = await req.CategoryModel.findById(categoryID)
 			.populate({
@@ -151,67 +115,37 @@ export const get_category = asyncHandler(
 /**
  * GET - fetch the transactions made in a category
  */
-export const get_category_transactions = asyncHandler(
-	async (req: CustomRequest, res) => {
-		const { categoryID } = req.params;
+export const get_category_transactions = asyncHandler(async (req, res) => {
+	const { categoryID } = req.params;
 
-		if (!req.CategoryModel || !req.TransactionModel) {
-			res
-				.status(INTERNAL_SERVER_ERROR)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'CategoryModel | TransactionModel not attached'
-					)
-				);
+	// check if the given category exists
+	const category = await req.CategoryModel.findById(categoryID);
+	appAssert(category, NOT_FOUND, `Category wit ID: ${categoryID} not found`);
 
-			return;
-		}
-
-		// check if the given category exists
-		const category = await req.CategoryModel.findById(categoryID);
-		appAssert(category, NOT_FOUND, `Category wit ID: ${categoryID} not found`);
-
-		const categoryTransactions = await req.TransactionModel.find({
-			category: category._id,
+	const categoryTransactions = await req.TransactionModel.find({
+		category: category._id,
+	})
+		.populate({ model: req.StudentModel, path: 'owner' })
+		.populate({
+			model: req.CategoryModel,
+			path: 'category',
+			populate: {
+				model: req.OrganizationModel,
+				path: 'organization',
+			},
 		})
-			.populate({ model: req.StudentModel, path: 'owner' })
-			.populate({
-				model: req.CategoryModel,
-				path: 'category',
-				populate: {
-					model: req.OrganizationModel,
-					path: 'organization',
-				},
-			})
-			.exec();
+		.exec();
 
-		res.json(
-			new CustomResponse(true, categoryTransactions, 'Category transactions')
-		);
-	}
-);
+	res.json(
+		new CustomResponse(true, categoryTransactions, 'Category transactions')
+	);
+});
 
 /**
  * POST - create a category
  */
-export const create_category = asyncHandler(async (req: CustomRequest, res) => {
+export const create_category = asyncHandler(async (req, res) => {
 	const { name, fee, organizationID }: createCategoryBody = req.body;
-
-	if (!req.CategoryModel || !req.OrganizationModel) {
-		res
-			.status(INTERNAL_SERVER_ERROR)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'CategoryModel | OrganizationModel not attached'
-				)
-			);
-
-		return;
-	}
 
 	// check if the organization exists
 	const organization = await req.OrganizationModel.findById(organizationID);
@@ -235,16 +169,8 @@ export const create_category = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * DELETE - delete a category by given ID in params
  */
-export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
+export const delete_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
-
-	if (!req.CategoryModel) {
-		res
-			.status(INTERNAL_SERVER_ERROR)
-			.json(new CustomResponse(false, null, 'CategoryModel not attached'));
-
-		return;
-	}
 
 	const transactions = await req.TransactionModel?.find({
 		category: categoryID,
@@ -265,17 +191,9 @@ export const delete_category = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * PUT - update a category based on ID in params
  */
-export const update_category = asyncHandler(async (req: CustomRequest, res) => {
+export const update_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 	const { name, fee, organizationID }: updateCategoryBody = req.body;
-
-	if (!req.CategoryModel) {
-		res
-			.status(INTERNAL_SERVER_ERROR)
-			.json(new CustomResponse(false, null, 'CategoryModel not attached'));
-
-		return;
-	}
 
 	const organization = await req.OrganizationModel?.findById(organizationID);
 	appAssert(

@@ -1,177 +1,145 @@
+import fs from 'fs/promises';
 import asyncHandler from 'express-async-handler';
+import appAssert from '../errors/appAssert';
 import { IStudent } from '../models/student';
 import { createStudentBody } from '../types/student';
 import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
-import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { validateEmail } from '../utils/utils';
-import { CustomRequest } from '../types/request';
 import { loadStudents } from '../services/csvLoader';
-import fs from 'fs/promises';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import {
 	BAD_REQUEST,
 	CONFLICT,
-	INTERNAL_SERVER_ERROR,
 	NOT_FOUND,
 	UNPROCESSABLE_ENTITY,
 } from '../constants/http';
-import appAssert from '../errors/appAssert';
 
 /**
  * GET - fetch all students
  */
-export const get_all_students = asyncHandler(
-	async (req: CustomRequest, res) => {
-		const { page, pageSize, search, course, year, gender, sortBy } = req.query;
-		if (!req.StudentModel) {
-			res
-				.status(500)
-				.json(new CustomResponse(false, null, 'StudentModel not attached'));
+export const get_all_students = asyncHandler(async (req, res) => {
+	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
 
-			return;
-		}
+	const defaultPage = 1;
+	const defaultPageSize = 100;
 
-		const defaultPage = 1;
-		const defaultPageSize = 100;
+	const pageNum = page ? parseInt(page as string) : defaultPage;
+	const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
+	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
-		const pageNum = page ? parseInt(page as string) : defaultPage;
-		const pageSizeNum = pageSize
-			? parseInt(pageSize as string)
-			: defaultPageSize;
-		const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
+	const filters: FilterQuery<IStudent>[] = [];
 
-		const filters: FilterQuery<IStudent>[] = [];
-
-		if (course) filters.push({ course: course });
-		if (year) filters.push({ year: parseInt(year as string) });
-		if (gender) filters.push({ gender: gender });
-		if (search) {
-			const searchRegex = new RegExp(search as string, 'i');
-			filters.push({
-				$or: [
-					{ studentID: { $regex: searchRegex } },
-					{ firstname: { $regex: searchRegex } },
-					{ lastname: { $regex: searchRegex } },
-					{ middlename: { $regex: searchRegex } },
-				],
-			});
-		}
-
-		const aggregatePipeline: PipelineStage[] = [
-			{
-				$lookup: {
-					from: 'transactions',
-					localField: '_id',
-					foreignField: 'owner',
-					as: 'transactions',
-				},
-			},
-			{
-				$addFields: {
-					totalTransactions: { $size: '$transactions' },
-					totalTransactionsAmount: { $sum: '$transactions.amount' },
-				},
-			},
-			{
-				$project: {
-					transactions: 0,
-				},
-			},
-			{
-				$sort: {
-					firstname: sortBy === 'dec' ? -1 : 1,
-				},
-			},
-			{
-				$skip: skipAmount,
-			},
-			{
-				$limit: pageSizeNum,
-			},
-		];
-
-		if (filters.length > 0) {
-			aggregatePipeline.unshift({
-				$match: {
-					$and: filters,
-				},
-			});
-		}
-
-		const students = await req.StudentModel.aggregate(aggregatePipeline);
-
-		const next =
-			(await req.StudentModel.countDocuments({ $and: filters })) >
-			skipAmount + pageSizeNum
-				? pageNum + 1
-				: -1;
-		const prev = pageNum > 1 ? pageNum - 1 : -1;
-
-		res.json(
-			new CustomPaginatedResponse(true, students, 'All students', next, prev)
-		);
+	if (course) filters.push({ course: course });
+	if (year) filters.push({ year: parseInt(year as string) });
+	if (gender) filters.push({ gender: gender });
+	if (search) {
+		const searchRegex = new RegExp(search as string, 'i');
+		filters.push({
+			$or: [
+				{ studentID: { $regex: searchRegex } },
+				{ firstname: { $regex: searchRegex } },
+				{ lastname: { $regex: searchRegex } },
+				{ middlename: { $regex: searchRegex } },
+			],
+		});
 	}
-);
+
+	const aggregatePipeline: PipelineStage[] = [
+		{
+			$lookup: {
+				from: 'transactions',
+				localField: '_id',
+				foreignField: 'owner',
+				as: 'transactions',
+			},
+		},
+		{
+			$addFields: {
+				totalTransactions: { $size: '$transactions' },
+				totalTransactionsAmount: { $sum: '$transactions.amount' },
+			},
+		},
+		{
+			$project: {
+				transactions: 0,
+			},
+		},
+		{
+			$sort: {
+				firstname: sortBy === 'dec' ? -1 : 1,
+			},
+		},
+		{
+			$skip: skipAmount,
+		},
+		{
+			$limit: pageSizeNum,
+		},
+	];
+
+	if (filters.length > 0) {
+		aggregatePipeline.unshift({
+			$match: {
+				$and: filters,
+			},
+		});
+	}
+
+	const students = await req.StudentModel.aggregate(aggregatePipeline);
+
+	const next =
+		(await req.StudentModel.countDocuments({ $and: filters })) >
+		skipAmount + pageSizeNum
+			? pageNum + 1
+			: -1;
+	const prev = pageNum > 1 ? pageNum - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(true, students, 'All students', next, prev)
+	);
+});
 
 /**
  * POST - import student from a csv file
  */
-export const post_csv_students = asyncHandler(
-	async (req: CustomRequest, res) => {
-		const file = req.file;
-		appAssert(file, BAD_REQUEST, 'Server did not recieve any file');
+export const post_csv_students = asyncHandler(async (req, res) => {
+	const file = req.file;
+	appAssert(file, BAD_REQUEST, 'Server did not recieve any file');
 
-		appAssert(
-			file.mimetype === 'text/csv',
-			BAD_REQUEST,
-			'File should be in csv format'
-		);
+	appAssert(
+		file.mimetype === 'text/csv',
+		BAD_REQUEST,
+		'File should be in csv format'
+	);
 
-		const valid = await loadStudents(req, file.path);
-		if (!valid) await fs.unlink(file.path);
-		appAssert(
-			valid,
-			BAD_REQUEST,
-			'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
-		);
+	const valid = await loadStudents(req, file.path);
+	if (!valid) await fs.unlink(file.path);
+	appAssert(
+		valid,
+		BAD_REQUEST,
+		'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
+	);
 
-		await loadStudents(req, file.path, true);
-		await fs.unlink(file.path);
+	await loadStudents(req, file.path, true);
+	await fs.unlink(file.path);
 
-		res.json(new CustomResponse(true, null, 'File imported successfully'));
-	}
-);
+	res.json(new CustomResponse(true, null, 'File imported successfully'));
+});
 
 /**
  * GET - get all the distinc courses of students
  */
-export const get_available_course = asyncHandler(
-	async (req: CustomRequest, res) => {
-		if (!req.StudentModel) {
-			res
-				.status(500)
-				.json(new CustomResponse(false, null, 'StudentModel not attached'));
+export const get_available_course = asyncHandler(async (req, res) => {
+	const courses = await req.StudentModel.find().distinct('course');
 
-			return;
-		}
-
-		const courses = await req.StudentModel.find().distinct('course');
-
-		res.json(new CustomResponse(true, courses, 'Students courses'));
-	}
-);
+	res.json(new CustomResponse(true, courses, 'Students courses'));
+});
 
 /**
  * GET - fetch student data
  */
-export const get_student = asyncHandler(async (req: CustomRequest, res) => {
+export const get_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
-	if (!req.StudentModel) {
-		res
-			.status(500)
-			.json(new CustomResponse(false, null, 'StudentModel not attached'));
-
-		return;
-	}
 
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
@@ -184,53 +152,34 @@ export const get_student = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * GET - fetch the transactions that a student have made
  */
-export const get_student_transaction = asyncHandler(
-	async (req: CustomRequest, res) => {
-		const { studentID } = req.params;
-		if (!req.StudentModel || !req.TransactionModel) {
-			res
-				.status(500)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'StudentModel & TransactionModel not attached'
-					)
-				);
+export const get_student_transaction = asyncHandler(async (req, res) => {
+	const { studentID } = req.params;
 
-			return;
-		}
+	const student = await req.StudentModel.findOne({
+		studentID: studentID,
+	}).exec();
+	appAssert(student, NOT_FOUND, `Student with ID ${studentID} does not exist`);
 
-		const student = await req.StudentModel.findOne({
-			studentID: studentID,
-		}).exec();
-		appAssert(
-			student,
-			NOT_FOUND,
-			`Student with ID ${studentID} does not exist`
-		);
-
-		const studentTransactions = await req.TransactionModel.find({
-			owner: student._id,
+	const studentTransactions = await req.TransactionModel.find({
+		owner: student._id,
+	})
+		.populate({ model: req.StudentModel, path: 'owner' })
+		.populate({
+			model: req.CategoryModel,
+			path: 'category',
+			populate: { model: req.OrganizationModel, path: 'organization' },
 		})
-			.populate({ model: req.StudentModel, path: 'owner' })
-			.populate({
-				model: req.CategoryModel,
-				path: 'category',
-				populate: { model: req.OrganizationModel, path: 'organization' },
-			})
-			.exec();
+		.exec();
 
-		res.json(
-			new CustomResponse(true, studentTransactions, 'Student transactions')
-		);
-	}
-);
+	res.json(
+		new CustomResponse(true, studentTransactions, 'Student transactions')
+	);
+});
 
 /**
  * POST - create a student
  */
-export const create_student = asyncHandler(async (req: CustomRequest, res) => {
+export const create_student = asyncHandler(async (req, res) => {
 	const {
 		studentID,
 		firstname,
@@ -241,13 +190,6 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 		year,
 		middlename,
 	}: createStudentBody = req.body;
-	if (!req.StudentModel) {
-		res
-			.status(INTERNAL_SERVER_ERROR)
-			.json(new CustomResponse(false, null, 'StudentModel not attached'));
-
-		return;
-	}
 
 	if (email?.length) {
 		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
@@ -287,7 +229,7 @@ export const create_student = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * PUT - update a student by studentID in params
  */
-export const update_student = asyncHandler(async (req: CustomRequest, res) => {
+export const update_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
 	const {
 		firstname,
@@ -298,14 +240,6 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 		gender,
 		year,
 	}: Omit<createStudentBody, 'studentID'> = req.body;
-
-	if (!req.StudentModel) {
-		res
-			.status(500)
-			.json(new CustomResponse(false, null, 'StudentModel not attached'));
-
-		return;
-	}
 
 	if (email?.length) {
 		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
@@ -349,16 +283,8 @@ export const update_student = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * DELETE - delete a student by studentID in params
  */
-export const delete_student = asyncHandler(async (req: CustomRequest, res) => {
+export const delete_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
-
-	if (!req.StudentModel) {
-		res
-			.status(INTERNAL_SERVER_ERROR)
-			.json(new CustomResponse(false, null, 'StudentModel not attached'));
-
-		return;
-	}
 
 	const student = await req.StudentModel.findOne({ studentID: studentID });
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);

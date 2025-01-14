@@ -85,14 +85,9 @@ export default function AddOrganizationForm({
 			departments.map((dep) => departmentsArray.push(dep.name));
 			data.departments = departmentsArray;
 
-			let result;
-
-			if (mode === 'add') result = await submitOrganizationForm(data);
+			if (mode === 'add') await submitOrganizationForm(data);
 			if (mode === 'edit')
-				result = await submitUpdateOrganizationForm(
-					organizationData?._id ?? '',
-					data
-				);
+				await submitUpdateOrganizationForm(organizationData?._id ?? '', data);
 
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.ORGANIZATION],

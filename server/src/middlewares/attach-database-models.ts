@@ -1,5 +1,4 @@
-import { NextFunction, Response } from 'express';
-import { CustomRequest } from '../types/request';
+import { NextFunction, Request, Response } from 'express';
 import { getDatabaseConnection } from '../database/databaseManager';
 import { DB_MODEL, originalDbName } from '../constants';
 import { UserSchema } from '../models/user';
@@ -7,11 +6,10 @@ import { StudentSchema } from '../models/student';
 import { CategorySchema } from '../models/category';
 import { TransactionSchema } from '../models/transaction';
 import { OrganizationSchema } from '../models/organization';
-import { ME_CONFIG_MONGODB_URL } from '../constants/env';
 import { SessionSchema } from '../models/session';
 
 export const attachDatabaseModels = async (
-	req: CustomRequest,
+	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
@@ -46,7 +44,7 @@ export const attachDatabaseModels = async (
 };
 
 export const attachOriginalDatabaseModels = async (
-	req: CustomRequest,
+	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {

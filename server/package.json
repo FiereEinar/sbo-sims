@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "vitest",
-		"dev": "nodemon --watch src --legacy-watch ./src/app.ts",
+		"dev": "nodemon --watch src --legacy-watch --files ./src/app.ts index.d.ts",
 		"build": "rimraf dist && tsc"
 	},
 	"keywords": [],

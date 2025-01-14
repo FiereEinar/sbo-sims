@@ -1,14 +1,15 @@
 import asyncHandler from 'express-async-handler';
-import { CustomRequest } from '../types/request';
-import { loginUserBody, signupUserBody } from '../types/user';
-import CustomResponse from '../types/response';
 import bcrypt from 'bcryptjs';
+import appAssert from '../errors/appAssert';
+import CustomResponse from '../types/response';
+import { loginUserBody, signupUserBody } from '../types/user';
+import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
+import { validateEmail } from '../utils/utils';
 import {
 	accessTokenCookieName,
 	AppErrorCodes,
 	refreshTokenCookieName,
 } from '../constants';
-import { validateEmail } from '../utils/utils';
 import {
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
@@ -17,7 +18,6 @@ import {
 import {
 	BAD_REQUEST,
 	CONFLICT,
-	FORBIDDEN,
 	NO_CONTENT,
 	NOT_FOUND,
 	OK,
@@ -27,6 +27,7 @@ import {
 	cookieOptions,
 	getAccessTokenOptions,
 	getRefreshTokenOptions,
+	REFRESH_PATH,
 	setAuthCookie,
 } from '../utils/cookie';
 import {
@@ -35,13 +36,11 @@ import {
 	signToken,
 	verifyToken,
 } from '../utils/jwt';
-import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
-import appAssert from '../errors/appAssert';
 
 /**
  * POST - user signup
  */
-export const signup = asyncHandler(async (req: CustomRequest, res) => {
+export const signup = asyncHandler(async (req, res) => {
 	const {
 		confirmPassword,
 		password,
@@ -51,11 +50,6 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 		lastname,
 		bio,
 	}: signupUserBody = req.body;
-
-	// check if UserModel is attached to the request
-	if (!req.UserModel) {
-		throw new Error('UserModel not attached');
-	}
 
 	// check if passwords match
 	appAssert(password === confirmPassword, BAD_REQUEST, 'Password must match');
@@ -115,12 +109,8 @@ export const signup = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * POST - user login
  */
-export const login = asyncHandler(async (req: CustomRequest, res) => {
+export const login = asyncHandler(async (req, res) => {
 	const { studentID, password }: loginUserBody = req.body;
-
-	if (!req.UserModel || !req.SessionModel) {
-		throw new Error('UserModel or SessionModel not attached');
-	}
 
 	// check if studentID is valid
 	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
@@ -157,12 +147,8 @@ export const login = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * GET - user logout
  */
-export const logout = asyncHandler(async (req: CustomRequest, res) => {
+export const logout = asyncHandler(async (req, res) => {
 	const accessToken = req.cookies[accessTokenCookieName] as string;
-
-	if (!req.SessionModel) {
-		throw new Error('SessionModel not attached');
-	}
 
 	// check if token is present
 	appAssert(accessToken, NO_CONTENT, 'No token');
@@ -175,6 +161,10 @@ export const logout = asyncHandler(async (req: CustomRequest, res) => {
 
 	// clear the cookie
 	res.clearCookie(accessTokenCookieName, cookieOptions);
+	res.clearCookie(refreshTokenCookieName, {
+		...cookieOptions,
+		path: REFRESH_PATH,
+	});
 
 	res.sendStatus(OK);
 });
@@ -182,11 +172,7 @@ export const logout = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * GET - refresh access token
  */
-export const refresh = asyncHandler(async (req: CustomRequest, res) => {
-	if (!req.SessionModel) {
-		throw new Error('SessionModel not attached');
-	}
-
+export const refresh = asyncHandler(async (req, res) => {
 	// get the refresh token
 	const refreshToken = req.cookies[refreshTokenCookieName] as string;
 	appAssert(refreshToken, UNAUTHORIZED, 'No refresh token found');
@@ -242,24 +228,7 @@ export const refresh = asyncHandler(async (req: CustomRequest, res) => {
 /**
  * GET - check if authenticated
  */
-export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
-	if (!req.UserModel || !req.SessionModel) {
-		throw new Error('UserModel and SessionModel not attached');
-	}
-
-	const throwUnauthorized = () => {
-		res
-			.status(UNAUTHORIZED)
-			.json(
-				new CustomResponse(
-					false,
-					null,
-					'Unauthorized',
-					AppErrorCodes.InvalidAccessToken
-				)
-			);
-	};
-
+export const check_auth = asyncHandler(async (req, res) => {
 	const token = req.cookies[accessTokenCookieName] as string;
 
 	// check if token is present
@@ -293,12 +262,8 @@ export const check_auth = asyncHandler(async (req: CustomRequest, res) => {
 	res.status(OK).json(user.omitPassword());
 });
 
-export const admin = asyncHandler(async (req: CustomRequest, res) => {
+export const admin = asyncHandler(async (req, res) => {
 	const { secretAdminKey, userID } = req.body;
-
-	if (!req.UserModel) {
-		throw new Error('UserModel not attached');
-	}
 
 	appAssert(
 		secretAdminKey === SECRET_ADMIN_KEY,

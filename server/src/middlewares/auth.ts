@@ -1,17 +1,12 @@
 import asyncHandler from 'express-async-handler';
-import { CustomRequest } from '../types/request';
 import { NextFunction, Response } from 'express';
 import { accessTokenCookieName, AppErrorCodes } from '../constants';
-import { FORBIDDEN, UNAUTHORIZED } from '../constants/http';
+import { UNAUTHORIZED } from '../constants/http';
 import { verifyToken } from '../utils/jwt';
 import CustomResponse from '../types/response';
 
 export const auth = asyncHandler(
-	async (req: CustomRequest, res: Response, next: NextFunction) => {
-		if (!req.UserModel) {
-			throw new Error('UserModel not attached');
-		}
-
+	async (req, res: Response, next: NextFunction) => {
 		const throwUnauthorized = () => {
 			res
 				.status(UNAUTHORIZED)

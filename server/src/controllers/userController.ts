@@ -1,14 +1,13 @@
+import appAssert from '../errors/appAssert';
+import CustomResponse from '../types/response';
 import asyncHandler from 'express-async-handler';
-import { CustomRequest } from '../types/request';
 import { updateUserBody } from '../types/user';
 import { UpdateQuery } from 'mongoose';
 import { IUser } from '../models/user';
-import CustomResponse from '../types/response';
-import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import { validateEmail } from '../utils/utils';
-import appAssert from '../errors/appAssert';
+import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 
-export const update_user = asyncHandler(async (req: CustomRequest, res) => {
+export const update_user = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 	const {
 		firstname,
@@ -20,7 +19,7 @@ export const update_user = asyncHandler(async (req: CustomRequest, res) => {
 		activeSemDB,
 	}: updateUserBody = req.body;
 
-	const user = await req.UserModel?.findById(userID);
+	const user = await req.UserModel.findById(userID);
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	const year = parseInt(activeSchoolYearDB);

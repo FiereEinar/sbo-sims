@@ -3,8 +3,7 @@ import * as cheerio from 'cheerio';
 import fs from 'fs';
 import path from 'path';
 
-export const pdfOutputPath = './src/public/transactions.pdf';
-
+// supported extention names for images that are used in html source code to pdf
 const filetypeMap: { [key: string]: string } = {
 	png: 'image/png',
 	jpg: 'image/jpg',
@@ -12,7 +11,9 @@ const filetypeMap: { [key: string]: string } = {
 };
 
 const margin = 30;
+export const pdfOutputPath = './src/public/transactions.pdf';
 
+// default options for converting html to pdf
 const defaultOptions: PDFOptions = {
 	format: 'A4',
 	printBackground: true,
@@ -25,10 +26,12 @@ const defaultOptions: PDFOptions = {
 	},
 };
 
-export const convertToPdf = async (
-	html: string,
-	options: PDFOptions = defaultOptions
-): Promise<void> => {
+/**
+ * replaces source of img tags so that puppeteer can load then into pdf
+ * @param html
+ * @returns
+ */
+const updateImgSrc = (html: string): string => {
 	const $ = cheerio.load(html);
 
 	$('img').each(function () {
@@ -37,9 +40,7 @@ export const convertToPdf = async (
 
 		const file_extension = original_src.split('.').slice(-1)[0]; // extract file extension
 		if (!filetypeMap[file_extension]) {
-			console.log(
-				"There is no mapping for file extension '" + file_extension + "'."
-			);
+			console.log(`There is no mapping for file extension '${file_extension}'`);
 			return;
 		}
 
@@ -64,13 +65,28 @@ export const convertToPdf = async (
 		$(this).attr('src', local_src);
 	});
 
+	return $.html();
+};
+
+/**
+ * takes an html string and outputs a pdf of that given html to public folder
+ * @param html source code
+ * @param options optional
+ */
+export const convertToPdf = async (
+	html: string,
+	options: PDFOptions = defaultOptions
+): Promise<void> => {
+	const updatedHtml = updateImgSrc(html);
+
 	const browser = await puppeteer.launch({
 		headless: true,
 		args: ['--no-sandbox', '--disable-setuid-sandbox'],
 	});
+
 	const page = await browser.newPage();
 	await page.emulateMediaType('print');
-	await page.setContent($.html(), { waitUntil: 'domcontentloaded' });
+	await page.setContent(updatedHtml, { waitUntil: 'domcontentloaded' });
 	await page.pdf(options);
 	await browser.close();
 };

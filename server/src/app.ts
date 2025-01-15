@@ -11,17 +11,16 @@ import transactionRouter from './routes/transaction';
 import categoryRouter from './routes/category';
 import organizationRouter from './routes/organization';
 
+import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
 import { errorHandler } from './middlewares/error';
 import { auth } from './middlewares/auth';
+import { healthcheck } from './middlewares/healthcheck';
+import { corsOptions } from './utils/cors';
 import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
-import { NODE_ENV, PORT as PORT_STRING } from './constants/env';
-const PORT = Number(PORT_STRING);
-import { healthcheck } from './middlewares/healthcheck';
-import { corsOptions } from './utils/cors';
 
 const app = express();
 
@@ -51,7 +50,9 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 if (NODE_ENV !== 'test') {
-	app.listen(PORT, () => console.log(`Server is running on PORT ${PORT}`));
+	app.listen(Number(PORT), () =>
+		console.log(`Server is running on PORT http://localhost:${PORT}`)
+	);
 }
 
 export default app;

@@ -24,6 +24,10 @@ A simple and intuitive web application designed to help you easily track student
 
 <img src='./screenshots/add-transactions.png'>
 
+### Financial Report Sample
+
+<img src='./screenshots/pdf-report.png'>
+
 ## Features
 
 - **Student Management**: Easily add, edit, and remove students from the system.
@@ -34,6 +38,34 @@ A simple and intuitive web application designed to help you easily track student
 - **Authentication & Authorization**: Secure login and user management to ensure only authorized users can access or modify data.
 - **Transaction PDF Report**: Download a PDF of transactions report
 - **Import Students**: Import a list of students via CSV file
+
+## Getting Started
+
+### With Docker
+
+1. Create a `.env` file and fill it up with the given sample env
+
+2. In your terminal, cd into the same directory as docker-compose.yml
+
+3. Enter `docker-compose up --build` and wait for it to finish building the app
+
+4. Once finished, you should be able to access the app at http://localhost:5173
+
+### Without Docker
+
+1. Create a `.env` file and fill it up with the given sample env
+
+2. Open two terminal, each terminal cd into server directory and the other one for client directory
+
+3. In each terminal, enter `npm install` to install the dependencies
+
+4. In each terminal, enter `npm run dev` to run both the server and the client
+
+5. Once finished, you should be able to access the app at http://localhost:5173
+
+6. If the server complains about some mongo error, its probably because your local mongo server is not running. Make sure to install it or run it if its already installed by running `mongod` in your terminal
+
+Running the app on production will be posted soon
 
 ## Technologies Used
 

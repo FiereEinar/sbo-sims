@@ -273,7 +273,7 @@ export const admin = asyncHandler(async (req, res) => {
 
 	const user = await req.UserModel.findByIdAndUpdate(
 		userID,
-		{ role: 'admin' },
+		{ role: 'governor' },
 		{ new: true }
 	);
 

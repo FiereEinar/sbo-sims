@@ -9,7 +9,7 @@ import {
 } from '../controllers/organizationController';
 import { createOrganizationValidation } from '../middlewares/validations/organizationValidations';
 import { isValidMongooseId } from '../middlewares/validations/validation';
-import { adminAuth } from '../middlewares/adminAuth';
+import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 
 const router = express.Router();
 
@@ -27,18 +27,23 @@ router.get(
 	get_organization_categories
 );
 
-router.post('/', adminAuth, createOrganizationValidation, create_organization);
+router.post(
+	'/',
+	authorizeRoles('governor'),
+	createOrganizationValidation,
+	create_organization
+);
 
 router.delete(
 	'/:organizationID',
-	adminAuth,
+	authorizeRoles('governor'),
 	isValidMongooseId('organizationID', { from: 'params' }),
 	delete_organization
 );
 
 router.put(
 	'/:organizationID',
-	adminAuth,
+	authorizeRoles('governor'),
 	isValidMongooseId('organizationID', { from: 'params' }),
 	createOrganizationValidation,
 	update_organization

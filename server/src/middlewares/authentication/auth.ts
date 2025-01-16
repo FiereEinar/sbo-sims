@@ -1,9 +1,9 @@
 import asyncHandler from 'express-async-handler';
 import { NextFunction, Response } from 'express';
-import { accessTokenCookieName, AppErrorCodes } from '../constants';
-import { UNAUTHORIZED } from '../constants/http';
-import { verifyToken } from '../utils/jwt';
-import appAssert from '../errors/appAssert';
+import { accessTokenCookieName, AppErrorCodes } from '../../constants';
+import { UNAUTHORIZED } from '../../constants/http';
+import { verifyToken } from '../../utils/jwt';
+import appAssert from '../../errors/appAssert';
 
 export const auth = asyncHandler(
 	async (req, res: Response, next: NextFunction) => {

@@ -5,6 +5,8 @@ type Image = {
 	publicID: string;
 };
 
+export type UserRoles = 'governor' | 'treasurer' | 'auditor' | 'regular';
+
 export type User = MongoEntity & {
 	studentID: string;
 	firstname: string;
@@ -12,7 +14,7 @@ export type User = MongoEntity & {
 	email: string;
 	password: string;
 	profile: Image;
-	role: 'admin' | 'regular';
+	role: UserRoles;
 	bio: string;
 	token: string;
 	activeSchoolYearDB: string;

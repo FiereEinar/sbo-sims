@@ -1,8 +1,10 @@
 import axiosInstance from '@/api/axiosInstance';
 import SidebarLink from '../SidebarLink';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LogoutButton() {
+	const { toast } = useToast();
 	const navigate = useNavigate();
 
 	const onLogout = async () => {
@@ -11,6 +13,11 @@ export default function LogoutButton() {
 			navigate('/login');
 		} catch (err: any) {
 			console.error('Failed to logout');
+			toast({
+				variant: 'destructive',
+				title: 'Failed to logout',
+				description: err.message,
+			});
 		}
 	};
 

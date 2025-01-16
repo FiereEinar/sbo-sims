@@ -9,6 +9,7 @@ import TransactionDataCard from '@/components/TransactionDataCard';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { isAuthorized } from '@/lib/utils';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
@@ -49,7 +50,7 @@ export default function TransactionInfo() {
 			<BackButton />
 			<div className='flex justify-between'>
 				<Header>Transaction Details</Header>
-				{userRole === 'admin' && (
+				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
 					<EditAndDeleteTransactionButton
 						categories={categories}
 						transaction={transaction}
@@ -67,7 +68,7 @@ export default function TransactionInfo() {
 			/>
 			<hr />
 			<div className='flex justify-end'>
-				{userRole === 'admin' && (
+				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
 					<UpdateTransactionAmountForm transaction={transaction} />
 				)}
 			</div>

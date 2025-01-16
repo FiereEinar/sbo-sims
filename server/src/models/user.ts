@@ -3,6 +3,9 @@ import { Image } from '../types/image';
 import { getYear } from 'date-fns';
 const Schema = mongoose.Schema;
 
+// REMINDER: update the schema below if you want to add/remove roles
+export type UserRoles = 'governor' | 'treasurer' | 'auditor' | 'regular';
+
 export interface IUser extends mongoose.Document {
 	_id: string;
 	studentID: string;
@@ -11,7 +14,7 @@ export interface IUser extends mongoose.Document {
 	email: string;
 	password: string;
 	profile: Image;
-	role: 'admin' | 'regular';
+	role: UserRoles;
 	bio: string;
 	token: string;
 	activeSchoolYearDB: string;
@@ -29,7 +32,11 @@ const UserSchema = new Schema<IUser>({
 		url: String,
 		publicID: String,
 	},
-	role: { type: String, enum: ['admin', 'regular'], default: 'regular' },
+	role: {
+		type: String,
+		enum: ['governor', 'treasurer', 'auditor', 'regular'],
+		default: 'regular',
+	},
 	bio: { type: String, default: '' },
 	token: { type: String, default: '' },
 	activeSchoolYearDB: { type: String, default: getYear(new Date()).toString() },

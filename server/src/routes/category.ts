@@ -10,8 +10,8 @@ import {
 	update_category,
 } from '../controllers/categoryController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
-import { adminAuth } from '../middlewares/adminAuth';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
+import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 
 const router = express.Router();
 
@@ -32,11 +32,16 @@ router.get(
 	get_category_transactions
 );
 
-router.post('/', adminAuth, createCategoryValidation, create_category);
+router.post(
+	'/',
+	authorizeRoles('governor'),
+	createCategoryValidation,
+	create_category
+);
 
 router.put(
 	'/:categoryID',
-	adminAuth,
+	authorizeRoles('governor'),
 	isValidMongooseId('categoryID', { from: 'params' }),
 	createCategoryValidation,
 	update_category
@@ -44,7 +49,7 @@ router.put(
 
 router.delete(
 	'/:categoryID',
-	adminAuth,
+	authorizeRoles('governor'),
 	isValidMongooseId('categoryID', { from: 'params' }),
 	delete_category
 );

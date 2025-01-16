@@ -15,13 +15,18 @@ import {
 } from '../middlewares/validations/transactionValidation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { isValidMongooseId } from '../middlewares/validations/validation';
-import { adminAuth } from '../middlewares/adminAuth';
+import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 
 const router = express.Router();
 
 router.get('/', transactionQueryFilter, get_all_transactions);
 
-router.get('/download', transactionQueryFilter, get_transaction_list_file);
+router.get(
+	'/download',
+	authorizeRoles('governor', 'treasurer', 'auditor'),
+	transactionQueryFilter,
+	get_transaction_list_file
+);
 
 router.get('/dashboard-data', get_dashboard_data);
 
@@ -31,11 +36,16 @@ router.get(
 	get_transaction
 );
 
-router.post('/', adminAuth, createTransactionValidation, create_transaction);
+router.post(
+	'/',
+	authorizeRoles('governor', 'treasurer', 'auditor'),
+	createTransactionValidation,
+	create_transaction
+);
 
 router.put(
 	'/:transactionID',
-	adminAuth,
+	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	createTransactionValidation,
 	update_transaction
@@ -43,7 +53,7 @@ router.put(
 
 router.put(
 	'/:transactionID/amount',
-	adminAuth,
+	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	updateTransactionAmountValidation,
 	update_transaction_amount
@@ -51,7 +61,7 @@ router.put(
 
 router.delete(
 	'/:transactionID',
-	adminAuth,
+	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	delete_transaction
 );

@@ -7,6 +7,7 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsTable from '@/components/TransactionsTable';
 import { QUERY_KEYS } from '@/constants';
+import { isAuthorized } from '@/lib/utils';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -38,7 +39,7 @@ export default function CategoryInfo() {
 			<BackButton />
 			<StickyHeader>
 				<CategoryDataCard category={data.data.category} />
-				{userRole === 'admin' && (
+				{isAuthorized(userRole, 'governor') && (
 					<EditAndDeleteCategoryButton category={data.data.category} />
 				)}
 			</StickyHeader>

@@ -14,7 +14,7 @@ import organizationRouter from './routes/organization';
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
 import { errorHandler } from './middlewares/error';
-import { auth } from './middlewares/auth';
+import { auth } from './middlewares/authentication/auth';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import {
@@ -51,7 +51,7 @@ app.use(errorHandler);
 
 if (NODE_ENV !== 'test') {
 	app.listen(Number(PORT), () =>
-		console.log(`Server is running on PORT http://localhost:${PORT}`)
+		console.log(`Server is running on http://localhost:${PORT}`)
 	);
 }
 

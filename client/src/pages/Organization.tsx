@@ -5,6 +5,7 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { isAuthorized } from '@/lib/utils';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 
@@ -31,7 +32,7 @@ export default function Organization() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Organizations</Header>
-				{userRole === 'admin' && <AddOrganizationForm />}
+				{isAuthorized(userRole, 'governor') && <AddOrganizationForm />}
 			</StickyHeader>
 
 			<OrganizationTable organizations={organizations} />

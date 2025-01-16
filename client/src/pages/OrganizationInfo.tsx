@@ -10,6 +10,7 @@ import StickyHeader from '@/components/StickyHeader';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { isAuthorized } from '@/lib/utils';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
@@ -50,7 +51,7 @@ export default function OrganizationInfo() {
 			<BackButton />
 			<StickyHeader>
 				<Header>{organization.name}</Header>
-				{userRole === 'admin' && (
+				{isAuthorized(userRole, 'governor') && (
 					<EditAndDeleteOrganizationButton organizationID={organization._id} />
 				)}
 			</StickyHeader>

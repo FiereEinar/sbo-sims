@@ -13,8 +13,9 @@ import {
 	createStudentValidation,
 	updateStudentValidation,
 } from '../middlewares/validations/studentValidation';
-import { adminAuth } from '../middlewares/adminAuth';
+import { adminAuth } from '../middlewares/authentication/adminAuth';
 import upload from '../utils/multer';
+import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 
 const router = express.Router();
 
@@ -26,12 +27,31 @@ router.get('/:studentID', get_student);
 
 router.get('/:studentID/transaction', get_student_transaction);
 
-router.post('/', adminAuth, createStudentValidation, create_student);
+router.post(
+	'/',
+	authorizeRoles('governor', 'treasurer'),
+	createStudentValidation,
+	create_student
+);
 
-router.post('/import', adminAuth, upload.single('csv_file'), post_csv_students);
+router.post(
+	'/import',
+	authorizeRoles('governor', 'treasurer'),
+	upload.single('csv_file'),
+	post_csv_students
+);
 
-router.put('/:studentID', adminAuth, updateStudentValidation, update_student);
+router.put(
+	'/:studentID',
+	authorizeRoles('governor', 'treasurer'),
+	updateStudentValidation,
+	update_student
+);
 
-router.delete('/:studentID', adminAuth, delete_student);
+router.delete(
+	'/:studentID',
+	authorizeRoles('governor', 'treasurer'),
+	delete_student
+);
 
 export default router;

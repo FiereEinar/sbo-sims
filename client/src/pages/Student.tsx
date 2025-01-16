@@ -11,6 +11,7 @@ import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useUserStore } from '@/store/user';
 import ImportStudentsButton from '@/components/buttons/ImportStudentsButton';
+import { isAuthorized } from '@/lib/utils';
 
 export default function Student() {
 	const userRole = useUserStore((state) => state.user?.role);
@@ -38,11 +39,13 @@ export default function Student() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Students</Header>
-				{userRole === 'admin' && <AddStudentForm />}
+				{isAuthorized(userRole, 'governor', 'treasurer') && <AddStudentForm />}
 			</StickyHeader>
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<StudentFilter />
-				{userRole === 'admin' && <ImportStudentsButton />}
+				{isAuthorized(userRole, 'governor', 'treasurer') && (
+					<ImportStudentsButton />
+				)}
 			</div>
 			<StudentsTable
 				isLoading={studentsLoading}

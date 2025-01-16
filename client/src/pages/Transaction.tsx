@@ -9,6 +9,7 @@ import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
+import { isAuthorized } from '@/lib/utils';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
@@ -65,12 +66,16 @@ export default function Transaction() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Transactions</Header>
-				{userRole === 'admin' && <AddTransactionForm categories={categories} />}
+				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+					<AddTransactionForm categories={categories} />
+				)}
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter categories={categories} />
-				<DownloadTransactionsButton />
+				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+					<DownloadTransactionsButton />
+				)}
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

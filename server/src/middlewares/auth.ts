@@ -3,47 +3,34 @@ import { NextFunction, Response } from 'express';
 import { accessTokenCookieName, AppErrorCodes } from '../constants';
 import { UNAUTHORIZED } from '../constants/http';
 import { verifyToken } from '../utils/jwt';
-import CustomResponse from '../types/response';
+import appAssert from '../errors/appAssert';
 
 export const auth = asyncHandler(
 	async (req, res: Response, next: NextFunction) => {
-		const throwUnauthorized = () => {
-			res
-				.status(UNAUTHORIZED)
-				.json(
-					new CustomResponse(
-						false,
-						null,
-						'Unauthorized',
-						AppErrorCodes.InvalidAccessToken
-					)
-				);
-		};
-
-		// get token from cookies
+		// get token from cookies and check if token is present
 		const token = req.cookies[accessTokenCookieName] as string;
-
-		// check if token is present
-		if (token === undefined) {
-			console.log('Token not found');
-			throwUnauthorized();
-			return;
-		}
+		appAssert(
+			token,
+			UNAUTHORIZED,
+			'No token found',
+			AppErrorCodes.InvalidAccessToken
+		);
 
 		const { error, payload } = verifyToken(token);
-
-		if (error || !payload) {
-			console.log('Token not verified');
-			throwUnauthorized();
-			return;
-		}
+		appAssert(
+			!error && payload,
+			UNAUTHORIZED,
+			'Token not verified',
+			AppErrorCodes.InvalidAccessToken
+		);
 
 		const user = await req.UserModel.findById(payload.userID as string);
-		if (user === null) {
-			console.log('User not found');
-			throwUnauthorized();
-			return;
-		}
+		appAssert(
+			user,
+			UNAUTHORIZED,
+			'User not found',
+			AppErrorCodes.InvalidAccessToken
+		);
 
 		req.currentUser = user;
 		next();

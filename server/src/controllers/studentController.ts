@@ -210,6 +210,8 @@ export const create_student = asyncHandler(async (req, res) => {
 		`Student gender can only be M or F`
 	);
 
+	appAssert(year > 0 && year <= 4, BAD_REQUEST, 'Student year can only be 1-4');
+
 	// create the student and save
 	const student = new req.StudentModel({
 		studentID: studentID,

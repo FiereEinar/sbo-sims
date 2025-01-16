@@ -54,7 +54,7 @@ export default function TransactionsTable({
 		<Table>
 			{/* <TableCaption>A list of your recent invoices.</TableCaption> */}
 			<TableHeader>
-				<TableRow>
+				<TableRow className='select-none'>
 					<TableHead className='w-[100px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Fullname</TableHead>
 					<TableHead className='w-[75px]'>
@@ -165,7 +165,7 @@ function TableHeadStatusPicker() {
 	const { setStatus } = useTransactionFilterStore((state) => state);
 
 	return (
-		<div className='flex flex-col justify-end items-start gap-2 select-none'>
+		<div className='flex flex-col justify-end items-start gap-2'>
 			<Select
 				defaultValue={'All'}
 				onValueChange={(value) => {
@@ -199,7 +199,7 @@ function TableHeadCoursePicker() {
 	});
 
 	return (
-		<div className='flex flex-col justify-end items-start gap-2 select-none'>
+		<div className='flex flex-col justify-end items-start gap-2'>
 			<Select defaultValue={course} onValueChange={(value) => setCourse(value)}>
 				<SelectTrigger className='w-full border-none pl-0 focus:ring-0'>
 					<SelectValue placeholder='Course' />

@@ -4,18 +4,22 @@ import path from 'path';
 import fs from 'fs/promises';
 import asyncHandler from 'express-async-handler';
 import appAssert from '../errors/appAssert';
-import { getPeriodLabel } from '../utils/utils';
 import { ICategory } from '../models/category';
 import { UpdateQuery } from 'mongoose';
-import CustomResponse, { CustomPaginatedResponse } from '../types/response';
-import { TransactionQueryFilterRequest } from '../types/request';
 import { ITransaction } from '../models/transaction';
+import { TransactionQueryFilterRequest } from '../types/request';
+import { getEJSTransactionsData, getPeriodLabel } from '../utils/utils';
+import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
 import { addDays, format, isBefore, startOfDay } from 'date-fns';
-import { BAD_REQUEST, CONFLICT, CREATED, NOT_FOUND } from '../constants/http';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+} from '../constants/http';
 import {
 	createTransactionBody,
-	EJSTransaction,
 	TransactionEJSVariables,
 	updateTransactionAmountBody,
 } from '../types/transaction';
@@ -47,73 +51,55 @@ export const get_all_transactions = asyncHandler(
  */
 export const get_transaction_list_file = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
-		if (req.filteredTransactions) {
-			const template = await fs.readFile(
-				path.join(__dirname, '../', 'templates', 'transactionsPDF.ejs'),
-				{ encoding: 'utf8' }
-			);
+		if (!req.filteredTransactions) return;
 
-			const startDateString = req.query.startDate
-				? format(new Date(req.query.startDate as string), 'MMMM dd, yyyy')
-				: 'start';
-			const endDateString = req.query.endDate
-				? format(new Date(req.query.endDate as string), 'MMMM dd, yyyy')
-				: 'present';
+		// read the template
+		const template = await fs.readFile(
+			path.join(__dirname, '../', 'templates', 'transactionsPDF.ejs'),
+			{ encoding: 'utf8' }
+		);
 
-			let EJSData: TransactionEJSVariables = {
-				startDate: startDateString,
-				endDate: endDateString,
-				period: getPeriodLabel(req.query.period as string) ?? 'Today',
-				totalAmount: 0,
-				transactions: [],
-			};
+		const startDateString = req.query.startDate
+			? format(new Date(req.query.startDate as string), 'MMMM dd, yyyy')
+			: 'start';
+		const endDateString = req.query.endDate
+			? format(new Date(req.query.endDate as string), 'MMMM dd, yyyy')
+			: 'present';
 
-			req.filteredTransactions.forEach((transaction) => {
-				const tDate = transaction.date
-					? format(
-							new Date(transaction.date.toISOString()) ?? undefined,
-							'MM/dd/yyyy'
-					  )
-					: 'No date provided';
+		// create an object with the necessary data to be injected in ejs template
+		let EJSData: TransactionEJSVariables = {
+			startDate: startDateString,
+			endDate: endDateString,
+			period: getPeriodLabel(req.query.period as string) ?? 'Today',
+			totalAmount: 0,
+			transactions: [],
+		};
 
-				const tStatus =
-					transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+		// push a formatted data into EJSData.transactions for each transactions
+		const { EJSTransactions, totalAmount } = getEJSTransactionsData(
+			req.filteredTransactions
+		);
+		EJSData.transactions = EJSTransactions;
+		EJSData.totalAmount = totalAmount;
 
-				const t: EJSTransaction = {
-					amount: transaction.amount.toString(),
-					category: `${_.startCase(transaction.category.name)}`,
-					organization: `${_.startCase(
-						transaction.category.organization.name
-					)}`,
-					course: transaction.owner.course.toUpperCase(),
-					date: tDate,
-					fullname: _.startCase(
-						`${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`
-					),
-					status: tStatus,
-					studentID: transaction.owner.studentID,
-					year: transaction.owner.year.toString(),
-				};
+		// inject the EJSData into the template
+		const html = ejs.render(template, EJSData);
 
-				EJSData.transactions.push(t);
-				EJSData.totalAmount += transaction.amount;
-			});
+		// this function will spit out a pdf file in public directory
+		await convertToPdf(html);
 
-			const html = ejs.render(template, EJSData);
-
-			await convertToPdf(html);
-
-			res.sendFile(
-				path.join(__dirname, '../', '../', pdfOutputPath),
-				async (err) => {
-					if (err) {
-						res.sendStatus(500);
-						return;
-					}
-					await fs.unlink(pdfOutputPath);
+		// send the file
+		res.sendFile(
+			path.join(__dirname, '../', '../', pdfOutputPath),
+			async (err) => {
+				if (err) {
+					res.sendStatus(INTERNAL_SERVER_ERROR);
+					return;
 				}
-			);
-		}
+				// after sending the file, remove it
+				await fs.unlink(pdfOutputPath);
+			}
+		);
 	}
 );
 
@@ -420,9 +406,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	const result = await req.TransactionModel.findByIdAndUpdate(
 		transactionID,
 		update,
-		{
-			new: true,
-		}
+		{ new: true }
 	).exec();
 
 	appAssert(

@@ -16,44 +16,16 @@ import { useQuery } from '@tanstack/react-query';
 
 export default function Transaction() {
 	const userRole = useUserStore((state) => state.user?.role);
-	const {
-		search,
-		category,
-		course,
-		startDate,
-		endDate,
-		page,
-		pageSize,
-		period,
-		status,
-		setPage,
-	} = useTransactionFilterStore((state) => state);
+	const { page, pageSize, getFilterValues, setPage } =
+		useTransactionFilterStore((state) => state);
 
 	const {
 		data: fetchTransactionsResult,
 		isLoading: transactionsLoading,
 		error: transactionsError,
 	} = useQuery({
-		queryKey: [
-			QUERY_KEYS.TRANSACTION,
-			{
-				search,
-				course,
-				page,
-				pageSize,
-				startDate,
-				endDate,
-				category,
-				status,
-				period,
-			},
-		],
-		queryFn: () =>
-			fetchTransactions(
-				{ search, course, startDate, endDate, category, status, period },
-				page,
-				pageSize
-			),
+		queryKey: [QUERY_KEYS.TRANSACTION, getFilterValues()],
+		queryFn: () => fetchTransactions(getFilterValues(), page, pageSize),
 	});
 
 	const {
@@ -83,7 +55,7 @@ export default function Transaction() {
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
-				<TransactionsFilter categories={categories} />
+				<TransactionsFilter />
 				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
 					<DownloadTransactionsButton />
 				)}

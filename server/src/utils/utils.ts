@@ -1,5 +1,6 @@
 import {
 	addDays,
+	format,
 	startOfDay,
 	startOfMonth,
 	startOfWeek,
@@ -8,6 +9,8 @@ import {
 import { FilterQuery } from 'mongoose';
 import { ITransaction } from '../models/transaction';
 import os from 'os';
+import { EJSTransaction } from '../types/transaction';
+import _ from 'lodash';
 
 export function validateEmail(email: string) {
 	const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,4 +78,43 @@ export const getIPv4Address = () => {
 		}
 	}
 	return result ? result : 'localhost'; // Fallback to localhost if no IPv4 address is found
+};
+
+export const getEJSTransactionsData = (transactions: ITransaction[]) => {
+	const EJSTransactions: EJSTransaction[] = [];
+	let totalAmount = 0;
+
+	transactions.forEach((transaction) => {
+		const tDate = transaction.date
+			? format(
+					new Date(transaction.date.toISOString()) ?? undefined,
+					'MM/dd/yyyy'
+			  )
+			: 'No date provided';
+
+		const tStatus =
+			transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+
+		const t: EJSTransaction = {
+			amount: transaction.amount.toString(),
+			category: `${_.startCase(transaction.category.name)}`,
+			organization: `${_.startCase(transaction.category.organization.name)}`,
+			course: transaction.owner.course.toUpperCase(),
+			date: tDate,
+			fullname: _.startCase(
+				`${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`
+			),
+			status: tStatus,
+			studentID: transaction.owner.studentID,
+			year: transaction.owner.year.toString(),
+		};
+
+		EJSTransactions.push(t);
+		totalAmount += transaction.amount;
+	});
+
+	return {
+		EJSTransactions,
+		totalAmount,
+	};
 };

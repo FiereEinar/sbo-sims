@@ -16,6 +16,7 @@ type CategoryPickerProps = {
 	categories: Category[];
 	error: string | undefined;
 	defaultValue?: string;
+	clean?: boolean;
 };
 
 export default function CategoryPicker({
@@ -23,15 +24,18 @@ export default function CategoryPicker({
 	setCategory,
 	error,
 	defaultValue,
+	clean = false,
 }: CategoryPickerProps) {
 	return (
-		<div className='text-muted-foreground space-y-1'>
-			<Label>Category:</Label>
+		<div className='text-muted-foreground space-y-1 select-none'>
+			<Label>{!clean && 'Category:'}</Label>
 			<Select
 				defaultValue={defaultValue ?? undefined}
 				onValueChange={(value) => setCategory(value)}
 			>
-				<SelectTrigger className='w-full'>
+				<SelectTrigger
+					className={`w-full focus:ring-0 ${clean && 'border-none pl-0'}`}
+				>
 					<SelectValue placeholder='Select a category' />
 				</SelectTrigger>
 				<SelectContent>

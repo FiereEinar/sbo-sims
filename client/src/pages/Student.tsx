@@ -15,20 +15,17 @@ import { isAuthorized } from '@/lib/utils';
 
 export default function Student() {
 	const userRole = useUserStore((state) => state.user?.role);
-	const { page, pageSize, setPage, course, gender, search, sortBy, year } =
-		useStudentFilterStore((state) => state);
+	const { page, pageSize, setPage, getFilterValues } = useStudentFilterStore(
+		(state) => state
+	);
 
 	const {
 		data: studentsFetchResult,
 		isLoading: studentsLoading,
 		error: studentsError,
 	} = useQuery({
-		queryKey: [
-			QUERY_KEYS.STUDENT,
-			{ search, course, gender, year, page, pageSize, sortBy },
-		],
-		queryFn: () =>
-			fetchStudents({ search, gender, year, course, sortBy }, page, pageSize),
+		queryKey: [QUERY_KEYS.STUDENT, getFilterValues()],
+		queryFn: () => fetchStudents(getFilterValues(), page, pageSize),
 	});
 
 	if (studentsError) {

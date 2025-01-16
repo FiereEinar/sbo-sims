@@ -53,7 +53,9 @@ export const transactionQueryFilter = asyncHandler(
 
 		if (category) filters.push({ category: category });
 
-		const transactions = await req.TransactionModel.find({ $and: filters })
+		const transactions: ITransaction[] = await req.TransactionModel.find({
+			$and: filters,
+		})
 			.populate({
 				model: req.CategoryModel,
 				path: 'category',
@@ -74,8 +76,12 @@ export const transactionQueryFilter = asyncHandler(
 		if (search?.length) {
 			filteredTransactions = filteredTransactions.filter((transaction) => {
 				const fullname = `${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`;
+				const s = search.toString().toLowerCase();
 
-				return fullname.toLowerCase().includes(search.toString().toLowerCase());
+				return (
+					fullname.toLowerCase().includes(s) ||
+					transaction.owner.studentID.includes(s)
+				);
 			});
 		}
 

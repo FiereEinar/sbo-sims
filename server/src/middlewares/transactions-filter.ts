@@ -13,7 +13,8 @@ export const transactionQueryFilter = asyncHandler(
 			pageSize,
 			search,
 			course,
-			date,
+			startDate,
+			endDate,
 			sortByDate,
 			category,
 			status,
@@ -42,13 +43,14 @@ export const transactionQueryFilter = asyncHandler(
 		const periodFilter = getDateFilterByPeriod(period as string);
 		if (periodFilter) filters.push(periodFilter);
 
-		if (date)
+		if (startDate && endDate)
 			filters.push({
 				date: {
-					$gte: startOfDay(new Date(date as string)).toISOString(),
-					$lt: startOfDay(addDays(new Date(date as string), 1)).toISOString(),
+					$gte: new Date(startDate as string).toISOString(),
+					$lte: addDays(new Date(endDate as string), 1).toISOString(),
 				},
 			});
+
 		if (category) filters.push({ category: category });
 
 		const transactions = await req.TransactionModel.find({ $and: filters })

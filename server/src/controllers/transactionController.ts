@@ -53,8 +53,16 @@ export const get_transaction_list_file = asyncHandler(
 				{ encoding: 'utf8' }
 			);
 
+			const startDateString = req.query.startDate
+				? format(new Date(req.query.startDate as string), 'MMMM dd, yyyy')
+				: 'start';
+			const endDateString = req.query.endDate
+				? format(new Date(req.query.endDate as string), 'MMMM dd, yyyy')
+				: 'present';
+
 			let EJSData: TransactionEJSVariables = {
-				dateToday: format(new Date(), 'MMMM dd, yyyy'),
+				startDate: startDateString,
+				endDate: endDateString,
 				period: getPeriodLabel(req.query.period as string) ?? 'Today',
 				totalAmount: 0,
 				transactions: [],

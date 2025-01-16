@@ -20,7 +20,8 @@ export default function Transaction() {
 		search,
 		category,
 		course,
-		date,
+		startDate,
+		endDate,
 		page,
 		pageSize,
 		period,
@@ -35,11 +36,21 @@ export default function Transaction() {
 	} = useQuery({
 		queryKey: [
 			QUERY_KEYS.TRANSACTION,
-			{ search, course, page, pageSize, date, category, status, period },
+			{
+				search,
+				course,
+				page,
+				pageSize,
+				startDate,
+				endDate,
+				category,
+				status,
+				period,
+			},
 		],
 		queryFn: () =>
 			fetchTransactions(
-				{ search, course, date, category, status, period },
+				{ search, course, startDate, endDate, category, status, period },
 				page,
 				pageSize
 			),

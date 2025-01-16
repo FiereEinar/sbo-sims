@@ -32,5 +32,6 @@ export type TransactionsFilterValues = {
 	period?: TransactionPeriodFilter;
 	category?: string;
 	status?: boolean;
-	date?: Date;
+	startDate?: Date;
+	endDate?: Date;
 };

@@ -35,7 +35,8 @@ export type EJSTransaction = {
 
 export type TransactionEJSVariables = {
 	period: string;
-	dateToday: string;
+	startDate: string;
+	endDate: string;
 	totalAmount: number;
 	transactions: EJSTransaction[];
 };

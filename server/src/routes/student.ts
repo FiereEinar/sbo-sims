@@ -13,7 +13,6 @@ import {
 	createStudentValidation,
 	updateStudentValidation,
 } from '../middlewares/validations/studentValidation';
-import { adminAuth } from '../middlewares/authentication/adminAuth';
 import upload from '../utils/multer';
 import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 

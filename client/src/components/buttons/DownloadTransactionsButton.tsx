@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 
 export default function DownloadTransactionsButton() {
-	const { search, category, course, date, period, status } =
+	const { search, category, course, startDate, endDate, period, status } =
 		useTransactionFilterStore((state) => state);
 	const [isDownloading, setIsDownloading] = useState(false);
 
@@ -13,7 +13,7 @@ export default function DownloadTransactionsButton() {
 		try {
 			setIsDownloading(true);
 			const url = generateTransactionsFilterURL(
-				{ search, course, date, category, status, period },
+				{ search, course, startDate, endDate, category, status, period },
 				`/transaction/download?page=1`
 			);
 

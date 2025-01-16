@@ -19,10 +19,12 @@ export const generateTransactionsFilterURL = (
 	let url = `${baseURL}`;
 	if (filters.search) url += `&search=${filters.search}`;
 	if (filters.course) url += `&course=${filters.course}`;
-	if (filters.date) url += `&date=${filters.date.toISOString()}`;
+	if (filters.startDate) url += `&startDate=${filters.startDate.toISOString()}`;
+	if (filters.endDate) url += `&endDate=${filters.endDate.toISOString()}`;
 	if (filters.category) url += `&category=${filters.category}`;
 	if (filters.status !== undefined) url += `&status=${filters.status}`;
 	if (filters.period) url += `&period=${filters.period}`;
+	// url += `&sortByDate=asc`;
 
 	return url;
 };

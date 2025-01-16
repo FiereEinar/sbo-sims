@@ -10,7 +10,6 @@ import {
 	TransactionPeriodFilter,
 	TransactionsFilterValues,
 } from '@/types/transaction';
-import DatePicker from './DatePicker';
 import CategoryPicker from './CategoryPicker';
 import { Category } from '@/types/category';
 import _ from 'lodash';
@@ -21,6 +20,7 @@ import { fetchAvailableCourses } from '@/api/student';
 import { Input } from './ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect, useState } from 'react';
+import { DatePickerWithRange } from './DatePickerWithRange';
 
 type TransactionsFilterProps = {
 	categories: Category[];
@@ -33,12 +33,12 @@ export default function TransactionsFilter({
 		setCategory,
 		setPeriod,
 		setCourse,
-		setDate,
+		setStartDate,
+		setEndDate,
 		setStatus,
 		setSearch,
 		search,
 		course,
-		date,
 		category,
 	} = useTransactionFilterStore((state) => state);
 
@@ -66,7 +66,7 @@ export default function TransactionsFilter({
 	return (
 		<div className='flex flex-wrap gap-2 text-muted-foreground'>
 			{/* Search */}
-			<div className='space-x-1'>
+			<div className='flex flex-col justify-end items-start gap-2'>
 				<Label className='ml-1'>Search:</Label>
 				<Input
 					type='text'
@@ -119,7 +119,11 @@ export default function TransactionsFilter({
 			</div>
 
 			<div className='space-x-1 flex justify-end items-end'>
-				<DatePicker date={date} setDate={setDate} error={undefined} />
+				{/* <DatePicker date={date} setDate={setDate} error={undefined} /> */}
+				<DatePickerWithRange
+					setStartDate={setStartDate}
+					setEndDate={setEndDate}
+				/>
 			</div>
 
 			<div className='space-x-1 flex justify-end items-end'>

@@ -57,44 +57,46 @@ export default function ApplicationSettingsForm() {
 	};
 
 	return (
-		<div className='flex flex-col gap-3 w-full'>
-			<Header>Application Settings</Header>
+		<div className='flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'>
+			<Header>Application</Header>
 			<p>
 				Update the applications configurations on this section. Click save
 				changes when your're done editing!
 			</p>
-			<div className='space-x-1'>
-				<Label className='ml-1'>School Year:</Label>
-				<Input
-					value={parseInt(
-						localUser?.activeSchoolYearDB || getYear(new Date()).toString()
-					)}
-					onChange={(e) =>
-						setLocalUser({
-							...localUser,
-							activeSchoolYearDB: e.target.value,
-						} as User)
-					}
-					type='number'
-				/>
-			</div>
+			<div className='w-[20rem] space-y-2'>
+				<div className='space-x-1'>
+					<Label className='ml-1'>School Year:</Label>
+					<Input
+						value={parseInt(
+							localUser?.activeSchoolYearDB || getYear(new Date()).toString()
+						)}
+						onChange={(e) =>
+							setLocalUser({
+								...localUser,
+								activeSchoolYearDB: e.target.value,
+							} as User)
+						}
+						type='number'
+					/>
+				</div>
 
-			<div className='space-x-1'>
-				<Label className='ml-1'>Semester:</Label>
-				<Select
-					defaultValue={localUser?.activeSemDB ?? '1'}
-					onValueChange={(value) =>
-						setLocalUser({ ...localUser, activeSemDB: value } as User)
-					}
-				>
-					<SelectTrigger className='w-full'>
-						<SelectValue placeholder='Semester' />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value='1'>1st sem</SelectItem>
-						<SelectItem value='2'>2nd sem</SelectItem>
-					</SelectContent>
-				</Select>
+				<div className='space-x-1'>
+					<Label className='ml-1'>Semester:</Label>
+					<Select
+						defaultValue={localUser?.activeSemDB ?? '1'}
+						onValueChange={(value) =>
+							setLocalUser({ ...localUser, activeSemDB: value } as User)
+						}
+					>
+						<SelectTrigger className='w-full'>
+							<SelectValue placeholder='Semester' />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value='1'>1st sem</SelectItem>
+							<SelectItem value='2'>2nd sem</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
 			<div className='flex justify-end'>

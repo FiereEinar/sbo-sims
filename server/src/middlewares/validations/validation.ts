@@ -39,7 +39,7 @@ export const isFormBodyValidated = (
 				new CustomResponse(
 					false,
 					null,
-					'Error in form validation',
+					errors.array()[0].msg,
 					errors.array()[0].msg
 				)
 			);

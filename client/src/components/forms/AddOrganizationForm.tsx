@@ -68,7 +68,12 @@ export default function AddOrganizationForm({
 		if (organizationData) {
 			setValue('name', _.startCase(organizationData?.name ?? ''));
 			setValue('governor', _.startCase(organizationData?.governor ?? ''));
+			setValue(
+				'viceGovernor',
+				_.startCase(organizationData?.viceGovernor ?? '')
+			);
 			setValue('treasurer', _.startCase(organizationData?.treasurer ?? ''));
+			setValue('auditor', _.startCase(organizationData?.auditor ?? ''));
 
 			const departmentsArray: Department[] = [];
 			organizationData?.departments?.forEach((dep) => {
@@ -161,11 +166,27 @@ export default function AddOrganizationForm({
 					/>
 
 					<InputField<OrganizationFormValues>
+						name='viceGovernor'
+						registerFn={register}
+						errors={errors}
+						label='Current Vice Governor for this Organization:'
+						id='viceGovernor'
+					/>
+
+					<InputField<OrganizationFormValues>
 						name='treasurer'
 						registerFn={register}
 						errors={errors}
 						label='Current Treasurer for this Organization:'
 						id='treasurer'
+					/>
+
+					<InputField<OrganizationFormValues>
+						name='auditor'
+						registerFn={register}
+						errors={errors}
+						label='Current Auditor for this Organization:'
+						id='auditor'
 					/>
 
 					<DepartmentInputField

@@ -22,10 +22,12 @@ export default function OrganizationTable({
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead className='w-[300px]'>Organization</TableHead>
-					<TableHead className='w-[300px]'>Governor</TableHead>
-					<TableHead className='w-[200px]'>Treasurer</TableHead>
-					<TableHead className='w-[200px] text-right'>
+					<TableHead className='w-[150px]'>Organization</TableHead>
+					<TableHead className='w-[175px]'>Governor</TableHead>
+					<TableHead className='w-[175px]'>Vice Governor</TableHead>
+					<TableHead className='w-[175px]'>Treasurer</TableHead>
+					<TableHead className='w-[175px]'>Auditor</TableHead>
+					<TableHead className='w-[150px] text-right'>
 						Total Categories
 					</TableHead>
 				</TableRow>
@@ -40,7 +42,9 @@ export default function OrganizationTable({
 					>
 						<TableCell className=''>{org.name}</TableCell>
 						<TableCell className=''>{_.startCase(org.governor)}</TableCell>
+						<TableCell className=''>{_.startCase(org.viceGovernor)}</TableCell>
 						<TableCell className=''>{_.startCase(org.treasurer)}</TableCell>
+						<TableCell className=''>{_.startCase(org.auditor)}</TableCell>
 						<TableCell className='text-right'>
 							{org.categories?.length ?? 0}
 						</TableCell>

@@ -108,8 +108,14 @@ export const get_organization_categories = asyncHandler(async (req, res) => {
  * POST - create an organization
  */
 export const create_organization = asyncHandler(async (req, res) => {
-	const { name, governor, treasurer, departments }: Omit<IOrganization, '_id'> =
-		req.body;
+	const {
+		name,
+		governor,
+		viceGovernor,
+		treasurer,
+		auditor,
+		departments,
+	}: Omit<IOrganization, '_id'> = req.body;
 
 	appAssert(
 		departments.length > 0,
@@ -121,10 +127,12 @@ export const create_organization = asyncHandler(async (req, res) => {
 
 	// create and save the organization
 	const organization = new req.OrganizationModel({
-		name: name,
-		governor: governor,
-		treasurer: treasurer,
-		departments: departments,
+		name,
+		governor,
+		viceGovernor,
+		treasurer,
+		auditor,
+		departments,
 	});
 	await organization.save();
 

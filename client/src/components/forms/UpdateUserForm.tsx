@@ -79,14 +79,14 @@ export default function UpdateUserForm() {
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className='flex flex-col gap-3 w-full'
+			className='flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'
 		>
-			<Header>User Settings</Header>
+			<Header>User</Header>
 			<p>
 				Update your personal information here, make sure to click save changes
 				when you're done!
 			</p>
-			<div className='space-x-1'>
+			<div className='space-x-1 w-[20rem]'>
 				<InputField<UpdateUserFormValues>
 					id='studentID'
 					label='Student ID:'

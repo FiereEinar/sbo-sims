@@ -17,7 +17,7 @@ export const pdfOutputPath = './src/public/transactions.pdf';
 const defaultOptions: PDFOptions = {
 	format: 'A4',
 	printBackground: true,
-	path: pdfOutputPath,
+	// path: pdfOutputPath,
 	margin: {
 		bottom: margin,
 		top: margin,
@@ -76,7 +76,7 @@ const updateImgSrc = (html: string): string => {
 export const convertToPdf = async (
 	html: string,
 	options: PDFOptions = defaultOptions
-): Promise<void> => {
+): Promise<Uint8Array<ArrayBufferLike>> => {
 	const updatedHtml = updateImgSrc(html);
 
 	const browser = await puppeteer.launch({
@@ -87,6 +87,8 @@ export const convertToPdf = async (
 	const page = await browser.newPage();
 	await page.emulateMediaType('print');
 	await page.setContent(updatedHtml, { waitUntil: 'domcontentloaded' });
-	await page.pdf(options);
+	const buffer = await page.pdf(options);
 	await browser.close();
+
+	return buffer;
 };

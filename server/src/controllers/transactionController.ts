@@ -10,14 +10,9 @@ import { ITransaction } from '../models/transaction';
 import { TransactionQueryFilterRequest } from '../types/request';
 import { getEJSTransactionsData, getPeriodLabel } from '../utils/utils';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
-import { convertToPdf, pdfOutputPath } from '../services/pdfConverter';
+import { convertToPdf } from '../services/pdfConverter';
 import { addDays, format, isBefore, startOfDay } from 'date-fns';
-import {
-	BAD_REQUEST,
-	CONFLICT,
-	INTERNAL_SERVER_ERROR,
-	NOT_FOUND,
-} from '../constants/http';
+import { BAD_REQUEST, CONFLICT, NOT_FOUND } from '../constants/http';
 import {
 	createTransactionBody,
 	TransactionEJSVariables,
@@ -86,20 +81,17 @@ export const get_transaction_list_file = asyncHandler(
 		const html = ejs.render(template, EJSData);
 
 		// this function will spit out a pdf file in public directory
-		await convertToPdf(html);
+		const buffer = await convertToPdf(html);
 
-		// send the file
-		res.sendFile(
-			path.join(__dirname, '../', '../', pdfOutputPath),
-			async (err) => {
-				if (err) {
-					res.sendStatus(INTERNAL_SERVER_ERROR);
-					return;
-				}
-				// after sending the file, remove it
-				await fs.unlink(pdfOutputPath);
-			}
-		);
+		// set response headers
+		res.set({
+			'Content-Type': 'application/pdf',
+			'Content-Disposition': 'inline; filename="transactions.pdf"',
+			'Content-Length': buffer.length,
+		});
+
+		// send the buffer
+		res.end(buffer);
 	}
 );
 

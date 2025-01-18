@@ -5,7 +5,7 @@ import { IStudent } from '../models/student';
 import { createStudentBody } from '../types/student';
 import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
 import { validateEmail } from '../utils/utils';
-import { loadStudents } from '../services/csvLoader';
+import { serverlessCSVLoader } from '../services/csvLoader';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import {
 	BAD_REQUEST,
@@ -112,16 +112,15 @@ export const post_csv_students = asyncHandler(async (req, res) => {
 		'File should be in csv format'
 	);
 
-	const valid = await loadStudents(req, file.path);
-	if (!valid) await fs.unlink(file.path);
+	const valid = await serverlessCSVLoader(req, file.buffer);
+
 	appAssert(
 		valid,
 		BAD_REQUEST,
 		'File was not read succesfully, make sure to check if the headers are proper and the file format is correct'
 	);
 
-	await loadStudents(req, file.path, true);
-	await fs.unlink(file.path);
+	await serverlessCSVLoader(req, file.buffer, true);
 
 	res.json(new CustomResponse(true, null, 'File imported successfully'));
 });

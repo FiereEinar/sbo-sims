@@ -2,11 +2,8 @@ import { fetchCategories } from '@/api/category';
 import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteTransactionButton from '@/components/buttons/EditAndDeleteTransactionButton';
-import UpdateTransactionAmountForm from '@/components/forms/UpdateTransactionAmountForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
-import StudentDataCard from '@/components/StudentDataCard';
-import TransactionDataCard from '@/components/TransactionDataCard';
-import TransactionsTable from '@/components/TransactionsTable';
+import TransactionCheque from '@/components/TransactionCheque';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { isAuthorized } from '@/lib/utils';
@@ -58,21 +55,7 @@ export default function TransactionInfo() {
 				)}
 			</div>
 			<hr />
-			<TransactionDataCard transaction={transaction} />
-
-			<Header>Transaction Owner</Header>
-			<hr />
-			<StudentDataCard
-				studentID={transaction.owner.studentID}
-				studentData={transaction.owner}
-			/>
-			<hr />
-			<div className='flex justify-end'>
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-					<UpdateTransactionAmountForm transaction={transaction} />
-				)}
-			</div>
-			<TransactionsTable isLoading={TLoading} transactions={[transaction]} />
+			<TransactionCheque transaction={transaction} />
 		</SidebarPageLayout>
 	);
 }

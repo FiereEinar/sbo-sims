@@ -1,6 +1,7 @@
-import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import express from 'express';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
@@ -23,9 +24,8 @@ import {
 } from './middlewares/attach-database-models';
 
 const app = express();
-
+app.use(helmet());
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

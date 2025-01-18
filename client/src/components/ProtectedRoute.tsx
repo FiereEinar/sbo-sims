@@ -16,11 +16,9 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 		(async () => {
 			try {
 				const { data } = await axiosInstance.get<User>('/auth/check-auth');
-				console.log('check auth result: ', data);
 				setUser(data);
 				setIsAuthenticated(true);
 			} catch (err: any) {
-				console.log('check auth err result: ', err);
 				setIsAuthenticated(false);
 				navigate('/login', { replace: true });
 			}

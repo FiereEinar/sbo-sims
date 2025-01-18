@@ -1,10 +1,9 @@
 import fs from 'fs';
 import csvParser from 'csv-parser';
-import { CustomRequest } from '../types/request';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 export const loadStudents = async (
-	req: CustomRequest,
+	req: Request,
 	res: Response
 ): Promise<void> => {
 	const csvFilePaths = [

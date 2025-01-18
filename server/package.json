@@ -5,7 +5,8 @@
 	"scripts": {
 		"test": "vitest",
 		"dev": "nodemon --watch src --legacy-watch --files ./src/app.ts index.d.ts",
-		"build": "rimraf dist && tsc"
+		"build": "rimraf dist && tsc",
+		"vercel-build": "echo hello"
 	},
 	"keywords": [],
 	"author": "",

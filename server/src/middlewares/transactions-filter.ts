@@ -47,7 +47,7 @@ export const transactionQueryFilter = asyncHandler(
 			filters.push({
 				date: {
 					$gte: new Date(startDate as string).toISOString(),
-					$lte: addDays(new Date(endDate as string), 1).toISOString(),
+					$lte: new Date(endDate as string).toISOString(),
 				},
 			});
 

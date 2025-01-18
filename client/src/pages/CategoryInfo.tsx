@@ -45,6 +45,7 @@ export default function CategoryInfo() {
 			</StickyHeader>
 
 			<TransactionsTable
+				disableFiltes={true}
 				isLoading={isLoading}
 				transactions={data.data.categoryTransactions}
 			/>

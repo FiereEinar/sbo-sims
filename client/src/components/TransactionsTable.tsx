@@ -31,11 +31,13 @@ import { fetchAvailableCourses } from '@/api/student';
 type TransactionsTableProps = {
 	transactions?: Transaction[];
 	isLoading: boolean;
+	disableFiltes?: boolean;
 };
 
 export default function TransactionsTable({
 	transactions,
 	isLoading,
+	disableFiltes = false,
 }: TransactionsTableProps) {
 	const navigate = useNavigate();
 	const [totalAmount, setTotalAmount] = useState(0);
@@ -58,14 +60,14 @@ export default function TransactionsTable({
 					<TableHead className='w-[100px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Fullname</TableHead>
 					<TableHead className='w-[75px]'>
-						<TableHeadCoursePicker />
+						{disableFiltes ? 'Course' : <TableHeadCoursePicker />}
 					</TableHead>
 					<TableHead className='w-[175px]'>Date</TableHead>
 					<TableHead className='w-[300px]'>
-						<TableHeadCategoryPicker />
+						{disableFiltes ? 'Category' : <TableHeadCategoryPicker />}
 					</TableHead>
 					<TableHead className='w-[50px]'>
-						<TableHeadStatusPicker />
+						{disableFiltes ? 'Status' : <TableHeadStatusPicker />}
 					</TableHead>
 					<TableHead className='w-[100px] text-right'>Amount</TableHead>
 				</TableRow>

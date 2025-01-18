@@ -12,13 +12,11 @@ function App() {
 			<div className='hidden sm:flex'>
 				<LeftSidebar />
 			</div>
-			<div className='overflow-hidden'>
+			<div className='overflow-hidden w-full'>
 				<div className='flex sm:hidden '>
 					<TopNavbar />
 				</div>
-				<div className='overflow-y-hidden'>
-					<Outlet />
-				</div>
+				<Outlet />
 			</div>
 		</main>
 	);

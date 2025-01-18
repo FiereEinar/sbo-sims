@@ -274,7 +274,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	}: createTransactionBody = req.body;
 
 	// check if the category exists
-	const category = await req.CategoryModel.findById(categoryID).populate({
+	const category = await req.CategoryModel.findById<ICategory>(
+		categoryID
+	).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
@@ -321,7 +323,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		description: description,
 		date: date?.toISOString(),
 		governor: category.organization.governor,
+		viceGovernor: category.organization.viceGovernor,
 		treasurer: category.organization.treasurer,
+		auditor: category.organization.auditor,
 	});
 	await transaction.save();
 

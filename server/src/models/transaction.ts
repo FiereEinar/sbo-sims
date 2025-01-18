@@ -13,6 +13,8 @@ export interface ITransaction extends mongoose.Document {
 	date?: Date;
 	governor: string;
 	treasurer: string;
+	viceGovernor: string;
+	auditor: string;
 }
 
 export const TransactionSchema = new Schema<ITransaction>({
@@ -22,5 +24,7 @@ export const TransactionSchema = new Schema<ITransaction>({
 	description: { type: String, required: false },
 	date: { type: Date, default: Date.now },
 	governor: { type: String, required: true },
+	viceGovernor: { type: String, required: true },
 	treasurer: { type: String, required: true },
+	auditor: { type: String, required: true },
 });

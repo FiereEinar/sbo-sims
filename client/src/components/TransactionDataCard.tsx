@@ -20,10 +20,10 @@ export default function TransactionDataCard({
 				{transaction.category.name}
 			</p>
 			<p>Required amount: P{transaction.category.fee}</p>
-			<p>Governor: {_.startCase(transaction.category.organization.governor)}</p>
-			<p>
-				Treasurer: {_.startCase(transaction.category.organization.treasurer)}
-			</p>
+			<p>Governor: {_.startCase(transaction.governor)}</p>
+			<p>Vice Governor: {_.startCase(transaction.viceGovernor)}</p>
+			<p>Treasurer: {_.startCase(transaction.treasurer)}</p>
+			<p>Auditor: {_.startCase(transaction.auditor)}</p>
 		</div>
 	);
 }

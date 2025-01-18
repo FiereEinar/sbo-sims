@@ -1,7 +1,7 @@
 import { CookieOptions, Response } from 'express';
 import { NODE_ENV } from '../constants/env';
 import { accessTokenCookieName, refreshTokenCookieName } from '../constants';
-import { FIFTEEN_MINUTES, THIRTY_DAYS } from './date';
+import { ONE_DAY, THIRTY_DAYS } from './date';
 
 export const REFRESH_PATH = '/auth/refresh';
 
@@ -13,7 +13,7 @@ export const cookieOptions: CookieOptions = {
 
 export const getAccessTokenOptions = () => ({
 	...cookieOptions,
-	maxAge: FIFTEEN_MINUTES,
+	maxAge: ONE_DAY,
 });
 
 export const getRefreshTokenOptions = () => ({

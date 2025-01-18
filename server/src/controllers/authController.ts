@@ -13,6 +13,7 @@ import {
 import {
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
+	NODE_ENV,
 	SECRET_ADMIN_KEY,
 } from '../constants/env';
 import {
@@ -263,6 +264,11 @@ export const check_auth = asyncHandler(async (req, res) => {
 });
 
 export const admin = asyncHandler(async (req, res) => {
+	if (NODE_ENV !== 'test') {
+		res.status(NOT_FOUND).json({ message: 'Service unavailable' });
+		return;
+	}
+
 	const { secretAdminKey, userID } = req.body;
 
 	appAssert(

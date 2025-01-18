@@ -65,11 +65,9 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 
 	const onSubmit = async (data: StudentFormValues) => {
 		try {
-			let result;
-
-			if (mode === 'add') result = await submitStudentForm(data);
+			if (mode === 'add') await submitStudentForm(data);
 			if (mode === 'edit')
-				result = await submitUpdateStudentForm(student?.studentID ?? '', data);
+				await submitUpdateStudentForm(student?.studentID ?? '', data);
 
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate(`/student/${student?.studentID ?? ''}`, { replace: true });
@@ -132,7 +130,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 							name='middlename'
 							registerFn={register}
 							errors={errors}
-							label='Middlename:'
+							label='Middlename(optional):'
 							id='middlename'
 						/>
 

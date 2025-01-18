@@ -1,13 +1,11 @@
 import supertest from 'supertest';
 import { IStudent } from '../models/student';
 import { accessTokenCookieName } from '../constants';
-import { expect } from 'vitest';
 import { IOrganization } from '../models/organization';
 import { ICategory } from '../models/category';
 import { IUser } from '../models/user';
 import { SECRET_ADMIN_KEY } from '../constants/env';
 import { OK } from '../constants/http';
-import { Express } from 'express';
 import app from '../app';
 
 export const createMockUser = async (): Promise<{

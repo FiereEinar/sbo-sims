@@ -79,7 +79,7 @@ export default function UpdateUserForm() {
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className='flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'
+			className='transition-all flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'
 		>
 			<Header>User</Header>
 			<p>

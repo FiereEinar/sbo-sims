@@ -57,7 +57,7 @@ export default function ApplicationSettingsForm() {
 	};
 
 	return (
-		<div className='flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'>
+		<div className='transition-all flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'>
 			<Header>Application</Header>
 			<p>
 				Update the applications configurations on this section. Click save

@@ -32,6 +32,7 @@
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
+		"@sparticuz/chromium": "^130.0.0",
 		"bcryptjs": "^2.4.3",
 		"cheerio": "^1.0.0",
 		"cloudinary": "^2.5.1",

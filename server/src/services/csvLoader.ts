@@ -71,7 +71,7 @@ export const loadStudents = async (
 
 export const serverlessCSVLoader = async (
 	req: Request,
-	buffer: Buffer<ArrayBufferLike>,
+	buffer: Buffer,
 	save?: boolean
 ): Promise<boolean> => {
 	try {

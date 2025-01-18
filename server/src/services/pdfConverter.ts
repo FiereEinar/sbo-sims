@@ -2,6 +2,7 @@ import puppeteer, { PDFOptions } from 'puppeteer';
 import * as cheerio from 'cheerio';
 import fs from 'fs';
 import path from 'path';
+import chromium from '@sparticuz/chromium';
 
 // supported extention names for images that are used in html source code to pdf
 const filetypeMap: { [key: string]: string } = {
@@ -76,17 +77,24 @@ const updateImgSrc = (html: string): string => {
 export const convertToPdf = async (
 	html: string,
 	options: PDFOptions = defaultOptions
-): Promise<Uint8Array<ArrayBufferLike>> => {
+) => {
 	const updatedHtml = updateImgSrc(html);
 
 	const browser = await puppeteer.launch({
-		headless: true,
-		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		args: chromium.args,
+		defaultViewport: chromium.defaultViewport,
+		executablePath: await chromium.executablePath(),
+		headless: chromium.headless,
 	});
 
+	// const browser = await puppeteer.launch({
+	// 	headless: true,
+	// 	args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	// });
+
 	const page = await browser.newPage();
-	await page.emulateMediaType('print');
-	await page.setContent(updatedHtml, { waitUntil: 'domcontentloaded' });
+	// await page.emulateMediaType('print');
+	await page.setContent(updatedHtml, { waitUntil: 'networkidle0' });
 	const buffer = await page.pdf(options);
 	await browser.close();
 

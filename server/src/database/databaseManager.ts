@@ -1,4 +1,5 @@
 import mongoose, { Connection } from 'mongoose';
+import { MONGODB_PARAMS } from '../constants/env';
 
 const connections: { [key: string]: Connection } = {};
 
@@ -15,7 +16,9 @@ export const getDatabaseConnection = async (
 		dbURI = dbURI.slice(0, -1);
 	}
 
-	const newConnection = mongoose.createConnection(`${dbURI}/${dbName}`);
+	const newConnection = mongoose.createConnection(
+		`${dbURI}/${dbName}${MONGODB_PARAMS}`
+	);
 
 	connections[dbName] = newConnection;
 	return newConnection;

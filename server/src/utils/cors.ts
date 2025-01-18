@@ -1,7 +1,7 @@
 import { CorsOptions } from 'cors';
 import { FRONTEND_URL, IPV4_ADDRESS_ORIGIN } from '../constants/env';
 
-const allowedOrigins = [FRONTEND_URL, IPV4_ADDRESS_ORIGIN];
+// const allowedOrigins = [FRONTEND_URL, IPV4_ADDRESS_ORIGIN];
 
 export const corsOptions: CorsOptions = {
 	origin: FRONTEND_URL,

@@ -7,7 +7,7 @@ export const REFRESH_PATH = '/auth/refresh';
 
 export const cookieOptions: CookieOptions = {
 	httpOnly: true,
-	sameSite: NODE_ENV === 'production' ? 'strict' : 'lax',
+	sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
 	secure: NODE_ENV === 'production',
 };
 

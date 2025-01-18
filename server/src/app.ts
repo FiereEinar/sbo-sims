@@ -49,10 +49,10 @@ app.use('/organization', organizationRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+export default app;
+
 if (NODE_ENV !== 'test') {
 	app.listen(Number(PORT), () =>
 		console.log(`Server is running on http://localhost:${PORT}`)
 	);
 }
-
-export default app;

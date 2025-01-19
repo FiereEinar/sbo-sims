@@ -34,12 +34,16 @@ export default function DownloadTransactionsButton() {
 	};
 
 	return (
-		<Button
-			disabled={isDownloading}
-			onClick={handleDownloadTransactions}
-			variant='secondary'
-		>
-			Download
-		</Button>
+		<>
+			{import.meta.env.NODE_ENV !== 'production' && (
+				<Button
+					disabled={isDownloading}
+					onClick={handleDownloadTransactions}
+					variant='secondary'
+				>
+					Download
+				</Button>
+			)}
+		</>
 	);
 }

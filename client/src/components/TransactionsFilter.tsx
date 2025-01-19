@@ -41,7 +41,7 @@ export default function TransactionsFilter() {
 		<div className='flex flex-wrap gap-2 text-muted-foreground'>
 			{/* Search */}
 			<div className='flex flex-col justify-end items-start gap-2'>
-				<Label className='ml-1'>Search:</Label>
+				<Label>Search:</Label>
 				<Input
 					type='text'
 					value={localSearch}

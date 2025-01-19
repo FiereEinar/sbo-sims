@@ -68,7 +68,7 @@ export default function TransactionPieChart() {
 				const categoryNameNoSpace = categoryName.split(' ').join('');
 
 				chartConfigsTemp[categoryNameNoSpace] = {
-					label: categoryName,
+					label: categoryName + ': ',
 					color: colors[i++],
 				};
 
@@ -131,7 +131,7 @@ export default function TransactionPieChart() {
 													y={(viewBox.cy || 0) + 24}
 													className='fill-muted-foreground'
 												>
-													Transactions
+													Total Collections
 												</tspan>
 											</text>
 										);

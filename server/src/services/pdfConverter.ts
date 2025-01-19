@@ -1,4 +1,5 @@
 import puppeteer, { PDFOptions } from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 import * as cheerio from 'cheerio';
 import fs from 'fs';
 import path from 'path';
@@ -80,7 +81,7 @@ export const convertToPdf = async (
 ) => {
 	const updatedHtml = updateImgSrc(html);
 
-	const browser = await puppeteer.launch({
+	const browser = await puppeteerCore.launch({
 		args: chromium.args,
 		defaultViewport: chromium.defaultViewport,
 		executablePath: await chromium.executablePath(),

@@ -45,7 +45,7 @@ export default function Dashboard() {
 		queryFn: () => fetchTransactions({}, 1, 3),
 	});
 
-	const { data: dashboardData } = useQuery({
+	const { data: dashboardData, isLoading } = useQuery({
 		queryKey: [QUERY_KEYS.DASHBOARD_DATA],
 		queryFn: () => fetchDashboardData(),
 	});
@@ -53,7 +53,14 @@ export default function Dashboard() {
 	return (
 		<SidebarPageLayout>
 			<StickyHeader>
-				<Header>Dashboard</Header>
+				<Header>
+					<div className='flex items-center gap-3'>
+						<p>Dashboard</p>
+						{isLoading && (
+							<p className='text-xs text-muted-foreground'>Fetching data...</p>
+						)}
+					</div>
+				</Header>
 			</StickyHeader>
 
 			<div className='flex flex-col md:flex-row gap-3 w-[93dvw] sm:w-full'>

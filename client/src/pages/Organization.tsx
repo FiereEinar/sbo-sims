@@ -20,11 +20,7 @@ export default function Organization() {
 		queryFn: fetchAllOrganizations,
 	});
 
-	if (isLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (error || !organizations) {
+	if (error) {
 		return <p>Error</p>;
 	}
 
@@ -35,7 +31,7 @@ export default function Organization() {
 				{isAuthorized(userRole, 'governor') && <AddOrganizationForm />}
 			</StickyHeader>
 
-			<OrganizationTable organizations={organizations} />
+			<OrganizationTable organizations={organizations} isLoading={isLoading} />
 		</SidebarPageLayout>
 	);
 }

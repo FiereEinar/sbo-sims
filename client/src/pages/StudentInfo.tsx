@@ -1,6 +1,8 @@
 import { fetchStudentByID, fetchStudentTransactions } from '@/api/student';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteStudentButton from '@/components/buttons/EditAndDeleteStudentButton';
+import OrganizationDetailsLoading from '@/components/loading/OrganizationDetailsLoading';
+import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import StudentDataCard from '@/components/StudentDataCard';
@@ -35,32 +37,30 @@ export default function StudentInfo() {
 		queryFn: () => fetchStudentTransactions(studentID),
 	});
 
-	if (studentLoading) {
-		return <p>Loading...</p>;
-	}
-
 	if (studentError || transactionsError) {
 		return <p>Error</p>;
-	}
-
-	if (!studentData) {
-		return <p>No student found</p>;
 	}
 
 	return (
 		<SidebarPageLayout>
 			<BackButton />
 			<div className='space-y-3'>
-				<StickyHeader>
-					<Header>Student Info</Header>
-					{isAuthorized(userRole, 'governor', 'treasurer') && (
-						<EditAndDeleteStudentButton student={studentData} />
-					)}
-				</StickyHeader>
+				{studentLoading && <StickyHeaderLoading />}
+				{studentData && (
+					<StickyHeader>
+						<Header>Student Info</Header>
+						{isAuthorized(userRole, 'governor', 'treasurer') && (
+							<EditAndDeleteStudentButton student={studentData} />
+						)}
+					</StickyHeader>
+				)}
 
 				<hr />
 
-				<StudentDataCard studentID={studentID} studentData={studentData} />
+				{studentLoading && <OrganizationDetailsLoading />}
+				{studentData && (
+					<StudentDataCard studentID={studentID} studentData={studentData} />
+				)}
 
 				<hr />
 

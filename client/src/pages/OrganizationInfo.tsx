@@ -5,9 +5,11 @@ import {
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteOrganizationButton from '@/components/buttons/EditAndDeleteOrganizationButton';
 import CategoriesTable from '@/components/CategoriesTable';
+import OrganizationDetailsLoading from '@/components/loading/OrganizationDetailsLoading';
+import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
+import OrganizationDetails from '@/components/OrganizationDetails';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
-import { Badge } from '@/components/ui/badge';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { isAuthorized } from '@/lib/utils';
@@ -38,39 +40,28 @@ export default function OrganizationInfo() {
 		queryFn: () => fetchOrganizationCategories(organizationID ?? ''),
 	});
 
-	if (isLoading || cLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (error || cError || !organization || !orgCategories) {
+	if (error || cError) {
 		return <p>Error</p>;
 	}
 
 	return (
 		<SidebarPageLayout>
 			<BackButton />
-			<StickyHeader>
-				<Header>{organization.name}</Header>
-				{isAuthorized(userRole, 'governor') && (
-					<EditAndDeleteOrganizationButton organizationID={organization._id} />
-				)}
-			</StickyHeader>
+			{isLoading && <StickyHeaderLoading />}
+			{organization && (
+				<StickyHeader>
+					<Header>{organization.name}</Header>
+					{isAuthorized(userRole, 'governor') && (
+						<EditAndDeleteOrganizationButton
+							organizationID={organization._id}
+						/>
+					)}
+				</StickyHeader>
+			)}
 			<hr />
-			<div>
-				<p className='text-muted-foreground'>
-					Governor: {_.startCase(organization.governor)}
-				</p>
-				<p className='text-muted-foreground'>
-					Treasurer: {_.startCase(organization.treasurer)}
-				</p>
-				<div className='text-muted-foreground flex gap-1 my-1'>
-					<span>Departments:</span>
-					{organization.departments.map((department, i) => (
-						<Badge key={i}>{department}</Badge>
-					))}
-				</div>
-			</div>
-			<CategoriesTable categories={orgCategories} />
+			{isLoading && <OrganizationDetailsLoading />}
+			{organization && <OrganizationDetails organization={organization} />}
+			<CategoriesTable categories={orgCategories} isLoading={cLoading} />
 		</SidebarPageLayout>
 	);
 }

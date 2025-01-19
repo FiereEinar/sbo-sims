@@ -9,12 +9,15 @@ import {
 } from './ui/table';
 import { useNavigate } from 'react-router-dom';
 import _ from 'lodash';
+import TableLoading from './loading/TableLoading';
 
 type OrganizationTableProps = {
-	organizations: OrganizationWithCategory[];
+	organizations?: OrganizationWithCategory[];
+	isLoading: boolean;
 };
 export default function OrganizationTable({
 	organizations,
+	isLoading,
 }: OrganizationTableProps) {
 	const navigate = useNavigate();
 
@@ -34,22 +37,26 @@ export default function OrganizationTable({
 			</TableHeader>
 
 			<TableBody>
-				{organizations.map((org) => (
-					<TableRow
-						className='cursor-pointer'
-						onClick={() => navigate(`/organization/${org._id}`)}
-						key={org._id}
-					>
-						<TableCell className=''>{org.name}</TableCell>
-						<TableCell className=''>{_.startCase(org.governor)}</TableCell>
-						<TableCell className=''>{_.startCase(org.viceGovernor)}</TableCell>
-						<TableCell className=''>{_.startCase(org.treasurer)}</TableCell>
-						<TableCell className=''>{_.startCase(org.auditor)}</TableCell>
-						<TableCell className='text-right'>
-							{org.categories?.length ?? 0}
-						</TableCell>
-					</TableRow>
-				))}
+				{isLoading && <TableLoading colSpan={6} />}
+				{organizations &&
+					organizations.map((org) => (
+						<TableRow
+							className='cursor-pointer'
+							onClick={() => navigate(`/organization/${org._id}`)}
+							key={org._id}
+						>
+							<TableCell className=''>{org.name}</TableCell>
+							<TableCell className=''>{_.startCase(org.governor)}</TableCell>
+							<TableCell className=''>
+								{_.startCase(org.viceGovernor)}
+							</TableCell>
+							<TableCell className=''>{_.startCase(org.treasurer)}</TableCell>
+							<TableCell className=''>{_.startCase(org.auditor)}</TableCell>
+							<TableCell className='text-right'>
+								{org.categories?.length ?? 0}
+							</TableCell>
+						</TableRow>
+					))}
 			</TableBody>
 
 			{/* <TableFooter>

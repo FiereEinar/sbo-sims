@@ -13,18 +13,14 @@ export default function Category() {
 	const userRole = useUserStore((state) => state.user?.role);
 	const {
 		data: categories,
-		isLoading: cLoading,
-		error: cError,
+		isLoading,
+		error,
 	} = useQuery({
 		queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
 		queryFn: fetchCategoriesWithTransactions,
 	});
 
-	if (cLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (cError || !categories) {
+	if (error) {
 		return <p>Error</p>;
 	}
 
@@ -34,7 +30,7 @@ export default function Category() {
 				<Header>Categories</Header>
 				{isAuthorized(userRole, 'governor') && <AddCategoryForm />}
 			</StickyHeader>
-			<CategoriesTable categories={categories} />
+			<CategoriesTable categories={categories} isLoading={isLoading} />
 		</SidebarPageLayout>
 	);
 }

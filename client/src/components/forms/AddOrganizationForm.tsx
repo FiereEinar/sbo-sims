@@ -157,6 +157,12 @@ export default function AddOrganizationForm({
 						id='name'
 					/>
 
+					<DepartmentInputField
+						onSubmit={onDepartmentAdd}
+						onRemove={onDepartmentRemove}
+						selectedDepartments={departments}
+					/>
+
 					<InputField<OrganizationFormValues>
 						name='governor'
 						registerFn={register}
@@ -187,12 +193,6 @@ export default function AddOrganizationForm({
 						errors={errors}
 						label='Current Auditor for this Organization:'
 						id='auditor'
-					/>
-
-					<DepartmentInputField
-						onSubmit={onDepartmentAdd}
-						onRemove={onDepartmentRemove}
-						selectedDepartments={departments}
 					/>
 
 					{errors.root && errors.root.message && (

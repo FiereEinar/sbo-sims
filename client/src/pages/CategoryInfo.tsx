@@ -2,6 +2,7 @@ import { fetchCategoryAndTransactions } from '@/api/category';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteCategoryButton from '@/components/buttons/EditAndDeleteCategoryButton';
 import CategoryDataCard from '@/components/CategoryDataCard';
+import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
@@ -26,28 +27,27 @@ export default function CategoryInfo() {
 		queryFn: () => fetchCategoryAndTransactions(categoryID, page, pageSize),
 	});
 
-	if (isLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (error || !data || !data.data) {
+	if (error) {
 		return <p>Error</p>;
 	}
 
 	return (
 		<SidebarPageLayout>
 			<BackButton />
-			<StickyHeader>
-				<CategoryDataCard category={data.data.category} />
-				{isAuthorized(userRole, 'governor') && (
-					<EditAndDeleteCategoryButton category={data.data.category} />
-				)}
-			</StickyHeader>
+			{isLoading && <StickyHeaderLoading />}
+			{data?.data && (
+				<StickyHeader>
+					<CategoryDataCard category={data.data.category} />
+					{isAuthorized(userRole, 'governor') && (
+						<EditAndDeleteCategoryButton category={data.data.category} />
+					)}
+				</StickyHeader>
+			)}
 
 			<TransactionsTable
 				disableFiltes={true}
 				isLoading={isLoading}
-				transactions={data.data.categoryTransactions}
+				transactions={data?.data?.categoryTransactions}
 			/>
 
 			{data && (

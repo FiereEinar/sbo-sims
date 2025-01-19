@@ -2,7 +2,10 @@ import { fetchCategories } from '@/api/category';
 import { fetchTransactionByID } from '@/api/transaction';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteTransactionButton from '@/components/buttons/EditAndDeleteTransactionButton';
+import BouncyLoading from '@/components/loading/BouncyLoading';
+import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import StickyHeader from '@/components/StickyHeader';
 import TransactionCheque from '@/components/TransactionCheque';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
@@ -34,28 +37,28 @@ export default function TransactionInfo() {
 		queryFn: fetchCategories,
 	});
 
-	if (TLoading || CLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (TError || CError || !transaction || !categories) {
+	if (TError || CError) {
 		return <p>Error</p>;
 	}
 
 	return (
 		<SidebarPageLayout>
 			<BackButton />
-			<div className='flex justify-between'>
-				<Header>Transaction Details</Header>
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-					<EditAndDeleteTransactionButton
-						categories={categories}
-						transaction={transaction}
-					/>
-				)}
-			</div>
+			{CLoading || (TLoading && <StickyHeaderLoading />)}
+			{categories && transaction && (
+				<StickyHeader>
+					<Header>Transaction Details</Header>
+					{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+						<EditAndDeleteTransactionButton
+							categories={categories}
+							transaction={transaction}
+						/>
+					)}
+				</StickyHeader>
+			)}
 			<hr />
-			<TransactionCheque transaction={transaction} />
+			{CLoading || (TLoading && <BouncyLoading />)}
+			{transaction && <TransactionCheque transaction={transaction} />}
 		</SidebarPageLayout>
 	);
 }

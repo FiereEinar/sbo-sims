@@ -27,6 +27,7 @@ import {
 	SelectValue,
 } from './ui/select';
 import { fetchAvailableCourses } from '@/api/student';
+import TableLoading from './loading/TableLoading';
 
 type TransactionsTableProps = {
 	transactions?: Transaction[];
@@ -74,11 +75,7 @@ export default function TransactionsTable({
 			</TableHeader>
 
 			<TableBody>
-				{isLoading && (
-					<TableRow>
-						<TableCell colSpan={7}>Loading...</TableCell>
-					</TableRow>
-				)}
+				{isLoading && <TableLoading colSpan={7} />}
 				{!transactions?.length && !isLoading && (
 					<TableRow>
 						<TableCell colSpan={7}>No transactions</TableCell>

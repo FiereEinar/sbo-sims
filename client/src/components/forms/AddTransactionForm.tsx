@@ -33,7 +33,7 @@ import { QUERY_KEYS } from '@/constants';
 import { SelectContainer, SelectContainerItem } from '../ui/select';
 
 type AddTransactionFormProps = {
-	categories: Category[];
+	categories?: Category[];
 	mode?: 'edit' | 'add';
 	transaction?: Transaction;
 };
@@ -185,7 +185,7 @@ export default function AddTransactionForm({
 
 					<CategoryPicker
 						defaultValue={category}
-						categories={categories}
+						categories={categories || []}
 						setCategory={setCategory}
 						error={errors.categoryID?.message?.toString()}
 					/>

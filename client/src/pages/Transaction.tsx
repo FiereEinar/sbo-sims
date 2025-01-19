@@ -28,20 +28,12 @@ export default function Transaction() {
 		queryFn: () => fetchTransactions(getFilterValues(), page, pageSize),
 	});
 
-	const {
-		data: categories,
-		isLoading: categoriesLoading,
-		error: categoriesError,
-	} = useQuery({
+	const { data: categories, error: categoriesError } = useQuery({
 		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
 
-	if (categoriesLoading) {
-		return <p>Loading...</p>;
-	}
-
-	if (transactionsError || categoriesError || !categories) {
+	if (transactionsError || categoriesError) {
 		return <p>Error</p>;
 	}
 

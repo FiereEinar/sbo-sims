@@ -22,6 +22,7 @@ import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchAvailableCourses } from '@/api/student';
+import TableLoading from './loading/TableLoading';
 
 interface StudentsTableProps {
 	students: StudentWithTransactions[] | undefined;
@@ -68,11 +69,7 @@ export default function StudentsTable({
 			</TableHeader>
 
 			<TableBody>
-				{isLoading && (
-					<TableRow>
-						<TableCell colSpan={7}>Loading...</TableCell>
-					</TableRow>
-				)}
+				{isLoading && <TableLoading colSpan={7} />}
 				{!students?.length && !isLoading && (
 					<TableRow>
 						<TableCell colSpan={7}>No students</TableCell>

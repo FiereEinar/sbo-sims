@@ -35,7 +35,7 @@ export default function DownloadTransactionsButton() {
 
 	return (
 		<>
-			{import.meta.env.NODE_ENV !== 'production' && (
+			{import.meta.env.VITE_NODE_ENV !== 'production' && (
 				<Button
 					disabled={isDownloading}
 					onClick={handleDownloadTransactions}

@@ -48,20 +48,22 @@ export default function SignupForm() {
 					registerFn={register}
 					errors={errors}
 				/>
-				<InputField<SignupFormValues>
-					name='firstname'
-					id='firstname'
-					label='First name:'
-					registerFn={register}
-					errors={errors}
-				/>
-				<InputField<SignupFormValues>
-					name='lastname'
-					id='lastname'
-					label='Last name:'
-					registerFn={register}
-					errors={errors}
-				/>
+				<div className='flex justify-between gap-2'>
+					<InputField<SignupFormValues>
+						name='firstname'
+						id='firstname'
+						label='First name:'
+						registerFn={register}
+						errors={errors}
+					/>
+					<InputField<SignupFormValues>
+						name='lastname'
+						id='lastname'
+						label='Last name:'
+						registerFn={register}
+						errors={errors}
+					/>
+				</div>
 				<InputField<SignupFormValues>
 					name='password'
 					id='password'

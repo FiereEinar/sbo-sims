@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'custom-gradient-1': 'repeating-linear-gradient(135deg, #242526, #242526 5px, rgba(28, 30, 33, 0) 5px, rgba(28, 30, 33, 0) 20px)',
+        'custom-gradient-2': 'repeating-linear-gradient(135deg, #0a0a0a, #0a0a0a 5px, rgba(28, 30, 33, 0) 5px, rgba(28, 30, 33, 0) 20px)',
+      },
       keyframes: {
         appear: {
           from: {

@@ -34,7 +34,7 @@ export default function InputField<T extends FieldValues>({
 	isDisabled = false,
 }: InputFieldProps<T>) {
 	return (
-		<div className='space-y-1 text-muted-foreground'>
+		<div className='space-y-1 text-muted-foreground w-full'>
 			<Label htmlFor={id}>{label}</Label>
 			<Input
 				disabled={isDisabled}

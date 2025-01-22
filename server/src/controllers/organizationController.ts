@@ -123,6 +123,12 @@ export const create_organization = asyncHandler(async (req, res) => {
 		'Enter atleast 1 department for this organization'
 	);
 
+	appAssert(
+		typeof departments[0] === 'string',
+		BAD_REQUEST,
+		'Invalid department'
+	);
+
 	departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
 	// create and save the organization
@@ -175,8 +181,14 @@ export const delete_organization = asyncHandler(async (req, res) => {
 export const update_organization = asyncHandler(async (req, res) => {
 	const { organizationID } = req.params;
 
-	const { name, governor, treasurer, departments }: Omit<IOrganization, '_id'> =
-		req.body;
+	const {
+		name,
+		governor,
+		treasurer,
+		viceGovernor,
+		auditor,
+		departments,
+	}: Omit<IOrganization, '_id'> = req.body;
 
 	appAssert(
 		departments.length > 0,
@@ -184,12 +196,20 @@ export const update_organization = asyncHandler(async (req, res) => {
 		'Enter atleast 1 department for this organization'
 	);
 
+	appAssert(
+		typeof departments[0] === 'string',
+		BAD_REQUEST,
+		'Invalid department'
+	);
+
 	departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
 	const update: UpdateQuery<IOrganization> = {
 		name: name,
 		governor: governor,
+		viceGovernor: viceGovernor,
 		treasurer: treasurer,
+		auditor: auditor,
 		departments: departments,
 	};
 

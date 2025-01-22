@@ -36,7 +36,7 @@ export const createOrganizationValidation = [
 		.withMessage('Auditor name must not be empty')
 		.toLowerCase(),
 
-	body('departments').toArray().isArray(),
+	body('departments').isArray(),
 
 	isFormBodyValidated,
 ];

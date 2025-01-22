@@ -8,7 +8,7 @@ export const categorySchema = z.object({
 		.refine((val) => !Number.isNaN(parseInt(val, 10)), {
 			message: 'Enter a valid amount',
 		})
-		.refine((val) => parseInt(val, 10) >= 0, {
+		.refine((val) => parseInt(val, 10) > 0, {
 			message: 'Please enter a non-negative number',
 		}),
 });

@@ -1,4 +1,3 @@
-import fs from 'fs/promises';
 import asyncHandler from 'express-async-handler';
 import appAssert from '../errors/appAssert';
 import { IStudent } from '../models/student';
@@ -19,7 +18,7 @@ import {
  */
 export const get_all_students = asyncHandler(async (req, res) => {
 	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
-
+	console.log(req.headers);
 	const defaultPage = 1;
 	const defaultPageSize = 100;
 

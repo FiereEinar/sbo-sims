@@ -69,6 +69,8 @@ export const createMockOrganization = async (
 		name: 'University of the Philippines',
 		governor: 'Jhon Doe',
 		treasurer: 'Jane Doe',
+		viceGovernor: 'Jhonny Doe',
+		auditor: 'Jhane Doe',
 		departments: ['BSIT', 'BSEMC-DAT'],
 	};
 

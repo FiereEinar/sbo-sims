@@ -5,7 +5,11 @@ import { UpdateQuery } from 'mongoose';
 import { createCategoryBody } from '../types/organization';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { TransactionQueryFilterRequest } from '../types/request';
-import { NOT_FOUND, UNPROCESSABLE_ENTITY } from '../constants/http';
+import {
+	BAD_REQUEST,
+	NOT_FOUND,
+	UNPROCESSABLE_ENTITY,
+} from '../constants/http';
 import {
 	ICategoryWithTransactions,
 	updateCategoryBody,
@@ -155,6 +159,8 @@ export const create_category = asyncHandler(async (req, res) => {
 		`Organization with ID: ${organizationID} does not exist`
 	);
 
+	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
+
 	// create and save the category
 	const category = new req.CategoryModel({
 		name: name,
@@ -201,6 +207,8 @@ export const update_category = asyncHandler(async (req, res) => {
 		NOT_FOUND,
 		`Organization with ID: ${organizationID} not found`
 	);
+
+	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
 
 	// create and save the category
 	const update: UpdateQuery<ICategory> = {

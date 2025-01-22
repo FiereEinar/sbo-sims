@@ -52,7 +52,6 @@ export default function TransactionsFilter() {
 			</div>
 
 			<div className='space-x-1 flex justify-end items-end'>
-				{/* <DatePicker date={date} setDate={setDate} error={undefined} /> */}
 				<DatePickerWithRange
 					setStartDate={setStartDate}
 					setEndDate={setEndDate}

@@ -189,11 +189,12 @@ export const refresh = asyncHandler(async (req, res) => {
 	const now = Date.now();
 
 	// check if session is valid
-	appAssert(
-		session && session.expiresAt.getTime() > now,
-		UNAUTHORIZED,
-		'Session expired'
-	);
+	appAssert(session, UNAUTHORIZED, 'Invalid session');
+
+	if (session.expiresAt.getTime() < now) {
+		await req.SessionModel.findByIdAndDelete(session._id);
+		appAssert(false, UNAUTHORIZED, 'Session expired');
+	}
 
 	// check if session needs refresh
 	const sessionNeedsRefresh = session.expiresAt.getTime() - now < ONE_DAY_MS;
@@ -259,6 +260,13 @@ export const check_auth = asyncHandler(async (req, res) => {
 		'User or session not found',
 		AppErrorCodes.InvalidAccessToken
 	);
+
+	const now = Date.now();
+
+	if (session.expiresAt.getTime() < now) {
+		await req.SessionModel.findByIdAndDelete(session._id);
+		appAssert(false, UNAUTHORIZED, 'Session expired');
+	}
 
 	res.status(OK).json(user.omitPassword());
 });

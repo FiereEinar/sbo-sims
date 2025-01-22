@@ -23,7 +23,11 @@ export default function LogoutButton() {
 
 	return (
 		<button onClick={onLogout}>
-			<SidebarLink link={{ icon: 'logout', name: 'Logout', path: '/logout' }} />
+			<div className='pointer-events-none'>
+				<SidebarLink
+					link={{ icon: 'logout', name: 'Logout', path: '/logout' }}
+				/>
+			</div>
 		</button>
 	);
 }

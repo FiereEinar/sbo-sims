@@ -64,12 +64,12 @@ export default function Dashboard() {
 			</StickyHeader>
 
 			<div className='flex flex-col md:flex-row gap-3 w-[93dvw] sm:w-full'>
-				<div className='flex flex-col-reverse sm:flex-col gap-3'>
+				<div className='flex w-full flex-col-reverse sm:flex-col gap-3'>
 					<DashboardInfoGrid dashboardData={dashboardData} />
 					<BarCharts dashboardData={dashboardData} />
 				</div>
 
-				<div className='grid grid-cols-1 gap-3'>
+				<div className='grid grid-cols-1 gap-3 flex-shrink-0'>
 					<TransactionPieChart />
 					<DashboardRecenTransactions
 						fetchTransactionsResult={fetchTransactionsResult}
@@ -101,7 +101,7 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3'>
 			<DashboardInfoCard
-				title='Total Revenue'
+				title='Total Collections'
 				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}
 				increase={
 					totalRevenueLastMonth === 0
@@ -142,17 +142,21 @@ function DashboardRecenTransactions({
 	fetchTransactionsResult,
 }: DashboardRecenTransactionsProps) {
 	return (
-		<div className='transition-all bg-card rounded-lg p-5 border'>
-			<h2 className='font-semibold'>Recent Transactions</h2>
+		<div className='transition-all bg-card/40 shadow-sm rounded-lg p-5 border'>
+			<h2 className='font-semibold text-muted-foreground'>
+				Recent Transactions
+			</h2>
 			<div className='h-[10rem]'>
 				{fetchTransactionsResult?.data.length === 0 && (
 					<p className='text-muted-foreground text-sm italic'>
 						No recent transactions
 					</p>
 				)}
-				{fetchTransactionsResult?.data.map((transaction) => (
+				{fetchTransactionsResult?.data.map((transaction, i, arr) => (
 					<div
-						className='transition-all flex justify-between items-center hover:bg-card/90 border-t p-2'
+						className={`transition-all flex justify-between items-center hover:bg-card/90 p-2 ${
+							i !== arr.length - 1 && 'border-b'
+						}`}
 						key={transaction._id}
 					>
 						<div className='w-[150px]'>

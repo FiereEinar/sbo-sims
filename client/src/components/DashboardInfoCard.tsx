@@ -12,7 +12,7 @@ export default function DashboardInfoCard({
 	icon,
 }: DashboardInfoCardProps) {
 	return (
-		<article className='transition-all flex justify-between bg-card border rounded-lg p-5 shadow-sm'>
+		<article className='transition-all flex justify-between bg-card/40 border rounded-lg p-5 shadow-sm'>
 			<div>
 				<p className='text-sm text-muted-foreground'>{title}</p>
 				<h1 className='text-2xl font-bold'>{value}</h1>
@@ -26,7 +26,9 @@ export default function DashboardInfoCard({
 					</p>
 				)}
 			</div>
-			<div className='flex sm:hidden items-center justify-center'>{icon}</div>
+			<div className='flex sm:hidden xl:flex items-center justify-center'>
+				{icon}
+			</div>
 		</article>
 	);
 }

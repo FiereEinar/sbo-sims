@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/chart';
 import { DashboardData, DashboardDataTransaction } from '@/pages/Dashboard';
 import { numberWithCommas } from '@/lib/utils';
+import { eachDayOfInterval } from 'date-fns';
 
 export const description = 'An interactive bar chart';
 

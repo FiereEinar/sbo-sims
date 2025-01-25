@@ -103,13 +103,21 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 			<DashboardInfoCard
 				title='Total Revenue'
 				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}
-				increase={revenueIncreaseInPercentage || 0}
+				increase={
+					totalRevenueLastMonth === 0
+						? undefined
+						: revenueIncreaseInPercentage || 0
+				}
 				icon={<Dollar />}
 			/>
 			<DashboardInfoCard
 				title='Total Transactions'
 				value={numberWithCommas(dashboardData?.totalTransaction ?? 0)}
-				increase={transactionIncreaseInPercentage || 0}
+				increase={
+					totalTransactionLastMonth === 0
+						? undefined
+						: transactionIncreaseInPercentage || 0
+				}
 				icon={<Ledger />}
 			/>
 			<DashboardInfoCard

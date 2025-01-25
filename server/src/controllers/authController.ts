@@ -161,7 +161,7 @@ export const login = asyncHandler(async (req, res) => {
  * GET - user logout
  */
 export const logout = asyncHandler(async (req, res) => {
-	const accessToken = req.cookies[accessTokenCookieName] as string;
+	const accessToken = getAccessToken(req);
 
 	// check if token is present
 	appAssert(accessToken, NO_CONTENT, 'No token');

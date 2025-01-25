@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import userAgent from 'express-useragent';
 dotenv.config();
 
 import authRouter from './routes/auth';
@@ -28,8 +29,9 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('trust proxy', true);
 app.use(cookieParser());
+app.use(userAgent.express());
+app.set('trust proxy', true);
 
 app.get('/', healthcheck);
 
@@ -53,7 +55,7 @@ app.use(errorHandler);
 export default app;
 
 if (NODE_ENV !== 'test') {
-	app.listen(Number(PORT), () =>
+	app.listen(Number(PORT), '0.0.0.0', () =>
 		console.log(`Server is running on http://localhost:${PORT}`)
 	);
 }

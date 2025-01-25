@@ -16,9 +16,14 @@ export const submitSignupForm = async (
 	}
 };
 
+type DeviceTypes = 'desktop' | 'mobile' | 'tablet';
+
 export const submitLoginForm = async (
 	formData: LoginFormValues
-): Promise<APIResponse<{ user: User; accessToken: string }> | undefined> => {
+): Promise<
+	| APIResponse<{ user: User; accessToken: string; device: DeviceTypes }>
+	| undefined
+> => {
 	try {
 		const { data } = await axiosInstance.post('/auth/login', formData);
 

@@ -141,10 +141,17 @@ export const login = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
+	const useragent = req.useragent;
+	const device = useragent?.isMobile
+		? 'mobile'
+		: useragent?.isTablet
+		? 'tablet'
+		: 'desktop';
+
 	res.json(
 		new CustomResponse(
 			true,
-			{ user: user.omitPassword(), accessToken },
+			{ user: user.omitPassword(), accessToken, device },
 			'Login successfull'
 		)
 	);

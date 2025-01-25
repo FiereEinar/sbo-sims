@@ -18,7 +18,7 @@ export const submitSignupForm = async (
 
 export const submitLoginForm = async (
 	formData: LoginFormValues
-): Promise<APIResponse<User> | undefined> => {
+): Promise<APIResponse<{ user: User; accessToken: string }> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/auth/login', formData);
 

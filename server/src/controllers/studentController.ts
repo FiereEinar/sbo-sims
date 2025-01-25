@@ -18,7 +18,7 @@ import {
  */
 export const get_all_students = asyncHandler(async (req, res) => {
 	const { page, pageSize, search, course, year, gender, sortBy } = req.query;
-	console.log(req.headers);
+
 	const defaultPage = 1;
 	const defaultPageSize = 100;
 

@@ -4,11 +4,15 @@ import { accessTokenCookieName, AppErrorCodes } from '../../constants';
 import { UNAUTHORIZED } from '../../constants/http';
 import { verifyToken } from '../../utils/jwt';
 import appAssert from '../../errors/appAssert';
+import { getUserRequestInfo } from '../../utils/utils';
 
 export const auth = asyncHandler(
 	async (req, res: Response, next: NextFunction) => {
 		// get token from cookies and check if token is present
-		const token = req.cookies[accessTokenCookieName] as string;
+		const cookieToken = req.cookies[accessTokenCookieName] as string;
+		const headerToken = req.headers.authorization?.split(' ')[1];
+		const token = cookieToken || headerToken;
+
 		appAssert(
 			token,
 			UNAUTHORIZED,
@@ -30,6 +34,27 @@ export const auth = asyncHandler(
 			UNAUTHORIZED,
 			'User not found',
 			AppErrorCodes.InvalidAccessToken
+		);
+
+		const session = await req.SessionModel.findById(payload.sessionID);
+		appAssert(
+			session,
+			UNAUTHORIZED,
+			'Session not found',
+			AppErrorCodes.InvalidAccessToken
+		);
+
+		const now = Date.now();
+		if (session.expiresAt.getTime() < now) {
+			await req.SessionModel.findByIdAndDelete(session._id);
+			appAssert(false, UNAUTHORIZED, 'Session expired');
+		}
+
+		const { ip, userAgent } = getUserRequestInfo(req);
+		appAssert(
+			ip === session.ip && userAgent === session.userAgent,
+			UNAUTHORIZED,
+			'Invalid session'
 		);
 
 		req.currentUser = user;

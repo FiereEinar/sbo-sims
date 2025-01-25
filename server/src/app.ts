@@ -28,6 +28,7 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set('trust proxy', true);
 app.use(cookieParser());
 
 app.get('/', healthcheck);

@@ -27,7 +27,8 @@ export default function LoginForm() {
 			const result = await submitLoginForm(data);
 
 			if (result) {
-				setUser(result.data);
+				localStorage.setItem('accessToken', result.data.accessToken);
+				setUser(result.data.user);
 				navigate('/');
 			}
 		} catch (err: any) {

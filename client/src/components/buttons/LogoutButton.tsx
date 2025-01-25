@@ -9,6 +9,7 @@ export default function LogoutButton() {
 
 	const onLogout = async () => {
 		try {
+			localStorage.removeItem('accessToken');
 			await axiosInstance.get('/auth/logout');
 			navigate('/login');
 		} catch (err: any) {

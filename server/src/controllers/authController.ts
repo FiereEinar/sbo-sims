@@ -4,7 +4,7 @@ import appAssert from '../errors/appAssert';
 import CustomResponse from '../types/response';
 import { loginUserBody, signupUserBody } from '../types/user';
 import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
-import { validateEmail } from '../utils/utils';
+import { getUserRequestInfo, validateEmail } from '../utils/utils';
 import {
 	accessTokenCookieName,
 	AppErrorCodes,
@@ -121,10 +121,14 @@ export const login = asyncHandler(async (req, res) => {
 	const match = await bcrypt.compare(password, user.password);
 	appAssert(match, UNAUTHORIZED, 'Incorrect password');
 
+	const { ip, userAgent } = getUserRequestInfo(req);
+
 	// create and save the session
 	const session = new req.SessionModel({
 		userID: user._id,
 		expiresAt: thirtyDaysFromNow(),
+		ip,
+		userAgent,
 	});
 	await session.save();
 

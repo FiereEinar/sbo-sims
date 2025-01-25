@@ -169,7 +169,7 @@ export const logout = asyncHandler(async (req, res) => {
 	const { payload } = verifyToken(accessToken);
 
 	if (payload) {
-		await req.SessionModel.findByIdAndDelete({ _id: payload.sessionID });
+		await req.SessionModel.findByIdAndDelete(payload.sessionID);
 	}
 
 	// clear the cookie

@@ -2,17 +2,13 @@ import asyncHandler from 'express-async-handler';
 import { NextFunction, Response } from 'express';
 import { accessTokenCookieName, AppErrorCodes } from '../../constants';
 import { UNAUTHORIZED } from '../../constants/http';
-import { verifyToken } from '../../utils/jwt';
+import { getAccessToken, verifyToken } from '../../utils/jwt';
 import appAssert from '../../errors/appAssert';
 import { getUserRequestInfo } from '../../utils/utils';
 
 export const auth = asyncHandler(
 	async (req, res: Response, next: NextFunction) => {
-		// get token from cookies and check if token is present
-		const cookieToken = req.cookies[accessTokenCookieName] as string;
-		const headerToken = req.headers.authorization?.split(' ')[1];
-		const token = cookieToken || headerToken;
-
+		const token = getAccessToken(req);
 		appAssert(
 			token,
 			UNAUTHORIZED,

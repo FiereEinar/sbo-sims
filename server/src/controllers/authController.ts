@@ -32,6 +32,7 @@ import {
 	setAuthCookie,
 } from '../utils/cookie';
 import {
+	getAccessToken,
 	RefreshTokenPayload,
 	refreshTokenSignOptions,
 	signToken,
@@ -235,9 +236,7 @@ export const refresh = asyncHandler(async (req, res) => {
  * GET - check if authenticated
  */
 export const check_auth = asyncHandler(async (req, res) => {
-	const token = req.cookies[accessTokenCookieName] as string;
-
-	// check if token is present
+	const token = getAccessToken(req);
 	appAssert(
 		token,
 		UNAUTHORIZED,
@@ -247,7 +246,6 @@ export const check_auth = asyncHandler(async (req, res) => {
 
 	// verify the token
 	const { error, payload } = verifyToken(token);
-
 	appAssert(
 		!error && payload,
 		UNAUTHORIZED,

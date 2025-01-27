@@ -61,8 +61,6 @@ const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
 		}
 	);
 
-	console.log('chart data: ', chartData);
-
 	return chartData;
 };
 
@@ -71,7 +69,6 @@ export default function BarCharts({ dashboardData }: BarChartsProps) {
 
 	React.useEffect(() => {
 		if (dashboardData) {
-			console.log(dashboardData.transactions);
 			// setChartData(dashboardData.transactions);
 			setChartData(generateChartData(dashboardData.transactions));
 		}

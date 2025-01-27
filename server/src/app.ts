@@ -32,7 +32,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
-
 app.get('/', healthcheck);
 
 // Attach global database models to the request object

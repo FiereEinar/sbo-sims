@@ -87,9 +87,9 @@ export default function TransactionPieChart() {
 	}, [dashboardData, setChartData, setChartConfig]);
 
 	return (
-		<Card className='flex flex-col'>
+		<Card className='flex flex-col bg-card/40'>
 			<CardHeader className='items-center pb-0'>
-				<CardTitle>Transactions by Category</CardTitle>
+				<CardTitle>Collections by Category</CardTitle>
 				{/* <CardDescription>January - June 2024</CardDescription> */}
 			</CardHeader>
 			<CardContent className='flex-1 pb-0'>

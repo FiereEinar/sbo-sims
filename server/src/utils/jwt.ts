@@ -1,6 +1,8 @@
 import { SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { JWT_REFRESH_SECRET_KEY, JWT_SECRET_KEY } from '../constants/env';
 import jwt from 'jsonwebtoken';
+import { Request } from 'express';
+import { accessTokenCookieName } from '../constants';
 
 export type AccessTokenPayload = {
 	sessionID: string;
@@ -16,13 +18,21 @@ export type SignOptionsAndSecret = SignOptions & {
 };
 
 export const accessTokenSignOptions: SignOptionsAndSecret = {
-	expiresIn: '15m',
+	expiresIn: '12h',
 	secret: JWT_SECRET_KEY,
 };
 
 export const refreshTokenSignOptions: SignOptionsAndSecret = {
 	expiresIn: '30d',
 	secret: JWT_REFRESH_SECRET_KEY,
+};
+
+export const getAccessToken = (req: Request) => {
+	const cookieToken = req.cookies[accessTokenCookieName] as string;
+	const headerToken = req.headers.authorization?.split(' ')[1];
+	const token = cookieToken || headerToken;
+
+	return token;
 };
 
 export const signToken = (

@@ -4,7 +4,7 @@ import appAssert from '../errors/appAssert';
 import CustomResponse from '../types/response';
 import { loginUserBody, signupUserBody } from '../types/user';
 import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
-import { validateEmail } from '../utils/utils';
+import { getUserRequestInfo, validateEmail } from '../utils/utils';
 import {
 	accessTokenCookieName,
 	AppErrorCodes,
@@ -32,6 +32,7 @@ import {
 	setAuthCookie,
 } from '../utils/cookie';
 import {
+	getAccessToken,
 	RefreshTokenPayload,
 	refreshTokenSignOptions,
 	signToken,
@@ -121,10 +122,14 @@ export const login = asyncHandler(async (req, res) => {
 	const match = await bcrypt.compare(password, user.password);
 	appAssert(match, UNAUTHORIZED, 'Incorrect password');
 
+	const { ip, userAgent } = getUserRequestInfo(req);
+
 	// create and save the session
 	const session = new req.SessionModel({
 		userID: user._id,
 		expiresAt: thirtyDaysFromNow(),
+		ip,
+		userAgent,
 	});
 	await session.save();
 
@@ -136,10 +141,17 @@ export const login = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
+	const useragent = req.useragent;
+	const device = useragent?.isMobile
+		? 'mobile'
+		: useragent?.isTablet
+		? 'tablet'
+		: 'desktop';
+
 	res.json(
 		new CustomResponse(
 			true,
-			{ user: user.omitPassword(), accessToken },
+			{ user: user.omitPassword(), accessToken, device },
 			'Login successfull'
 		)
 	);
@@ -149,7 +161,7 @@ export const login = asyncHandler(async (req, res) => {
  * GET - user logout
  */
 export const logout = asyncHandler(async (req, res) => {
-	const accessToken = req.cookies[accessTokenCookieName] as string;
+	const accessToken = getAccessToken(req);
 
 	// check if token is present
 	appAssert(accessToken, NO_CONTENT, 'No token');
@@ -157,7 +169,7 @@ export const logout = asyncHandler(async (req, res) => {
 	const { payload } = verifyToken(accessToken);
 
 	if (payload) {
-		await req.SessionModel.findByIdAndDelete({ _id: payload.sessionID });
+		await req.SessionModel.findByIdAndDelete(payload.sessionID);
 	}
 
 	// clear the cookie
@@ -231,9 +243,7 @@ export const refresh = asyncHandler(async (req, res) => {
  * GET - check if authenticated
  */
 export const check_auth = asyncHandler(async (req, res) => {
-	const token = req.cookies[accessTokenCookieName] as string;
-
-	// check if token is present
+	const token = getAccessToken(req);
 	appAssert(
 		token,
 		UNAUTHORIZED,
@@ -243,7 +253,6 @@ export const check_auth = asyncHandler(async (req, res) => {
 
 	// verify the token
 	const { error, payload } = verifyToken(token);
-
 	appAssert(
 		!error && payload,
 		UNAUTHORIZED,

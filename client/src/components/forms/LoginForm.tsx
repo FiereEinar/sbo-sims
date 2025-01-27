@@ -25,11 +25,16 @@ export default function LoginForm() {
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
 			const result = await submitLoginForm(data);
+			const strictDevices = ['mobile', 'tablet'];
 
 			if (result) {
-				setUser(result.data);
-				navigate('/');
+				if (strictDevices.includes(result.data.device)) {
+					localStorage.setItem('accessToken', result.data.accessToken);
+				}
+
+				setUser(result.data.user);
 			}
+			navigate('/');
 		} catch (err: any) {
 			setError('root', {
 				message: err.message || 'Failed to submit signup form',

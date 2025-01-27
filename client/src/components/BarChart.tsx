@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/chart';
 import { DashboardData, DashboardDataTransaction } from '@/pages/Dashboard';
 import { numberWithCommas } from '@/lib/utils';
+import { eachDayOfInterval, subMonths } from 'date-fns';
 
 export const description = 'An interactive bar chart';
 
@@ -37,22 +38,49 @@ type BarChartsProps = {
 	dashboardData?: DashboardData;
 };
 
+const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
+	const today = new Date();
+	const lastThreeMonths = eachDayOfInterval({
+		start: subMonths(today, 3),
+		// start: new Date(today.getFullYear(), today.getMonth() - 1, 1),
+		end: today,
+	});
+
+	const chartData: ChartData = lastThreeMonths.map<DashboardDataTransaction>(
+		(date) => {
+			const dateStr = date.toISOString().split('T')[0];
+			const transaction = data.find(
+				(t) => new Date(t.date).toISOString().split('T')[0] === dateStr
+			);
+			const res: DashboardDataTransaction = {
+				date: dateStr as unknown as Date,
+				totalAmount: transaction?.totalAmount ?? 0,
+			};
+
+			return res;
+		}
+	);
+
+	return chartData;
+};
+
 export default function BarCharts({ dashboardData }: BarChartsProps) {
 	const [chartData, setChartData] = React.useState<ChartData>([]);
 
 	React.useEffect(() => {
 		if (dashboardData) {
-			setChartData(dashboardData.transactions);
+			// setChartData(dashboardData.transactions);
+			setChartData(generateChartData(dashboardData.transactions));
 		}
 	}, [dashboardData]);
 
 	return (
-		<Card className=''>
+		<Card className='bg-card/40'>
 			<CardHeader className='flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row'>
 				<div className='flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6'>
 					<CardTitle>Bar Chart - Interactive</CardTitle>
 					<CardDescription>
-						Showing total transactions for the last 3 months
+						Showing total collections from the last 3 months
 					</CardDescription>
 				</div>
 				<div className='flex'>

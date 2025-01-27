@@ -1,10 +1,10 @@
 import { navigate } from '@/lib/navigate';
 import { queryClient } from '@/main';
-import axios from 'axios';
+import axios, { CreateAxiosDefaults } from 'axios';
 
 const UNAUTHORIZED = 401;
 
-const options = {
+const options: CreateAxiosDefaults = {
 	baseURL: import.meta.env.VITE_API_URL,
 	withCredentials: true,
 };
@@ -41,5 +41,14 @@ axiosInstance.interceptors.response.use(
 		return Promise.reject({ status, ...data });
 	}
 );
+
+// attach the access token to the request headers
+axiosInstance.interceptors.request.use((config) => {
+	const token = localStorage.getItem('accessToken');
+	if (token) {
+		config.headers.Authorization = `Bearer ${token}`;
+	}
+	return config;
+});
 
 export default axiosInstance;

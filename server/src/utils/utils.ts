@@ -11,6 +11,7 @@ import { ITransaction } from '../models/transaction';
 import os from 'os';
 import { EJSTransaction } from '../types/transaction';
 import _ from 'lodash';
+import { Request } from 'express';
 
 export function validateEmail(email: string) {
 	const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,4 +118,15 @@ export const getEJSTransactionsData = (transactions: ITransaction[]) => {
 		EJSTransactions,
 		totalAmount,
 	};
+};
+
+export const getUserRequestInfo = (req: Request) => {
+	const xforwarded = req.headers['x-forwarded-for'];
+	const forwarded =
+		typeof xforwarded === 'string' ? xforwarded : xforwarded?.[0];
+	const ip = forwarded ? forwarded.split(',')[0] : req.ip;
+
+	const userAgent = req.headers['user-agent'];
+
+	return { ip, userAgent };
 };

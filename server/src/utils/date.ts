@@ -1,4 +1,5 @@
 export const FIFTEEN_MINUTES = 15 * 60 * 1000;
+export const HALF_DAY = 12 * 60 * 60 * 1000;
 export const ONE_DAY = 24 * 60 * 60 * 1000;
 export const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 export const ONE_DAY_MS = 1000 * 60 * 60 * 24;

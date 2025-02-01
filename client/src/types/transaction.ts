@@ -12,6 +12,8 @@ export type Transaction = MongoEntity & {
 	treasurer: string;
 	viceGovernor: string;
 	auditor: string;
+	createdAt: Date;
+	updatedAt: Date;
 };
 
 export type TransactionsData = {

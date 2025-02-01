@@ -19,4 +19,6 @@ export type User = MongoEntity & {
 	token: string;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
+	createdAt: Date;
+	updatedAt: Date;
 };

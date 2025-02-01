@@ -274,7 +274,12 @@ export const check_auth = asyncHandler(async (req, res) => {
 
 	if (session.expiresAt.getTime() < now) {
 		await req.SessionModel.findByIdAndDelete(session._id);
-		appAssert(false, UNAUTHORIZED, 'Session expired');
+		appAssert(
+			false,
+			UNAUTHORIZED,
+			'Session expired',
+			AppErrorCodes.InvalidAccessToken
+		);
 	}
 
 	res.status(OK).json(user.omitPassword());

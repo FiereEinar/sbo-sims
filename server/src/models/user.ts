@@ -19,29 +19,37 @@ export interface IUser extends mongoose.Document {
 	token: string;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
+	createdAt: Date;
+	updatedAt: Date;
 	omitPassword: () => Omit<IUser, 'password'>;
 }
 
-const UserSchema = new Schema<IUser>({
-	studentID: { type: String, required: true },
-	firstname: { type: String, minlength: 1, maxlength: 50, required: true },
-	lastname: { type: String, minlength: 1, maxlength: 50, required: true },
-	email: { type: String, required: false },
-	password: { type: String, required: true },
-	profile: {
-		url: String,
-		publicID: String,
+const UserSchema = new Schema<IUser>(
+	{
+		studentID: { type: String, required: true },
+		firstname: { type: String, minlength: 1, maxlength: 50, required: true },
+		lastname: { type: String, minlength: 1, maxlength: 50, required: true },
+		email: { type: String, required: false },
+		password: { type: String, required: true },
+		profile: {
+			url: String,
+			publicID: String,
+		},
+		role: {
+			type: String,
+			enum: ['governor', 'treasurer', 'auditor', 'regular'],
+			default: 'regular',
+		},
+		bio: { type: String, default: '' },
+		token: { type: String, default: '' },
+		activeSchoolYearDB: {
+			type: String,
+			default: getYear(new Date()).toString(),
+		},
+		activeSemDB: { type: String, enum: ['1', '2'], default: '1' },
 	},
-	role: {
-		type: String,
-		enum: ['governor', 'treasurer', 'auditor', 'regular'],
-		default: 'regular',
-	},
-	bio: { type: String, default: '' },
-	token: { type: String, default: '' },
-	activeSchoolYearDB: { type: String, default: getYear(new Date()).toString() },
-	activeSemDB: { type: String, enum: ['1', '2'], default: '1' },
-});
+	{ timestamps: true }
+);
 
 UserSchema.methods.omitPassword = function () {
 	const user = this.toObject();

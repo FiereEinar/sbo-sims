@@ -8,6 +8,8 @@ export type Organization = MongoEntity & {
 	treasurer: string;
 	auditor: string;
 	departments: string[];
+	createdAt: Date;
+	updatedAt: Date;
 };
 
 export type OrganizationWithCategory = Organization & {

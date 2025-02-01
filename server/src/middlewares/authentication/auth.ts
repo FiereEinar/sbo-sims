@@ -43,14 +43,20 @@ export const auth = asyncHandler(
 		const now = Date.now();
 		if (session.expiresAt.getTime() < now) {
 			await req.SessionModel.findByIdAndDelete(session._id);
-			appAssert(false, UNAUTHORIZED, 'Session expired');
+			appAssert(
+				false,
+				UNAUTHORIZED,
+				'Session expired',
+				AppErrorCodes.InvalidAccessToken
+			);
 		}
 
 		const { ip, userAgent } = getUserRequestInfo(req);
 		appAssert(
 			ip === session.ip && userAgent === session.userAgent,
 			UNAUTHORIZED,
-			'Invalid session'
+			'Invalid session',
+			AppErrorCodes.InvalidAccessToken
 		);
 
 		req.currentUser = user;

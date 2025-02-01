@@ -12,14 +12,19 @@ export interface ICategory extends mongoose.Document {
 	name: string;
 	fee: number;
 	organization: IOrganization;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
-export const CategorySchema = new Schema<ICategory>({
-	name: { type: String, required: true },
-	fee: { type: Number, required: true },
-	organization: {
-		type: Schema.Types.ObjectId,
-		ref: 'Organization',
-		required: true,
+export const CategorySchema = new Schema<ICategory>(
+	{
+		name: { type: String, required: true },
+		fee: { type: Number, required: true },
+		organization: {
+			type: Schema.Types.ObjectId,
+			ref: 'Organization',
+			required: true,
+		},
 	},
-});
+	{ timestamps: true }
+);

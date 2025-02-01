@@ -1,6 +1,6 @@
-# Transactions Tracker
+# SBO - Student Information Management System
 
-A simple and intuitive web application designed to help you easily track student transactions for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.
+A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.
 
 ## Status
 

@@ -6,8 +6,6 @@ import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
-import { StudentFilterValues } from '@/types/student';
-import { TransactionsFilterValues } from '@/types/transaction';
 import { useEffect } from 'react';
 
 /**
@@ -19,10 +17,6 @@ export function usePefetchValues() {
 
 	useEffect(() => {
 		(async () => {
-			// prefetch students and transactions
-			// usePrefetchStudents();
-			// usePrefetchTransactions();
-
 			// prefetch students
 			await queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.STUDENT, studentStore.getFilterValues()],
@@ -59,39 +53,3 @@ export function usePefetchValues() {
 		})();
 	}, []);
 }
-
-// export function usePrefetchStudents(customFilters: StudentFilterValues = {}) {
-// 	const studentStore = useStudentFilterStore((state) => state);
-// 	const filters = { ...studentStore.getFilterValues(), ...customFilters };
-
-// 	useEffect(() => {
-// 		(async () => {
-// 			await queryClient.prefetchQuery({
-// 				queryKey: [QUERY_KEYS.STUDENT, filters],
-// 				queryFn: () =>
-// 					fetchStudents(filters, studentStore.page, studentStore.pageSize),
-// 			});
-// 		})();
-// 	}, []);
-// }
-
-// export function usePrefetchTransactions(
-// 	customFilters: TransactionsFilterValues = {}
-// ) {
-// 	const transactionStore = useTransactionFilterStore((state) => state);
-// 	const filters = { ...transactionStore.getFilterValues(), ...customFilters };
-
-// 	useEffect(() => {
-// 		(async () => {
-// 			await queryClient.prefetchQuery({
-// 				queryKey: [QUERY_KEYS.TRANSACTION, filters],
-// 				queryFn: () =>
-// 					fetchTransactions(
-// 						filters,
-// 						transactionStore.page,
-// 						transactionStore.pageSize
-// 					),
-// 			});
-// 		})();
-// 	}, []);
-// }

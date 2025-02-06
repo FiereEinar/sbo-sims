@@ -21,8 +21,9 @@ import {
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
-import { fetchAvailableCourses } from '@/api/student';
+import { fetchAvailableCourses, fetchStudents } from '@/api/student';
 import TableLoading from './loading/TableLoading';
+import { queryClient } from '@/main';
 
 interface StudentsTableProps {
 	students: StudentWithTransactions[] | undefined;
@@ -114,11 +115,26 @@ export default function StudentsTable({
 }
 
 function TableHeadCoursePicker() {
-	const { course, setCourse } = useStudentFilterStore((state) => state);
+	const { course, page, pageSize, setCourse, getFilterValues } =
+		useStudentFilterStore((state) => state);
 	const { data: courses } = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT_COURSES],
 		queryFn: fetchAvailableCourses,
 	});
+
+	const prefetch = (course: string) => {
+		if (course !== 'All') {
+			const filters = { ...getFilterValues(), course };
+			const data = queryClient.getQueryData([QUERY_KEYS.STUDENT, filters]);
+
+			if (data) return;
+
+			queryClient.prefetchQuery({
+				queryKey: [QUERY_KEYS.STUDENT, filters],
+				queryFn: () => fetchStudents(filters, page, pageSize),
+			});
+		}
+	};
 
 	return (
 		<div className='space-x-1'>
@@ -129,7 +145,11 @@ function TableHeadCoursePicker() {
 				<SelectContent>
 					{courses &&
 						['All'].concat(courses).map((course, i) => (
-							<SelectItem key={i} value={course}>
+							<SelectItem
+								key={i}
+								value={course}
+								onMouseEnter={() => prefetch(course)}
+							>
 								{course === 'All' ? 'Courses: ' + course : course}
 							</SelectItem>
 						))}
@@ -140,8 +160,23 @@ function TableHeadCoursePicker() {
 }
 
 function TableHeadYearPicker() {
-	const { year, setYear } = useStudentFilterStore((state) => state);
+	const { page, pageSize, year, setYear, getFilterValues } =
+		useStudentFilterStore((state) => state);
 	const yearsOptions = ['All', '1', '2', '3', '4'];
+
+	const prefetch = (selectedYear: StudentFilterValues['year']) => {
+		if (selectedYear !== 'All') {
+			const filters = { ...getFilterValues(), year: selectedYear };
+			const data = queryClient.getQueryData([QUERY_KEYS.STUDENT, filters]);
+
+			if (data) return;
+
+			queryClient.prefetchQuery({
+				queryKey: [QUERY_KEYS.STUDENT, filters],
+				queryFn: () => fetchStudents(filters, page, pageSize),
+			});
+		}
+	};
 
 	return (
 		<div className='space-x-1'>
@@ -154,7 +189,11 @@ function TableHeadYearPicker() {
 				</SelectTrigger>
 				<SelectContent>
 					{yearsOptions.map((year, i) => (
-						<SelectItem key={i} value={year}>
+						<SelectItem
+							key={i}
+							value={year}
+							onMouseEnter={() => prefetch(year as StudentFilterValues['year'])}
+						>
 							{year === 'All' ? ' Year: ' + year : year}
 						</SelectItem>
 					))}
@@ -165,8 +204,25 @@ function TableHeadYearPicker() {
 }
 
 function TableHeadGenderPicker() {
-	const { gender, setGender } = useStudentFilterStore((state) => state);
+	const { page, pageSize, gender, setGender, getFilterValues } =
+		useStudentFilterStore((state) => state);
 	const gendersOptions = ['All', 'M', 'F'];
+
+	const prefetch = (selectedGender: StudentFilterValues['gender']) => {
+		if (selectedGender !== 'All') {
+			console.log('prefetching');
+			const filters = { ...getFilterValues(), gender: selectedGender };
+			const data = queryClient.getQueryData([QUERY_KEYS.STUDENT, filters]);
+
+			if (data) return;
+
+			queryClient.prefetchQuery({
+				queryKey: [QUERY_KEYS.STUDENT, filters],
+				queryFn: () => fetchStudents(filters, page, pageSize),
+			});
+			console.log('done prefetching');
+		}
+	};
 
 	return (
 		<Select
@@ -180,7 +236,13 @@ function TableHeadGenderPicker() {
 			</SelectTrigger>
 			<SelectContent>
 				{gendersOptions.map((gender, i) => (
-					<SelectItem key={i} value={gender}>
+					<SelectItem
+						key={i}
+						value={gender}
+						onMouseEnter={() =>
+							prefetch(gender as StudentFilterValues['gender'])
+						}
+					>
 						{gender === 'All' ? ' Gender: ' + gender : gender}
 					</SelectItem>
 				))}

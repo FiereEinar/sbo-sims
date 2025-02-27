@@ -28,6 +28,8 @@ import {
 } from './ui/select';
 import { fetchAvailableCourses } from '@/api/student';
 import TableLoading from './loading/TableLoading';
+import { queryClient } from '@/main';
+import { fetchTransactions } from '@/api/transaction';
 
 type TransactionsTableProps = {
 	transactions?: Transaction[];
@@ -161,7 +163,24 @@ function TableHeadCategoryPicker() {
 }
 
 function TableHeadStatusPicker() {
-	const { setStatus } = useTransactionFilterStore((state) => state);
+	const { setStatus, getFilterValues, page, pageSize } =
+		useTransactionFilterStore((state) => state);
+	const statusOptions = ['All', 'Paid', 'Partial'];
+
+	const prefetch = (status: string) => {
+		const filters = {
+			...getFilterValues(),
+			status: status === 'All' ? undefined : status === 'Paid' ? true : false,
+		};
+		const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
+
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.TRANSACTION, filters],
+			queryFn: () => fetchTransactions(filters, page, pageSize),
+		});
+	};
 
 	return (
 		<div className='flex flex-col justify-end items-start gap-2'>
@@ -179,8 +198,12 @@ function TableHeadStatusPicker() {
 					<SelectValue placeholder='Course' />
 				</SelectTrigger>
 				<SelectContent>
-					{['All', 'Paid', 'Partial'].map((status, i) => (
-						<SelectItem key={i} value={status}>
+					{statusOptions.map((status, i) => (
+						<SelectItem
+							key={i}
+							value={status}
+							onMouseEnter={() => prefetch(status)}
+						>
 							{status}
 						</SelectItem>
 					))}
@@ -191,11 +214,26 @@ function TableHeadStatusPicker() {
 }
 
 function TableHeadCoursePicker() {
-	const { course, setCourse } = useTransactionFilterStore((state) => state);
+	const { course, setCourse, getFilterValues, page, pageSize } =
+		useTransactionFilterStore((state) => state);
 	const { data: courses } = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT_COURSES],
 		queryFn: fetchAvailableCourses,
 	});
+
+	const prefetch = (selectedCourse: string) => {
+		if (selectedCourse === 'All') return;
+
+		const filters = { ...getFilterValues(), course: selectedCourse };
+		const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
+
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.TRANSACTION, filters],
+			queryFn: () => fetchTransactions(filters, page, pageSize),
+		});
+	};
 
 	return (
 		<div className='flex flex-col justify-end items-start gap-2'>
@@ -206,7 +244,11 @@ function TableHeadCoursePicker() {
 				<SelectContent>
 					{courses &&
 						['All'].concat(courses).map((course, i) => (
-							<SelectItem key={i} value={course}>
+							<SelectItem
+								key={i}
+								value={course}
+								onMouseEnter={() => prefetch(course)}
+							>
 								{course === 'All' ? course + ' Courses' : course}
 							</SelectItem>
 						))}

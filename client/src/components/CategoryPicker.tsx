@@ -8,6 +8,10 @@ import {
 	SelectValue,
 } from './ui/select';
 import ErrorText from './ui/error-text';
+import { useTransactionFilterStore } from '@/store/transactionsFilter';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
+import { fetchTransactions } from '@/api/transaction';
 
 type CategoryPickerProps = {
 	setCategory:
@@ -26,6 +30,24 @@ export default function CategoryPicker({
 	defaultValue,
 	clean = false,
 }: CategoryPickerProps) {
+	const { getFilterValues, page, pageSize } = useTransactionFilterStore(
+		(state) => state
+	);
+
+	const prefetch = (selectedCategory: string) => {
+		if (selectedCategory === 'All') return;
+
+		const filters = { ...getFilterValues(), category: selectedCategory };
+		const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
+
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.TRANSACTION, filters],
+			queryFn: () => fetchTransactions(filters, page, pageSize),
+		});
+	};
+
 	return (
 		<div className='text-muted-foreground space-y-1 select-none'>
 			<Label>{!clean && 'Category:'}</Label>
@@ -44,6 +66,7 @@ export default function CategoryPicker({
 							className='pointer-events-auto'
 							key={category._id ?? i}
 							value={category._id}
+							onMouseEnter={() => prefetch(category._id)}
 						>
 							{category.organization.name}{' '}
 							{category.organization.name ? '-' : ''} {category.name}

@@ -28,11 +28,17 @@ export const transactionQueryFilter = asyncHandler(
 			return;
 		}
 
+		const hasSearch = search && search.length;
+
 		const defaultPage = 1;
 		const defaultPageSize = 100;
 
 		const isPaid = JSON.parse((status as string) ?? 'false');
-		const pageNum = page ? parseInt(page as string) : defaultPage;
+		const pageNum = hasSearch
+			? defaultPage
+			: page
+			? parseInt(page as string)
+			: defaultPage;
 		const pageSizeNum = pageSize
 			? parseInt(pageSize as string)
 			: defaultPageSize;
@@ -110,8 +116,8 @@ export const transactionQueryFilter = asyncHandler(
 		const prevPage = pageNum > 1 ? pageNum - 1 : -1;
 
 		req.filteredTransactions = filteredTransactions;
-		req.nextPage = nextPage;
-		req.prevPage = prevPage;
+		req.nextPage = hasSearch ? -1 : nextPage;
+		req.prevPage = hasSearch ? -1 : prevPage;
 		req.skipAmount = skipAmount;
 		req.pageSizeNum = pageSizeNum;
 		next();

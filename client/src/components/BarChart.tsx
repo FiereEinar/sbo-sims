@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/chart';
 import { DashboardData, DashboardDataTransaction } from '@/pages/Dashboard';
 import { numberWithCommas } from '@/lib/utils';
-import { eachDayOfInterval, subMonths } from 'date-fns';
+import { addDays, eachDayOfInterval, subMonths } from 'date-fns';
 
 export const description = 'An interactive bar chart';
 
@@ -39,12 +39,14 @@ type BarChartsProps = {
 };
 
 const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
-	const today = new Date();
+	const today = addDays(new Date(), 1);
 	const lastThreeMonths = eachDayOfInterval({
 		start: subMonths(today, 3),
 		// start: new Date(today.getFullYear(), today.getMonth() - 1, 1),
 		end: today,
 	});
+
+	console.log(data);
 
 	const chartData: ChartData = lastThreeMonths.map<DashboardDataTransaction>(
 		(date) => {

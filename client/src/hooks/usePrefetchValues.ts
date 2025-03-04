@@ -27,7 +27,9 @@ export function usePefetchValues() {
 						studentStore.pageSize
 					),
 			});
+		})();
 
+		(async () => {
 			//prefetch transactions
 			await queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.TRANSACTION, transactionStore.getFilterValues()],
@@ -38,13 +40,17 @@ export function usePefetchValues() {
 						transactionStore.pageSize
 					),
 			});
+		})();
 
+		(async () => {
 			// prefetch categories
 			await queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
 				queryFn: fetchCategoriesWithTransactions,
 			});
+		})();
 
+		(async () => {
 			// prefetch organizations
 			await queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.ORGANIZATION],

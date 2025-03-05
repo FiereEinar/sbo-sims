@@ -46,8 +46,6 @@ const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
 		end: today,
 	});
 
-	console.log(data);
-
 	const chartData: ChartData = lastThreeMonths.map<DashboardDataTransaction>(
 		(date) => {
 			const dateStr = date.toISOString().split('T')[0];

@@ -291,11 +291,11 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	// check if the student already paid
-	const isAlreadyPaid = await req.TransactionModel.findOne({
-		owner: student._id,
-		category: category._id,
-	}).exec();
-	appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
+	// const isAlreadyPaid = await req.TransactionModel.findOne({
+	// 	owner: student._id,
+	// 	category: category._id,
+	// }).exec();
+	// appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
 
 	// check if the student is within the organization
 	const isInOrganization = category.organization.departments.includes(

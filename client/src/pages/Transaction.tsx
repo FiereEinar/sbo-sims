@@ -10,8 +10,10 @@ import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
 import { isAuthorized } from '@/lib/utils';
+import { queryClient } from '@/main';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useUserStore } from '@/store/user';
+import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Transaction() {
@@ -32,6 +34,22 @@ export default function Transaction() {
 		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
+
+	const prefetchPageFn = (page: number) => {
+		const filters: TransactionsFilterValues = {
+			...getFilterValues(),
+			page: page,
+		};
+
+		// check if it was already prefetched
+		const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.TRANSACTION, filters],
+			queryFn: () => fetchTransactions(filters, page, pageSize),
+		});
+	};
 
 	if (transactionsError || categoriesError) {
 		return <p>Error</p>;
@@ -64,6 +82,7 @@ export default function Transaction() {
 						nextPage={fetchTransactionsResult.next}
 						prevPage={fetchTransactionsResult.prev}
 						setPage={setPage}
+						prefetchFn={prefetchPageFn}
 					/>
 				</div>
 			)}

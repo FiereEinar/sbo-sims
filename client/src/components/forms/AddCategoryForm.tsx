@@ -77,6 +77,7 @@ export default function AddCategoryForm({
 			setValue('fee', categoryData.data.category?.fee?.toString() ?? '');
 			setValue('name', categoryData.data.category?.name ?? '');
 			setOrg(categoryData.data.category?.organization?._id ?? '');
+			setDetails(categoryData.data.category?.details ?? []);
 		}
 	}, [categoryData, setValue, setOrg]);
 

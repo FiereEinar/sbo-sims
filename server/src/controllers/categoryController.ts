@@ -180,7 +180,6 @@ export const update_category = asyncHandler(async (req, res) => {
 	const { name, fee, organizationID, details }: updateCategoryBody = req.body;
 
 	// appAssert(Array.isArray(details), BAD_REQUEST, 'Details should be an array');
-	console.log(details);
 	const organization = await req.OrganizationModel?.findById(organizationID);
 	appAssert(
 		organization,

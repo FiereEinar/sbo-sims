@@ -21,7 +21,7 @@ export default function Organization() {
 	});
 
 	if (error) {
-		return <p>Error</p>;
+		return <p>Session expired, login again.</p>;
 	}
 
 	return (

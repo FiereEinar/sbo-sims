@@ -45,7 +45,7 @@ export default function Student() {
 	};
 
 	if (studentsError) {
-		return <p>Error</p>;
+		return <p>Session expired, login again.</p>;
 	}
 
 	return (

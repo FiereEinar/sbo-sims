@@ -52,7 +52,7 @@ export default function Transaction() {
 	};
 
 	if (transactionsError || categoriesError) {
-		return <p>Error</p>;
+		return <p>Session expired, login again.</p>;
 	}
 
 	return (

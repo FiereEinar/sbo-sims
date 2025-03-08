@@ -28,6 +28,7 @@ import { fetchAllOrganizations } from '@/api/organization';
 import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types/category';
 import { useToast } from '@/hooks/use-toast';
+import ArrayInputField from '../ArrayInputField';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -48,6 +49,7 @@ export default function AddCategoryForm({
 
 	const { toast } = useToast();
 	const [org, setOrg] = useState<string>();
+	const [details, setDetails] = useState<string[]>([]);
 
 	const { data: organizations, error: organizationError } = useQuery({
 		queryKey: [QUERY_KEYS.ORGANIZATION],
@@ -86,6 +88,7 @@ export default function AddCategoryForm({
 			}
 
 			data.organizationID = org;
+			data.details = details;
 
 			if (mode === 'add') await submitCategoryForm(data);
 			if (mode === 'edit')
@@ -96,11 +99,21 @@ export default function AddCategoryForm({
 			});
 			reset();
 			setOrg('');
+			setDetails([]);
 		} catch (err: any) {
 			setError('root', {
 				message: err.message || 'Failed to submit category form',
 			});
 		}
+	};
+
+	const onDetailAdd = (value: string) => {
+		if (value.length === 0 || details.includes(value)) return;
+		setDetails((prev) => [...prev, value]);
+	};
+
+	const onDetailRemove = (value: string) => {
+		setDetails((prev) => prev.filter((detail) => detail !== value));
 	};
 
 	if (organizationError) {
@@ -147,6 +160,14 @@ export default function AddCategoryForm({
 						errors={errors}
 						label='Category fee:'
 						id='fee'
+					/>
+
+					<ArrayInputField
+						label='Details:'
+						placeholder='Add details'
+						values={details}
+						onSubmit={onDetailAdd}
+						onRemove={onDetailRemove}
 					/>
 
 					<OrganizationPicker

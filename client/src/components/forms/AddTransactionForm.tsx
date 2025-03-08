@@ -50,7 +50,7 @@ export default function AddTransactionForm({
 	}
 
 	const [date, setDate] = useState<Date>();
-	const [category, setCategory] = useState<string>();
+	const [category, setCategory] = useState<Category>();
 	const [studentIdSearch, setStudentIdSearch] = useState('');
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
@@ -75,7 +75,7 @@ export default function AddTransactionForm({
 	useEffect(() => {
 		if (transaction) {
 			setDate(new Date(transaction.date));
-			setCategory(transaction.category._id);
+			setCategory(transaction.category);
 
 			setValue('amount', transaction.amount.toString());
 			setValue('studentID', transaction.owner.studentID);
@@ -92,7 +92,9 @@ export default function AddTransactionForm({
 			}
 
 			data.date = date?.toISOString();
-			data.categoryID = category;
+			data.categoryID = category._id;
+
+			console.log(data);
 
 			if (transaction && mode === 'edit')
 				await submitUpdateTransactionForm(transaction._id, data);
@@ -184,11 +186,26 @@ export default function AddTransactionForm({
 					/>
 
 					<CategoryPicker
-						defaultValue={category}
+						defaultValue={category?._id ?? ''}
 						categories={categories || []}
 						setCategory={setCategory}
 						error={errors.categoryID?.message?.toString()}
 					/>
+
+					<div className='grid grid-cols-2 gap-2'>
+						{category &&
+							category.details.map((detail, i) => (
+								<InputField<TransactionFormValues>
+									key={i}
+									name={`details.${detail}`}
+									type='text'
+									registerFn={register}
+									errors={errors}
+									label={_.startCase(`${detail}`) + ':'}
+									id={`details.${detail}`}
+								/>
+							))}
+					</div>
 
 					<InputField<TransactionFormValues>
 						name='description'

@@ -5,6 +5,7 @@ import {
 	get_all_transactions,
 	get_dashboard_data,
 	get_transaction,
+	get_transaction_list_csv,
 	get_transaction_list_file,
 	update_transaction,
 	update_transaction_amount,
@@ -22,10 +23,17 @@ const router = express.Router();
 router.get('/', transactionQueryFilter, get_all_transactions);
 
 router.get(
-	'/download',
+	'/download/pdf',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	transactionQueryFilter,
 	get_transaction_list_file
+);
+
+router.get(
+	'/download/csv',
+	authorizeRoles('governor', 'treasurer', 'auditor'),
+	transactionQueryFilter,
+	get_transaction_list_csv
 );
 
 router.get('/dashboard-data', get_dashboard_data);

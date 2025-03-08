@@ -1,5 +1,5 @@
 import ejs from 'ejs';
-import _ from 'lodash';
+import _, { startCase } from 'lodash';
 import path from 'path';
 import fs from 'fs/promises';
 import asyncHandler from 'express-async-handler';
@@ -92,6 +92,46 @@ export const get_transaction_list_file = asyncHandler(
 
 		// send the buffer
 		res.end(buffer);
+	}
+);
+
+/**
+ * GET - get a csv file result of transactions
+ */
+export const get_transaction_list_csv = asyncHandler(
+	async (req: TransactionQueryFilterRequest, res) => {
+		if (!req.filteredTransactions) return;
+
+		const csv = req.filteredTransactions.map((transaction) => {
+			const { amount, date, category, owner, details } = transaction;
+
+			const ownerName = startCase(
+				`${owner.firstname} ${owner.middlename} ${owner.lastname}`
+			);
+			const datePayed = format(date || new Date(), 'M/dd/yyyy');
+			let categoryDetails = '';
+
+			category.details.map((detail) => {
+				categoryDetails = categoryDetails.concat(`${details[detail]},`);
+			});
+
+			return (
+				`${owner.studentID},${ownerName},${amount},${datePayed},` +
+				categoryDetails
+			);
+		});
+
+		// add csv header
+		let header = 'Student ID,Student Name,Amount,Date Payed,';
+
+		csv.unshift(header);
+
+		res.set({
+			'Content-Type': 'text/csv',
+			'Content-Disposition': 'inline; filename="transactions.csv"',
+		});
+
+		res.send(csv.join('\n'));
 	}
 );
 
@@ -263,6 +303,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		date,
 		description,
 		studentID,
+		details,
 	}: createTransactionBody = req.body;
 
 	// check if the category exists
@@ -307,6 +348,11 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
 	);
 
+	const detailsObj: { [key: string]: any } = {};
+	category.details.map((detail) => {
+		detailsObj[detail] = details[detail];
+	});
+
 	// create and save the transaction
 	const transaction = new req.TransactionModel({
 		amount: amount,
@@ -318,6 +364,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		viceGovernor: category.organization.viceGovernor,
 		treasurer: category.organization.treasurer,
 		auditor: category.organization.auditor,
+		details: detailsObj,
 	});
 	await transaction.save();
 
@@ -355,10 +402,13 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		date,
 		description,
 		studentID,
+		details,
 	}: createTransactionBody = req.body;
 
 	// check if the category exists
-	const category = await req.CategoryModel.findById(categoryID).populate({
+	const category: ICategory = await req.CategoryModel.findById(
+		categoryID
+	).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
@@ -390,6 +440,11 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
 	);
 
+	const detailsObj: { [key: string]: any } = {};
+	category.details.map((detail) => {
+		detailsObj[detail] = details[detail];
+	});
+
 	// create update query and save the transaction
 	const update: UpdateQuery<ITransaction> = {
 		amount: amount,
@@ -397,6 +452,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		owner: student._id,
 		description: description,
 		date: date?.toISOString(),
+		details: detailsObj,
 	};
 
 	const result = await req.TransactionModel.findByIdAndUpdate(

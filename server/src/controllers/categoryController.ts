@@ -2,7 +2,6 @@ import asyncHandler from 'express-async-handler';
 import appAssert from '../errors/appAssert';
 import { ICategory } from '../models/category';
 import { UpdateQuery } from 'mongoose';
-import { createCategoryBody } from '../types/organization';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import { TransactionQueryFilterRequest } from '../types/request';
 import {
@@ -11,6 +10,7 @@ import {
 	UNPROCESSABLE_ENTITY,
 } from '../constants/http';
 import {
+	createCategoryBody,
 	ICategoryWithTransactions,
 	updateCategoryBody,
 } from '../types/category';
@@ -149,8 +149,7 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  * POST - create a category
  */
 export const create_category = asyncHandler(async (req, res) => {
-	const { name, fee, organizationID }: createCategoryBody = req.body;
-
+	const { name, fee, organizationID, details }: createCategoryBody = req.body;
 	// check if the organization exists
 	const organization = await req.OrganizationModel.findById(organizationID);
 	appAssert(
@@ -166,10 +165,50 @@ export const create_category = asyncHandler(async (req, res) => {
 		name: name,
 		fee: fee,
 		organization: organization._id,
+		details: details,
 	});
 	await category.save();
 
 	res.json(new CustomResponse(true, category, 'Category created successfully'));
+});
+
+/**
+ * PUT - update a category based on ID in params
+ */
+export const update_category = asyncHandler(async (req, res) => {
+	const { categoryID } = req.params;
+	const { name, fee, organizationID, details }: updateCategoryBody = req.body;
+
+	// appAssert(Array.isArray(details), BAD_REQUEST, 'Details should be an array');
+	console.log(details);
+	const organization = await req.OrganizationModel?.findById(organizationID);
+	appAssert(
+		organization,
+		NOT_FOUND,
+		`Organization with ID: ${organizationID} not found`
+	);
+
+	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
+
+	// create and save the category
+	const update: UpdateQuery<ICategory> = {
+		name: name,
+		fee: fee,
+		organization: organizationID,
+		details: details,
+	};
+
+	const result = await req.CategoryModel.findByIdAndUpdate(categoryID, update, {
+		new: true,
+	}).exec();
+
+	appAssert(
+		result,
+		NOT_FOUND,
+		`Category with ID: ${categoryID} does not exist`
+	);
+
+	res.json(new CustomResponse(true, result, 'Category updated successfully'));
 });
 
 /**
@@ -192,40 +231,4 @@ export const delete_category = asyncHandler(async (req, res) => {
 	appAssert(result, NOT_FOUND, `Category with ID ${categoryID} does not exist`);
 
 	res.json(new CustomResponse(true, result, 'Category deleted successfully'));
-});
-
-/**
- * PUT - update a category based on ID in params
- */
-export const update_category = asyncHandler(async (req, res) => {
-	const { categoryID } = req.params;
-	const { name, fee, organizationID }: updateCategoryBody = req.body;
-
-	const organization = await req.OrganizationModel?.findById(organizationID);
-	appAssert(
-		organization,
-		NOT_FOUND,
-		`Organization with ID: ${organizationID} not found`
-	);
-
-	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
-
-	// create and save the category
-	const update: UpdateQuery<ICategory> = {
-		name: name,
-		fee: fee,
-		organization: organizationID,
-	};
-
-	const result = await req.CategoryModel.findByIdAndUpdate(categoryID, update, {
-		new: true,
-	}).exec();
-
-	appAssert(
-		result,
-		NOT_FOUND,
-		`Category with ID: ${categoryID} does not exist`
-	);
-
-	res.json(new CustomResponse(true, result, 'Category updated successfully'));
 });

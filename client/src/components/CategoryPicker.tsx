@@ -14,9 +14,7 @@ import { QUERY_KEYS } from '@/constants';
 import { fetchTransactions } from '@/api/transaction';
 
 type CategoryPickerProps = {
-	setCategory:
-		| React.Dispatch<React.SetStateAction<string | undefined>>
-		| ((category: string) => void);
+	setCategory: React.Dispatch<React.SetStateAction<Category | undefined>>;
 	categories: Category[];
 	error: string | undefined;
 	defaultValue?: string;
@@ -53,7 +51,9 @@ export default function CategoryPicker({
 			<Label>{!clean && 'Category:'}</Label>
 			<Select
 				defaultValue={defaultValue ?? undefined}
-				onValueChange={(value) => setCategory(value)}
+				onValueChange={(value) =>
+					setCategory(categories.find((c) => c._id === value))
+				}
 			>
 				<SelectTrigger
 					className={`w-full focus:ring-0 ${clean && 'border-none pl-0'}`}

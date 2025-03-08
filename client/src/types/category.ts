@@ -6,6 +6,7 @@ export type Category = MongoEntity & {
 	name: string;
 	fee: number;
 	organization: Organization;
+	details: string[];
 	createdAt: Date;
 	updatedAt: Date;
 };

@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const categorySchema = z.object({
 	name: z.string().min(1, 'Category name must not be empty'),
 	organizationID: z.string().optional(),
+	details: z.array(z.string()).optional(),
 	fee: z
 		.string()
 		.refine((val) => !Number.isNaN(parseInt(val, 10)), {

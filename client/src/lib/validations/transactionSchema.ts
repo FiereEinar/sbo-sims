@@ -13,4 +13,5 @@ export const transactionSchema = z.object({
 	categoryID: z.string().optional(),
 	studentID: z.string().min(1, 'Enter student ID'),
 	description: z.string().optional(),
+	details: z.any(),
 });

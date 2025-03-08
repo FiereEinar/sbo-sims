@@ -17,7 +17,7 @@ export default function TransactionCheque({
 	const isPaid = transaction.amount >= fee;
 
 	return (
-		<article className='relative flex flex-col gap-5 items-center bg-card/40 border rounded-md max-w-[800px] w-full p-3'>
+		<article className='relative flex flex-col gap-5 items-center bg-card/40 border rounded-md w-full p-3'>
 			<div className='flex justify-between gap-10 w-full'>
 				<div>
 					<Header size='md'>{ownerFullname}</Header>
@@ -45,6 +45,12 @@ export default function TransactionCheque({
 				{transaction.description && (
 					<p>Description: {transaction.description}</p>
 				)}
+				{transaction.category?.details?.map((detail) => (
+					<p key={detail}>
+						{transaction.details?.[detail] !== undefined &&
+							`${_.startCase(detail)}: ${transaction.details?.[detail] ?? ''}`}
+					</p>
+				))}
 			</div>
 
 			<div className='flex flex-col w-full'>

@@ -16,6 +16,8 @@ export const createCategoryValidation = [
 
 	body('fee').isNumeric().toInt(),
 
+	body('details').isArray(),
+
 	isValidMongooseId('organizationID', { from: 'body' }),
 
 	isFormBodyValidated,

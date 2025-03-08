@@ -138,17 +138,22 @@ export default function TransactionsTable({
 
 function TableHeadCategoryPicker() {
 	const { category, setCategory } = useTransactionFilterStore((state) => state);
+	const [cat, setCat] = useState<Category | undefined>(undefined);
 	const { data: categories } = useQuery({
 		queryKey: [QUERY_KEYS.CATEGORY],
 		queryFn: fetchCategories,
 	});
+
+	useEffect(() => {
+		if (cat) setCategory(cat._id);
+	}, [cat]);
 
 	return (
 		<CategoryPicker
 			clean={true}
 			error={undefined}
 			defaultValue={category ?? 'All'}
-			setCategory={setCategory}
+			setCategory={setCat}
 			categories={[
 				{
 					_id: 'All',

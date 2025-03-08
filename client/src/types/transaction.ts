@@ -12,6 +12,7 @@ export type Transaction = MongoEntity & {
 	treasurer: string;
 	viceGovernor: string;
 	auditor: string;
+	details: { [key: string]: string };
 	createdAt: Date;
 	updatedAt: Date;
 };

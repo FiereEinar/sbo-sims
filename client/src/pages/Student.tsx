@@ -12,6 +12,7 @@ import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useUserStore } from '@/store/user';
 import ImportStudentsButton from '@/components/buttons/ImportStudentsButton';
 import { isAuthorized } from '@/lib/utils';
+import { queryClient } from '@/main';
 
 export default function Student() {
 	const userRole = useUserStore((state) => state.user?.role);
@@ -27,6 +28,21 @@ export default function Student() {
 		queryKey: [QUERY_KEYS.STUDENT, getFilterValues()],
 		queryFn: () => fetchStudents(getFilterValues(), page, pageSize),
 	});
+
+	const prefetchPageFn = (page: number) => {
+		const filters = {
+			...getFilterValues(),
+			page: page,
+		};
+
+		const data = queryClient.getQueryData([QUERY_KEYS.STUDENT, filters]);
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.STUDENT, filters],
+			queryFn: () => fetchStudents(filters, page, pageSize),
+		});
+	};
 
 	if (studentsError) {
 		return <p>Error</p>;
@@ -57,6 +73,7 @@ export default function Student() {
 						nextPage={studentsFetchResult.next}
 						prevPage={studentsFetchResult.prev}
 						setPage={setPage}
+						prefetchFn={prefetchPageFn}
 					/>
 				</div>
 			)}

@@ -4,6 +4,7 @@ export type createTransactionBody = {
 	categoryID: string;
 	description?: string;
 	date?: Date;
+	details: { [key: string]: any };
 };
 
 export type updateTransactionAmountBody = {

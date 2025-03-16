@@ -16,7 +16,10 @@ export default function DarkModeToggle({
 	};
 
 	return (
-		<button className='flex items-center gap-2' onClick={toggleDarkMode}>
+		<button
+			className='flex items-center justify-center md:justify-start gap-2'
+			onClick={toggleDarkMode}
+		>
 			<DarkModeSwitch
 				sunColor='#64748b'
 				moonColor='#64748b'
@@ -24,7 +27,7 @@ export default function DarkModeToggle({
 				onChange={toggleDarkMode}
 				size={20}
 			/>
-			<p>{text}</p>
+			<p className='hidden md:flex'>{text}</p>
 		</button>
 	);
 }

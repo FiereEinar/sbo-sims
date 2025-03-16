@@ -29,6 +29,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types/category';
 import { useToast } from '@/hooks/use-toast';
 import ArrayInputField from '../ArrayInputField';
+import { useTransactionFilterStore } from '@/store/transactionsFilter';
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -47,6 +48,7 @@ export default function AddCategoryForm({
 		);
 	}
 
+	const { getFilterValues } = useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
 	const [org, setOrg] = useState<string>();
 	const [details, setDetails] = useState<string[]>([]);
@@ -57,8 +59,12 @@ export default function AddCategoryForm({
 	});
 
 	const { data: categoryData } = useQuery({
-		queryKey: [QUERY_KEYS.CATEGORY, { categoryID: category?._id }],
-		queryFn: () => fetchCategoryAndTransactions(category?._id ?? ''),
+		queryKey: [
+			QUERY_KEYS.CATEGORY,
+			{ ...getFilterValues(), categoryID: category?._id },
+		],
+		queryFn: () =>
+			fetchCategoryAndTransactions(getFilterValues(), category?._id ?? ''),
 	});
 
 	const {

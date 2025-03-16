@@ -83,8 +83,10 @@ export default function AddTransactionForm({
 			setValue('amount', transaction.amount.toString());
 			setValue('studentID', transaction.owner.studentID);
 			setValue('description', transaction.description);
-			transaction.category.details.forEach((detail) => {
-				setValue(`details.${detail}`, transaction.details[detail]);
+
+			transaction.category?.details?.forEach((detail) => {
+				if (!transaction.details) return;
+				setValue(`details.${detail}`, transaction.details?.[detail]);
 			});
 		}
 	}, [transaction, setValue]);

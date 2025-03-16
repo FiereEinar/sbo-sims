@@ -35,12 +35,18 @@ type TransactionsTableProps = {
 	transactions?: Transaction[];
 	isLoading: boolean;
 	disableFiltes?: boolean;
+	disableCategories?: boolean;
+	disableStatus?: boolean;
+	disableCourse?: boolean;
 };
 
 export default function TransactionsTable({
 	transactions,
 	isLoading,
 	disableFiltes = false,
+	disableCourse = false,
+	disableCategories = false,
+	disableStatus = false,
 }: TransactionsTableProps) {
 	const navigate = useNavigate();
 	const [totalAmount, setTotalAmount] = useState(0);
@@ -63,14 +69,26 @@ export default function TransactionsTable({
 					<TableHead className='w-[100px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Fullname</TableHead>
 					<TableHead className='w-[75px]'>
-						{disableFiltes ? 'Course' : <TableHeadCoursePicker />}
+						{disableFiltes || disableCourse ? (
+							'Course'
+						) : (
+							<TableHeadCoursePicker />
+						)}
 					</TableHead>
 					<TableHead className='w-[175px]'>Date</TableHead>
 					<TableHead className='w-[300px]'>
-						{disableFiltes ? 'Category' : <TableHeadCategoryPicker />}
+						{disableFiltes || disableCategories ? (
+							'Category'
+						) : (
+							<TableHeadCategoryPicker />
+						)}
 					</TableHead>
 					<TableHead className='w-[50px]'>
-						{disableFiltes ? 'Status' : <TableHeadStatusPicker />}
+						{disableFiltes || disableStatus ? (
+							'Status'
+						) : (
+							<TableHeadStatusPicker />
+						)}
 					</TableHead>
 					<TableHead className='w-[100px] text-right'>Amount</TableHead>
 				</TableRow>

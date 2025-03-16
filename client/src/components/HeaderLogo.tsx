@@ -7,13 +7,13 @@ export default function HeaderLogo() {
 		currentUser?.activeSemDB == '2' ? '2nd semester' : '1st semester';
 
 	return (
-		<div className='flex gap-2 items-center text-white'>
+		<div className='shrink-0 flex gap-2 items-center text-white'>
 			<img
-				className='size-16 rounded-full border'
+				className='shrink-0 size-12 md:size-16 rounded-full border'
 				src='/images/SBO_LOGO.jpg'
 				alt=''
 			/>
-			<div className='text-muted-foreground'>
+			<div className='hidden md:flex flex-col text-muted-foreground'>
 				<Header>SIMS</Header>
 				<p className='text-xs'>
 					{currentUser?.activeSchoolYearDB} -{' '}

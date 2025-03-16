@@ -123,6 +123,9 @@ export const get_transaction_list_csv = asyncHandler(
 
 		// add csv header
 		let header = 'Student ID,Student Name,Amount,Date Payed,';
+		req.filteredTransactions[0].category.details.map((detail) => {
+			header = header.concat(`${detail},`);
+		});
 
 		csv.unshift(header);
 

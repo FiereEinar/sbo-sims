@@ -1,8 +1,9 @@
-import { Transaction } from '@/types/transaction';
+import { Transaction, TransactionsFilterValues } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
 import { Category, CategoryWithTransactions } from '@/types/category';
 import { CategoryFormValues } from '@/components/forms/AddCategoryForm';
 import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
+import { generateTransactionsFilterURL } from './transaction';
 
 export const fetchCategories = async (): Promise<Category[] | undefined> => {
 	try {
@@ -32,14 +33,18 @@ interface CategoryAndTransactionsObject {
 }
 
 export const fetchCategoryAndTransactions = async (
+	filters: TransactionsFilterValues,
 	categoryID: string,
 	page: number = 1,
 	pageSize: number = 50
 ): Promise<APIPaginatedResponse<CategoryAndTransactionsObject | undefined>> => {
 	try {
-		const { data } = await axiosInstance.get(
-			`/category/${categoryID}?page=${page}&pageSize=${pageSize}&category=${categoryID}`
+		filters.category = categoryID;
+		const url = generateTransactionsFilterURL(
+			filters,
+			`/category/${categoryID}?page=${page}&pageSize=${pageSize}`
 		);
+		const { data } = await axiosInstance.get(url);
 
 		return data;
 	} catch (err: any) {

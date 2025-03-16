@@ -1,14 +1,17 @@
 import { fetchCategoryAndTransactions } from '@/api/category';
 import BackButton from '@/components/buttons/BackButton';
+import DownloadTransactionsButton from '@/components/buttons/DownloadTransactionsButton';
 import EditAndDeleteCategoryButton from '@/components/buttons/EditAndDeleteCategoryButton';
 import CategoryDataCard from '@/components/CategoryDataCard';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
+import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import { QUERY_KEYS } from '@/constants';
 import { isAuthorized } from '@/lib/utils';
+import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -17,18 +20,29 @@ import { useParams } from 'react-router-dom';
 const pageSize = 10;
 
 export default function CategoryInfo() {
-	const [page, setPage] = useState(1);
-	const userRole = useUserStore((state) => state.user?.role);
 	const { categoryID } = useParams();
 	if (!categoryID) return;
 
+	const { getFilterValues } = useTransactionFilterStore((state) => state);
+	const [page, setPage] = useState(1);
+	const userRole = useUserStore((state) => state.user?.role);
+
 	const { data, isLoading, error } = useQuery({
-		queryKey: [QUERY_KEYS.CATEGORY, { categoryID, page, pageSize }],
-		queryFn: () => fetchCategoryAndTransactions(categoryID, page, pageSize),
+		queryKey: [
+			QUERY_KEYS.CATEGORY,
+			{ ...getFilterValues(), categoryID, page, pageSize },
+		],
+		queryFn: () =>
+			fetchCategoryAndTransactions(
+				getFilterValues(),
+				categoryID,
+				page,
+				pageSize
+			),
 	});
 
 	if (error) {
-		return <p>Error</p>;
+		return <p>Session expired, login again</p>;
 	}
 
 	return (
@@ -38,27 +52,32 @@ export default function CategoryInfo() {
 			{data?.data && (
 				<StickyHeader>
 					<CategoryDataCard category={data.data.category} />
-					{isAuthorized(userRole, 'governor') && (
-						<EditAndDeleteCategoryButton category={data.data.category} />
-					)}
+					<div className='flex flex-col items-start sm:items-end space-y-2'>
+						{isAuthorized(userRole, 'governor') && (
+							<EditAndDeleteCategoryButton category={data.data.category} />
+						)}
+						{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+							<DownloadTransactionsButton categoryID={categoryID} />
+						)}
+					</div>
 				</StickyHeader>
 			)}
 
+			<TransactionsFilter />
+
 			<TransactionsTable
-				disableFiltes={true}
+				disableCategories={true}
 				isLoading={isLoading}
 				transactions={data?.data?.categoryTransactions}
 			/>
 
 			{data && (
-				<div className='md:absolute w-full p-5 md:bottom-0'>
-					<PaginationController
-						currentPage={page ?? 1}
-						nextPage={data.next}
-						prevPage={data.prev}
-						setPage={setPage}
-					/>
-				</div>
+				<PaginationController
+					currentPage={page ?? 1}
+					nextPage={data.next}
+					prevPage={data.prev}
+					setPage={setPage}
+				/>
 			)}
 		</SidebarPageLayout>
 	);

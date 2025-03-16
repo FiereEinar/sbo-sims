@@ -6,15 +6,25 @@ import { Button } from '../ui/button';
 
 type FileType = 'pdf' | 'csv';
 
-export default function DownloadTransactionsButton() {
+type DownloadTransactionsButtonProps = {
+	categoryID?: string;
+};
+
+export default function DownloadTransactionsButton({
+	categoryID,
+}: DownloadTransactionsButtonProps) {
 	const { getFilterValues } = useTransactionFilterStore((state) => state);
 	const [isDownloading, setIsDownloading] = useState(false);
 
 	const handleDownloadTransactions = async (fileType: FileType) => {
 		try {
 			setIsDownloading(true);
+
+			const filters = { ...getFilterValues(), page: 1 };
+			if (categoryID) filters.category = categoryID;
+
 			const url = generateTransactionsFilterURL(
-				{ ...getFilterValues(), page: 1 },
+				filters,
 				`/transaction/download/${fileType}?page=1`
 			);
 

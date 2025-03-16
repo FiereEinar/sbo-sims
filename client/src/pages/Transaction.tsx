@@ -1,6 +1,5 @@
 import { fetchCategories } from '@/api/category';
 import { fetchTransactions } from '@/api/transaction';
-import DownloadTransactionsButton from '@/components/buttons/DownloadTransactionsButton';
 import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
@@ -66,9 +65,6 @@ export default function Transaction() {
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter />
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-					<DownloadTransactionsButton />
-				)}
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

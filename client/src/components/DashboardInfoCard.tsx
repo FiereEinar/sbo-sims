@@ -39,9 +39,7 @@ export default function DashboardInfoCard({
 					</>
 				)}
 			</div>
-			<div className='flex sm:hidden xl:flex items-center justify-center'>
-				{icon}
-			</div>
+			<div className='flex items-center justify-center'>{icon}</div>
 		</article>
 	);
 }

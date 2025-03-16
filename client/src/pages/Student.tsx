@@ -64,7 +64,6 @@ export default function Student() {
 				isLoading={studentsLoading}
 				students={studentsFetchResult?.data}
 			/>
-			{studentsLoading && <p>Loading...</p>}
 
 			{studentsFetchResult && (
 				<div className='md:absolute w-full p-5 md:bottom-0'>

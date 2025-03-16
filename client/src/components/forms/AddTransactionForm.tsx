@@ -31,6 +31,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
 import { SelectContainer, SelectContainerItem } from '../ui/select';
+import { ring } from 'ldrs';
+
+ring.register();
 
 type AddTransactionFormProps = {
 	categories?: Category[];
@@ -55,7 +58,7 @@ export default function AddTransactionForm({
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 
-	const { data: studentsFetchResult } = useQuery({
+	const { data: studentsFetchResult, isLoading: fetchingStudents } = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
 		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
 	});
@@ -147,7 +150,18 @@ export default function AddTransactionForm({
 						id='amount'
 					/>
 
-					<div>
+					<div className='relative'>
+						{fetchingStudents && (
+							<div className='absolute top-[55%] right-2'>
+								<l-ring
+									size='20'
+									stroke='3'
+									bg-opacity='0'
+									speed='2'
+									color='#1f1f1f'
+								></l-ring>
+							</div>
+						)}
 						<InputField<TransactionFormValues>
 							name='studentID'
 							registerFn={register}

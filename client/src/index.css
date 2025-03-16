@@ -35,6 +35,7 @@ input:-webkit-autofill:active {
 		--primary-1: 197, 100%, 45%;
 		--primary-1-foreground: 0 0% 98%;
 
+		/* #171717 */
 		--primary: 0 0% 9%;
 		--primary-foreground: 0 0% 98%;
 

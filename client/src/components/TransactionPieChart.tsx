@@ -23,6 +23,10 @@ import { numberWithCommas } from '@/lib/utils';
 
 export const description = 'A donut chart with text';
 
+import { ring } from 'ldrs';
+
+ring.register();
+
 type ChartData = {
 	category: string;
 	totalAmount: number;
@@ -33,7 +37,13 @@ type ChartConfigType = {
 	[key: string]: { label: string; color?: string };
 };
 
-export default function TransactionPieChart() {
+type TransactionPieChartProps = {
+	isLoading: boolean;
+};
+
+export default function TransactionPieChart({
+	isLoading,
+}: TransactionPieChartProps) {
 	const colors = [
 		'hsl(var(--chart-1))',
 		'hsl(var(--chart-2))',
@@ -93,54 +103,66 @@ export default function TransactionPieChart() {
 				{/* <CardDescription>January - June 2024</CardDescription> */}
 			</CardHeader>
 			<CardContent className='flex-1 pb-0'>
-				<ChartContainer
-					config={chartConfig}
-					className='mx-auto aspect-square max-h-[250px]'
-				>
-					<PieChart>
-						<ChartTooltip
-							cursor={false}
-							content={<ChartTooltipContent hideLabel />}
-						/>
-						<Pie
-							data={chartData}
-							dataKey='totalAmount'
-							nameKey='category'
-							innerRadius={60}
-							strokeWidth={5}
-						>
-							<Label
-								content={({ viewBox }) => {
-									if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-										return (
-											<text
-												x={viewBox.cx}
-												y={viewBox.cy}
-												textAnchor='middle'
-												dominantBaseline='middle'
-											>
-												<tspan
+				{isLoading ? (
+					<div className='mx-auto aspect-square max-h-[250px] flex items-center justify-center'>
+						<l-ring
+							size='100'
+							stroke='12'
+							bg-opacity='0'
+							speed='2'
+							color='#1f1f1f'
+						></l-ring>
+					</div>
+				) : (
+					<ChartContainer
+						config={chartConfig}
+						className='mx-auto aspect-square max-h-[250px]'
+					>
+						<PieChart>
+							<ChartTooltip
+								cursor={false}
+								content={<ChartTooltipContent hideLabel />}
+							/>
+							<Pie
+								data={chartData}
+								dataKey='totalAmount'
+								nameKey='category'
+								innerRadius={60}
+								strokeWidth={5}
+							>
+								<Label
+									content={({ viewBox }) => {
+										if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+											return (
+												<text
 													x={viewBox.cx}
 													y={viewBox.cy}
-													className='fill-foreground text-3xl font-bold'
+													textAnchor='middle'
+													dominantBaseline='middle'
 												>
-													{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
-												</tspan>
-												<tspan
-													x={viewBox.cx}
-													y={(viewBox.cy || 0) + 24}
-													className='fill-muted-foreground'
-												>
-													Total Collections
-												</tspan>
-											</text>
-										);
-									}
-								}}
-							/>
-						</Pie>
-					</PieChart>
-				</ChartContainer>
+													<tspan
+														x={viewBox.cx}
+														y={viewBox.cy}
+														className='fill-foreground text-3xl font-bold'
+													>
+														{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
+													</tspan>
+													<tspan
+														x={viewBox.cx}
+														y={(viewBox.cy || 0) + 24}
+														className='fill-muted-foreground'
+													>
+														Total Collections
+													</tspan>
+												</text>
+											);
+										}
+									}}
+								/>
+							</Pie>
+						</PieChart>
+					</ChartContainer>
+				)}
 			</CardContent>
 			<CardFooter className='flex-col gap-2 text-sm'></CardFooter>
 		</Card>

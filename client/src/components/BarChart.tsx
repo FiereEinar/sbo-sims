@@ -19,6 +19,8 @@ import {
 import { DashboardData, DashboardDataTransaction } from '@/pages/Dashboard';
 import { numberWithCommas } from '@/lib/utils';
 import { addDays, eachDayOfInterval, subMonths } from 'date-fns';
+import { Skeleton } from './ui/skeleton';
+import BouncyLoading from './loading/BouncyLoading';
 
 export const description = 'An interactive bar chart';
 
@@ -36,6 +38,7 @@ type ChartData = DashboardDataTransaction[];
 
 type BarChartsProps = {
 	dashboardData?: DashboardData;
+	isLoading: boolean;
 };
 
 const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
@@ -64,7 +67,10 @@ const generateChartData = (data: DashboardDataTransaction[]): ChartData => {
 	return chartData;
 };
 
-export default function BarCharts({ dashboardData }: BarChartsProps) {
+export default function BarCharts({
+	dashboardData,
+	isLoading,
+}: BarChartsProps) {
 	const [chartData, setChartData] = React.useState<ChartData>([]);
 
 	React.useEffect(() => {
@@ -90,58 +96,68 @@ export default function BarCharts({ dashboardData }: BarChartsProps) {
 						// onClick={() => setActiveChart(chart)}
 					>
 						<span className='text-xs text-muted-foreground'>Total</span>
-						<span className='text-lg font-bold leading-none sm:text-3xl'>
-							P{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
-						</span>
+						{isLoading ? (
+							<Skeleton className='w-[120px] h-[35px]' />
+						) : (
+							<span className='text-lg font-bold leading-none sm:text-3xl'>
+								P{numberWithCommas(dashboardData?.totalRevenue ?? 0)}
+							</span>
+						)}
 					</button>
 				</div>
 			</CardHeader>
 			<CardContent className='px-2 sm:p-6'>
-				<ChartContainer
-					config={chartConfig}
-					className='aspect-auto h-[250px] w-full'
-				>
-					<BarChart
-						accessibilityLayer
-						data={chartData}
-						margin={{
-							left: 12,
-							right: 12,
-						}}
+				{isLoading ? (
+					<div className='aspect-auto h-[300px] w-full'>
+						<BouncyLoading />
+					</div>
+				) : (
+					<ChartContainer
+						config={chartConfig}
+						className='aspect-auto h-[300px] w-full'
 					>
-						<CartesianGrid vertical={false} />
-						<XAxis
-							dataKey='date'
-							tickLine={false}
-							axisLine={false}
-							tickMargin={8}
-							minTickGap={32}
-							tickFormatter={(value) => {
-								const date = new Date(value);
-								return date.toLocaleDateString('en-US', {
-									month: 'short',
-									day: 'numeric',
-								});
+						<BarChart
+							accessibilityLayer
+							data={chartData}
+							margin={{
+								left: 12,
+								right: 12,
 							}}
-						/>
-						<ChartTooltip
-							content={
-								<ChartTooltipContent
-									className='w-[150px]'
-									nameKey='views'
-									labelFormatter={(value) => {
-										return new Date(value).toLocaleDateString('en-US', {
-											month: 'short',
-											day: 'numeric',
-											year: 'numeric',
-										});
-									}}
-								/>
-							}
-						/>
-						<Bar dataKey={'totalAmount'} fill={`hsl(var(--chart-1))`} />
-					</BarChart>
-				</ChartContainer>
+						>
+							<CartesianGrid vertical={false} />
+							<XAxis
+								dataKey='date'
+								tickLine={false}
+								axisLine={false}
+								tickMargin={8}
+								minTickGap={32}
+								tickFormatter={(value) => {
+									const date = new Date(value);
+									return date.toLocaleDateString('en-US', {
+										month: 'short',
+										day: 'numeric',
+									});
+								}}
+							/>
+							<ChartTooltip
+								content={
+									<ChartTooltipContent
+										className='w-[150px]'
+										nameKey='views'
+										labelFormatter={(value) => {
+											return new Date(value).toLocaleDateString('en-US', {
+												month: 'short',
+												day: 'numeric',
+												year: 'numeric',
+											});
+										}}
+									/>
+								}
+							/>
+							<Bar dataKey={'totalAmount'} fill={`hsl(var(--chart-1))`} />
+						</BarChart>
+					</ChartContainer>
+				)}
 			</CardContent>
 		</Card>
 	);

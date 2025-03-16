@@ -9,6 +9,7 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionPieChart from '@/components/TransactionPieChart';
 import Header from '@/components/ui/header';
+import { Skeleton } from '@/components/ui/skeleton';
 import { QUERY_KEYS } from '@/constants';
 import { numberWithCommas } from '@/lib/utils';
 import { APIPaginatedResponse } from '@/types/api-response';
@@ -40,14 +41,17 @@ export type DashboardData = {
 };
 
 export default function Dashboard() {
-	const { data: fetchTransactionsResult } = useQuery({
-		queryKey: [QUERY_KEYS.TRANSACTION],
-		queryFn: () => fetchTransactions({}, 1, 3),
-	});
-
 	const { data: dashboardData, isLoading } = useQuery({
 		queryKey: [QUERY_KEYS.DASHBOARD_DATA],
 		queryFn: () => fetchDashboardData(),
+	});
+
+	const {
+		data: fetchTransactionsResult,
+		isLoading: fetchingRecentTransactions,
+	} = useQuery({
+		queryKey: [QUERY_KEYS.TRANSACTION],
+		queryFn: () => fetchTransactions({}, 1, 3),
 	});
 
 	return (
@@ -56,23 +60,30 @@ export default function Dashboard() {
 				<Header>
 					<div className='flex items-center gap-3'>
 						<p>Dashboard</p>
-						{isLoading && (
-							<p className='text-xs text-muted-foreground'>Fetching data...</p>
-						)}
+						{isLoading ||
+							(fetchingRecentTransactions && (
+								<p className='text-xs text-muted-foreground'>
+									Fetching data...
+								</p>
+							))}
 					</div>
 				</Header>
 			</StickyHeader>
 
 			<div className='flex flex-col md:flex-row gap-3 w-[93dvw] sm:w-full'>
 				<div className='flex w-full flex-col-reverse sm:flex-col gap-3'>
-					<DashboardInfoGrid dashboardData={dashboardData} />
-					<BarCharts dashboardData={dashboardData} />
+					<DashboardInfoGrid
+						dashboardData={dashboardData}
+						isLoading={isLoading}
+					/>
+					<BarCharts dashboardData={dashboardData} isLoading={isLoading} />
 				</div>
 
 				<div className='grid grid-cols-1 gap-3 flex-shrink-0'>
-					<TransactionPieChart />
+					<TransactionPieChart isLoading={isLoading} />
 					<DashboardRecenTransactions
 						fetchTransactionsResult={fetchTransactionsResult}
+						isLoading={fetchingRecentTransactions}
 					/>
 				</div>
 			</div>
@@ -82,9 +93,13 @@ export default function Dashboard() {
 
 type DashboardInfoGridProps = {
 	dashboardData?: DashboardData;
+	isLoading: boolean;
 };
 
-function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
+function DashboardInfoGrid({
+	dashboardData,
+	isLoading,
+}: DashboardInfoGridProps) {
 	const totalRevenue = dashboardData?.totalRevenue ?? 0;
 	const totalRevenueLastMonth = dashboardData?.totalRevenueLastMonth ?? 0;
 	const totalTransaction = dashboardData?.totalTransaction ?? 0;
@@ -109,6 +124,7 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 						: revenueIncreaseInPercentage || 0
 				}
 				icon={<Dollar />}
+				isLoading={isLoading}
 			/>
 			<DashboardInfoCard
 				title='Total Transactions'
@@ -119,16 +135,19 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 						: transactionIncreaseInPercentage || 0
 				}
 				icon={<Ledger />}
+				isLoading={isLoading}
 			/>
 			<DashboardInfoCard
 				title='Total Students'
 				value={numberWithCommas(dashboardData?.totalStudents ?? 0)}
 				icon={<Person />}
+				isLoading={isLoading}
 			/>
 			<DashboardInfoCard
 				title='Transactions Today'
 				value={numberWithCommas(dashboardData?.transactionsToday ?? 0)}
 				icon={<Today />}
+				isLoading={isLoading}
 			/>
 		</div>
 	);
@@ -136,10 +155,12 @@ function DashboardInfoGrid({ dashboardData }: DashboardInfoGridProps) {
 
 type DashboardRecenTransactionsProps = {
 	fetchTransactionsResult?: APIPaginatedResponse<Transaction[]>;
+	isLoading: boolean;
 };
 
 function DashboardRecenTransactions({
 	fetchTransactionsResult,
+	isLoading,
 }: DashboardRecenTransactionsProps) {
 	return (
 		<div className='transition-all bg-card/40 shadow-sm rounded-lg p-5 border'>
@@ -152,23 +173,37 @@ function DashboardRecenTransactions({
 						No recent transactions
 					</p>
 				)}
-				{fetchTransactionsResult?.data.map((transaction, i, arr) => (
-					<div
-						className={`transition-all flex justify-between items-center hover:bg-card/90 p-2 ${
-							i !== arr.length - 1 && 'border-b'
-						}`}
-						key={transaction._id}
-					>
-						<div className='w-[150px]'>
-							<p>{_.startCase(transaction.owner.firstname.toLowerCase())}</p>
-							<p className='text-xs text-muted-foreground'>
-								{transaction.owner.studentID}
-							</p>
-						</div>
-
-						<p className='font-bold'>P{transaction.amount}</p>
+				{isLoading ? (
+					<div className='space-y-2 pt-4'>
+						<Skeleton className='w-full h-10' />
+						<hr />
+						<Skeleton className='w-full h-10' />
+						<hr />
+						<Skeleton className='w-full h-10' />
 					</div>
-				))}
+				) : (
+					<>
+						{fetchTransactionsResult?.data.map((transaction, i, arr) => (
+							<div
+								className={`transition-all flex justify-between items-center hover:bg-card/90 p-2 ${
+									i !== arr.length - 1 && 'border-b'
+								}`}
+								key={transaction._id}
+							>
+								<div className='w-[150px]'>
+									<p>
+										{_.startCase(transaction.owner.firstname.toLowerCase())}
+									</p>
+									<p className='text-xs text-muted-foreground'>
+										{transaction.owner.studentID}
+									</p>
+								</div>
+
+								<p className='font-bold'>P{transaction.amount}</p>
+							</div>
+						))}
+					</>
+				)}
 			</div>
 		</div>
 	);

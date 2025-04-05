@@ -2,10 +2,6 @@
 
 A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.
 
-## Status
-
-🚧 **Under Development**: This application is currently a work in progress, and new features and improvements are being actively added. Some features may be incomplete or subject to change.
-
 ## Screenshots
 
 ### Dashboard

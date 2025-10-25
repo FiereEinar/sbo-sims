@@ -7,6 +7,7 @@ import { CategorySchema } from '../models/category';
 import { TransactionSchema } from '../models/transaction';
 import { OrganizationSchema } from '../models/organization';
 import { SessionSchema } from '../models/session';
+import { PrelistingSchema } from '../models/prelisting';
 
 export const attachDatabaseModels = async (
 	req: Request,
@@ -35,6 +36,10 @@ export const attachDatabaseModels = async (
 		req.TransactionModel = dynamicConnection.model(
 			DB_MODEL.TRANSACTION,
 			TransactionSchema
+		);
+		req.PrelistingModel = dynamicConnection.model(
+			DB_MODEL.PRELISTING,
+			PrelistingSchema
 		);
 
 		next();

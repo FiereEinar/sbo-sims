@@ -1,0 +1,25 @@
+{
+	"name": "transactions-tracker",
+	"version": "1.0.0",
+	"description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
+	"main": "index.js",
+	"scripts": {
+		"dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\"",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/FiereEinar/transactions-tracker.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"bugs": {
+		"url": "https://github.com/FiereEinar/transactions-tracker/issues"
+	},
+	"homepage": "https://github.com/FiereEinar/transactions-tracker#readme",
+	"devDependencies": {
+		"concurrently": "^9.2.1"
+	}
+}

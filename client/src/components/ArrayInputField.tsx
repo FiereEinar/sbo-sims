@@ -40,8 +40,12 @@ export default function ArrayInputField({
 						value={inputValue}
 						autoComplete='off'
 						onChange={(e) => setInputValue(e.target.value)}
-						onKeyUpCapture={(e) => {
-							if (e.key === 'Enter') onInputSubmit();
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+								e.stopPropagation();
+								onInputSubmit();
+							}
 						}}
 						className='rounded-r-none'
 						placeholder={placeholder}

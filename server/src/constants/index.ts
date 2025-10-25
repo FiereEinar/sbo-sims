@@ -7,6 +7,7 @@ export const DB_MODEL = {
 	USER: 'User',
 	STUDENT: 'Student',
 	TRANSACTION: 'Transaction',
+	PRELISTING: 'Prelisting',
 	ORGANIZATION: 'Organization',
 	CATEGORY: 'Category',
 	SESSION: 'Session',

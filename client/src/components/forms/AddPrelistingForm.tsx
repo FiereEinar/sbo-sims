@@ -1,7 +1,3 @@
-import {
-	submitTransactionForm,
-	submitUpdateTransactionForm,
-} from '@/api/transaction';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Dialog,
@@ -13,7 +9,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { DialogHeader, DialogFooter } from '../ui/dialog';
-import { transactionSchema } from '@/lib/validations/transactionSchema';
 import InputField from '../InputField';
 import { useEffect, useState } from 'react';
 import { Category } from '@/types/category';
@@ -21,7 +16,6 @@ import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../CategoryPicker';
 import Plus from '../icons/plus';
-import { Transaction } from '@/types/transaction';
 import { useNavigate } from 'react-router-dom';
 import ErrorText from '../ui/error-text';
 import { fetchStudents } from '@/api/student';
@@ -32,24 +26,30 @@ import { QUERY_KEYS } from '@/constants';
 import { SelectContainer, SelectContainerItem } from '../ui/select';
 import { ring } from 'ldrs';
 import { useForm } from 'react-hook-form';
+import { prelistingSchema } from '@/lib/validations/prelistingSchema';
+import { Prelisting } from '@/types/prelisting';
+import {
+	submitPrelistingForm,
+	submitUpdatePrelistingForm,
+} from '@/api/prelisting';
 
 ring.register();
 
-type AddTransactionFormProps = {
+type AddPrelistingFormProps = {
 	categories?: Category[];
 	mode?: 'edit' | 'add';
-	transaction?: Transaction;
+	prelisting?: Prelisting;
 };
 
-export type TransactionFormValues = z.infer<typeof transactionSchema>;
+export type PrelistingFormValues = z.infer<typeof prelistingSchema>;
 
-export default function AddTransactionForm({
+export default function AddPrelistingForm({
 	categories,
-	transaction,
+	prelisting,
 	mode = 'add',
-}: AddTransactionFormProps) {
-	if (transaction === undefined && mode === 'edit') {
-		throw new Error('No transaction data provided while form mode is on edit');
+}: AddPrelistingFormProps) {
+	if (prelisting === undefined && mode === 'edit') {
+		throw new Error('No prelisting data provided while form mode is on edit');
 	}
 
 	const [date, setDate] = useState<Date>();
@@ -71,28 +71,26 @@ export default function AddTransactionForm({
 		setError,
 		reset,
 		formState: { errors, isSubmitting },
-	} = useForm<TransactionFormValues>({
-		resolver: zodResolver(transactionSchema),
+	} = useForm<PrelistingFormValues>({
+		resolver: zodResolver(prelistingSchema),
 	});
 
 	useEffect(() => {
-		if (transaction) {
-			setDate(new Date(transaction.date));
-			setCategory(transaction.category);
+		if (prelisting) {
+			setDate(new Date(prelisting.date ?? ''));
+			setCategory(prelisting.category);
+			setValue('studentID', prelisting.owner.studentID);
+			setValue('description', prelisting.description);
 
-			setValue('amount', transaction.amount.toString());
-			setValue('studentID', transaction.owner.studentID);
-			setValue('description', transaction.description);
-
-			transaction.category?.details?.forEach((detail) => {
-				if (!transaction.details) return;
-				setValue(`details.${detail}`, transaction.details?.[detail]);
+			prelisting.category?.details?.forEach((detail) => {
+				if (!prelisting.details) return;
+				setValue(`details.${detail}`, prelisting.details?.[detail]);
 			});
 		}
-	}, [transaction, setValue]);
+	}, [prelisting, setValue]);
 
 	// TODO: create another input field for time
-	const onSubmit = async (data: TransactionFormValues) => {
+	const onSubmit = async (data: PrelistingFormValues) => {
 		try {
 			if (!category) {
 				setError('categoryID', { message: 'Pick a category' });
@@ -102,18 +100,16 @@ export default function AddTransactionForm({
 			data.date = date?.toISOString();
 			data.categoryID = category._id;
 
-			console.log(data);
+			if (prelisting && mode === 'edit')
+				await submitUpdatePrelistingForm(prelisting._id, data);
+			else if (mode === 'add') await submitPrelistingForm(data);
 
-			if (transaction && mode === 'edit')
-				await submitUpdateTransactionForm(transaction._id, data);
-			else if (mode === 'add') await submitTransactionForm(data);
-
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
-			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRELISTING] });
+			navigate(`/prelisting/${prelisting?._id ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {
 			setError('root', {
-				message: err.message || 'Failed to submit transaction',
+				message: err.message || 'Failed to submit prelisting',
 			});
 		}
 	};
@@ -124,7 +120,7 @@ export default function AddTransactionForm({
 				{mode === 'add' ? (
 					<Button className='flex justify-center gap-1' size='sm'>
 						<Plus />
-						<p>Add Transaction</p>
+						<p>Add Prelisting</p>
 					</Button>
 				) : (
 					<Button className='flex gap-1' size='sm' variant='ocean'>
@@ -137,21 +133,12 @@ export default function AddTransactionForm({
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
 					<DialogTitle>
-						{mode === 'add' ? 'Add' : 'Edit'} Transaction
+						{mode === 'add' ? 'Add' : 'Edit'} Prelisting
 					</DialogTitle>
 					<DialogDescription>Fill up the form</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
-					<InputField<TransactionFormValues>
-						name='amount'
-						type='number'
-						registerFn={register}
-						errors={errors}
-						label='Amount:'
-						id='amount'
-					/>
-
 					<div className='relative'>
 						{fetchingStudents && (
 							<div className='absolute top-[55%] right-2'>
@@ -164,7 +151,7 @@ export default function AddTransactionForm({
 								></l-ring>
 							</div>
 						)}
-						<InputField<TransactionFormValues>
+						<InputField<PrelistingFormValues>
 							name='studentID'
 							registerFn={register}
 							errors={errors}
@@ -214,7 +201,7 @@ export default function AddTransactionForm({
 					<div className='grid grid-cols-2 gap-2'>
 						{category &&
 							category.details.map((detail, i) => (
-								<InputField<TransactionFormValues>
+								<InputField<PrelistingFormValues>
 									key={i}
 									name={`details.${detail}`}
 									type='text'
@@ -226,7 +213,7 @@ export default function AddTransactionForm({
 							))}
 					</div>
 
-					<InputField<TransactionFormValues>
+					<InputField<PrelistingFormValues>
 						name='description'
 						registerFn={register}
 						errors={errors}

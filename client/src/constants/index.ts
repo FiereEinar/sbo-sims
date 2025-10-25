@@ -15,6 +15,11 @@ export const navbarLinks = [
 		icon: 'money',
 	},
 	{
+		path: '/prelisting',
+		name: 'Prelisting',
+		icon: 'ledger',
+	},
+	{
 		path: '/category',
 		name: 'Category',
 		icon: 'category',
@@ -29,6 +34,7 @@ export const navbarLinks = [
 export const QUERY_KEYS = {
 	STUDENT: 'students',
 	TRANSACTION: 'transactions',
+	PRELISTING: 'prelisting',
 	ORGANIZATION: 'organizations',
 	ORGANIZATION_CATEGORIES: 'organization_categories',
 	CATEGORY: 'categories',

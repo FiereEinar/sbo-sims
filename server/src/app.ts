@@ -10,6 +10,7 @@ import authRouter from './routes/auth';
 import studentRouter from './routes/student';
 import userRouter from './routes/user';
 import transactionRouter from './routes/transaction';
+import prelistingRouter from './routes/prelisting';
 import categoryRouter from './routes/category';
 import organizationRouter from './routes/organization';
 
@@ -44,6 +45,7 @@ app.use(attachDatabaseModels); // Attach dynamic database models to the request 
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);
+app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);
 

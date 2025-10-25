@@ -14,6 +14,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Organization from './pages/Organization';
 import OrganizationInfo from './pages/OrganizationInfo';
 import Settings from './pages/Settings';
+import Prelisting from './pages/Prelisting';
+import PrelistingInfo from './pages/PrelistingInfo';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -39,6 +41,10 @@ export default function Route() {
 					element: <Transaction />,
 				},
 				{
+					path: '/prelisting',
+					element: <Prelisting />,
+				},
+				{
 					path: '/category',
 					element: <Category />,
 				},
@@ -53,6 +59,10 @@ export default function Route() {
 				{
 					path: '/transaction/:transactionID',
 					element: <TransactionInfo />,
+				},
+				{
+					path: '/prelisting/:prelistingID',
+					element: <PrelistingInfo />,
 				},
 				{
 					path: '/organization',

@@ -6,6 +6,7 @@ import { ICategory } from '../models/category';
 import { IOrganization } from '../models/organization';
 import { IStudent } from '../models/student';
 import { ISession } from '../models/session';
+import { IPrelisting } from './src/models/prelisting';
 
 declare global {
 	namespace Express {
@@ -14,6 +15,7 @@ declare global {
 			UserModel: Model<IUser>;
 			StudentModel: Model<IStudent>;
 			TransactionModel: Model<ITransaction>;
+			PrelistingModel: Model<IPrelisting>;
 			CategoryModel: Model<ICategory>;
 			OrganizationModel: Model<IOrganization>;
 			SessionModel: Model<ISession>;

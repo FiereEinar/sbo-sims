@@ -3,6 +3,8 @@ import { Input } from './ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Label } from './ui/label';
 import { useStudentFilterStore } from '@/store/studentsFilter';
+import SchoolYearInput from './SchoolYearInput';
+import SemInput from './SemInput';
 
 type StudentFilterProps = {};
 
@@ -28,6 +30,9 @@ export default function StudentFilter({}: StudentFilterProps) {
 					placeholder='Search for student ID or Fullname'
 				/>
 			</div>
+
+			<SemInput />
+			<SchoolYearInput />
 		</div>
 	);
 }

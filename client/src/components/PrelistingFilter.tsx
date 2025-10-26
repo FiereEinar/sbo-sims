@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { DatePickerWithRange } from './DatePickerWithRange';
+import SchoolYearInput from './SchoolYearInput';
+import SemInput from './SemInput';
 
 export default function PrelistingFilter() {
 	const { setStartDate, setEndDate, setSearch, search } =
@@ -38,6 +40,9 @@ export default function PrelistingFilter() {
 					setEndDate={setEndDate}
 				/>
 			</div>
+
+			<SemInput />
+			<SchoolYearInput />
 		</div>
 	);
 }

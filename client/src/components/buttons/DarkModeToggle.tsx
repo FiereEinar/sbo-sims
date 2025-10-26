@@ -17,7 +17,7 @@ export default function DarkModeToggle({
 
 	return (
 		<button
-			className='flex items-center justify-center md:justify-start gap-2'
+			className='flex items-center justify-start sm:justify-center md:justify-start gap-2'
 			onClick={toggleDarkMode}
 		>
 			<DarkModeSwitch
@@ -27,7 +27,7 @@ export default function DarkModeToggle({
 				onChange={toggleDarkMode}
 				size={20}
 			/>
-			<p className='hidden md:flex'>{text}</p>
+			<p className='flex sm:hidden md:flex'>{text}</p>
 		</button>
 	);
 }

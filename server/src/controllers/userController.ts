@@ -23,8 +23,9 @@ export const update_user = asyncHandler(async (req, res) => {
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	const year = parseInt(activeSchoolYearDB);
+	console.log({ year });
 	appAssert(
-		year >= 2000 || year <= 3000,
+		year >= 2000 && year <= 3000,
 		BAD_REQUEST,
 		'Year must only be between 2000 and 3000'
 	);

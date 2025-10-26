@@ -16,6 +16,8 @@ import { Input } from './ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect, useState } from 'react';
 import { DatePickerWithRange } from './DatePickerWithRange';
+import SchoolYearInput from './SchoolYearInput';
+import SemInput from './SemInput';
 
 export default function TransactionsFilter() {
 	const { setPeriod, setStartDate, setEndDate, setSearch, search } =
@@ -77,6 +79,9 @@ export default function TransactionsFilter() {
 					</SelectContent>
 				</Select>
 			</div>
+
+			<SemInput />
+			<SchoolYearInput />
 		</div>
 	);
 }

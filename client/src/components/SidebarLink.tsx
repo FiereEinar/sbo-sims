@@ -20,9 +20,9 @@ export default function SidebarLink({ link }: SidebarLinkProps) {
 				}`
 			}
 		>
-			<div className='flex items-center justify-center md:justify-start gap-1'>
+			<div className='flex items-center justify-start sm:justify-center md:justify-start gap-1'>
 				<GetIcon iconKey={link.icon as iconKeys} />
-				<p className='hidden md:flex'>{link.name}</p>
+				<p className='flex sm:hidden md:flex'>{link.name}</p>
 			</div>
 		</NavLink>
 	);

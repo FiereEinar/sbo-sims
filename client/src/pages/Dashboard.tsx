@@ -2,7 +2,6 @@ import { fetchDashboardData, fetchTransactions } from '@/api/transaction';
 import BarCharts from '@/components/BarChart';
 import TransactionPieChart from '@/components/TransactionPieChart';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
-import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QUERY_KEYS } from '@/constants';
@@ -143,11 +142,9 @@ export default function Dashboard() {
 
 	return (
 		<SidebarPageLayout>
-			<StickyHeader>
-				<Header>
-					<p className='font-semibold'>Dashboard Overview</p>
-				</Header>
-			</StickyHeader>
+			<Header>
+				<p className='font-semibold'>Dashboard Overview</p>
+			</Header>
 
 			<div className='space-y-6'>
 				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>

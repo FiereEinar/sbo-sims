@@ -6,8 +6,8 @@
 @tailwind utilities;
 
 body {
-	/* font-family: 'Poppins', sans-serif; */
-	font-family: 'Nunito Sans', sans-serif;
+	font-family: 'Poppins', sans-serif;
+	/* font-family: 'Nunito Sans', sans-serif; */
 }
 
 /* custom colors in google autofill / remove colors */

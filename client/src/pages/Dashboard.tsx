@@ -1,210 +1,173 @@
 import { fetchDashboardData, fetchTransactions } from '@/api/transaction';
 import BarCharts from '@/components/BarChart';
-import DashboardInfoCard from '@/components/DashboardInfoCard';
-import Dollar from '@/components/icons/dollar';
-import Ledger from '@/components/icons/ledger';
-import Person from '@/components/icons/person';
-import Today from '@/components/icons/today';
+import TransactionPieChart from '@/components/TransactionPieChart';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
-import TransactionPieChart from '@/components/TransactionPieChart';
 import Header from '@/components/ui/header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QUERY_KEYS } from '@/constants';
 import { numberWithCommas } from '@/lib/utils';
-import { APIPaginatedResponse } from '@/types/api-response';
-import { Category } from '@/types/category';
-import { Transaction } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
+import Dollar from '@/components/icons/dollar';
+import Ledger from '@/components/icons/ledger';
+import Person from '@/components/icons/person';
+import Today from '@/components/icons/today';
 import _ from 'lodash';
+import { Transaction } from '@/types/transaction';
 
-export type DashboardDataTransaction = {
-	date: Date;
-	totalAmount: number;
+type StatCardProps = {
+	title: string;
+	value: string;
+	icon: JSX.Element;
+	delta?: number;
+	isLoading: boolean;
 };
 
-export type DashboardDataCategory = {
-	category: Category;
-	totalAmount: number;
-	totalTransactions: number;
+function StatCard({ title, value, icon, delta, isLoading }: StatCardProps) {
+	return (
+		<div className='rounded-2xl border bg-card/50 p-5 shadow-sm flex justify-between items-start'>
+			<div className='space-y-1'>
+				<p className='text-xs text-muted-foreground uppercase tracking-wide'>
+					{title}
+				</p>
+				{isLoading ? (
+					<div className='space-y-2'>
+						<Skeleton className='h-6 w-28' />
+						<Skeleton className='h-4 w-40' />
+					</div>
+				) : (
+					<>
+						<p className='text-2xl font-semibold'>{value}</p>
+						{delta !== undefined && (
+							<p
+								className={`text-xs ${
+									delta >= 0 ? 'text-emerald-500' : 'text-rose-500'
+								}`}
+							>
+								{delta >= 0 ? '+' : ''}
+								{delta ? delta.toFixed(2) : 0}% vs last month
+							</p>
+						)}
+					</>
+				)}
+			</div>
+			<div className='rounded-xl bg-primary/10 p-3 text-primary'>{icon}</div>
+		</div>
+	);
+}
+
+type RecentTransactionsProps = {
+	data?: Transaction[];
+	isLoading: boolean;
 };
 
-export type DashboardData = {
-	totalRevenue: number;
-	totalRevenueLastMonth: number;
-	totalStudents: number;
-	transactionsToday: number;
-	totalTransaction: number;
-	totalTransactionLastMonth: number;
-	transactions: DashboardDataTransaction[];
-	categories: DashboardDataCategory[];
-};
+function RecentTransactions({ data, isLoading }: RecentTransactionsProps) {
+	return (
+		<div className='rounded-2xl border bg-card/50 p-5 shadow-sm'>
+			<h2 className='font-semibold mb-3'>Recent Transactions</h2>
+			{isLoading ? (
+				<div className='space-y-2'>
+					<Skeleton className='h-10 w-full' />
+					<Skeleton className='h-10 w-full' />
+					<Skeleton className='h-10 w-full' />
+				</div>
+			) : data?.length ? (
+				<div className='divide-y'>
+					{data.map((t) => (
+						<div key={t._id} className='flex items-center justify-between py-2'>
+							<div>
+								<p className='text-sm font-medium'>
+									{_.startCase(t.owner.firstname.toLowerCase())}
+								</p>
+								<p className='text-xs text-muted-foreground'>
+									{t.owner.studentID}
+								</p>
+							</div>
+							<p className='font-semibold'>P{numberWithCommas(t.amount)}</p>
+						</div>
+					))}
+				</div>
+			) : (
+				<p className='text-sm text-muted-foreground italic'>
+					No recent transactions
+				</p>
+			)}
+		</div>
+	);
+}
 
 export default function Dashboard() {
-	const { data: dashboardData, isLoading } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: [QUERY_KEYS.DASHBOARD_DATA],
-		queryFn: () => fetchDashboardData(),
+		queryFn: fetchDashboardData,
 	});
 
-	const {
-		data: fetchTransactionsResult,
-		isLoading: fetchingRecentTransactions,
-	} = useQuery({
+	const { data: txResult, isLoading: loadingTx } = useQuery({
 		queryKey: [QUERY_KEYS.TRANSACTION],
-		queryFn: () => fetchTransactions({}, 1, 3),
+		queryFn: () => fetchTransactions({}, 1, 5),
 	});
+
+	const revenueDelta = data
+		? ((data.totalRevenue - data.totalRevenueLastMonth) / data.totalRevenue) *
+		  100
+		: undefined;
+
+	const txDelta = data
+		? ((data.totalTransaction - data.totalTransactionLastMonth) /
+				data.totalTransaction) *
+		  100
+		: undefined;
 
 	return (
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>
-					<div className='flex items-center gap-3'>
-						<p>Dashboard</p>
-						{isLoading ||
-							(fetchingRecentTransactions && (
-								<p className='text-xs text-muted-foreground'>
-									Fetching data...
-								</p>
-							))}
-					</div>
+					<p className='font-semibold'>Dashboard Overview</p>
 				</Header>
 			</StickyHeader>
 
-			<div className='flex flex-col md:flex-row gap-3 w-[93dvw] sm:w-full'>
-				<div className='flex w-full flex-col-reverse sm:flex-col gap-3'>
-					<DashboardInfoGrid
-						dashboardData={dashboardData}
+			<div className='space-y-6'>
+				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+					<StatCard
+						title='Total Collections'
+						value={`P${numberWithCommas(data?.totalRevenue ?? 0)}`}
+						delta={revenueDelta}
+						icon={<Dollar />}
 						isLoading={isLoading}
 					/>
-					<BarCharts dashboardData={dashboardData} isLoading={isLoading} />
+					<StatCard
+						title='Total Transactions'
+						value={numberWithCommas(data?.totalTransaction ?? 0)}
+						delta={txDelta}
+						icon={<Ledger />}
+						isLoading={isLoading}
+					/>
+					<StatCard
+						title='Total Students'
+						value={numberWithCommas(data?.totalStudents ?? 0)}
+						icon={<Person />}
+						isLoading={isLoading}
+					/>
+					<StatCard
+						title='Today’s Transactions'
+						value={numberWithCommas(data?.transactionsToday ?? 0)}
+						icon={<Today />}
+						isLoading={isLoading}
+					/>
 				</div>
 
-				<div className='grid grid-cols-1 gap-3 flex-shrink-0'>
-					<TransactionPieChart isLoading={isLoading} />
-					<DashboardRecenTransactions
-						fetchTransactionsResult={fetchTransactionsResult}
-						isLoading={fetchingRecentTransactions}
-					/>
+				<div className='grid gap-6 lg:grid-cols-3'>
+					<div className='lg:col-span-2 rounded-2xl border bg-card/50 p-5 shadow-sm'>
+						<h2 className='font-semibold mb-3'>Revenue Trend</h2>
+						<BarCharts dashboardData={data} isLoading={isLoading} />
+					</div>
+
+					<div className='space-y-6'>
+						<TransactionPieChart isLoading={isLoading} />
+						<RecentTransactions data={txResult?.data} isLoading={loadingTx} />
+					</div>
 				</div>
 			</div>
 		</SidebarPageLayout>
-	);
-}
-
-type DashboardInfoGridProps = {
-	dashboardData?: DashboardData;
-	isLoading: boolean;
-};
-
-function DashboardInfoGrid({
-	dashboardData,
-	isLoading,
-}: DashboardInfoGridProps) {
-	const totalRevenue = dashboardData?.totalRevenue ?? 0;
-	const totalRevenueLastMonth = dashboardData?.totalRevenueLastMonth ?? 0;
-	const totalTransaction = dashboardData?.totalTransaction ?? 0;
-	const totalTransactionLastMonth =
-		dashboardData?.totalTransactionLastMonth ?? 0;
-
-	const revenueDifference = totalRevenue - totalRevenueLastMonth;
-	const revenueIncreaseInPercentage = (revenueDifference / totalRevenue) * 100;
-
-	const transactionDifference = totalTransaction - totalTransactionLastMonth;
-	const transactionIncreaseInPercentage =
-		(transactionDifference / totalTransaction) * 100;
-
-	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3'>
-			<DashboardInfoCard
-				title='Total Collections'
-				value={'P' + numberWithCommas(dashboardData?.totalRevenue ?? 0)}
-				increase={
-					totalRevenueLastMonth === 0
-						? undefined
-						: revenueIncreaseInPercentage || 0
-				}
-				icon={<Dollar />}
-				isLoading={isLoading}
-			/>
-			<DashboardInfoCard
-				title='Total Transactions'
-				value={numberWithCommas(dashboardData?.totalTransaction ?? 0)}
-				increase={
-					totalTransactionLastMonth === 0
-						? undefined
-						: transactionIncreaseInPercentage || 0
-				}
-				icon={<Ledger />}
-				isLoading={isLoading}
-			/>
-			<DashboardInfoCard
-				title='Total Students'
-				value={numberWithCommas(dashboardData?.totalStudents ?? 0)}
-				icon={<Person />}
-				isLoading={isLoading}
-			/>
-			<DashboardInfoCard
-				title='Transactions Today'
-				value={numberWithCommas(dashboardData?.transactionsToday ?? 0)}
-				icon={<Today />}
-				isLoading={isLoading}
-			/>
-		</div>
-	);
-}
-
-type DashboardRecenTransactionsProps = {
-	fetchTransactionsResult?: APIPaginatedResponse<Transaction[]>;
-	isLoading: boolean;
-};
-
-function DashboardRecenTransactions({
-	fetchTransactionsResult,
-	isLoading,
-}: DashboardRecenTransactionsProps) {
-	return (
-		<div className='transition-all bg-card/40 shadow-sm rounded-lg p-5 border'>
-			<h2 className='font-semibold text-muted-foreground'>
-				Recent Transactions
-			</h2>
-			<div className='h-[10rem]'>
-				{fetchTransactionsResult?.data.length === 0 && (
-					<p className='text-muted-foreground text-sm italic'>
-						No recent transactions
-					</p>
-				)}
-				{isLoading ? (
-					<div className='space-y-2 pt-4'>
-						<Skeleton className='w-full h-10' />
-						<hr />
-						<Skeleton className='w-full h-10' />
-						<hr />
-						<Skeleton className='w-full h-10' />
-					</div>
-				) : (
-					<>
-						{fetchTransactionsResult?.data.map((transaction, i, arr) => (
-							<div
-								className={`transition-all flex justify-between items-center hover:bg-card/90 p-2 ${
-									i !== arr.length - 1 && 'border-b'
-								}`}
-								key={transaction._id}
-							>
-								<div className='w-[150px]'>
-									<p>
-										{_.startCase(transaction.owner.firstname.toLowerCase())}
-									</p>
-									<p className='text-xs text-muted-foreground'>
-										{transaction.owner.studentID}
-									</p>
-								</div>
-
-								<p className='font-bold'>P{transaction.amount}</p>
-							</div>
-						))}
-					</>
-				)}
-			</div>
-		</div>
 	);
 }

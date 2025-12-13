@@ -71,7 +71,7 @@ export default function StudentsTable({
 			</TableHeader>
 
 			<TableBody>
-				{isLoading && <TableLoading colSpan={7} />}
+				{isLoading && <TableLoading colSpan={8} />}
 				{!students?.length && !isLoading && (
 					<TableRow>
 						<TableCell colSpan={7}>No students</TableCell>

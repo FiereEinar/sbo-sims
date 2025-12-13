@@ -10,7 +10,7 @@ export type Semester = '1st' | '2nd';
 // export type CategoryType = 'transaction' | 'prelisting';
 
 export interface ICategory extends mongoose.Document {
-	_id: string;
+	_id: mongoose.Types.ObjectId;
 	name: string;
 	fee: number;
 	organization: IOrganization;

@@ -62,6 +62,7 @@ export default function StudentsTable({
 					<TableHead className='w-[100px]'>
 						<TableHeadGenderPicker />
 					</TableHead>
+					<TableHead className='w-[100px]'>Section</TableHead>
 					<TableHead className='w-[100px]'>Transactions made</TableHead>
 					<TableHead className='w-[200px] text-right '>
 						Transactions amount
@@ -94,6 +95,7 @@ export default function StudentsTable({
 							<TableCell className=''>{student.course}</TableCell>
 							<TableCell className=''>{student.year}</TableCell>
 							<TableCell className=''>{student.gender}</TableCell>
+							<TableCell className=''>{student.section}</TableCell>
 							<TableCell className=''>
 								{student.totalTransactions ?? 0}
 							</TableCell>
@@ -106,7 +108,7 @@ export default function StudentsTable({
 
 			<TableFooter>
 				<TableRow>
-					<TableCell colSpan={6}>Total</TableCell>
+					<TableCell colSpan={7}>Total</TableCell>
 					<TableCell className='text-right'>{totalAmount}</TableCell>
 				</TableRow>
 			</TableFooter>

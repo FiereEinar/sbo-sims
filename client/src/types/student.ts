@@ -10,6 +10,7 @@ export type Student = MongoEntity & {
 	course: string;
 	year: number;
 	email?: string;
+	section?: string;
 	createdAt: Date;
 	updatedAt: Date;
 };

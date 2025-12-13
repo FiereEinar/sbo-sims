@@ -5,7 +5,7 @@ import { IStudent } from './student';
 const Schema = mongoose.Schema;
 
 export interface ITransaction extends mongoose.Document {
-	_id: string;
+	_id: mongoose.Types.ObjectId;
 	owner: IStudent;
 	amount: number;
 	category: ICategory;

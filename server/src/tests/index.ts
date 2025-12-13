@@ -7,6 +7,7 @@ import { IUser } from '../models/user';
 import { SECRET_ADMIN_KEY } from '../constants/env';
 import { OK } from '../constants/http';
 import app from '../app';
+import mongoose from 'mongoose';
 
 export const createMockUser = async (): Promise<{
 	user: IUser;
@@ -85,7 +86,7 @@ export const createMockOrganization = async (
 
 export const createMockCategory = async (
 	accessToken: string,
-	orgID: string
+	orgID: string | mongoose.Types.ObjectId
 ): Promise<ICategory> => {
 	const categoryData = {
 		name: 'Tuition Fee',

@@ -6,7 +6,7 @@ import { ICategory } from './category';
 const Schema = mongoose.Schema;
 
 export interface IPrelisting extends mongoose.Document {
-	_id: string;
+	_id: mongoose.Types.ObjectId;
 	owner: IStudent;
 	category: ICategory;
 	description?: string;

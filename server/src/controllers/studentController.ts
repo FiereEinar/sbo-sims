@@ -39,6 +39,8 @@ export const get_all_students = asyncHandler(async (req, res) => {
 				{ firstname: { $regex: searchRegex } },
 				{ lastname: { $regex: searchRegex } },
 				{ middlename: { $regex: searchRegex } },
+				{ email: { $regex: searchRegex } },
+				{ section: { $regex: searchRegex } },
 			],
 		});
 	}

@@ -23,6 +23,7 @@ export const loadStudents = async (
 							'gender',
 							'year',
 							'middlename',
+							'section',
 						];
 
 						const hasAllHeaders = requiredHeaders.every(
@@ -42,6 +43,7 @@ export const loadStudents = async (
 							gender: row.gender,
 							email: '',
 							middlename: row.middlename,
+							section: row.section,
 						});
 
 						if (save) {
@@ -95,6 +97,7 @@ export const serverlessCSVLoader = async (
 							'gender',
 							'year',
 							'middlename',
+							'section',
 						];
 
 						const hasAllHeaders = requiredHeaders.every(
@@ -115,6 +118,7 @@ export const serverlessCSVLoader = async (
 							gender: row.gender,
 							email: '',
 							middlename: row.middlename,
+							section: row.section,
 						});
 
 						// Save the student to the database if the `save` flag is true

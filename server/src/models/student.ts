@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 export interface IStudent extends mongoose.Document {
-	_id: string;
+	_id: mongoose.Types.ObjectId;
 	studentID: string;
 	firstname: string;
 	lastname: string;
@@ -12,6 +12,7 @@ export interface IStudent extends mongoose.Document {
 	course: string;
 	year: number;
 	email?: string;
+	section?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -26,6 +27,7 @@ export const StudentSchema = new Schema<IStudent>(
 		email: { type: String, required: false },
 		year: { type: Number, required: true },
 		course: { type: String, required: true },
+		section: { type: String, required: false },
 	},
 	{ timestamps: true }
 );

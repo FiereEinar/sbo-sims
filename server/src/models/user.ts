@@ -7,7 +7,7 @@ const Schema = mongoose.Schema;
 export type UserRoles = 'governor' | 'treasurer' | 'auditor' | 'regular';
 
 export interface IUser extends mongoose.Document {
-	_id: string;
+	_id: mongoose.Types.ObjectId;
 	studentID: string;
 	firstname: string;
 	lastname: string;

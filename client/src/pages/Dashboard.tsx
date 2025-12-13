@@ -14,6 +14,29 @@ import Person from '@/components/icons/person';
 import Today from '@/components/icons/today';
 import _ from 'lodash';
 import { Transaction } from '@/types/transaction';
+import { Category } from '@/types/category';
+
+export type DashboardDataTransaction = {
+	date: Date;
+	totalAmount: number;
+};
+
+export type DashboardDataCategory = {
+	category: Category;
+	totalAmount: number;
+	totalTransactions: number;
+};
+
+export type DashboardData = {
+	totalRevenue: number;
+	totalRevenueLastMonth: number;
+	totalStudents: number;
+	transactionsToday: number;
+	totalTransaction: number;
+	totalTransactionLastMonth: number;
+	transactions: DashboardDataTransaction[];
+	categories: DashboardDataCategory[];
+};
 
 type StatCardProps = {
 	title: string;

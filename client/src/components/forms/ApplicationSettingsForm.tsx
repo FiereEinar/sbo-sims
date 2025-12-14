@@ -57,16 +57,19 @@ export default function ApplicationSettingsForm() {
 	};
 
 	return (
-		<div className='transition-all flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'>
-			<Header>Application</Header>
-			<p>
-				Update the applications configurations on this section. Click save
-				changes when your're done editing!
-			</p>
-			<div className='w-[20rem] space-y-2'>
-				<div className='space-x-1'>
-					<Label className='ml-1'>School Year:</Label>
+		<section className='bg-card/40 border rounded-lg p-4 space-y-4'>
+			<div>
+				<Header size='sm'>Application Settings</Header>
+				<p className='text-sm text-muted-foreground'>
+					Configure the active school year and semester for the system.
+				</p>
+			</div>
+
+			<div className='grid gap-4 sm:grid-cols-2'>
+				<div className='space-y-1'>
+					<Label>School Year</Label>
 					<Input
+						type='number'
 						value={parseInt(
 							localUser?.activeSchoolYearDB || getYear(new Date()).toString()
 						)}
@@ -76,34 +79,33 @@ export default function ApplicationSettingsForm() {
 								activeSchoolYearDB: e.target.value,
 							} as User)
 						}
-						type='number'
 					/>
 				</div>
 
-				<div className='space-x-1'>
-					<Label className='ml-1'>Semester:</Label>
+				<div className='space-y-1'>
+					<Label>Semester</Label>
 					<Select
-						defaultValue={localUser?.activeSemDB ?? '1'}
+						value={localUser?.activeSemDB ?? '1'}
 						onValueChange={(value) =>
 							setLocalUser({ ...localUser, activeSemDB: value } as User)
 						}
 					>
-						<SelectTrigger className='w-full'>
-							<SelectValue placeholder='Semester' />
+						<SelectTrigger>
+							<SelectValue placeholder='Select semester' />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value='1'>1st sem</SelectItem>
-							<SelectItem value='2'>2nd sem</SelectItem>
+							<SelectItem value='1'>1st Semester</SelectItem>
+							<SelectItem value='2'>2nd Semester</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
 
-			<div className='flex justify-end'>
-				<Button onClick={onSave} size='sm'>
-					Save Changes
+			<div className='flex justify-end pt-2'>
+				<Button size='sm' onClick={onSave}>
+					Save Application Settings
 				</Button>
 			</div>
-		</div>
+		</section>
 	);
 }

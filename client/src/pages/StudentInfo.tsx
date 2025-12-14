@@ -1,8 +1,8 @@
 import { fetchStudentByID, fetchStudentTransactions } from '@/api/student';
 import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteStudentButton from '@/components/buttons/EditAndDeleteStudentButton';
-import OrganizationDetailsLoading from '@/components/loading/OrganizationDetailsLoading';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
+import StudentDataCardLoading from '@/components/loading/StudentDataCardLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import StudentDataCard from '@/components/StudentDataCard';
@@ -20,7 +20,7 @@ export default function StudentInfo() {
 	if (studentID === undefined) return;
 
 	const {
-		data: studentData,
+		data: student,
 		isLoading: studentLoading,
 		error: studentError,
 	} = useQuery({
@@ -29,8 +29,8 @@ export default function StudentInfo() {
 	});
 
 	const {
-		data: studentTransactions,
-		isLoading: transactionsLoading,
+		data: transactions,
+		isLoading: txLoading,
 		error: transactionsError,
 	} = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT_TRANSACTIONS, { studentID }],
@@ -44,31 +44,28 @@ export default function StudentInfo() {
 	return (
 		<SidebarPageLayout>
 			<BackButton />
-			<div className='space-y-3'>
-				{studentLoading && <StickyHeaderLoading />}
-				{studentData && (
-					<StickyHeader>
-						<Header>Student Info</Header>
-						{isAuthorized(userRole, 'governor', 'treasurer') && (
-							<EditAndDeleteStudentButton student={studentData} />
-						)}
-					</StickyHeader>
-				)}
 
-				<hr />
+			{studentLoading && <StickyHeaderLoading />}
 
-				{studentLoading && <OrganizationDetailsLoading />}
-				{studentData && (
-					<StudentDataCard studentID={studentID} studentData={studentData} />
-				)}
+			{student && (
+				<StickyHeader>
+					<Header>Student Information</Header>
+					{isAuthorized(userRole, 'governor', 'treasurer') && (
+						<EditAndDeleteStudentButton student={student} />
+					)}
+				</StickyHeader>
+			)}
 
-				<hr />
+			<div className='space-y-6'>
+				{studentLoading && <StudentDataCardLoading />}
 
-				<div>
-					<h1 className='text-muted-foreground'>Previous transactions made:</h1>
+				{student && <StudentDataCard studentID={studentID} student={student} />}
+
+				<div className='rounded-2xl border bg-card/50 p-6 shadow-sm'>
+					<h2 className='font-semibold mb-4'>Transaction History</h2>
 					<TransactionsTable
-						isLoading={transactionsLoading}
-						transactions={studentTransactions}
+						isLoading={txLoading}
+						transactions={transactions}
 					/>
 				</div>
 			</div>

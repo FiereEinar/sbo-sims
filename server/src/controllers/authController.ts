@@ -38,6 +38,7 @@ import {
 	signToken,
 	verifyToken,
 } from '../utils/jwt';
+import { IUser } from '../models/user';
 
 /**
  * POST - user signup
@@ -115,7 +116,9 @@ export const login = asyncHandler(async (req, res) => {
 	const { studentID, password }: loginUserBody = req.body;
 
 	// check if studentID is valid
-	const user = await req.UserModel.findOne({ studentID: studentID }).exec();
+	const user = await req.UserModel.findOne<IUser>({
+		studentID: studentID,
+	}).exec();
 	appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
 	// check if password is correct
@@ -134,7 +137,7 @@ export const login = asyncHandler(async (req, res) => {
 	await session.save();
 
 	const sessionID = session._id as string;
-	const userID = user._id as string;
+	const userID = user._id.toString();
 
 	// create and set the access token and refresh token
 	const accessToken = signToken({ sessionID, userID });
@@ -147,6 +150,10 @@ export const login = asyncHandler(async (req, res) => {
 		: useragent?.isTablet
 		? 'tablet'
 		: 'desktop';
+
+	user.activeSemDB = '2'; // temp fix for testing
+	user.activeSchoolYearDB = '2025'; // temp fix for testing
+	await user.save();
 
 	res.json(
 		new CustomResponse(

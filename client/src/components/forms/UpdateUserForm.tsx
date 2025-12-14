@@ -79,14 +79,16 @@ export default function UpdateUserForm() {
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className='transition-all flex flex-col gap-3 w-full bg-card/40 p-3 rounded-md border'
+			className='bg-card/40 border rounded-lg p-4 space-y-4'
 		>
-			<Header>User</Header>
-			<p>
-				Update your personal information here, make sure to click save changes
-				when you're done!
-			</p>
-			<div className='space-x-1 w-[20rem]'>
+			<div>
+				<Header size='sm'>User Profile</Header>
+				<p className='text-sm text-muted-foreground'>
+					Update your personal information associated with this account.
+				</p>
+			</div>
+
+			<div className='grid gap-3 sm:grid-cols-2'>
 				<InputField<UpdateUserFormValues>
 					id='studentID'
 					label='Student ID:'
@@ -124,13 +126,11 @@ export default function UpdateUserForm() {
 				/>
 			</div>
 
-			{errors.root && errors.root.message && (
-				<ErrorText>{errors.root.message.toString()}</ErrorText>
-			)}
+			{errors.root?.message && <ErrorText>{errors.root.message}</ErrorText>}
 
-			<div className='flex justify-end'>
+			<div className='flex justify-end pt-2'>
 				<Button disabled={isSubmitting} size='sm'>
-					Save Changes
+					Save Profile Changes
 				</Button>
 			</div>
 		</form>

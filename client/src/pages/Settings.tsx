@@ -6,13 +6,18 @@ import Header from '@/components/ui/header';
 export default function Settings() {
 	return (
 		<SidebarPageLayout>
-			<div className='w-[93dvw]'>
-				<div className='flex flex-col pb-5 justify-between text-muted-foreground items-start gap-5 md:w-[800px]'>
+			<div className='w-full max-w-3xl space-y-6'>
+				<div>
 					<Header>Settings</Header>
-					<hr className='w-full' />
-					<ApplicationSettingsForm />
-					<UpdateUserForm />
+					<p className='text-muted-foreground text-sm'>
+						Manage application configuration and your personal account details.
+					</p>
 				</div>
+
+				<hr />
+
+				<ApplicationSettingsForm />
+				<UpdateUserForm />
 			</div>
 		</SidebarPageLayout>
 	);

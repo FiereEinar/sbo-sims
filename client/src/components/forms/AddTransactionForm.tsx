@@ -102,8 +102,6 @@ export default function AddTransactionForm({
 			data.date = date?.toISOString();
 			data.categoryID = category._id;
 
-			console.log(data);
-
 			if (transaction && mode === 'edit')
 				await submitUpdateTransactionForm(transaction._id, data);
 			else if (mode === 'add') await submitTransactionForm(data);

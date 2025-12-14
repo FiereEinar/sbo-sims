@@ -47,7 +47,9 @@ export default function OrganizationInfo() {
 	return (
 		<SidebarPageLayout>
 			<BackButton />
+
 			{isLoading && <StickyHeaderLoading />}
+
 			{organization && (
 				<StickyHeader>
 					<Header>{organization.name}</Header>
@@ -58,10 +60,17 @@ export default function OrganizationInfo() {
 					)}
 				</StickyHeader>
 			)}
-			<hr />
-			{isLoading && <OrganizationDetailsLoading />}
-			{organization && <OrganizationDetails organization={organization} />}
-			<CategoriesTable categories={orgCategories} isLoading={cLoading} />
+
+			<div className='space-y-6'>
+				{isLoading && <OrganizationDetailsLoading />}
+
+				{organization && <OrganizationDetails organization={organization} />}
+
+				<div className='rounded-2xl border bg-card/50 p-6 shadow-sm'>
+					<h2 className='font-semibold mb-4'>Categories</h2>
+					<CategoriesTable categories={orgCategories} isLoading={cLoading} />
+				</div>
+			</div>
 		</SidebarPageLayout>
 	);
 }

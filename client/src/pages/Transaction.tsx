@@ -14,6 +14,7 @@ import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useUserStore } from '@/store/user';
 import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
+import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
 
 export default function Transaction() {
 	const userRole = useUserStore((state) => state.user?.role);
@@ -65,6 +66,9 @@ export default function Transaction() {
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter />
+				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+					<ImportTransactionsButton categories={categories} />
+				)}
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

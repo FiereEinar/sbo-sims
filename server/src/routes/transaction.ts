@@ -7,6 +7,8 @@ import {
 	get_transaction,
 	get_transaction_list_csv,
 	get_transaction_list_file,
+	import_transactions_excel,
+	preview_transactions_excel,
 	update_transaction,
 	update_transaction_amount,
 } from '../controllers/transactionController';
@@ -17,6 +19,7 @@ import {
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
+import upload from '../utils/multer';
 
 const router = express.Router();
 
@@ -49,6 +52,20 @@ router.post(
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	createTransactionValidation,
 	create_transaction
+);
+
+router.post(
+	'/import',
+	authorizeRoles('governor', 'treasurer', 'auditor'),
+	upload.single('excel_file'),
+	import_transactions_excel
+);
+
+router.post(
+	'/import/preview',
+	authorizeRoles('governor', 'treasurer', 'auditor'),
+	upload.single('excel_file'),
+	preview_transactions_excel
 );
 
 router.put(

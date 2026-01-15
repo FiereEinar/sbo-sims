@@ -10,7 +10,7 @@ import { QUERY_KEYS } from '@/constants';
 import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useUserStore } from '@/store/user';
-import ImportStudentsButton from '@/components/buttons/ImportStudentsButton';
+import ImportStudentsButtonSmart from '@/components/buttons/ImportStudentsButtonSmart';
 import { isAuthorized } from '@/lib/utils';
 import { queryClient } from '@/main';
 
@@ -57,7 +57,7 @@ export default function Student() {
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<StudentFilter />
 				{isAuthorized(userRole, 'governor', 'treasurer') && (
-					<ImportStudentsButton />
+					<ImportStudentsButtonSmart />
 				)}
 			</div>
 			<StudentsTable

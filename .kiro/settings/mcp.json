@@ -1,0 +1,73 @@
+{
+
+"mcpServers": {
+
+"mongodb-local": {
+
+"command": "npx",
+
+"args": [
+
+"-y",
+
+"mongodb-mcp-server@latest"
+
+],
+
+"env": {
+
+"MDB_MCP_CONNECTION_STRING": "mongodb://localhost:27017"
+
+},
+
+"disabled": false,
+
+"autoApprove": []
+
+},
+
+"mongodb-atlas": {
+
+"command": "npx",
+
+"args": [
+
+"-y",
+
+"mongodb-mcp-server@latest"
+
+],
+
+"env": {
+
+"MDB_MCP_CONNECTION_STRING": "mongodb+srv://sbo-sims_db_user:t0zgOKcA6iPM36XM@qwenzy.o48vzbv.mongodb.net"
+
+},
+
+"disabled": false,
+
+"autoApprove": [
+
+"connect",
+
+"list_databases",
+
+"list_collections",
+
+"find",
+
+"insert_many",
+
+"create_collection",
+
+"count",
+
+"aggregate"
+
+]
+
+}
+
+}
+
+}

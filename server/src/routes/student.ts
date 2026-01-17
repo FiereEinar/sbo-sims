@@ -7,6 +7,8 @@ import {
 	get_student,
 	get_student_transaction,
 	post_csv_students,
+	preview_students_import,
+	import_students_smart,
 	update_student,
 } from '../controllers/studentController';
 import {
@@ -33,11 +35,27 @@ router.post(
 	create_student
 );
 
+// Legacy import (exact CSV headers required)
 router.post(
 	'/import',
 	authorizeRoles('governor', 'treasurer'),
 	upload.single('csv_file'),
 	post_csv_students
+);
+
+// Smart import with preview (auto-detects columns)
+router.post(
+	'/import/preview',
+	authorizeRoles('governor', 'treasurer'),
+	upload.single('file'),
+	preview_students_import
+);
+
+router.post(
+	'/import/smart',
+	authorizeRoles('governor', 'treasurer'),
+	upload.single('file'),
+	import_students_smart
 );
 
 router.put(

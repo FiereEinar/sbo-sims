@@ -5,6 +5,7 @@ import { createStudentBody } from '../types/student';
 import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
 import { validateEmail } from '../utils/utils';
 import { serverlessCSVLoader } from '../services/csvLoader';
+import { importStudentsFromFile, previewStudentsFromFile } from '../services/studentExcelLoader';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
 import {
 	BAD_REQUEST,
@@ -101,7 +102,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 });
 
 /**
- * POST - import student from a csv file
+ * POST - import student from a csv file (legacy - exact headers required)
  */
 export const post_csv_students = asyncHandler(async (req, res) => {
 	const file = req.file;
@@ -124,6 +125,66 @@ export const post_csv_students = asyncHandler(async (req, res) => {
 	await serverlessCSVLoader(req, file.buffer, true);
 
 	res.json(new CustomResponse(true, null, 'File imported successfully'));
+});
+
+/**
+ * POST - preview students from Excel/CSV file (smart detection)
+ */
+export const preview_students_import = asyncHandler(async (req, res) => {
+	const file = req.file;
+	appAssert(file, BAD_REQUEST, 'No file uploaded');
+
+	const validMimeTypes = [
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.ms-excel',
+		'text/csv',
+	];
+	appAssert(
+		validMimeTypes.includes(file.mimetype),
+		BAD_REQUEST,
+		'File must be Excel (.xlsx, .xls) or CSV'
+	);
+
+	const previewResult = await previewStudentsFromFile(req, file.buffer);
+
+	res.json(
+		new CustomResponse(
+			true,
+			previewResult,
+			`Preview: ${previewResult.valid.length} new, ${previewResult.existing.length} existing, ${previewResult.invalid.length} invalid`
+		)
+	);
+});
+
+/**
+ * POST - import students from Excel/CSV file (smart detection)
+ */
+export const import_students_smart = asyncHandler(async (req, res) => {
+	const file = req.file;
+	const skipExisting = req.body.skipExisting !== 'false';
+
+	appAssert(file, BAD_REQUEST, 'No file uploaded');
+
+	const validMimeTypes = [
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.ms-excel',
+		'text/csv',
+	];
+	appAssert(
+		validMimeTypes.includes(file.mimetype),
+		BAD_REQUEST,
+		'File must be Excel (.xlsx, .xls) or CSV'
+	);
+
+	const importResult = await importStudentsFromFile(req, file.buffer, skipExisting);
+
+	res.json(
+		new CustomResponse(
+			true,
+			importResult,
+			`Import: ${importResult.success} added, ${importResult.skipped} skipped, ${importResult.failed} failed`
+		)
+	);
 });
 
 /**

@@ -18,7 +18,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchDashboardData } from '@/api/transaction';
-import _ from 'lodash';
 import { numberWithCommas } from '@/lib/utils';
 
 export const description = 'A donut chart with text';
@@ -44,13 +43,13 @@ type TransactionPieChartProps = {
 export default function TransactionPieChart({
 	isLoading,
 }: TransactionPieChartProps) {
-	const colors = [
+	const colors = React.useMemo(() => [
 		'hsl(var(--chart-1))',
 		'hsl(var(--chart-2))',
 		'hsl(var(--chart-3))',
 		'hsl(var(--chart-4))',
 		'hsl(var(--chart-5))',
-	];
+	], []);
 
 	const [chartConfig, setChartConfig] = React.useState<ChartConfigType>({});
 
@@ -65,27 +64,28 @@ export default function TransactionPieChart({
 		if (dashboardData) {
 			let i = 0;
 
-			let chartConfigsTemp: ChartConfigType = {
+			const chartConfigsTemp: ChartConfigType = {
 				visitors: {
 					label: 'Transactions',
 				},
 			};
 
-			let chartDataTemp: ChartData[] = [];
+			const chartDataTemp: ChartData[] = [];
 
 			dashboardData.categories.map((category) => {
 				const categoryName = `${category.category.organization.name} - ${category.category.name}`;
 				const categoryNameNoSpace = categoryName.split(' ').join('');
+				const color = colors[i++];
 
 				chartConfigsTemp[categoryNameNoSpace] = {
 					label: categoryName + ': ',
-					color: colors[i++],
+					color: color,
 				};
 
 				chartDataTemp.push({
 					category: categoryNameNoSpace,
 					totalAmount: category.totalAmount,
-					fill: `var(--color-${categoryNameNoSpace})`,
+					fill: color,  // Use the color directly instead of CSS variable
 				});
 
 				if (i === colors.length) i = 0;
@@ -94,7 +94,7 @@ export default function TransactionPieChart({
 			setChartData(chartDataTemp);
 			setChartConfig(chartConfigsTemp);
 		}
-	}, [dashboardData, setChartData, setChartConfig]);
+	}, [dashboardData, colors]);
 
 	return (
 		<Card className='flex flex-col bg-card/40'>

@@ -18,6 +18,7 @@ import {
 	TransactionEJSVariables,
 	updateTransactionAmountBody,
 } from '../types/transaction';
+import { importTransactionsFromExcel, previewTransactionsFromExcel } from '../services/excelLoader';
 
 /**
  * GET - fetch all transactions made
@@ -518,5 +519,106 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 
 	res.json(
 		new CustomResponse(true, result, 'Transaction amount updated successfully')
+	);
+});
+
+
+/**
+ * POST - import transactions from Excel file (.xlsx)
+ */
+export const import_transactions_excel = asyncHandler(async (req, res) => {
+	const file = req.file;
+	const { categoryID } = req.body;
+
+	appAssert(file, BAD_REQUEST, 'No file uploaded');
+	appAssert(categoryID, BAD_REQUEST, 'Category ID is required');
+
+	// Validate file type
+	const validMimeTypes = [
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.ms-excel',
+	];
+	appAssert(
+		validMimeTypes.includes(file.mimetype),
+		BAD_REQUEST,
+		'File must be an Excel file (.xlsx or .xls)'
+	);
+
+	// Check if category exists
+	const category = await req.CategoryModel.findById(categoryID);
+	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
+
+	// First pass: validate without saving
+	const validationResult = await importTransactionsFromExcel(
+		req,
+		file.buffer,
+		categoryID,
+		false
+	);
+
+	// If validation has critical errors, return them
+	if (validationResult.success === 0 && validationResult.failed > 0) {
+		res.status(BAD_REQUEST).json(
+			new CustomResponse(false, validationResult, 'Validation failed. No transactions imported.')
+		);
+		return;
+	}
+
+	// Second pass: actually save the transactions
+	const importResult = await importTransactionsFromExcel(
+		req,
+		file.buffer,
+		categoryID,
+		true
+	);
+
+	res.json(
+		new CustomResponse(
+			true,
+			importResult,
+			`Import completed: ${importResult.success} successful, ${importResult.failed} failed`
+		)
+	);
+});
+
+
+/**
+ * POST - preview transactions from Excel file before importing
+ */
+export const preview_transactions_excel = asyncHandler(async (req, res) => {
+	const file = req.file;
+	const { categoryID } = req.body;
+
+	appAssert(file, BAD_REQUEST, 'No file uploaded');
+	appAssert(categoryID, BAD_REQUEST, 'Category ID is required');
+
+	// Validate file type - also accept CSV
+	const validMimeTypes = [
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.ms-excel',
+		'text/csv',
+	];
+	appAssert(
+		validMimeTypes.includes(file.mimetype),
+		BAD_REQUEST,
+		'File must be an Excel file (.xlsx, .xls) or CSV'
+	);
+
+	// Check if category exists
+	const category = await req.CategoryModel.findById(categoryID);
+	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
+
+	const previewResult = await previewTransactionsFromExcel(
+		req,
+		file.buffer,
+		categoryID
+	);
+
+	res.json(
+		new CustomResponse(
+			true,
+			previewResult,
+			`Preview: ${previewResult.valid.length} valid, ${previewResult.invalid.length} invalid`
+		)
 	);
 });

@@ -3,7 +3,7 @@
 # Database: 22025 -> sbo-sims on Atlas
 
 LOCAL_URI="mongodb://localhost:27017"
-ATLAS_URI="mongodb+srv://sbo-sims_db_user:t0zgOKcA6iPM36XM@qwenzy.o48vzbv.mongodb.net"
+ATLAS_URI=""
 LOCAL_DB="22025"
 ATLAS_DB="sbo-sims"
 BACKUP_DIR="./migration-backup"

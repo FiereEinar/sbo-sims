@@ -57,6 +57,6 @@ export default app;
 
 if (NODE_ENV !== 'test') {
 	app.listen(Number(PORT), '0.0.0.0', () =>
-		console.log(`Server is running on http://localhost:${PORT}`)
+		console.log(`Server is running on http://localhost:${PORT}`),
 	);
 }

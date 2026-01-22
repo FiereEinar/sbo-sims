@@ -69,21 +69,21 @@ const AMOUNT_COLUMN_PATTERNS = [
  */
 export const extractStudentID = (value: any): string | null => {
 	if (!value) return null;
-	
+
 	const str = value.toString().trim();
-	
+
 	// Try to find a 10-digit number in the string
 	const match = str.match(/\b(\d{10})\b/);
 	if (match) {
 		return match[1];
 	}
-	
+
 	// If no exact 10-digit match, try to extract first 10 digits
 	const digits = str.replace(/\D/g, '');
 	if (digits.length >= 10) {
 		return digits.substring(0, 10);
 	}
-	
+
 	return null;
 };
 
@@ -91,15 +91,15 @@ export const extractStudentID = (value: any): string | null => {
  * Find the column that contains student name (to confirm correct data detection)
  */
 export const findNameColumn = (headers: string[]): string | null => {
-	const lowerHeaders = headers.map(h => h.toLowerCase().trim());
-	
+	const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
+
 	for (const pattern of NAME_COLUMN_PATTERNS) {
-		const index = lowerHeaders.findIndex(h => h.includes(pattern));
+		const index = lowerHeaders.findIndex((h) => h.includes(pattern));
 		if (index !== -1) {
 			return headers[index];
 		}
 	}
-	
+
 	return null;
 };
 
@@ -107,15 +107,15 @@ export const findNameColumn = (headers: string[]): string | null => {
  * Find the column that contains student ID data
  */
 export const findStudentIDColumn = (headers: string[]): string | null => {
-	const lowerHeaders = headers.map(h => h.toLowerCase().trim());
-	
+	const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
+
 	for (const pattern of STUDENT_ID_COLUMN_PATTERNS) {
-		const index = lowerHeaders.findIndex(h => h.includes(pattern));
+		const index = lowerHeaders.findIndex((h) => h.includes(pattern));
 		if (index !== -1) {
 			return headers[index];
 		}
 	}
-	
+
 	return null;
 };
 
@@ -123,15 +123,15 @@ export const findStudentIDColumn = (headers: string[]): string | null => {
  * Find the column that contains amount data
  */
 export const findAmountColumn = (headers: string[]): string | null => {
-	const lowerHeaders = headers.map(h => h.toLowerCase().trim());
-	
+	const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
+
 	for (const pattern of AMOUNT_COLUMN_PATTERNS) {
-		const index = lowerHeaders.findIndex(h => h.includes(pattern));
+		const index = lowerHeaders.findIndex((h) => h.includes(pattern));
 		if (index !== -1) {
 			return headers[index];
 		}
 	}
-	
+
 	return null;
 };
 
@@ -140,12 +140,13 @@ export const findAmountColumn = (headers: string[]): string | null => {
  */
 export const validateTransactionHeaders = (
 	headers: string[],
-	categoryDetails: string[]
+	categoryDetails: string[],
 ): { valid: boolean; missing: string[] } => {
 	const requiredHeaders = ['studentID', 'amount', 'categoryID'];
 	const allRequired = [...requiredHeaders, ...categoryDetails];
 	const missing = allRequired.filter(
-		(h) => !headers.map((header) => header.toLowerCase()).includes(h.toLowerCase())
+		(h) =>
+			!headers.map((header) => header.toLowerCase()).includes(h.toLowerCase()),
 	);
 	return { valid: missing.length === 0, missing };
 };
@@ -179,9 +180,14 @@ export const importTransactionsFromExcel = async (
 	req: Request,
 	buffer: Buffer,
 	categoryID: string,
-	save: boolean = false
+	save: boolean = false,
 ): Promise<ImportResult> => {
-	const result: ImportResult = { success: 0, failed: 0, skipped: 0, errors: [] };
+	const result: ImportResult = {
+		success: 0,
+		failed: 0,
+		skipped: 0,
+		errors: [],
+	};
 
 	try {
 		// Parse Excel file
@@ -215,17 +221,17 @@ export const importTransactionsFromExcel = async (
 			try {
 				// Extract student ID - try all possible columns
 				let studentID: string | null = null;
-				
+
 				// Try all columns to find student ID
 				for (const key of Object.keys(row)) {
 					const lowerKey = key.toLowerCase();
 					// Check if column name suggests it contains student ID or email
-					if (STUDENT_ID_COLUMN_PATTERNS.some(p => lowerKey.includes(p))) {
+					if (STUDENT_ID_COLUMN_PATTERNS.some((p) => lowerKey.includes(p))) {
 						studentID = extractStudentID(row[key]);
 						if (studentID) break;
 					}
 				}
-				
+
 				// If still not found, try extracting from any column that has a 10-digit number
 				if (!studentID) {
 					for (const key of Object.keys(row)) {
@@ -238,7 +244,9 @@ export const importTransactionsFromExcel = async (
 				}
 
 				if (!studentID) {
-					result.errors.push(`Row ${rowNum}: Could not extract student ID from any column`);
+					result.errors.push(
+						`Row ${rowNum}: Could not extract student ID from any column`,
+					);
 					result.failed++;
 					continue;
 				}
@@ -251,11 +259,11 @@ export const importTransactionsFromExcel = async (
 
 				// Extract amount - try multiple sources
 				let amount: number | null = null;
-				
+
 				// Try to find amount in columns with amount-like names
 				for (const key of Object.keys(row)) {
 					const lowerKey = key.toLowerCase();
-					if (AMOUNT_COLUMN_PATTERNS.some(p => lowerKey.includes(p))) {
+					if (AMOUNT_COLUMN_PATTERNS.some((p) => lowerKey.includes(p))) {
 						const val = Number(row[key]);
 						if (!isNaN(val) && val > 0) {
 							amount = val;
@@ -278,7 +286,7 @@ export const importTransactionsFromExcel = async (
 
 				if (amount! > category.fee) {
 					result.errors.push(
-						`Row ${rowNum}: Amount (${amount}) exceeds category fee (${category.fee})`
+						`Row ${rowNum}: Amount (${amount}) exceeds category fee (${category.fee})`,
 					);
 					result.failed++;
 					continue;
@@ -291,7 +299,7 @@ export const importTransactionsFromExcel = async (
 
 				if (!student) {
 					result.errors.push(
-						`Row ${rowNum}: Student with ID ${studentID} not found`
+						`Row ${rowNum}: Student with ID ${studentID} not found`,
 					);
 					result.failed++;
 					continue;
@@ -313,14 +321,24 @@ export const importTransactionsFromExcel = async (
 				category.details.forEach((detail: string) => {
 					// Try to find matching column (case-insensitive)
 					const matchingKey = Object.keys(row).find(
-						key => key.toLowerCase() === detail.toLowerCase()
+						(key) => key.toLowerCase() === detail.toLowerCase(),
 					);
-					detailsObj[detail] = matchingKey ? row[matchingKey]?.toString() || '' : '';
+					detailsObj[detail] = matchingKey
+						? row[matchingKey]?.toString() || ''
+						: '';
 				});
 
 				// Parse date - try multiple column names
 				let transactionDate = new Date();
-				const dateColumns = ['date', 'Date', 'DATE', 'Transaction Date', 'transaction date', 'Timestamp', 'timestamp'];
+				const dateColumns = [
+					'date',
+					'Date',
+					'DATE',
+					'Transaction Date',
+					'transaction date',
+					'Timestamp',
+					'timestamp',
+				];
 				for (const col of dateColumns) {
 					if (row[col]) {
 						const parsedDate = new Date(row[col]);
@@ -333,7 +351,15 @@ export const importTransactionsFromExcel = async (
 
 				// Get description from any description-like column
 				let description = '';
-				const descColumns = ['description', 'Description', 'DESCRIPTION', 'notes', 'Notes', 'remarks', 'Remarks'];
+				const descColumns = [
+					'description',
+					'Description',
+					'DESCRIPTION',
+					'notes',
+					'Notes',
+					'remarks',
+					'Remarks',
+				];
 				for (const col of descColumns) {
 					if (row[col]) {
 						description = row[col].toString();
@@ -374,7 +400,6 @@ export const importTransactionsFromExcel = async (
 	return result;
 };
 
-
 export interface TransactionPreviewItem {
 	rowNum: number;
 	studentID: string;
@@ -406,7 +431,7 @@ export interface PreviewResult {
 export const previewTransactionsFromExcel = async (
 	req: Request,
 	buffer: Buffer,
-	categoryID: string
+	categoryID: string,
 ): Promise<PreviewResult> => {
 	const result: PreviewResult = {
 		valid: [],
@@ -476,22 +501,22 @@ export const previewTransactionsFromExcel = async (
 
 				// Extract student ID - first try detected column
 				let studentID: string | null = null;
-				
+
 				if (studentIDColumn && row[studentIDColumn]) {
 					studentID = extractStudentID(row[studentIDColumn]);
 				}
-				
+
 				// If not found, try all columns with ID/email patterns
 				if (!studentID) {
 					for (const key of Object.keys(row)) {
 						const lowerKey = key.toLowerCase();
-						if (STUDENT_ID_COLUMN_PATTERNS.some(p => lowerKey.includes(p))) {
+						if (STUDENT_ID_COLUMN_PATTERNS.some((p) => lowerKey.includes(p))) {
 							studentID = extractStudentID(row[key]);
 							if (studentID) break;
 						}
 					}
 				}
-				
+
 				// Last resort: try to find 10-digit number in any column
 				if (!studentID) {
 					for (const key of Object.keys(row)) {
@@ -522,7 +547,7 @@ export const previewTransactionsFromExcel = async (
 
 				// Extract amount - use detected column first
 				let amount: number = category.fee;
-				
+
 				if (amountColumn && row[amountColumn]) {
 					const val = Number(row[amountColumn]);
 					if (!isNaN(val) && val > 0) {
@@ -532,7 +557,7 @@ export const previewTransactionsFromExcel = async (
 					// Try to find amount in other columns
 					for (const key of Object.keys(row)) {
 						const lowerKey = key.toLowerCase();
-						if (AMOUNT_COLUMN_PATTERNS.some(p => lowerKey.includes(p))) {
+						if (AMOUNT_COLUMN_PATTERNS.some((p) => lowerKey.includes(p))) {
 							const val = Number(row[key]);
 							if (!isNaN(val) && val > 0) {
 								amount = val;
@@ -541,7 +566,7 @@ export const previewTransactionsFromExcel = async (
 						}
 					}
 				}
-				
+
 				previewItem.amount = amount;
 
 				// Validate amount
@@ -561,7 +586,7 @@ export const previewTransactionsFromExcel = async (
 
 				// Find student in database
 				const student = await req.StudentModel.findOne({ studentID });
-				
+
 				if (!student) {
 					previewItem.status = 'error';
 					previewItem.error = 'Student not in database';
@@ -586,7 +611,14 @@ export const previewTransactionsFromExcel = async (
 				}
 
 				// Parse date
-				const dateColumns = ['date', 'Date', 'DATE', 'Transaction Date', 'Timestamp', 'timestamp'];
+				const dateColumns = [
+					'date',
+					'Date',
+					'DATE',
+					'Transaction Date',
+					'Timestamp',
+					'timestamp',
+				];
 				for (const col of dateColumns) {
 					if (row[col]) {
 						const parsedDate = new Date(row[col]);
@@ -600,7 +632,6 @@ export const previewTransactionsFromExcel = async (
 				// Mark as seen and add to valid
 				seenStudentIDs.add(studentID);
 				result.valid.push(previewItem);
-				
 			} catch (err: any) {
 				previewItem.status = 'error';
 				previewItem.error = err.message || 'Unknown error';

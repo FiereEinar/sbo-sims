@@ -158,7 +158,9 @@ export const parseExcelBuffer = (buffer: Buffer): TransactionImportRow[] => {
 	const workbook = XLSX.read(buffer, { type: 'buffer' });
 	const sheetName = workbook.SheetNames[0];
 	const worksheet = workbook.Sheets[sheetName];
-	const rows = XLSX.utils.sheet_to_json<TransactionImportRow>(worksheet);
+	const rows = XLSX.utils.sheet_to_json<TransactionImportRow>(worksheet, {
+		raw: false,
+	});
 	return rows;
 };
 

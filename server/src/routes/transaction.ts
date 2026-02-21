@@ -29,14 +29,14 @@ router.get(
 	'/download/pdf',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	transactionQueryFilter,
-	get_transaction_list_file
+	get_transaction_list_file,
 );
 
 router.get(
 	'/download/csv',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	transactionQueryFilter,
-	get_transaction_list_csv
+	get_transaction_list_csv,
 );
 
 router.get('/dashboard-data', get_dashboard_data);
@@ -44,28 +44,28 @@ router.get('/dashboard-data', get_dashboard_data);
 router.get(
 	'/:transactionID',
 	isValidMongooseId('transactionID', { from: 'params' }),
-	get_transaction
+	get_transaction,
 );
 
 router.post(
 	'/',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	createTransactionValidation,
-	create_transaction
+	create_transaction,
 );
 
 router.post(
 	'/import',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	upload.single('excel_file'),
-	import_transactions_excel
+	import_transactions_excel,
 );
 
 router.post(
 	'/import/preview',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	upload.single('excel_file'),
-	preview_transactions_excel
+	preview_transactions_excel,
 );
 
 router.put(
@@ -73,7 +73,7 @@ router.put(
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	createTransactionValidation,
-	update_transaction
+	update_transaction,
 );
 
 router.put(
@@ -81,14 +81,14 @@ router.put(
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	updateTransactionAmountValidation,
-	update_transaction_amount
+	update_transaction_amount,
 );
 
 router.delete(
 	'/:transactionID',
 	authorizeRoles('governor', 'treasurer', 'auditor'),
 	isValidMongooseId('transactionID', { from: 'params' }),
-	delete_transaction
+	delete_transaction,
 );
 
 export default router;

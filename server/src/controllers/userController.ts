@@ -269,3 +269,42 @@ export const adminUpdateUser = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, result, 'User updated successfully!'));
 });
+
+/**
+ * @route PATCH /api/v1/user/:userID/password
+ */
+export const updateUserPassword = asyncHandler(async (req, res) => {
+	const { userID } = req.params;
+	const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+	const user = await req.UserModel.findById(userID);
+	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
+
+	const isOldPasswordValid = await bcrypt.compare(
+		currentPassword,
+		user.password,
+	);
+	appAssert(isOldPasswordValid, BAD_REQUEST, 'Current password is incorrect');
+
+	appAssert(
+		newPassword === confirmNewPassword,
+		BAD_REQUEST,
+		'Passwords do not match',
+	);
+
+	const hashedPassword = await bcrypt.hash(newPassword, parseInt(BCRYPT_SALT));
+
+	const update: UpdateQuery<IUser> = {
+		password: hashedPassword,
+	};
+
+	const result = await req.UserModel?.findByIdAndUpdate(user._id, update, {
+		new: true,
+	}).exec();
+
+	const safeUser = result.omitPassword();
+
+	res.json(
+		new CustomResponse(true, safeUser, 'Password updated successfully!'),
+	);
+});

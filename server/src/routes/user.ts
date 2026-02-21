@@ -6,7 +6,7 @@ import {
 	deleteUser,
 	getSingleUser,
 	getUsers,
-	update_user,
+	updateUserPassword,
 } from '../controllers/userController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 
@@ -29,6 +29,12 @@ router.delete(
 	'/:userID',
 	isValidMongooseId('userID', { from: 'params' }),
 	deleteUser,
+);
+
+router.patch(
+	'/:userID/password',
+	isValidMongooseId('userID', { from: 'params' }),
+	updateUserPassword,
 );
 
 export default router;

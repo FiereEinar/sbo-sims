@@ -3,13 +3,14 @@ import BackButton from '@/components/buttons/BackButton';
 import DownloadTransactionsButton from '@/components/buttons/DownloadTransactionsButton';
 import EditAndDeleteCategoryButton from '@/components/buttons/EditAndDeleteCategoryButton';
 import CategoryDataCard from '@/components/CategoryDataCard';
+import HasPermission from '@/components/HasPermission';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -51,7 +52,10 @@ export default function CategoryInfo() {
 					<CategoryDataCard category={data.data.category} />
 					<div className='flex flex-col items-start sm:items-end space-y-2'>
 						<EditAndDeleteCategoryButton category={data.data.category} />
-						<DownloadTransactionsButton categoryID={categoryID} />
+
+						<HasPermission permissions={[MODULES.TRANSACTION_DOWNLOAD]}>
+							<DownloadTransactionsButton categoryID={categoryID} />
+						</HasPermission>
 					</div>
 				</StickyHeader>
 			)}

@@ -25,7 +25,7 @@ export default function DownloadTransactionsButton({
 
 			const url = generateTransactionsFilterURL(
 				filters,
-				`/transaction/download/${fileType}?page=1`
+				`/transaction/download/${fileType}?page=1`,
 			);
 
 			const result = await axiosInstance.get(url, {
@@ -49,15 +49,15 @@ export default function DownloadTransactionsButton({
 
 	return (
 		<>
-			{import.meta.env.VITE_NODE_ENV !== 'production' && (
-				<Button
-					disabled={isDownloading}
-					onClick={() => handleDownloadTransactions('csv')}
-					variant='secondary'
-				>
-					Download
-				</Button>
-			)}
+			{/* {import.meta.env.VITE_NODE_ENV !== 'production' && ( */}
+			<Button
+				disabled={isDownloading}
+				onClick={() => handleDownloadTransactions('csv')}
+				variant='secondary'
+			>
+				Download CSV
+			</Button>
+			{/* )} */}
 		</>
 	);
 }

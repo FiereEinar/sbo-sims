@@ -12,6 +12,8 @@ export const authorizeRoles =
 			return;
 		}
 
+		if (user.role === 'admin') return next();
+
 		if (!roles.includes(user.role as UserRoles)) {
 			res.sendStatus(FORBIDDEN);
 			return;

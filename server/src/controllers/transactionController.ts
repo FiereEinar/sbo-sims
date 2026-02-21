@@ -18,7 +18,10 @@ import {
 	TransactionEJSVariables,
 	updateTransactionAmountBody,
 } from '../types/transaction';
-import { importTransactionsFromExcel, previewTransactionsFromExcel } from '../services/excelLoader';
+import {
+	importTransactionsFromExcel,
+	previewTransactionsFromExcel,
+} from '../services/excelLoader';
 
 /**
  * GET - fetch all transactions made
@@ -27,7 +30,7 @@ export const get_all_transactions = asyncHandler(
 	async (req: TransactionQueryFilterRequest, res) => {
 		const splicedFilteredTransactions = req.filteredTransactions?.splice(
 			req.skipAmount ?? 0,
-			req.pageSizeNum
+			req.pageSizeNum,
 		);
 
 		res.json(
@@ -36,10 +39,10 @@ export const get_all_transactions = asyncHandler(
 				splicedFilteredTransactions,
 				'All transactions',
 				req.nextPage ?? -1,
-				req.prevPage ?? -1
-			)
+				req.prevPage ?? -1,
+			),
 		);
-	}
+	},
 );
 
 /**
@@ -52,7 +55,7 @@ export const get_transaction_list_file = asyncHandler(
 		// read the template
 		const template = await fs.readFile(
 			path.join(__dirname, '../', 'templates', 'transactionsPDF.ejs'),
-			{ encoding: 'utf8' }
+			{ encoding: 'utf8' },
 		);
 
 		const startDateString = req.query.startDate
@@ -73,7 +76,7 @@ export const get_transaction_list_file = asyncHandler(
 
 		// push a formatted data into EJSData.transactions for each transactions
 		const { EJSTransactions, totalAmount } = getEJSTransactionsData(
-			req.filteredTransactions
+			req.filteredTransactions,
 		);
 		EJSData.transactions = EJSTransactions;
 		EJSData.totalAmount = totalAmount;
@@ -93,7 +96,7 @@ export const get_transaction_list_file = asyncHandler(
 
 		// send the buffer
 		res.end(buffer);
-	}
+	},
 );
 
 /**
@@ -107,7 +110,7 @@ export const get_transaction_list_csv = asyncHandler(
 			const { amount, date, category, owner, details } = transaction;
 
 			const ownerName = startCase(
-				`${owner.firstname} ${owner.middlename} ${owner.lastname}`
+				`${owner.firstname} ${owner.middlename} ${owner.lastname}`,
 			);
 			const datePayed = format(date || new Date(), 'M/dd/yyyy');
 			let categoryDetails = '';
@@ -117,13 +120,13 @@ export const get_transaction_list_csv = asyncHandler(
 			});
 
 			return (
-				`${owner.studentID},${ownerName},${amount},${datePayed},` +
+				`${owner.studentID},${ownerName},${owner.course},${amount},${datePayed},` +
 				categoryDetails
 			);
 		});
 
 		// add csv header
-		let header = 'Student ID,Student Name,Amount,Date Payed,';
+		let header = 'Student ID,Student Name,Course,Amount,Date Payed,';
 		req.filteredTransactions[0].category.details.map((detail) => {
 			header = header.concat(`${detail},`);
 		});
@@ -136,7 +139,7 @@ export const get_transaction_list_csv = asyncHandler(
 		});
 
 		res.send(csv.join('\n'));
-	}
+	},
 );
 
 /**
@@ -214,7 +217,7 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 				category: cat,
 				totalAmount: 0,
 				totalTransactions: 0,
-			} as CategoryObjResponse)
+			} as CategoryObjResponse),
 	);
 
 	const allTransactions = await req.TransactionModel?.find({})
@@ -263,8 +266,8 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 				transactions,
 				categories: categoriesArray,
 			},
-			'Dashboard data'
-		)
+			'Dashboard data',
+		),
 	);
 });
 
@@ -291,7 +294,7 @@ export const get_transaction = asyncHandler(async (req, res) => {
 	appAssert(
 		transaction,
 		NOT_FOUND,
-		`Transaction with ID: ${transactionID} not found`
+		`Transaction with ID: ${transactionID} not found`,
 	);
 
 	res.json(new CustomResponse(true, transaction, 'Transaction'));
@@ -312,7 +315,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 
 	// check if the category exists
 	const category = await req.CategoryModel.findById<ICategory>(
-		categoryID
+		categoryID,
 	).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
@@ -323,7 +326,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	appAssert(
 		amount <= category.fee,
 		BAD_REQUEST,
-		`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`
+		`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
 	);
 
 	// check if the amount paid is non-negative
@@ -336,20 +339,20 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	// check if the student already paid
-	// const isAlreadyPaid = await req.TransactionModel.findOne({
-	// 	owner: student._id,
-	// 	category: category._id,
-	// }).exec();
-	// appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
+	const isAlreadyPaid = await req.TransactionModel.findOne({
+		owner: student._id,
+		category: category._id,
+	}).exec();
+	appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
 
 	// check if the student is within the organization
 	const isInOrganization = category.organization.departments.includes(
-		student.course
+		student.course,
 	);
 	appAssert(
 		isInOrganization,
 		BAD_REQUEST,
-		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
 	);
 
 	const detailsObj: { [key: string]: any } = {};
@@ -373,7 +376,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	await transaction.save();
 
 	res.json(
-		new CustomResponse(true, transaction, 'Transaction saved successfully')
+		new CustomResponse(true, transaction, 'Transaction saved successfully'),
 	);
 });
 
@@ -387,11 +390,11 @@ export const delete_transaction = asyncHandler(async (req, res) => {
 	appAssert(
 		result,
 		NOT_FOUND,
-		`Transaction with ID: ${transactionID} does not exists`
+		`Transaction with ID: ${transactionID} does not exists`,
 	);
 
 	res.json(
-		new CustomResponse(true, result, 'Transaction deleted successfully')
+		new CustomResponse(true, result, 'Transaction deleted successfully'),
 	);
 });
 
@@ -411,7 +414,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 
 	// check if the category exists
 	const category: ICategory = await req.CategoryModel.findById(
-		categoryID
+		categoryID,
 	).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
@@ -422,7 +425,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	appAssert(
 		amount <= category.fee,
 		BAD_REQUEST,
-		`The amount is over the required amount for ${category.name} fee (${category.fee})`
+		`The amount is over the required amount for ${category.name} fee (${category.fee})`,
 	);
 
 	// check if the amount paid is non-negative
@@ -436,12 +439,12 @@ export const update_transaction = asyncHandler(async (req, res) => {
 
 	// check if the student is within the organization
 	const isInOrganization = category.organization.departments.includes(
-		student.course
+		student.course,
 	);
 	appAssert(
 		isInOrganization,
 		BAD_REQUEST,
-		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`
+		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
 	);
 
 	const detailsObj: { [key: string]: any } = {};
@@ -462,17 +465,17 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	const result = await req.TransactionModel.findByIdAndUpdate(
 		transactionID,
 		update,
-		{ new: true }
+		{ new: true },
 	).exec();
 
 	appAssert(
 		result,
 		NOT_FOUND,
-		`Transaction with ID: ${transactionID} not found`
+		`Transaction with ID: ${transactionID} not found`,
 	);
 
 	res.json(
-		new CustomResponse(true, result, 'Transaction updated successfully')
+		new CustomResponse(true, result, 'Transaction updated successfully'),
 	);
 });
 
@@ -491,7 +494,7 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 	appAssert(
 		transaction,
 		NOT_FOUND,
-		`Transaction with ID: ${transactionID} does not exists`
+		`Transaction with ID: ${transactionID} does not exists`,
 	);
 
 	const category = transaction.category;
@@ -501,7 +504,7 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 	appAssert(
 		transactionAmountSum <= category.fee,
 		BAD_REQUEST,
-		`The amount is over the required amount for ${category.name} fee`
+		`The amount is over the required amount for ${category.name} fee`,
 	);
 
 	// check if the amount paid is non-negative
@@ -514,14 +517,13 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 	const result = await req.TransactionModel.findByIdAndUpdate(
 		transaction._id,
 		update,
-		{ new: true }
+		{ new: true },
 	).exec();
 
 	res.json(
-		new CustomResponse(true, result, 'Transaction amount updated successfully')
+		new CustomResponse(true, result, 'Transaction amount updated successfully'),
 	);
 });
-
 
 /**
  * POST - import transactions from Excel file (.xlsx)
@@ -541,7 +543,7 @@ export const import_transactions_excel = asyncHandler(async (req, res) => {
 	appAssert(
 		validMimeTypes.includes(file.mimetype),
 		BAD_REQUEST,
-		'File must be an Excel file (.xlsx or .xls)'
+		'File must be an Excel file (.xlsx or .xls)',
 	);
 
 	// Check if category exists
@@ -553,14 +555,20 @@ export const import_transactions_excel = asyncHandler(async (req, res) => {
 		req,
 		file.buffer,
 		categoryID,
-		false
+		false,
 	);
 
 	// If validation has critical errors, return them
 	if (validationResult.success === 0 && validationResult.failed > 0) {
-		res.status(BAD_REQUEST).json(
-			new CustomResponse(false, validationResult, 'Validation failed. No transactions imported.')
-		);
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(
+					false,
+					validationResult,
+					'Validation failed. No transactions imported.',
+				),
+			);
 		return;
 	}
 
@@ -569,18 +577,17 @@ export const import_transactions_excel = asyncHandler(async (req, res) => {
 		req,
 		file.buffer,
 		categoryID,
-		true
+		true,
 	);
 
 	res.json(
 		new CustomResponse(
 			true,
 			importResult,
-			`Import completed: ${importResult.success} successful, ${importResult.failed} failed`
-		)
+			`Import completed: ${importResult.success} successful, ${importResult.failed} failed`,
+		),
 	);
 });
-
 
 /**
  * POST - preview transactions from Excel file before importing
@@ -601,7 +608,7 @@ export const preview_transactions_excel = asyncHandler(async (req, res) => {
 	appAssert(
 		validMimeTypes.includes(file.mimetype),
 		BAD_REQUEST,
-		'File must be an Excel file (.xlsx, .xls) or CSV'
+		'File must be an Excel file (.xlsx, .xls) or CSV',
 	);
 
 	// Check if category exists
@@ -611,14 +618,14 @@ export const preview_transactions_excel = asyncHandler(async (req, res) => {
 	const previewResult = await previewTransactionsFromExcel(
 		req,
 		file.buffer,
-		categoryID
+		categoryID,
 	);
 
 	res.json(
 		new CustomResponse(
 			true,
 			previewResult,
-			`Preview: ${previewResult.valid.length} valid, ${previewResult.invalid.length} invalid`
-		)
+			`Preview: ${previewResult.valid.length} valid, ${previewResult.invalid.length} invalid`,
+		),
 	);
 });

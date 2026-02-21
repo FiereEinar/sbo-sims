@@ -43,7 +43,7 @@ const UserSchema = new Schema<IUser>(
 		},
 		role: {
 			type: String,
-			enum: ['governor', 'treasurer', 'auditor', 'regular'],
+			enum: ['governor', 'treasurer', 'auditor', 'regular', 'admin'],
 			default: 'regular',
 		},
 		rbacRole: { type: Schema.Types.ObjectId, ref: 'Role' },

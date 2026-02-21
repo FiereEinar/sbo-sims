@@ -15,6 +15,7 @@ export const MODULES = {
 	TRANSACTION_UPDATE: 'transaction:update',
 	TRANSACTION_DELETE: 'transaction:delete',
 	TRANSACTION_IMPORT: 'transaction:import',
+	TRANSACTION_DOWNLOAD: 'transaction:download',
 
 	PRELISTING_CREATE: 'prelisting:create',
 	PRELISTING_READ: 'prelisting:read',

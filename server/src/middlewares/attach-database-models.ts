@@ -8,11 +8,12 @@ import { TransactionSchema } from '../models/transaction';
 import { OrganizationSchema } from '../models/organization';
 import { SessionSchema } from '../models/session';
 import { PrelistingSchema } from '../models/prelisting';
+import RoleSchema from '../models/role';
 
 export const attachDatabaseModels = async (
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
 ) => {
 	try {
 		const currentUser = req.currentUser;
@@ -25,21 +26,21 @@ export const attachDatabaseModels = async (
 
 		const dynamicConnection = await getDatabaseConnection(
 			dbName,
-			process.env.ME_CONFIG_MONGODB_URL as string
+			process.env.ME_CONFIG_MONGODB_URL as string,
 		);
 
 		req.StudentModel = dynamicConnection.model(DB_MODEL.STUDENT, StudentSchema);
 		req.CategoryModel = dynamicConnection.model(
 			DB_MODEL.CATEGORY,
-			CategorySchema
+			CategorySchema,
 		);
 		req.TransactionModel = dynamicConnection.model(
 			DB_MODEL.TRANSACTION,
-			TransactionSchema
+			TransactionSchema,
 		);
 		req.PrelistingModel = dynamicConnection.model(
 			DB_MODEL.PRELISTING,
-			PrelistingSchema
+			PrelistingSchema,
 		);
 
 		next();
@@ -51,23 +52,24 @@ export const attachDatabaseModels = async (
 export const attachOriginalDatabaseModels = async (
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
 ) => {
 	try {
 		const originalConnection = await getDatabaseConnection(
 			originalDbName,
-			process.env.ME_CONFIG_MONGODB_URL as string
+			process.env.ME_CONFIG_MONGODB_URL as string,
 		);
 
 		req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);
 		req.SessionModel = originalConnection.model(
 			DB_MODEL.SESSION,
-			SessionSchema
+			SessionSchema,
 		);
 		req.OrganizationModel = originalConnection.model(
 			DB_MODEL.ORGANIZATION,
-			OrganizationSchema
+			OrganizationSchema,
 		);
+		req.RoleModel = originalConnection.model(DB_MODEL.ROLE, RoleSchema);
 
 		next();
 	} catch (err: any) {

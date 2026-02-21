@@ -131,13 +131,13 @@ export default function Dashboard() {
 
 	const revenueDelta = data
 		? ((data.totalRevenue - data.totalRevenueLastMonth) / data.totalRevenue) *
-		  100
+			100
 		: undefined;
 
 	const txDelta = data
 		? ((data.totalTransaction - data.totalTransactionLastMonth) /
 				data.totalTransaction) *
-		  100
+			100
 		: undefined;
 
 	return (

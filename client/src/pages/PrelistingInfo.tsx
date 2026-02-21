@@ -9,13 +9,10 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
-import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export default function PrelistingInfo() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { prelistingID } = useParams();
 	if (!prelistingID) return;
 
@@ -48,12 +45,10 @@ export default function PrelistingInfo() {
 			{categories && prelisting && (
 				<StickyHeader>
 					<Header>Prelisting Details</Header>
-					{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-						<EditAndDeletePrelistingButton
-							categories={categories}
-							prelisting={prelisting}
-						/>
-					)}
+					<EditAndDeletePrelistingButton
+						categories={categories}
+						prelisting={prelisting}
+					/>
 				</StickyHeader>
 			)}
 			<hr />

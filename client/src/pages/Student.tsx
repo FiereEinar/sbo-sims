@@ -6,18 +6,16 @@ import StudentFilter from '@/components/StudentFilter';
 import StudentsTable from '@/components/StudentsTable';
 import Header from '@/components/ui/header';
 import { useQuery } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
-import { useUserStore } from '@/store/user';
 import ImportStudentsButtonSmart from '@/components/buttons/ImportStudentsButtonSmart';
-import { isAuthorized } from '@/lib/utils';
 import { queryClient } from '@/main';
+import HasPermission from '@/components/HasPermission';
 
 export default function Student() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { page, pageSize, setPage, getFilterValues } = useStudentFilterStore(
-		(state) => state
+		(state) => state,
 	);
 
 	const {
@@ -52,13 +50,16 @@ export default function Student() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Students</Header>
-				{isAuthorized(userRole, 'governor', 'treasurer') && <AddStudentForm />}
+
+				<HasPermission permissions={[MODULES.STUDENT_CREATE]}>
+					<AddStudentForm />
+				</HasPermission>
 			</StickyHeader>
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<StudentFilter />
-				{isAuthorized(userRole, 'governor', 'treasurer') && (
+				<HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
 					<ImportStudentsButtonSmart />
-				)}
+				</HasPermission>
 			</div>
 			<StudentsTable
 				isLoading={studentsLoading}

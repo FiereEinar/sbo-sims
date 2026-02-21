@@ -14,10 +14,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Category } from '@/types/category';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { Prelisting } from '@/types/prelisting';
 import AddPrelistingForm from '../forms/AddPrelistingForm';
 import { requestDeletePrelisting } from '@/api/prelisting';
+import HasPermission from '../HasPermission';
 
 type EditAndDeletePrelistingButtonProps = {
 	prelisting: Prelisting;
@@ -30,8 +31,13 @@ export default function EditAndDeletePrelistingButton({
 }: EditAndDeletePrelistingButtonProps) {
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton prelisting={prelisting} categories={categories} />
-			<DeleteButton prelistingID={prelisting._id} />
+			<HasPermission permissions={[MODULES.PRELISTING_UPDATE]}>
+				<EditButton prelisting={prelisting} categories={categories} />
+			</HasPermission>
+
+			<HasPermission permissions={[MODULES.PRELISTING_DELETE]}>
+				<DeleteButton prelistingID={prelisting._id} />
+			</HasPermission>
 		</div>
 	);
 }

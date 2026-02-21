@@ -66,7 +66,7 @@ export const signup = asyncHandler(async (req, res) => {
 	appAssert(
 		parseInt(studentID).toString().length === 10,
 		BAD_REQUEST,
-		`Student ID must be 10 numbers and should not contain characters to be valid`
+		`Student ID must be 10 numbers and should not contain characters to be valid`,
 	);
 
 	// check if studentID already exist
@@ -77,7 +77,7 @@ export const signup = asyncHandler(async (req, res) => {
 	appAssert(
 		!existingUser,
 		CONFLICT,
-		`A user with ID '${studentID}' already exist`
+		`A user with ID '${studentID}' already exist`,
 	);
 
 	// set default profile picture
@@ -118,7 +118,9 @@ export const login = asyncHandler(async (req, res) => {
 	// check if studentID is valid
 	const user = await req.UserModel.findOne<IUser>({
 		studentID: studentID,
-	}).exec();
+	})
+		.populate('rbacRole')
+		.exec();
 	appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
 	// check if password is correct
@@ -148,8 +150,8 @@ export const login = asyncHandler(async (req, res) => {
 	const device = useragent?.isMobile
 		? 'mobile'
 		: useragent?.isTablet
-		? 'tablet'
-		: 'desktop';
+			? 'tablet'
+			: 'desktop';
 
 	user.activeSemDB = '2'; // temp fix for testing
 	user.activeSchoolYearDB = '2025'; // temp fix for testing
@@ -159,8 +161,8 @@ export const login = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			{ user: user.omitPassword(), accessToken, device },
-			'Login successfull'
-		)
+			'Login successfull',
+		),
 	);
 });
 
@@ -236,7 +238,7 @@ export const refresh = asyncHandler(async (req, res) => {
 		res.cookie(
 			refreshTokenCookieName,
 			newRefreshToken,
-			getRefreshTokenOptions()
+			getRefreshTokenOptions(),
 		);
 	}
 
@@ -255,7 +257,7 @@ export const check_auth = asyncHandler(async (req, res) => {
 		token,
 		UNAUTHORIZED,
 		'Token not found',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
 	// verify the token
@@ -264,17 +266,19 @@ export const check_auth = asyncHandler(async (req, res) => {
 		!error && payload,
 		UNAUTHORIZED,
 		'Token not verified',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
-	const user = await req.UserModel.findById(payload.userID as string);
+	const user = await req.UserModel.findById(payload.userID as string).populate(
+		'rbacRole',
+	);
 	const session = await req.SessionModel.findById(payload.sessionID);
 
 	appAssert(
 		session && user,
 		UNAUTHORIZED,
 		'User or session not found',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
 	const now = Date.now();
@@ -285,7 +289,7 @@ export const check_auth = asyncHandler(async (req, res) => {
 			false,
 			UNAUTHORIZED,
 			'Session expired',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 	}
 
@@ -303,13 +307,13 @@ export const admin = asyncHandler(async (req, res) => {
 	appAssert(
 		secretAdminKey === SECRET_ADMIN_KEY,
 		BAD_REQUEST,
-		'Invalid admin key'
+		'Invalid admin key',
 	);
 
 	const user = await req.UserModel.findByIdAndUpdate(
 		userID,
 		{ role: 'governor' },
-		{ new: true }
+		{ new: true },
 	);
 
 	appAssert(user, NOT_FOUND, 'User not found');

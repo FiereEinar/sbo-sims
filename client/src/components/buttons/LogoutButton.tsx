@@ -2,6 +2,7 @@ import axiosInstance from '@/api/axiosInstance';
 import SidebarLink from '../SidebarLink';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { Power } from 'lucide-react';
 
 export default function LogoutButton() {
 	const { toast } = useToast();
@@ -25,9 +26,7 @@ export default function LogoutButton() {
 	return (
 		<button onClick={onLogout}>
 			<div className='pointer-events-none'>
-				<SidebarLink
-					link={{ icon: 'logout', name: 'Logout', path: '/logout' }}
-				/>
+				<SidebarLink link={{ icon: Power, name: 'Logout', path: '/logout' }} />
 			</div>
 		</button>
 	);

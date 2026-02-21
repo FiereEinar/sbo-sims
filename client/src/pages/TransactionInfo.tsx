@@ -9,13 +9,10 @@ import StickyHeader from '@/components/StickyHeader';
 import TransactionCheque from '@/components/TransactionCheque';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
-import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export default function TransactionInfo() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { transactionID } = useParams();
 	if (!transactionID) return;
 
@@ -48,12 +45,10 @@ export default function TransactionInfo() {
 			{categories && transaction && (
 				<StickyHeader>
 					<Header>Transaction Details</Header>
-					{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-						<EditAndDeleteTransactionButton
-							categories={categories}
-							transaction={transaction}
-						/>
-					)}
+					<EditAndDeleteTransactionButton
+						categories={categories}
+						transaction={transaction}
+					/>
 				</StickyHeader>
 			)}
 			<hr />

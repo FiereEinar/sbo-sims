@@ -5,7 +5,7 @@ const connections: { [key: string]: Connection } = {};
 
 export const getDatabaseConnection = async (
 	dbName: string,
-	dbURI: string
+	dbURI: string,
 ): Promise<Connection> => {
 	if (connections[dbName]) {
 		return connections[dbName];
@@ -17,7 +17,7 @@ export const getDatabaseConnection = async (
 	}
 
 	const newConnection = mongoose.createConnection(
-		`${dbURI}/${dbName}${MONGODB_PARAMS}`
+		`${dbURI}/${dbName}${MONGODB_PARAMS}`,
 	);
 
 	connections[dbName] = newConnection;

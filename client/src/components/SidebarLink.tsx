@@ -1,12 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import GetIcon, { iconKeys } from './icons/get-icon';
+import { SidebarNavLinkType } from '@/constants';
 
 type SidebarLinkProps = {
-	link: {
-		path: string;
-		name: string;
-		icon: iconKeys | string;
-	};
+	link: SidebarNavLinkType;
 };
 
 export default function SidebarLink({ link }: SidebarLinkProps) {
@@ -20,8 +16,8 @@ export default function SidebarLink({ link }: SidebarLinkProps) {
 				}`
 			}
 		>
-			<div className='flex items-center justify-start sm:justify-center md:justify-start gap-1'>
-				<GetIcon iconKey={link.icon as iconKeys} />
+			<div className='flex items-center justify-start sm:justify-center md:justify-start gap-2'>
+				<link.icon className='size-5' />
 				<p className='flex sm:hidden md:flex'>{link.name}</p>
 			</div>
 		</NavLink>

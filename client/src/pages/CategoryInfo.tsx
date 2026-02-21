@@ -10,9 +10,7 @@ import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
-import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -25,7 +23,6 @@ export default function CategoryInfo() {
 
 	const { getFilterValues } = useTransactionFilterStore((state) => state);
 	const [page, setPage] = useState(1);
-	const userRole = useUserStore((state) => state.user?.role);
 
 	const { data, isLoading, error } = useQuery({
 		queryKey: [
@@ -37,7 +34,7 @@ export default function CategoryInfo() {
 				getFilterValues(),
 				categoryID,
 				page,
-				pageSize
+				pageSize,
 			),
 	});
 
@@ -53,12 +50,8 @@ export default function CategoryInfo() {
 				<StickyHeader>
 					<CategoryDataCard category={data.data.category} />
 					<div className='flex flex-col items-start sm:items-end space-y-2'>
-						{isAuthorized(userRole, 'governor') && (
-							<EditAndDeleteCategoryButton category={data.data.category} />
-						)}
-						{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
-							<DownloadTransactionsButton categoryID={categoryID} />
-						)}
+						<EditAndDeleteCategoryButton category={data.data.category} />
+						<DownloadTransactionsButton categoryID={categoryID} />
 					</div>
 				</StickyHeader>
 			)}

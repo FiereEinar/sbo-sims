@@ -17,7 +17,8 @@ import {
 import AddTransactionForm from '../forms/AddTransactionForm';
 import { Category } from '@/types/category';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
+import HasPermission from '../HasPermission';
 
 type EditAndDeleteTransactionButtonProps = {
 	transaction: Transaction;
@@ -30,8 +31,13 @@ export default function EditAndDeleteTransactionButton({
 }: EditAndDeleteTransactionButtonProps) {
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton transaction={transaction} categories={categories} />
-			<DeleteButton transactionID={transaction._id} />
+			<HasPermission permissions={[MODULES.TRANSACTION_UPDATE]}>
+				<EditButton transaction={transaction} categories={categories} />
+			</HasPermission>
+
+			<HasPermission permissions={[MODULES.TRANSACTION_DELETE]}>
+				<DeleteButton transactionID={transaction._id} />
+			</HasPermission>
 		</div>
 	);
 }

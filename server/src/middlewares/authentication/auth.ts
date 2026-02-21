@@ -13,7 +13,7 @@ export const auth = asyncHandler(
 			token,
 			UNAUTHORIZED,
 			'No token found',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 
 		const { error, payload } = verifyToken(token);
@@ -21,15 +21,17 @@ export const auth = asyncHandler(
 			!error && payload,
 			UNAUTHORIZED,
 			'Token not verified',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 
-		const user = await req.UserModel.findById(payload.userID as string);
+		const user = await req.UserModel.findById(
+			payload.userID as string,
+		).populate('rbacRole');
 		appAssert(
 			user,
 			UNAUTHORIZED,
 			'User not found',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 
 		const session = await req.SessionModel.findById(payload.sessionID);
@@ -37,7 +39,7 @@ export const auth = asyncHandler(
 			session,
 			UNAUTHORIZED,
 			'Session not found',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 
 		const now = Date.now();
@@ -47,7 +49,7 @@ export const auth = asyncHandler(
 				false,
 				UNAUTHORIZED,
 				'Session expired',
-				AppErrorCodes.InvalidAccessToken
+				AppErrorCodes.InvalidAccessToken,
 			);
 		}
 
@@ -56,10 +58,10 @@ export const auth = asyncHandler(
 			ip === session.ip && userAgent === session.userAgent,
 			UNAUTHORIZED,
 			'Invalid session',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 
 		req.currentUser = user;
 		next();
-	}
+	},
 );

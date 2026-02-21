@@ -1,16 +1,14 @@
 import { fetchAllOrganizations } from '@/api/organization';
 import AddOrganizationForm from '@/components/forms/AddOrganizationForm';
+import HasPermission from '@/components/HasPermission';
 import OrganizationTable from '@/components/OrganizationTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
-import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
-import { useUserStore } from '@/store/user';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Organization() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const {
 		data: organizations,
 		isLoading,
@@ -28,7 +26,10 @@ export default function Organization() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Organizations</Header>
-				{isAuthorized(userRole, 'governor') && <AddOrganizationForm />}
+
+				<HasPermission permissions={[MODULES.ORGANIZATION_CREATE]}>
+					<AddOrganizationForm />
+				</HasPermission>
 			</StickyHeader>
 
 			<OrganizationTable organizations={organizations} isLoading={isLoading} />

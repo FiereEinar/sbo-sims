@@ -7,17 +7,15 @@ import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
 import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
-import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
-import { useUserStore } from '@/store/user';
 import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
+import HasPermission from '@/components/HasPermission';
 
 export default function Transaction() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { page, pageSize, getFilterValues, setPage } =
 		useTransactionFilterStore((state) => state);
 
@@ -59,16 +57,18 @@ export default function Transaction() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Transactions</Header>
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+
+				<HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
 					<AddTransactionForm categories={categories} />
-				)}
+				</HasPermission>
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>
 				<TransactionsFilter />
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+
+				<HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
 					<ImportTransactionsButton categories={categories} />
-				)}
+				</HasPermission>
 			</div>
 			<TransactionsTable
 				isLoading={transactionsLoading}

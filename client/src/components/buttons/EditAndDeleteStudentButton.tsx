@@ -16,7 +16,8 @@ import { Student } from '@/types/student';
 import { requestDeleteStudent } from '@/api/student';
 import { AddStudentForm } from '../forms/AddStudentForm';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
+import HasPermission from '../HasPermission';
 
 type EditAndDeleteStudentButtonProps = {
 	student: Student;
@@ -27,8 +28,12 @@ export default function EditAndDeleteStudentButton({
 }: EditAndDeleteStudentButtonProps) {
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton student={student} />
-			<DeleteButton studentID={student.studentID} />
+			<HasPermission permissions={[MODULES.STUDENT_UPDATE]}>
+				<EditButton student={student} />
+			</HasPermission>
+			<HasPermission permissions={[MODULES.STUDENT_DELETE]}>
+				<DeleteButton studentID={student.studentID} />
+			</HasPermission>
 		</div>
 	);
 }

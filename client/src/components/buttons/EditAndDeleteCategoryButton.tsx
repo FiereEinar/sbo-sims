@@ -13,10 +13,11 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { Category } from '@/types/category';
 import AddCategoryForm from '../forms/AddCategoryForm';
 import { requestDeleteCategory } from '@/api/category';
+import HasPermission from '../HasPermission';
 
 type EditAndDeleteCategoryButtonProps = {
 	category: Category;
@@ -27,8 +28,13 @@ export default function EditAndDeleteCategoryButton({
 }: EditAndDeleteCategoryButtonProps) {
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton category={category} />
-			<DeleteButton categoryID={category._id} />
+			<HasPermission permissions={[MODULES.CATEGORY_UPDATE]}>
+				<EditButton category={category} />
+			</HasPermission>
+
+			<HasPermission permissions={[MODULES.CATEGORY_DELETE]}>
+				<DeleteButton categoryID={category._id} />
+			</HasPermission>
 		</div>
 	);
 }

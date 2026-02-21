@@ -13,6 +13,7 @@ import transactionRouter from './routes/transaction';
 import prelistingRouter from './routes/prelisting';
 import categoryRouter from './routes/category';
 import organizationRouter from './routes/organization';
+import roleRouter from './routes/role';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -48,6 +49,7 @@ app.use('/transaction', transactionRouter);
 app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);
+app.use('/role', roleRouter);
 
 // Error handlers
 app.use(notFoundHandler);

@@ -1,24 +1,22 @@
 import { fetchCategories } from '@/api/category';
 import { fetchPrelistings } from '@/api/prelisting';
 import AddPrelistingForm from '@/components/forms/AddPrelistingForm';
+import HasPermission from '@/components/HasPermission';
 import PaginationController from '@/components/PaginationController';
 import PrelistingFilter from '@/components/PrelistingFilter';
 import PrelistingTable from '@/components/PrelistingTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
-import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import { usePrelistingFilterStore } from '@/store/prelistingFilter';
-import { useUserStore } from '@/store/user';
 import { PrelistingFilterValues } from '@/types/prelisting';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Prelisting() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { page, pageSize, getFilterValues, setPage } = usePrelistingFilterStore(
-		(state) => state
+		(state) => state,
 	);
 
 	const {
@@ -59,9 +57,10 @@ export default function Prelisting() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Prelistings</Header>
-				{isAuthorized(userRole, 'governor', 'treasurer', 'auditor') && (
+
+				<HasPermission permissions={[MODULES.PRELISTING_CREATE]}>
 					<AddPrelistingForm categories={categories} />
-				)}
+				</HasPermission>
 			</StickyHeader>
 
 			<div className='flex justify-between items-end flex-wrap gap-3'>

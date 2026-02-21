@@ -12,14 +12,11 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
-import { useUserStore } from '@/store/user';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
 
 export default function OrganizationInfo() {
-	const userRole = useUserStore((state) => state.user?.role);
 	const { organizationID } = useParams();
 
 	const {
@@ -53,11 +50,7 @@ export default function OrganizationInfo() {
 			{organization && (
 				<StickyHeader>
 					<Header>{organization.name}</Header>
-					{isAuthorized(userRole, 'governor') && (
-						<EditAndDeleteOrganizationButton
-							organizationID={organization._id}
-						/>
-					)}
+					<EditAndDeleteOrganizationButton organizationID={organization._id} />
 				</StickyHeader>
 			)}
 

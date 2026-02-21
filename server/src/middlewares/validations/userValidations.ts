@@ -89,6 +89,13 @@ export const updateUserValidation = [
 		.withMessage('Bio is only 255 characters max')
 		.optional(),
 
+	body('rbacRole')
+		.trim()
+		.escape()
+		.isLength({ max: 255 })
+		.withMessage('RBAC Role ID is only 255 characters max')
+		.optional(),
+
 	body('email').trim().escape().optional(),
 
 	body('activeSchoolYearDB')

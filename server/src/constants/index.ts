@@ -11,7 +11,12 @@ export const DB_MODEL = {
 	ORGANIZATION: 'Organization',
 	CATEGORY: 'Category',
 	SESSION: 'Session',
+	ROLE: 'Role',
 };
+
+export const WHITELISTED_DOMAINS = ['student.buksu.edu.ph'];
+
+export const SUPER_ADMIN = 'Super Admin';
 
 export enum AppErrorCodes {
 	InvalidAccessToken = 'InvalidAccessToken',

@@ -13,9 +13,10 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import AddOrganizationForm from '../forms/AddOrganizationForm';
 import { requestDeleteOrganization } from '@/api/organization';
+import HasPermission from '../HasPermission';
 
 type EditAndDeleteOrganizationButtonProps = {
 	organizationID: string;
@@ -26,8 +27,12 @@ export default function EditAndDeleteOrganizationButton({
 }: EditAndDeleteOrganizationButtonProps) {
 	return (
 		<div className='space-x-2 flex'>
-			<EditButton organizationID={organizationID} />
-			<DeleteButton organizationID={organizationID} />
+			<HasPermission permissions={[MODULES.ORGANIZATION_UPDATE]}>
+				<EditButton organizationID={organizationID} />
+			</HasPermission>
+			<HasPermission permissions={[MODULES.ORGANIZATION_DELETE]}>
+				<DeleteButton organizationID={organizationID} />
+			</HasPermission>
 		</div>
 	);
 }

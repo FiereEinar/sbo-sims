@@ -18,3 +18,7 @@ export type updateUserBody = Entity & {
 	activeSchoolYearDB: string;
 	activeSemDB: string;
 };
+
+export type adminUpdateUserBody = updateUserBody & {
+	rbacRole: string;
+};

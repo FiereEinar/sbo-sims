@@ -14,8 +14,6 @@ export default function Settings() {
 					</p>
 				</div>
 
-				<hr />
-
 				<ApplicationSettingsForm />
 				<UpdateUserForm />
 			</div>

@@ -13,6 +13,7 @@ import SidebarLink from './SidebarLink';
 import HeaderLogo from './HeaderLogo';
 import DarkModeToggle from './buttons/DarkModeToggle';
 import LogoutButton from './buttons/LogoutButton';
+import { Settings } from 'lucide-react';
 
 export default function TopNavbarSheet() {
 	return (
@@ -41,7 +42,7 @@ export default function TopNavbarSheet() {
 
 					<div className='flex flex-col justify-between gap-3'>
 						<SidebarLink
-							link={{ icon: 'settings', name: 'Settings', path: '/settings' }}
+							link={{ icon: Settings, name: 'Settings', path: '/settings' }}
 						/>
 						<DarkModeToggle text='Toggle Theme' />
 						<LogoutButton />

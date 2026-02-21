@@ -3,18 +3,14 @@ import _ from 'lodash';
 import { GraduationCap, Hash, Mail, User } from 'lucide-react';
 
 interface StudentDataCardProps {
-	studentID: string;
 	student: Student;
 }
 
-export default function StudentDataCard({
-	studentID,
-	student,
-}: StudentDataCardProps) {
+export default function StudentDataCard({ student }: StudentDataCardProps) {
 	const fullName = _.startCase(
 		`${student.firstname} ${student.middlename ?? ''} ${
 			student.lastname
-		}`.toLowerCase()
+		}`.toLowerCase(),
 	);
 
 	return (
@@ -32,7 +28,7 @@ export default function StudentDataCard({
 						<InfoRow
 							icon={<Hash size={25} />}
 							label='Student ID'
-							value={studentID}
+							value={student.studentID}
 						/>
 						<InfoRow
 							icon={<Mail size={25} />}

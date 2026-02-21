@@ -19,5 +19,14 @@ export const updateUserSchema = z.object({
 
 	email: z.string().optional(),
 
-	bio: z.string().max(100, 'Bio must only be under 100 characters'),
+	bio: z.string().max(100, 'Bio must only be under 100 characters').optional(),
+});
+
+export const createUserSchema = updateUserSchema.extend({
+	password: z
+		.string()
+		.max(30, 'Password must be under 30 characters')
+		.optional(),
+
+	rbacRole: z.string().optional(),
 });

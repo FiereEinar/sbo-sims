@@ -11,7 +11,7 @@ import { StudentFormValues } from '@/components/forms/AddStudentForm';
 export const fetchStudents = async (
 	filters: StudentFilterValues,
 	page: number = 1,
-	pageSize: number = 50
+	pageSize: number = 50,
 ): Promise<APIPaginatedResponse<StudentWithTransactions[]> | undefined> => {
 	try {
 		const defaultFilterValue = 'All';
@@ -30,9 +30,10 @@ export const fetchStudents = async (
 		if (filters.gender) url = url + `&gender=${filters.gender}`;
 		if (filters.sortBy) url = url + `&sortBy=${filters.sortBy}`;
 
-		const { data } = await axiosInstance.get<
-			APIPaginatedResponse<StudentWithTransactions[]>
-		>(url);
+		const { data } =
+			await axiosInstance.get<APIPaginatedResponse<StudentWithTransactions[]>>(
+				url,
+			);
 
 		return data;
 	} catch (err: any) {
@@ -41,7 +42,7 @@ export const fetchStudents = async (
 };
 
 export const fetchStudentByID = async (
-	studentID: string
+	studentID: string,
 ): Promise<Student | undefined> => {
 	try {
 		const { data } = await axiosInstance.get(`/student/${studentID}`);
@@ -53,11 +54,11 @@ export const fetchStudentByID = async (
 };
 
 export const fetchStudentTransactions = async (
-	studentID: string
+	studentID: string,
 ): Promise<Transaction[] | undefined> => {
 	try {
 		const { data } = await axiosInstance.get(
-			`/student/${studentID}/transaction`
+			`/student/${studentID}/transaction`,
 		);
 
 		return data.data;
@@ -67,7 +68,7 @@ export const fetchStudentTransactions = async (
 };
 
 export const submitStudentForm = async (
-	formData: StudentFormValues
+	formData: StudentFormValues,
 ): Promise<APIResponse<Student> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/student', formData);
@@ -80,7 +81,7 @@ export const submitStudentForm = async (
 
 export const submitUpdateStudentForm = async (
 	studentID: string,
-	formData: StudentFormValues
+	formData: StudentFormValues,
 ): Promise<APIResponse<Student> | undefined> => {
 	try {
 		const { data } = await axiosInstance.put(`/student/${studentID}`, formData);
@@ -92,7 +93,7 @@ export const submitUpdateStudentForm = async (
 };
 
 export const requestDeleteStudent = async (
-	studentID: string
+	studentID: string,
 ): Promise<APIResponse<Student> | undefined> => {
 	try {
 		const { data } = await axiosInstance.delete(`/student/${studentID}`);

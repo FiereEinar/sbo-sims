@@ -29,6 +29,7 @@ function groupPermissions() {
 }
 
 export function RolePermissionsEditor({ role }: Props) {
+	const [isLoading, setIsLoading] = useState(false);
 	const { toast } = useToast();
 	const groupedPermissions = groupPermissions();
 
@@ -45,15 +46,23 @@ export function RolePermissionsEditor({ role }: Props) {
 	};
 
 	const handleSave = async () => {
-		await submitUpdateRolePermissions(role._id, {
-			permissions: selectedPermissions,
-		});
+		try {
+			setIsLoading(true);
 
-		await queryClient.invalidateQueries({
-			queryKey: [QUERY_KEYS.ROLES],
-		});
+			await submitUpdateRolePermissions(role._id, {
+				permissions: selectedPermissions,
+			});
 
-		toast({ title: 'Permissions updated successfully!' });
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.ROLES],
+			});
+
+			toast({ title: 'Permissions updated successfully!' });
+		} catch (error) {
+			toast({ title: 'Failed to update permissions', variant: 'destructive' });
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
@@ -89,7 +98,9 @@ export function RolePermissionsEditor({ role }: Props) {
 			))}
 
 			<div className='flex justify-end'>
-				<Button onClick={handleSave}>Save Permissions</Button>
+				<Button onClick={handleSave} disabled={isLoading}>
+					Save Permissions
+				</Button>
 			</div>
 		</div>
 	);

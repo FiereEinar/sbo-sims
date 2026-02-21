@@ -1,5 +1,6 @@
 import { fetchRoleByID } from '@/api/role';
 import BackButton from '@/components/buttons/BackButton';
+import { AddRoleForm } from '@/components/forms/AddRoleForm';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import StudentDataCardLoading from '@/components/loading/StudentDataCardLoading';
 import { RolePermissionsEditor } from '@/components/RolePermissionsEditor';
@@ -39,13 +40,15 @@ export default function RoleInfo() {
 			{role && (
 				<div className='space-y-6'>
 					{/* // Role Header Card */}
-					<div className='rounded-2xl border bg-card/50 p-6 shadow-sm'>
+					<div className='rounded-2xl border bg-card/50 p-6 shadow-sm flex justify-between items-center'>
 						<div>
 							<h2 className='text-xl font-semibold'>{role.name}</h2>
 							<p className='text-sm text-muted-foreground'>
 								{role.description}
 							</p>
 						</div>
+
+						{role && <AddRoleForm mode='edit' role={role} />}
 					</div>
 
 					{/* // Permissions Editor */}

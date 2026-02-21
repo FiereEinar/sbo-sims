@@ -45,7 +45,9 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
 							<TableCell className=''>{user.studentID}</TableCell>
 							<TableCell className=''>{_.startCase(user.firstname)}</TableCell>
 							<TableCell className=''>{_.startCase(user.lastname)}</TableCell>
-							<TableCell className=''>{user.email ?? '--'}</TableCell>
+							<TableCell className=''>
+								{user.email?.length ? user.email : '--'}
+							</TableCell>
 							<TableCell className=''>
 								{user.rbacRole?.name ?? user.role ?? '--'}
 							</TableCell>
@@ -55,13 +57,6 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
 						</TableRow>
 					))}
 			</TableBody>
-
-			{/* <TableFooter>
-        <TableRow>
-          <TableCell colSpan={1}>Total Categories</TableCell>
-          <TableCell className='text-right'>{organizations.length}</TableCell>
-        </TableRow>
-      </TableFooter> */}
 		</Table>
 	);
 }

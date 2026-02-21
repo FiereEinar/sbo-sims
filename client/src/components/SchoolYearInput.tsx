@@ -14,7 +14,12 @@ export default function SchoolYearInput() {
 	const { toast } = useToast();
 	const navigate = useNavigate();
 	const { user: currentUser, setUser } = useUserStore((state) => state);
-	const [year, setYear] = useState<number>(getYear(new Date()));
+	const activeUserYear = currentUser?.activeSchoolYearDB ?? getYear(new Date());
+	const [year, setYear] = useState<number>(
+		typeof activeUserYear === 'string'
+			? parseInt(activeUserYear)
+			: activeUserYear,
+	);
 
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		try {
@@ -31,7 +36,7 @@ export default function SchoolYearInput() {
 
 			const { data: result } = await axiosInstance.put<APIResponse<User>>(
 				`/user/${currentUser._id}`,
-				{ ...currentUser, activeSchoolYearDB: year }
+				{ ...currentUser, activeSchoolYearDB: year },
 			);
 
 			setUser(result.data);

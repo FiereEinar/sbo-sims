@@ -20,7 +20,7 @@ export const hasRole = (requiredPermissions: Modules[]) => {
 
 		// Collect all permissions from user's roles
 		const userPermissions: string[] = [];
-		const adminRole = user.adminRole as any;
+		const adminRole = user.rbacRole as any;
 		if (adminRole && adminRole.permissions) {
 			adminRole.permissions.forEach((permission: string) => {
 				userPermissions.push(permission);

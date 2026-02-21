@@ -32,6 +32,7 @@ import { QUERY_KEYS } from '@/constants';
 import { SelectContainer, SelectContainerItem } from '../ui/select';
 import { ring } from 'ldrs';
 import { useForm } from 'react-hook-form';
+import { useToast } from '@/hooks/use-toast';
 
 ring.register();
 
@@ -57,6 +58,7 @@ export default function AddTransactionForm({
 	const [studentIdSearch, setStudentIdSearch] = useState('');
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
+	const { toast } = useToast();
 
 	const { data: studentsFetchResult, isLoading: fetchingStudents } = useQuery({
 		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
@@ -106,7 +108,12 @@ export default function AddTransactionForm({
 				await submitUpdateTransactionForm(transaction._id, data);
 			else if (mode === 'add') await submitTransactionForm(data);
 
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
+			toast({
+				title: `Transaction ${mode === 'add' ? 'added' : 'updated'} successfully`,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.TRANSACTION],
+			});
 			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });
 			reset();
 		} catch (err: any) {

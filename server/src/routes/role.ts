@@ -13,12 +13,12 @@ const router = Router();
 
 router.get('/', getRoles);
 
-router.get('/:roleID', getSingleRole);
+router.get('/:roleID', hasRole([MODULES.ROLE_READ]), getSingleRole);
 
-router.post('/', createRole);
+router.post('/', hasRole([MODULES.ROLE_CREATE]), createRole);
 
-router.patch('/:roleID', updateRole);
+router.patch('/:roleID', hasRole([MODULES.ROLE_UPDATE]), updateRole);
 
-router.delete('/:roleID', deleteRole);
+router.delete('/:roleID', hasRole([MODULES.ROLE_DELETE]), deleteRole);
 
 export default router;

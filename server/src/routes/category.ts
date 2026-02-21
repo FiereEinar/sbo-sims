@@ -12,6 +12,8 @@ import {
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
+import { hasRole } from '../middlewares/authentication/role';
+import { MODULES } from '../constants/modules';
 
 const router = express.Router();
 
@@ -23,35 +25,35 @@ router.get(
 	'/:categoryID',
 	isValidMongooseId('categoryID', { from: 'params' }),
 	transactionQueryFilter,
-	get_category
+	get_category,
 );
 
 router.get(
 	'/:categoryID/transaction',
 	isValidMongooseId('categoryID', { from: 'params' }),
-	get_category_transactions
+	get_category_transactions,
 );
 
 router.post(
 	'/',
-	authorizeRoles('governor'),
+	hasRole([MODULES.CATEGORY_CREATE]),
 	createCategoryValidation,
-	create_category
+	create_category,
 );
 
 router.put(
 	'/:categoryID',
-	authorizeRoles('governor'),
+	hasRole([MODULES.CATEGORY_UPDATE]),
 	isValidMongooseId('categoryID', { from: 'params' }),
 	createCategoryValidation,
-	update_category
+	update_category,
 );
 
 router.delete(
 	'/:categoryID',
-	authorizeRoles('governor'),
+	hasRole([MODULES.CATEGORY_DELETE]),
 	isValidMongooseId('categoryID', { from: 'params' }),
-	delete_category
+	delete_category,
 );
 
 export default router;

@@ -18,8 +18,9 @@ import {
 } from '../middlewares/validations/transactionValidation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { isValidMongooseId } from '../middlewares/validations/validation';
-import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 import upload from '../utils/multer';
+import { hasRole } from '../middlewares/authentication/role';
+import { MODULES } from '../constants/modules';
 
 const router = express.Router();
 
@@ -27,14 +28,14 @@ router.get('/', transactionQueryFilter, get_all_transactions);
 
 router.get(
 	'/download/pdf',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_DOWNLOAD]),
 	transactionQueryFilter,
 	get_transaction_list_file,
 );
 
 router.get(
 	'/download/csv',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_DOWNLOAD]),
 	transactionQueryFilter,
 	get_transaction_list_csv,
 );
@@ -49,28 +50,28 @@ router.get(
 
 router.post(
 	'/',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_CREATE]),
 	createTransactionValidation,
 	create_transaction,
 );
 
 router.post(
 	'/import',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_IMPORT]),
 	upload.single('excel_file'),
 	import_transactions_excel,
 );
 
 router.post(
 	'/import/preview',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_IMPORT]),
 	upload.single('excel_file'),
 	preview_transactions_excel,
 );
 
 router.put(
 	'/:transactionID',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_UPDATE]),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	createTransactionValidation,
 	update_transaction,
@@ -78,7 +79,7 @@ router.put(
 
 router.put(
 	'/:transactionID/amount',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_UPDATE]),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	updateTransactionAmountValidation,
 	update_transaction_amount,
@@ -86,7 +87,7 @@ router.put(
 
 router.delete(
 	'/:transactionID',
-	authorizeRoles('governor', 'treasurer', 'auditor'),
+	hasRole([MODULES.TRANSACTION_DELETE]),
 	isValidMongooseId('transactionID', { from: 'params' }),
 	delete_transaction,
 );

@@ -16,7 +16,8 @@ import {
 	updateStudentValidation,
 } from '../middlewares/validations/studentValidation';
 import upload from '../utils/multer';
-import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
+import { hasRole } from '../middlewares/authentication/role';
+import { MODULES } from '../constants/modules';
 
 const router = express.Router();
 
@@ -30,45 +31,41 @@ router.get('/:studentID/transaction', get_student_transaction);
 
 router.post(
 	'/',
-	authorizeRoles('governor', 'treasurer'),
+	hasRole([MODULES.STUDENT_CREATE]),
 	createStudentValidation,
-	create_student
+	create_student,
 );
 
 // Legacy import (exact CSV headers required)
 router.post(
 	'/import',
-	authorizeRoles('governor', 'treasurer'),
+	hasRole([MODULES.STUDENT_IMPORT]),
 	upload.single('csv_file'),
-	post_csv_students
+	post_csv_students,
 );
 
 // Smart import with preview (auto-detects columns)
 router.post(
 	'/import/preview',
-	authorizeRoles('governor', 'treasurer'),
+	hasRole([MODULES.STUDENT_IMPORT]),
 	upload.single('file'),
-	preview_students_import
+	preview_students_import,
 );
 
 router.post(
 	'/import/smart',
-	authorizeRoles('governor', 'treasurer'),
+	hasRole([MODULES.STUDENT_IMPORT]),
 	upload.single('file'),
-	import_students_smart
+	import_students_smart,
 );
 
 router.put(
 	'/:studentID',
-	authorizeRoles('governor', 'treasurer'),
+	hasRole([MODULES.STUDENT_UPDATE]),
 	updateStudentValidation,
-	update_student
+	update_student,
 );
 
-router.delete(
-	'/:studentID',
-	authorizeRoles('governor', 'treasurer'),
-	delete_student
-);
+router.delete('/:studentID', hasRole([MODULES.STUDENT_DELETE]), delete_student);
 
 export default router;

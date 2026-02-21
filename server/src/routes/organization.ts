@@ -9,7 +9,8 @@ import {
 } from '../controllers/organizationController';
 import { createOrganizationValidation } from '../middlewares/validations/organizationValidations';
 import { isValidMongooseId } from '../middlewares/validations/validation';
-import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
+import { hasRole } from '../middlewares/authentication/role';
+import { MODULES } from '../constants/modules';
 
 const router = express.Router();
 
@@ -18,35 +19,35 @@ router.get('/', get_all_organizations);
 router.get(
 	'/:organizationID',
 	isValidMongooseId('organizationID', { from: 'params' }),
-	get_organization
+	get_organization,
 );
 
 router.get(
 	'/:organizationID/categories',
 	isValidMongooseId('organizationID', { from: 'params' }),
-	get_organization_categories
+	get_organization_categories,
 );
 
 router.post(
 	'/',
-	authorizeRoles('governor'),
+	hasRole([MODULES.ORGANIZATION_CREATE]),
 	createOrganizationValidation,
-	create_organization
+	create_organization,
 );
 
 router.delete(
 	'/:organizationID',
-	authorizeRoles('governor'),
+	hasRole([MODULES.ORGANIZATION_DELETE]),
 	isValidMongooseId('organizationID', { from: 'params' }),
-	delete_organization
+	delete_organization,
 );
 
 router.put(
 	'/:organizationID',
-	authorizeRoles('governor'),
+	hasRole([MODULES.ORGANIZATION_UPDATE]),
 	isValidMongooseId('organizationID', { from: 'params' }),
 	createOrganizationValidation,
-	update_organization
+	update_organization,
 );
 
 export default router;

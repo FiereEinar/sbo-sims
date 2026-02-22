@@ -67,10 +67,11 @@ export default function AddTransactionForm({
 		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
 	});
 
-	const { data: latestTransactions } = useQuery({
-		queryKey: [QUERY_KEYS.TRANSACTION, { page: 1, pageSize: 5 }],
-		queryFn: () => fetchTransactions({}, 1, 5),
-	});
+	const { data: latestTransactions, isLoading: fetchingTransactions } =
+		useQuery({
+			queryKey: [QUERY_KEYS.TRANSACTION, { page: 1, pageSize: 5 }],
+			queryFn: () => fetchTransactions({}, 1, 5),
+		});
 
 	const latestRecordedStudents = latestTransactions?.data
 		.map((transaction) => transaction.owner)
@@ -174,14 +175,14 @@ export default function AddTransactionForm({
 						onClick={() => setOpenRecommendation(!openRecommendation)}
 						className='relative'
 					>
-						{fetchingStudents && (
+						{(!fetchingStudents || !fetchingTransactions) && (
 							<div className='absolute top-[55%] right-2'>
 								<l-ring
 									size='20'
 									stroke='3'
 									bg-opacity='0'
 									speed='2'
-									color='#1f1f1f'
+									color='#DDDDDD'
 								></l-ring>
 							</div>
 						)}

@@ -12,8 +12,13 @@ import { useStudentFilterStore } from '@/store/studentsFilter';
 import ImportStudentsButtonSmart from '@/components/buttons/ImportStudentsButtonSmart';
 import { queryClient } from '@/main';
 import HasPermission from '@/components/HasPermission';
+import ViewModeToggle from '@/components/ViewModeToggle';
+import StudentsCardView from '@/components/StudentsCardView';
+import { useViewModeStore } from '@/store/viewModeStore';
 
 export default function Student() {
+	const { viewMode } = useViewModeStore();
+
 	const { page, pageSize, setPage, getFilterValues } = useStudentFilterStore(
 		(state) => state,
 	);
@@ -60,11 +65,20 @@ export default function Student() {
 				<HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
 					<ImportStudentsButtonSmart />
 				</HasPermission>
+				<ViewModeToggle />
 			</div>
-			<StudentsTable
-				isLoading={studentsLoading}
-				students={studentsFetchResult?.data}
-			/>
+
+			{viewMode === 'table' ? (
+				<StudentsTable
+					isLoading={studentsLoading}
+					students={studentsFetchResult?.data}
+				/>
+			) : (
+				<StudentsCardView
+					students={studentsFetchResult?.data}
+					isLoading={studentsLoading}
+				/>
+			)}
 
 			{studentsFetchResult && (
 				<PaginationController

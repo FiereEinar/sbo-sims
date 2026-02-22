@@ -5,15 +5,19 @@ import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import UsersCardView from '@/components/UsersCardView';
 import UsersTable from '@/components/UsersTable';
+import ViewModeToggle from '@/components/ViewModeToggle';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
+import { useViewModeStore } from '@/store/viewModeStore';
 import { APIPaginatedResponse } from '@/types/api-response';
 import { User } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export default function Users() {
+	const { viewMode } = useViewModeStore();
 	const [page, setPage] = useState(1);
 
 	const { data: response, isLoading } = useQuery({
@@ -56,7 +60,16 @@ export default function Users() {
 				</HasPermission>
 			</StickyHeader>
 
-			<UsersTable users={response?.data ?? []} isLoading={isLoading} />
+			<div className='flex justify-between items-center'>
+				<div />
+				<ViewModeToggle />
+			</div>
+
+			{viewMode === 'table' ? (
+				<UsersTable users={response?.data ?? []} isLoading={isLoading} />
+			) : (
+				<UsersCardView users={response?.data ?? []} isLoading={isLoading} />
+			)}
 
 			{response && (
 				<PaginationController

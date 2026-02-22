@@ -1,14 +1,19 @@
 import { fetchAllOrganizations } from '@/api/organization';
 import AddOrganizationForm from '@/components/forms/AddOrganizationForm';
 import HasPermission from '@/components/HasPermission';
+import OrganizationsCardView from '@/components/OrganizationsCardView';
 import OrganizationTable from '@/components/OrganizationTable';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import ViewModeToggle from '@/components/ViewModeToggle';
 import { MODULES, QUERY_KEYS } from '@/constants';
+import { useViewModeStore } from '@/store/viewModeStore';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Organization() {
+	const { viewMode } = useViewModeStore();
+
 	const {
 		data: organizations,
 		isLoading,
@@ -32,7 +37,22 @@ export default function Organization() {
 				</HasPermission>
 			</StickyHeader>
 
-			<OrganizationTable organizations={organizations} isLoading={isLoading} />
+			<div className='flex justify-between items-center'>
+				<div />
+				<ViewModeToggle />
+			</div>
+
+			{viewMode === 'table' ? (
+				<OrganizationTable
+					organizations={organizations}
+					isLoading={isLoading}
+				/>
+			) : (
+				<OrganizationsCardView
+					organizations={organizations}
+					isLoading={isLoading}
+				/>
+			)}
 		</SidebarPageLayout>
 	);
 }

@@ -1,16 +1,21 @@
 import { fetchCategoriesWithTransactions } from '@/api/category';
+import CategoriesCardView from '@/components/CategoriesCardView';
 import CategoriesTable from '@/components/CategoriesTable';
 import AddCategoryForm from '@/components/forms/AddCategoryForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import ViewModeToggle from '@/components/ViewModeToggle';
 import { QUERY_KEYS } from '@/constants';
 import { isAuthorized } from '@/lib/utils';
 import { useUserStore } from '@/store/user';
+import { useViewModeStore } from '@/store/viewModeStore';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
+	const { viewMode } = useViewModeStore();
 	const userRole = useUserStore((state) => state.user?.role);
+
 	const {
 		data: categories,
 		isLoading,
@@ -30,7 +35,17 @@ export default function Category() {
 				<Header>Categories</Header>
 				{isAuthorized(userRole, 'governor') && <AddCategoryForm />}
 			</StickyHeader>
-			<CategoriesTable categories={categories} isLoading={isLoading} />
+
+			<div className='flex justify-between items-center'>
+				<div />
+				<ViewModeToggle />
+			</div>
+
+			{viewMode === 'table' ? (
+				<CategoriesTable categories={categories} isLoading={isLoading} />
+			) : (
+				<CategoriesCardView categories={categories} isLoading={isLoading} />
+			)}
 		</SidebarPageLayout>
 	);
 }

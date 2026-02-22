@@ -14,8 +14,12 @@ import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
 import HasPermission from '@/components/HasPermission';
+import ViewModeToggle from '@/components/ViewModeToggle';
+import TransactionsCardView from '@/components/TransactionsCardView';
+import { useViewModeStore } from '@/store/viewModeStore';
 
 export default function Transaction() {
+	const { viewMode } = useViewModeStore();
 	const { page, pageSize, getFilterValues, setPage } =
 		useTransactionFilterStore((state) => state);
 
@@ -69,11 +73,20 @@ export default function Transaction() {
 				<HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
 					<ImportTransactionsButton categories={categories} />
 				</HasPermission>
+				<ViewModeToggle />
 			</div>
-			<TransactionsTable
-				isLoading={transactionsLoading}
-				transactions={fetchTransactionsResult?.data}
-			/>
+
+			{viewMode === 'table' ? (
+				<TransactionsTable
+					isLoading={transactionsLoading}
+					transactions={fetchTransactionsResult?.data}
+				/>
+			) : (
+				<TransactionsCardView
+					transactions={fetchTransactionsResult?.data}
+					isLoading={transactionsLoading}
+				/>
+			)}
 
 			{fetchTransactionsResult && (
 				<PaginationController

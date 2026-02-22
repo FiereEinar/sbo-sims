@@ -175,7 +175,7 @@ export default function AddTransactionForm({
 						onClick={() => setOpenRecommendation(!openRecommendation)}
 						className='relative'
 					>
-						{(!fetchingStudents || !fetchingTransactions) && (
+						{(fetchingStudents || fetchingTransactions) && (
 							<div className='absolute top-[55%] right-2'>
 								<l-ring
 									size='20'

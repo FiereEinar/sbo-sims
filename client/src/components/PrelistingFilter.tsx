@@ -14,6 +14,7 @@ export default function PrelistingFilter() {
 
 	const [localSearch, setLocalSearch] =
 		useState<PrelistingFilterValues['search']>(search);
+
 	const debouncedSearch = useDebounce(localSearch);
 
 	useEffect(() => {
@@ -21,28 +22,35 @@ export default function PrelistingFilter() {
 	}, [debouncedSearch, setSearch]);
 
 	return (
-		<div className='flex flex-wrap gap-2 text-muted-foreground'>
+		<div className='w-full space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:flex lg:flex-wrap lg:items-end gap-4'>
 			{/* Search */}
-			<div className='flex flex-col justify-end items-start gap-2'>
-				<Label>Search:</Label>
+			<div className='flex flex-col gap-2 w-full md:col-span-2 lg:w-[280px]'>
+				<Label>Search</Label>
 				<Input
 					type='text'
 					value={localSearch}
 					onChange={(e) => setLocalSearch(e.target.value)}
-					className='w-[250px]'
-					placeholder='Search for name or student ID'
+					placeholder='Search name or student ID'
 				/>
 			</div>
 
-			<div className='space-x-1 flex justify-end items-end'>
+			{/* Date Range */}
+			<div className='w-full md:col-span-2 lg:w-auto'>
 				<DatePickerWithRange
 					setStartDate={setStartDate}
 					setEndDate={setEndDate}
 				/>
 			</div>
 
-			<SemInput />
-			<SchoolYearInput />
+			{/* Semester */}
+			<div className='w-full md:w-full lg:w-[150px]'>
+				<SemInput />
+			</div>
+
+			{/* School Year */}
+			<div className='w-full md:w-full lg:w-[150px]'>
+				<SchoolYearInput />
+			</div>
 		</div>
 	);
 }

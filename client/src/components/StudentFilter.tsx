@@ -6,9 +6,7 @@ import { useStudentFilterStore } from '@/store/studentsFilter';
 import SchoolYearInput from './SchoolYearInput';
 import SemInput from './SemInput';
 
-type StudentFilterProps = {};
-
-export default function StudentFilter({}: StudentFilterProps) {
+export default function StudentFilter() {
 	const { setSearch, search } = useStudentFilterStore((state) => state);
 
 	const [localSearch, setLocalSearch] = useState(search);
@@ -16,23 +14,30 @@ export default function StudentFilter({}: StudentFilterProps) {
 
 	useEffect(() => {
 		setSearch(debouncedSearch ?? '');
-	}, [debouncedSearch]);
+	}, [debouncedSearch, setSearch]);
 
 	return (
-		<div className='flex flex-wrap gap-2 text-muted-foreground'>
-			<div className='space-x-1'>
-				<Label className='ml-1'>Search:</Label>
+		<div className='w-full space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:flex lg:flex-wrap lg:items-end gap-4'>
+			{/* Search */}
+			<div className='flex flex-col gap-2 w-full md:col-span-2 lg:w-[280px]'>
+				<Label>Search</Label>
 				<Input
 					type='text'
 					value={localSearch}
 					onChange={(e) => setLocalSearch(e.target.value)}
-					className='w-[250px]'
-					placeholder='Search for student ID or Fullname'
+					placeholder='Search student ID or fullname'
 				/>
 			</div>
 
-			<SemInput />
-			<SchoolYearInput />
+			{/* Semester */}
+			<div className='w-full md:w-full lg:w-[150px]'>
+				<SemInput />
+			</div>
+
+			{/* School Year */}
+			<div className='w-full md:w-full lg:w-[150px]'>
+				<SchoolYearInput />
+			</div>
 		</div>
 	);
 }

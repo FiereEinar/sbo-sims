@@ -76,15 +76,13 @@ export default function Transaction() {
 			/>
 
 			{fetchTransactionsResult && (
-				<div className='md:absolute w-full p-5 md:bottom-0'>
-					<PaginationController
-						currentPage={page ?? 1}
-						nextPage={fetchTransactionsResult.next}
-						prevPage={fetchTransactionsResult.prev}
-						setPage={setPage}
-						prefetchFn={prefetchPageFn}
-					/>
-				</div>
+				<PaginationController
+					currentPage={page ?? 1}
+					nextPage={fetchTransactionsResult.next}
+					prevPage={fetchTransactionsResult.prev}
+					setPage={setPage}
+					prefetchFn={prefetchPageFn}
+				/>
 			)}
 		</SidebarPageLayout>
 	);

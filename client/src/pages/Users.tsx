@@ -7,6 +7,7 @@ import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import UsersTable from '@/components/UsersTable';
 import { MODULES, QUERY_KEYS } from '@/constants';
+import { queryClient } from '@/main';
 import { APIPaginatedResponse } from '@/types/api-response';
 import { User } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
@@ -25,6 +26,26 @@ export default function Users() {
 		},
 	});
 
+	const prefetchPageFn = (page: number) => {
+		const filters = {
+			page: page,
+		};
+
+		// check if it was already prefetched
+		const data = queryClient.getQueryData([QUERY_KEYS.USERS, filters]);
+		if (data) return;
+
+		queryClient.prefetchQuery({
+			queryKey: [QUERY_KEYS.USERS, filters],
+			queryFn: async (): Promise<APIPaginatedResponse<User[]>> => {
+				const { data } = await axiosInstance.get(
+					'/user' + `?page=${page}&pageSize=10`,
+				);
+				return data;
+			},
+		});
+	};
+
 	return (
 		<SidebarPageLayout>
 			<StickyHeader>
@@ -38,15 +59,13 @@ export default function Users() {
 			<UsersTable users={response?.data ?? []} isLoading={isLoading} />
 
 			{response && (
-				<div className='md:absolute w-full p-5 md:bottom-0'>
-					<PaginationController
-						currentPage={page}
-						nextPage={response?.next}
-						prevPage={response?.prev}
-						setPage={setPage}
-						// prefetchFn={prefetchPageFn}
-					/>
-				</div>
+				<PaginationController
+					currentPage={page}
+					nextPage={response?.next}
+					prevPage={response?.prev}
+					setPage={setPage}
+					prefetchFn={prefetchPageFn}
+				/>
 			)}
 		</SidebarPageLayout>
 	);

@@ -40,20 +40,20 @@ export default function TransactionsFilter() {
 	}, [debouncedSearch, setSearch]);
 
 	return (
-		<div className='flex flex-wrap gap-2 text-muted-foreground'>
+		<div className='w-full space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:flex lg:flex-wrap lg:items-end gap-4'>
 			{/* Search */}
-			<div className='flex flex-col justify-end items-start gap-2'>
-				<Label>Search:</Label>
+			<div className='flex flex-col gap-2 w-full md:col-span-2 lg:w-[280px]'>
+				<Label>Search</Label>
 				<Input
 					type='text'
 					value={localSearch}
 					onChange={(e) => setLocalSearch(e.target.value)}
-					className='w-[250px]'
-					placeholder='Search for name or student ID'
+					placeholder='Search name or student ID'
 				/>
 			</div>
 
-			<div className='space-x-1 flex justify-end items-end'>
+			{/* Date Range */}
+			<div className='w-full md:col-span-2 lg:w-auto'>
 				<DatePickerWithRange
 					setStartDate={setStartDate}
 					setEndDate={setEndDate}
@@ -61,14 +61,14 @@ export default function TransactionsFilter() {
 			</div>
 
 			{/* Period */}
-			<div className='flex flex-col justify-end items-start gap-2'>
-				<Label className='ml-1'>Period:</Label>
+			<div className='flex flex-col gap-2 w-full md:w-full lg:w-[100px]'>
+				<Label>Period</Label>
 				<Select
 					defaultValue={periodsOptions[0].value}
 					onValueChange={(value) => setPeriod(value as TransactionPeriodFilter)}
 				>
-					<SelectTrigger className='w-full'>
-						<SelectValue placeholder='Course' />
+					<SelectTrigger>
+						<SelectValue placeholder='Select period' />
 					</SelectTrigger>
 					<SelectContent>
 						{periodsOptions.map((period, i) => (
@@ -80,8 +80,15 @@ export default function TransactionsFilter() {
 				</Select>
 			</div>
 
-			<SemInput />
-			<SchoolYearInput />
+			{/* Semester */}
+			<div className='w-full md:w-full lg:w-[130px]'>
+				<SemInput />
+			</div>
+
+			{/* School Year */}
+			<div className='w-full md:w-full lg:w-[150px]'>
+				<SchoolYearInput />
+			</div>
 		</div>
 	);
 }

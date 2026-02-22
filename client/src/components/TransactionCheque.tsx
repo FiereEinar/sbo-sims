@@ -15,7 +15,7 @@ export default function TransactionCheque({
 	const ownerFullname = _.startCase(
 		`${owner.firstname} ${owner.middlename ?? ''} ${
 			owner.lastname
-		}`.toLowerCase()
+		}`.toLowerCase(),
 	);
 
 	const fee = transaction.category.fee;
@@ -50,10 +50,22 @@ export default function TransactionCheque({
 			</div>
 
 			{/* Meta Info */}
-			<div className='flex items-start justify-between gap-6 text-sm'>
-				<div className='flex items-center gap-2 text-muted-foreground'>
-					<Calendar size={14} />
-					<span>{new Date(transaction.date).toDateString()}</span>
+			<div className='flex items-start justify-between gap-6 text-sm flex-wrap'>
+				<div className='text-muted-foreground'>
+					<div className='flex items-center gap-2 '>
+						<Calendar size={14} />
+						<span>{new Date(transaction.date).toDateString()}</span>
+					</div>
+					<div>
+						Recorded By:{' '}
+						{transaction.recordedBy
+							? _.startCase(
+									transaction.recordedBy.firstname +
+										' ' +
+										transaction.recordedBy.lastname,
+								)
+							: 'Unknown'}
+					</div>
 				</div>
 
 				<div className='flex items-center gap-2 text-muted-foreground'>

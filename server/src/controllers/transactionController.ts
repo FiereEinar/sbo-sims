@@ -289,6 +289,10 @@ export const get_transaction = asyncHandler(async (req, res) => {
 		.populate({
 			model: req.StudentModel,
 			path: 'owner',
+		})
+		.populate({
+			model: req.UserModel,
+			path: 'recordedBy',
 		});
 
 	appAssert(
@@ -312,6 +316,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		studentID,
 		details,
 	}: createTransactionBody = req.body;
+	const user = req.currentUser!;
 
 	// check if the category exists
 	const category = await req.CategoryModel.findById<ICategory>(
@@ -372,6 +377,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		treasurer: category.organization.treasurer,
 		auditor: category.organization.auditor,
 		details: detailsObj,
+		recordedBy: user._id,
 	});
 	await transaction.save();
 

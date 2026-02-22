@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { ICategory } from './category';
 import { IStudent } from './student';
+import { IUser } from './user';
 
 const Schema = mongoose.Schema;
 
@@ -11,6 +12,7 @@ export interface ITransaction extends mongoose.Document {
 	category: ICategory;
 	description?: string;
 	date?: Date;
+	recordedBy?: IUser;
 	governor: string;
 	treasurer: string;
 	viceGovernor: string;
@@ -27,11 +29,12 @@ export const TransactionSchema = new Schema<ITransaction>(
 		category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 		description: { type: String, required: false },
 		date: { type: Date, default: Date.now },
+		recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
 		governor: { type: String, required: true },
 		viceGovernor: { type: String, required: true },
 		treasurer: { type: String, required: true },
 		auditor: { type: String, required: true },
 		details: { type: Schema.Types.Mixed, required: true },
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );

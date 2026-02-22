@@ -37,8 +37,8 @@ export const transactionQueryFilter = asyncHandler(
 		const pageNum = hasSearch
 			? defaultPage
 			: page
-			? parseInt(page as string)
-			: defaultPage;
+				? parseInt(page as string)
+				: defaultPage;
 		const pageSizeNum = pageSize
 			? parseInt(pageSize as string)
 			: defaultPageSize;
@@ -74,6 +74,10 @@ export const transactionQueryFilter = asyncHandler(
 				model: req.StudentModel,
 				path: 'owner',
 			})
+			.populate({
+				model: req.UserModel,
+				path: 'recordedBy',
+			})
 			.sort({ date: sortByDate === 'asc' ? 1 : -1 })
 			.exec();
 
@@ -93,18 +97,18 @@ export const transactionQueryFilter = asyncHandler(
 
 		if (course) {
 			filteredTransactions = filteredTransactions.filter(
-				(transaction) => transaction.owner.course === course
+				(transaction) => transaction.owner.course === course,
 			);
 		}
 
 		if (status) {
 			if (isPaid) {
 				filteredTransactions = filteredTransactions.filter(
-					(transaction) => transaction.amount >= transaction.category.fee
+					(transaction) => transaction.amount >= transaction.category.fee,
 				);
 			} else {
 				filteredTransactions = filteredTransactions.filter(
-					(transaction) => transaction.amount < transaction.category.fee
+					(transaction) => transaction.amount < transaction.category.fee,
 				);
 			}
 		}
@@ -121,5 +125,5 @@ export const transactionQueryFilter = asyncHandler(
 		req.skipAmount = skipAmount;
 		req.pageSizeNum = pageSizeNum;
 		next();
-	}
+	},
 );

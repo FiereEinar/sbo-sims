@@ -1,9 +1,11 @@
 import { Category } from './category';
 import { MongoEntity } from './mongoEntity';
 import { Student } from './student';
+import { User } from './user';
 
 export type Transaction = MongoEntity & {
 	amount: number;
+	recordedBy?: User;
 	date: Date;
 	category: Category;
 	owner: Student;

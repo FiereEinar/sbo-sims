@@ -1,4 +1,5 @@
 import {
+	fetchTransactions,
 	submitTransactionForm,
 	submitUpdateTransactionForm,
 } from '@/api/transaction';
@@ -56,6 +57,7 @@ export default function AddTransactionForm({
 	const [date, setDate] = useState<Date>();
 	const [category, setCategory] = useState<Category>();
 	const [studentIdSearch, setStudentIdSearch] = useState('');
+	const [openRecommendation, setOpenRecommendation] = useState(false);
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 	const { toast } = useToast();
@@ -64,6 +66,17 @@ export default function AddTransactionForm({
 		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
 		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
 	});
+
+	const { data: latestTransactions } = useQuery({
+		queryKey: [QUERY_KEYS.TRANSACTION, { page: 1, pageSize: 5 }],
+		queryFn: () => fetchTransactions({}, 1, 5),
+	});
+
+	const latestRecordedStudents = latestTransactions?.data
+		.map((transaction) => transaction.owner)
+		.filter((student, index, self) => {
+			return self.indexOf(student) === index;
+		});
 
 	const {
 		register,
@@ -157,7 +170,10 @@ export default function AddTransactionForm({
 						id='amount'
 					/>
 
-					<div className='relative'>
+					<div
+						onClick={() => setOpenRecommendation(!openRecommendation)}
+						className='relative'
+					>
 						{fetchingStudents && (
 							<div className='absolute top-[55%] right-2'>
 								<l-ring
@@ -182,6 +198,7 @@ export default function AddTransactionForm({
 							}}
 						/>
 						<div className='relative w-full'>
+							{/* search results */}
 							{studentsFetchResult && studentIdSearch && (
 								<SelectContainer>
 									{studentsFetchResult.data.map((student) => (
@@ -199,6 +216,31 @@ export default function AddTransactionForm({
 									))}
 								</SelectContainer>
 							)}
+							{/* recommended students based on record time */}
+							{latestRecordedStudents &&
+								!studentIdSearch &&
+								openRecommendation && (
+									<SelectContainer>
+										<div className='px-2 py-1 text-xs text-muted-foreground'>
+											Recommended based on recent records:
+										</div>
+										{latestRecordedStudents.map((student, i) => (
+											<SelectContainerItem
+												type='button'
+												onClick={() => {
+													setValue('studentID', student.studentID);
+													setStudentIdSearch('');
+												}}
+												key={`${student._id}-${i}`}
+											>
+												{student.studentID} -{' '}
+												{_.startCase(
+													`${student.firstname} ${student.lastname}`,
+												)}
+											</SelectContainerItem>
+										))}
+									</SelectContainer>
+								)}
 						</div>
 					</div>
 

@@ -371,7 +371,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		category: categoryID,
 		owner: student._id,
 		description: description,
-		date: date ? date.toISOString() : new Date(),
+		date: date ? date.toISOString() : new Date().toISOString(),
 		governor: category.organization.governor,
 		viceGovernor: category.organization.viceGovernor,
 		treasurer: category.organization.treasurer,

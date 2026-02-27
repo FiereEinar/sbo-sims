@@ -2,19 +2,17 @@ import { fetchCategoriesWithTransactions } from '@/api/category';
 import CategoriesCardView from '@/components/CategoriesCardView';
 import CategoriesTable from '@/components/CategoriesTable';
 import AddCategoryForm from '@/components/forms/AddCategoryForm';
+import HasPermission from '@/components/HasPermission';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import ViewModeToggle from '@/components/ViewModeToggle';
-import { QUERY_KEYS } from '@/constants';
-import { isAuthorized } from '@/lib/utils';
-import { useUserStore } from '@/store/user';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { useViewModeStore } from '@/store/viewModeStore';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Category() {
 	const { viewMode } = useViewModeStore();
-	const userRole = useUserStore((state) => state.user?.role);
 
 	const {
 		data: categories,
@@ -33,7 +31,9 @@ export default function Category() {
 		<SidebarPageLayout>
 			<StickyHeader>
 				<Header>Categories</Header>
-				{isAuthorized(userRole, 'governor') && <AddCategoryForm />}
+				<HasPermission permissions={[MODULES.CATEGORY_CREATE]}>
+					<AddCategoryForm />
+				</HasPermission>
 			</StickyHeader>
 
 			<div className='flex justify-between items-center'>

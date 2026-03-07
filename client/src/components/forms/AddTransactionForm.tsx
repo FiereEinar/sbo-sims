@@ -58,6 +58,7 @@ export default function AddTransactionForm({
 	const [category, setCategory] = useState<Category>();
 	const [studentIdSearch, setStudentIdSearch] = useState('');
 	const [openRecommendation, setOpenRecommendation] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
 	const navigate = useNavigate();
 	const { toast } = useToast();
@@ -114,9 +115,14 @@ export default function AddTransactionForm({
 				setError('categoryID', { message: 'Pick a category' });
 				return;
 			}
+			setIsLoading(true);
 
 			data.date = date?.toISOString();
 			data.categoryID = category._id;
+
+			reset();
+
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // simulate loading
 
 			if (transaction && mode === 'edit')
 				await submitUpdateTransactionForm(transaction._id, data);
@@ -129,11 +135,12 @@ export default function AddTransactionForm({
 				queryKey: [QUERY_KEYS.TRANSACTION],
 			});
 			navigate(`/transaction/${transaction?._id ?? ''}`, { replace: true });
-			reset();
 		} catch (err: any) {
 			setError('root', {
 				message: err.message || 'Failed to submit transaction',
 			});
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -287,7 +294,7 @@ export default function AddTransactionForm({
 					)}
 
 					<div className='flex justify-end'>
-						<Button className='' disabled={isSubmitting} type='submit'>
+						<Button className='' disabled={isSubmitting || isLoading} type='submit'>
 							Submit
 						</Button>
 					</div>

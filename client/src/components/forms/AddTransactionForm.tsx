@@ -120,7 +120,9 @@ export default function AddTransactionForm({
 			data.date = date?.toISOString();
 			data.categoryID = category._id;
 
-			reset();
+			reset({
+				studentID: '',
+			});
 
 			await new Promise((resolve) => setTimeout(resolve, 5000)); // simulate loading
 
@@ -294,7 +296,11 @@ export default function AddTransactionForm({
 					)}
 
 					<div className='flex justify-end'>
-						<Button className='' disabled={isSubmitting || isLoading} type='submit'>
+						<Button
+							className=''
+							disabled={isSubmitting || isLoading}
+							type='submit'
+						>
 							Submit
 						</Button>
 					</div>

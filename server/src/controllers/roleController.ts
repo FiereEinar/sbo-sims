@@ -40,6 +40,7 @@ export const getRoles = asyncHandler(async (req, res) => {
 		.populate('createdBy', 'name studentID')
 		.skip(skip)
 		.limit(limit)
+		.sort({ createdAt: 1 })
 		.exec();
 
 	const total = await req.RoleModel.countDocuments(filter);

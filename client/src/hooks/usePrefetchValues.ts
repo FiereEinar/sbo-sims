@@ -1,7 +1,7 @@
 import { fetchCategoriesWithTransactions } from '@/api/category';
 import { fetchAllOrganizations } from '@/api/organization';
 import { fetchStudents } from '@/api/student';
-import { fetchTransactions } from '@/api/transaction';
+import { fetchDashboardData, fetchTransactions } from '@/api/transaction';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import { useStudentFilterStore } from '@/store/studentsFilter';
@@ -16,6 +16,13 @@ export function usePefetchValues() {
 	const transactionStore = useTransactionFilterStore((state) => state);
 
 	useEffect(() => {
+		(async () => {
+			await queryClient.prefetchQuery({
+				queryKey: [QUERY_KEYS.DASHBOARD_DATA],
+				queryFn: fetchDashboardData,
+			});
+		})();
+
 		(async () => {
 			// prefetch students
 			await queryClient.prefetchQuery({

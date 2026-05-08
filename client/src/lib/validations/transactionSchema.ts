@@ -13,5 +13,6 @@ export const transactionSchema = z.object({
 	categoryID: z.string().optional(),
 	studentID: z.string().min(1, 'Enter student ID'),
 	description: z.string().optional(),
+	modeOfPayment: z.enum(['cash', 'gcash']).default('cash'),
 	details: z.any(),
 });

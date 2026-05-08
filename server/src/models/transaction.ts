@@ -5,6 +5,8 @@ import { IUser } from './user';
 
 const Schema = mongoose.Schema;
 
+export type ModeOfPayment = 'cash' | 'gcash';
+
 export interface ITransaction extends mongoose.Document {
 	_id: mongoose.Types.ObjectId;
 	owner: IStudent;
@@ -13,6 +15,7 @@ export interface ITransaction extends mongoose.Document {
 	description?: string;
 	date?: Date;
 	recordedBy?: IUser;
+	modeOfPayment: ModeOfPayment;
 	governor: string;
 	treasurer: string;
 	viceGovernor: string;
@@ -30,6 +33,7 @@ export const TransactionSchema = new Schema<ITransaction>(
 		description: { type: String, required: false },
 		date: { type: Date, default: Date.now },
 		recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+		modeOfPayment: { type: String, enum: ['cash', 'gcash'], default: 'cash' },
 		governor: { type: String, required: true },
 		viceGovernor: { type: String, required: true },
 		treasurer: { type: String, required: true },

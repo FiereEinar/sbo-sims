@@ -66,6 +66,12 @@ export default function TransactionCheque({
 								)
 							: 'Unknown'}
 					</div>
+					<div className='flex items-center gap-2'>
+						Mode of Payment:{' '}
+						<span className='font-medium text-foreground'>
+							{transaction.modeOfPayment === 'gcash' ? 'GCash' : 'Cash'}
+						</span>
+					</div>
 				</div>
 
 				<div className='flex items-center gap-2 text-muted-foreground'>

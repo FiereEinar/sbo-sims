@@ -315,6 +315,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		description,
 		studentID,
 		details,
+		modeOfPayment,
 	}: createTransactionBody = req.body;
 	const user = req.currentUser!;
 
@@ -372,6 +373,7 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		owner: student._id,
 		description: description,
 		date: date ? date.toISOString() : new Date().toISOString(),
+		modeOfPayment: modeOfPayment || 'cash',
 		governor: category.organization.governor,
 		viceGovernor: category.organization.viceGovernor,
 		treasurer: category.organization.treasurer,
@@ -416,6 +418,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		description,
 		studentID,
 		details,
+		modeOfPayment,
 	}: createTransactionBody = req.body;
 
 	// check if the category exists
@@ -465,6 +468,7 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		owner: student._id,
 		description: description,
 		date: date?.toISOString(),
+		modeOfPayment: modeOfPayment || 'cash',
 		details: detailsObj,
 	};
 

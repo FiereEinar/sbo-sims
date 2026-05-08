@@ -10,6 +10,7 @@ export type Transaction = MongoEntity & {
 	category: Category;
 	owner: Student;
 	description?: string;
+	modeOfPayment: 'cash' | 'gcash';
 	governor: string;
 	treasurer: string;
 	viceGovernor: string;

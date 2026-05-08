@@ -4,6 +4,7 @@ export type createTransactionBody = {
 	categoryID: string;
 	description?: string;
 	date?: Date;
+	modeOfPayment?: 'cash' | 'gcash';
 	details: { [key: string]: string };
 };
 

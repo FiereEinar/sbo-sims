@@ -30,9 +30,9 @@ import _ from 'lodash';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
-import { SelectContainer, SelectContainerItem } from '../ui/select';
+import { SelectContainer, SelectContainerItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ring } from 'ldrs';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
 
 ring.register();
@@ -87,9 +87,13 @@ export default function AddTransactionForm({
 		getValues,
 		setError,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<TransactionFormValues>({
 		resolver: zodResolver(transactionSchema),
+		defaultValues: {
+			modeOfPayment: 'cash',
+		},
 	});
 
 	useEffect(() => {
@@ -105,6 +109,9 @@ export default function AddTransactionForm({
 				if (!transaction.details) return;
 				setValue(`details.${detail}`, transaction.details?.[detail]);
 			});
+			if (transaction.modeOfPayment) {
+				setValue('modeOfPayment', transaction.modeOfPayment);
+			}
 		}
 	}, [transaction, setValue]);
 
@@ -252,6 +259,28 @@ export default function AddTransactionForm({
 									</SelectContainer>
 								)}
 						</div>
+					</div>
+
+					<div className='flex flex-col gap-1.5'>
+						<label htmlFor='modeOfPayment' className='text-sm'>Mode of Payment:</label>
+						<Controller
+							control={control}
+							name='modeOfPayment'
+							render={({ field }) => (
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<SelectTrigger className='w-full'>
+										<SelectValue placeholder='Select mode of payment' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='cash'>Cash</SelectItem>
+										<SelectItem value='gcash'>GCash</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
+						{errors.modeOfPayment && (
+							<ErrorText>{errors.modeOfPayment.message?.toString()}</ErrorText>
+						)}
 					</div>
 
 					<DatePicker

@@ -7,12 +7,19 @@ export default function DarkModeToggle({
 	text?: string | undefined;
 }) {
 	const [isDarkMode, setDarkMode] = useState(
-		document.querySelector('body')?.classList.contains('dark') || false
+		localStorage.getItem('theme') === 'dark'
 	);
 
 	const toggleDarkMode = () => {
-		setDarkMode(!isDarkMode);
-		document.querySelector('body')?.classList.toggle('dark');
+		const newMode = !isDarkMode;
+		setDarkMode(newMode);
+		if (newMode) {
+			document.documentElement.classList.add('dark');
+			localStorage.setItem('theme', 'dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+			localStorage.setItem('theme', 'light');
+		}
 	};
 
 	return (

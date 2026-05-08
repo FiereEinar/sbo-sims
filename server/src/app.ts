@@ -14,6 +14,7 @@ import prelistingRouter from './routes/prelisting';
 import categoryRouter from './routes/category';
 import organizationRouter from './routes/organization';
 import roleRouter from './routes/role';
+import settingRouter from './routes/setting';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -52,6 +53,7 @@ app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);
 app.use('/role', roleRouter);
+app.use('/setting', settingRouter);
 
 // Error handlers
 app.use(notFoundHandler);

@@ -54,7 +54,7 @@ export default function SchoolYearInput() {
 	return (
 		<form onSubmit={onSubmit}>
 			<div className='flex flex-col gap-2 justify-end'>
-				<Label className='ml-1'>School Year:</Label>
+				<Label className='ml-1'>School Year <span className='text-xs text-muted-foreground'>(enter)</span>:</Label>
 				<div className='flex gap-1 items-center w-[150px]'>
 					<Input
 						value={year ?? 0}

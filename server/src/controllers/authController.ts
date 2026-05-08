@@ -153,8 +153,14 @@ export const login = asyncHandler(async (req, res) => {
 			? 'tablet'
 			: 'desktop';
 
-	user.activeSemDB = '2'; // temp fix for testing
-	user.activeSchoolYearDB = '2025'; // temp fix for testing
+	const globalSettings = await req.AppSettingModel.findOne();
+	if (globalSettings) {
+		user.activeSemDB = globalSettings.activeSemester as any;
+		user.activeSchoolYearDB = globalSettings.activeSchoolYear;
+	} else {
+		user.activeSemDB = '1';
+		user.activeSchoolYearDB = '2025';
+	}
 	await user.save();
 
 	res.json(

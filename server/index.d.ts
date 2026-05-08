@@ -8,6 +8,7 @@ import { IStudent } from '../models/student';
 import { ISession } from '../models/session';
 import { IPrelisting } from './src/models/prelisting';
 import { IRole } from './src/models/role';
+import { IAppSetting } from './src/models/appSetting';
 
 declare global {
 	namespace Express {
@@ -21,6 +22,7 @@ declare global {
 			OrganizationModel: Model<IOrganization>;
 			SessionModel: Model<ISession>;
 			RoleModel: Model<IRole>;
+			AppSettingModel: Model<IAppSetting>;
 		}
 	}
 }

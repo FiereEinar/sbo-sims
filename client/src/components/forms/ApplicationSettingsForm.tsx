@@ -1,4 +1,3 @@
-import { useUserStore } from '@/store/user';
 import { Label } from '../ui/label';
 import {
 	Select,
@@ -7,45 +6,44 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
-import { User } from '@/types/user';
 import { Input } from '../ui/input';
 import { getYear } from 'date-fns';
 import Header from '../ui/header';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import axiosInstance from '@/api/axiosInstance';
-import { queryClient } from '@/main';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
-import { APIResponse } from '@/types/api-response';
+import { fetchSettings, updateSettings } from '@/api/setting';
+import { AppSetting } from '@/types/appSetting';
+import { Loader2 } from 'lucide-react';
 
 export default function ApplicationSettingsForm() {
 	const { toast } = useToast();
-	const navigate = useNavigate();
 
-	const { user: currentUser, setUser } = useUserStore((state) => state);
-	const [localUser, setLocalUser] = useState(currentUser);
+	const [settings, setSettings] = useState<AppSetting | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isSaving, setIsSaving] = useState(false);
+
+	useEffect(() => {
+		const loadSettings = async () => {
+			try {
+				const data = await fetchSettings();
+				setSettings(data);
+			} catch (err) {
+				console.error('Failed to load settings', err);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+		loadSettings();
+	}, []);
 
 	const onSave = async () => {
+		if (!settings) return;
 		try {
-			if (!currentUser) {
-				toast({
-					variant: 'destructive',
-					title: 'No data for current user',
-					description: 'Login first to continue',
-				});
-				navigate('/login');
-				return;
-			}
-
-			const { data: result } = await axiosInstance.put<APIResponse<User>>(
-				`/user/${currentUser._id}`,
-				localUser
-			);
-
-			setUser(result.data);
-			toast({ title: 'Settings saved successfully!' });
-			queryClient.resetQueries();
+			setIsSaving(true);
+			const updated = await updateSettings(settings);
+			setSettings(updated);
+			toast({ title: 'Application settings saved successfully!' });
 		} catch (err: any) {
 			console.error('Failed to save settings', err);
 			toast({
@@ -53,15 +51,25 @@ export default function ApplicationSettingsForm() {
 				description: err.message || 'An error occured while saving settings',
 				variant: 'destructive',
 			});
+		} finally {
+			setIsSaving(false);
 		}
 	};
+
+	if (isLoading) {
+		return (
+			<section className='bg-card/40 border rounded-lg p-4 space-y-4 flex justify-center items-center h-40'>
+				<Loader2 className='size-8 animate-spin text-muted-foreground' />
+			</section>
+		);
+	}
 
 	return (
 		<section className='bg-card/40 border rounded-lg p-4 space-y-4'>
 			<div>
 				<Header size='sm'>Application Settings</Header>
 				<p className='text-sm text-muted-foreground'>
-					Configure the active school year and semester for the system.
+					Configure the default global active school year and semester for the system.
 				</p>
 			</div>
 
@@ -70,14 +78,17 @@ export default function ApplicationSettingsForm() {
 					<Label>School Year</Label>
 					<Input
 						type='number'
-						value={parseInt(
-							localUser?.activeSchoolYearDB || getYear(new Date()).toString()
-						)}
+						value={
+							settings?.activeSchoolYear
+								? parseInt(settings.activeSchoolYear)
+								: getYear(new Date())
+						}
 						onChange={(e) =>
-							setLocalUser({
-								...localUser,
-								activeSchoolYearDB: e.target.value,
-							} as User)
+							setSettings((prev) =>
+								prev
+									? { ...prev, activeSchoolYear: e.target.value }
+									: { activeSchoolYear: e.target.value, activeSemester: '1' }
+							)
 						}
 					/>
 				</div>
@@ -85,9 +96,13 @@ export default function ApplicationSettingsForm() {
 				<div className='space-y-1'>
 					<Label>Semester</Label>
 					<Select
-						value={localUser?.activeSemDB ?? '1'}
+						value={settings?.activeSemester ?? '1'}
 						onValueChange={(value) =>
-							setLocalUser({ ...localUser, activeSemDB: value } as User)
+							setSettings((prev) =>
+								prev
+									? { ...prev, activeSemester: value }
+									: { activeSchoolYear: getYear(new Date()).toString(), activeSemester: value }
+							)
 						}
 					>
 						<SelectTrigger>
@@ -102,8 +117,14 @@ export default function ApplicationSettingsForm() {
 			</div>
 
 			<div className='flex justify-end pt-2'>
-				<Button size='sm' onClick={onSave}>
-					Save Application Settings
+				<Button size='sm' onClick={onSave} disabled={isSaving || !settings}>
+					{isSaving ? (
+						<>
+							<Loader2 className='mr-2 size-4 animate-spin' /> Saving...
+						</>
+					) : (
+						'Save Application Settings'
+					)}
 				</Button>
 			</div>
 		</section>

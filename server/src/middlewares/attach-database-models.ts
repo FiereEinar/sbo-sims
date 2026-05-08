@@ -9,6 +9,7 @@ import { OrganizationSchema } from '../models/organization';
 import { SessionSchema } from '../models/session';
 import { PrelistingSchema } from '../models/prelisting';
 import RoleSchema from '../models/role';
+import { AppSettingSchema } from '../models/appSetting';
 
 export const attachDatabaseModels = async (
 	req: Request,
@@ -71,6 +72,8 @@ export const attachOriginalDatabaseModels = async (
 		);
 		req.RoleModel = originalConnection.model(DB_MODEL.ROLE, RoleSchema);
 
+		req.AppSettingModel = originalConnection.model(DB_MODEL.APPSETTING, AppSettingSchema);
+		
 		next();
 	} catch (err: any) {
 		console.error('Failed to attach original database models', err);

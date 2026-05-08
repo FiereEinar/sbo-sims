@@ -12,6 +12,7 @@ export const DB_MODEL = {
 	CATEGORY: 'Category',
 	SESSION: 'Session',
 	ROLE: 'Role',
+	APPSETTING: 'AppSetting',
 };
 
 export const WHITELISTED_DOMAINS = ['student.buksu.edu.ph'];

@@ -7,6 +7,7 @@ import {
 	getSingleUser,
 	getUsers,
 	updateUserPassword,
+	update_user,
 } from '../controllers/userController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { hasRole } from '../middlewares/authentication/role';
@@ -26,6 +27,13 @@ router.put(
 	isValidMongooseId('userID', { from: 'params' }),
 	updateUserValidation,
 	adminUpdateUser,
+);
+
+router.put(
+	'/:userID',
+	isValidMongooseId('userID', { from: 'params' }),
+	updateUserValidation,
+	update_user,
 );
 
 router.delete(

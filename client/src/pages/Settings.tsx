@@ -1,6 +1,8 @@
 import ApplicationSettingsForm from '@/components/forms/ApplicationSettingsForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import Header from '@/components/ui/header';
+import HasPermission from '@/components/HasPermission';
+import { MODULES } from '@/constants';
 
 export default function Settings() {
 	return (
@@ -13,7 +15,9 @@ export default function Settings() {
 					</p>
 				</div>
 
-				<ApplicationSettingsForm />
+				<HasPermission permissions={[MODULES.SETTING_UPDATE]}>
+					<ApplicationSettingsForm />
+				</HasPermission>
 			</div>
 		</SidebarPageLayout>
 	);

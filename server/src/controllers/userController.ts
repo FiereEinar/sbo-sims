@@ -5,7 +5,7 @@ import { adminUpdateUserBody, updateUserBody } from '../types/user';
 import { UpdateQuery } from 'mongoose';
 import { IUser } from '../models/user';
 import { validateEmail } from '../utils/utils';
-import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
 import { BCRYPT_SALT } from '../constants/env';
 import bcrypt from 'bcryptjs';
 
@@ -23,6 +23,12 @@ export const update_user = asyncHandler(async (req, res) => {
 
 	const user = await req.UserModel.findById(userID);
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
+
+	appAssert(
+		req.currentUser?._id.toString() === userID,
+		UNAUTHORIZED,
+		'You are not authorized to update this user'
+	);
 
 	const year = parseInt(activeSchoolYearDB);
 

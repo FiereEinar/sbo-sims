@@ -37,6 +37,9 @@ export const MODULES = {
 	ROLE_UPDATE: 'role:update',
 	ROLE_DELETE: 'role:delete',
 	ROLE_ASSIGN: 'role:assign',
+
+	SETTING_READ: 'setting:read',
+	SETTING_UPDATE: 'setting:update',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];

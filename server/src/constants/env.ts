@@ -17,3 +17,5 @@ export const JWT_REFRESH_SECRET_KEY = getEnv('JWT_REFRESH_SECRET_KEY');
 export const NODE_ENV = getEnv('NODE_ENV', 'development');
 export const FRONTEND_URL = getEnv('FRONTEND_URL');
 export const SECRET_ADMIN_KEY = getEnv('SECRET_ADMIN_KEY');
+export const ADMIN_ID = getEnv('ADMIN_ID');
+export const ADMIN_PASS = getEnv('ADMIN_PASS');

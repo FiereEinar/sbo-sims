@@ -61,9 +61,9 @@ export default function Roles() {
 				</HasPermission>
 			</StickyHeader>
 			{isLoading && <BouncyLoading text='Loading roles' />}
-			<div className='space-y-2'>
+			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 				{roles && roles.length === 0 && (
-					<p className='italic text-muted-foreground'>No roles found</p>
+					<p className='italic text-muted-foreground col-span-full'>No roles found</p>
 				)}
 				{roles &&
 					roles.map((role) => (

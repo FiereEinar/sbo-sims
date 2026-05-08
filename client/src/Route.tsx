@@ -9,7 +9,7 @@ import NotFound from './pages/NotFound';
 import CategoryInfo from './pages/CategoryInfo';
 import TransactionInfo from './pages/TransactionInfo';
 import Login from './pages/Login';
-// import Signup from './pages/Signup';
+import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import Organization from './pages/Organization';
 import OrganizationInfo from './pages/OrganizationInfo';
@@ -203,10 +203,10 @@ export default function Route() {
 			path: '/login',
 			element: <Login />,
 		},
-		// {
-		// 	path: '/signup',
-		// 	element: <Signup />,
-		// },
+		{
+			path: '/signup',
+			element: <Signup />,
+		},
 	]);
 
 	return <RouterProvider router={route} />;

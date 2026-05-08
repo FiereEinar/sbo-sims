@@ -28,6 +28,7 @@ export function RoleCard({ role, isLoading, onEdit, onDelete }: RoleCardProps) {
 	if (isLoading) {
 		return (
 			<div className='rounded-2xl border bg-card/50 p-5 shadow-sm space-y-3'>
+				<Skeleton className='h-10 w-10 rounded-xl' />
 				<Skeleton className='h-5 w-32' />
 				<Skeleton className='h-4 w-full' />
 				<div className='flex gap-2'>
@@ -43,86 +44,83 @@ export function RoleCard({ role, isLoading, onEdit, onDelete }: RoleCardProps) {
 	const permissionCount = role.permissions.length;
 
 	return (
-		<div className='rounded-2xl border bg-card/50 p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition'>
-			{/* Top Section */}
-			<div className='space-y-2'>
-				<div className='flex justify-between items-start'>
-					<div>
-						<p className='text-xs text-muted-foreground uppercase tracking-wide'>
-							Role
-						</p>
-						<h3 className='text-xl font-semibold flex items-center gap-2'>
-							<ShieldCheck className='size-5 text-primary' />
-							{role.name}
-						</h3>
-					</div>
-
-					<div className='rounded-xl bg-primary/10 p-2 text-primary'>
+		<div className='rounded-2xl border bg-card/50 p-5 shadow-sm flex flex-col hover:shadow-md transition h-full'>
+			{/* Header */}
+			<div className='space-y-3'>
+				<div className='flex items-center justify-between'>
+					<div className='rounded-xl bg-primary/10 p-2.5 text-primary'>
 						<KeyRound className='size-5' />
 					</div>
+					<Badge variant='outline' className='text-xs'>
+						{permissionCount} permission{permissionCount !== 1 ? 's' : ''}
+					</Badge>
 				</div>
 
-				{role.description && (
-					<p className='text-sm text-muted-foreground'>{role.description}</p>
-				)}
+				<div>
+					<h3 className='text-lg font-semibold flex items-center gap-2'>
+						<ShieldCheck className='size-4 text-primary' />
+						{role.name}
+					</h3>
+					{role.description && (
+						<p className='text-sm text-muted-foreground mt-1 line-clamp-2'>
+							{role.description}
+						</p>
+					)}
+				</div>
 			</div>
 
-			<div className='flex justify-between items-start'>
-				{/* Permission Summary */}
-				<div className='mt-4 space-y-2'>
-					<p className='text-xs text-muted-foreground uppercase tracking-wide'>
-						Permissions
-					</p>
-
-					<div className='flex flex-wrap gap-2'>
-						{role.permissions.slice(0, 4).map((perm) => (
-							<Badge key={perm} variant='secondary'>
-								{perm}
-							</Badge>
-						))}
-
-						{permissionCount > 4 && (
-							<Badge variant='outline'>+{permissionCount - 4} more</Badge>
-						)}
-					</div>
+			{/* Permissions */}
+			<div className='mt-4 flex-1'>
+				<div className='flex flex-wrap gap-1.5'>
+					{role.permissions.slice(0, 3).map((perm) => (
+						<Badge key={perm} variant='secondary' className='text-xs'>
+							{perm}
+						</Badge>
+					))}
+					{permissionCount > 3 && (
+						<Badge variant='outline' className='text-xs'>
+							+{permissionCount - 3} more
+						</Badge>
+					)}
 				</div>
+			</div>
 
-				{/* Footer Actions */}
-				<div className='mt-4 flex justify-end gap-2'>
-					<HasPermission permissions={[MODULES.ROLE_UPDATE]}>
-						<Button size='sm' variant='outline' onClick={() => onEdit?.(role)}>
-							<Edit2 className='size-3.5 mr-1' />
-							Edit
-						</Button>
-					</HasPermission>
+			{/* Footer Actions */}
+			<div className='mt-4 pt-3 border-t flex justify-end gap-2'>
+				<HasPermission permissions={[MODULES.ROLE_UPDATE]}>
+					<Button size='sm' variant='outline' onClick={() => onEdit?.(role)}>
+						<Edit2 className='size-3.5 mr-1' />
+						Edit
+					</Button>
+				</HasPermission>
 
-					<HasPermission permissions={[MODULES.ROLE_DELETE]}>
-						<AlertDialog>
-							<AlertDialogTrigger asChild>
-								<Button size='sm' variant='outline' className='text-red-500'>
-									<Trash className='size-3.5 mr-1' />
+				<HasPermission permissions={[MODULES.ROLE_DELETE]}>
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button size='sm' variant='outline' className='text-red-500'>
+								<Trash className='size-3.5 mr-1' />
+								Delete
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+								<AlertDialogDescription>
+									This action cannot be undone. This will permanently delete
+									the role and remove it from the database.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction onClick={() => onDelete?.(role)}>
 									Delete
-								</Button>
-							</AlertDialogTrigger>
-							<AlertDialogContent>
-								<AlertDialogHeader>
-									<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-									<AlertDialogDescription>
-										This action cannot be undone. This will permanently delete
-										the transaction and remove your data from the database.
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								<AlertDialogFooter>
-									<AlertDialogCancel>Cancel</AlertDialogCancel>
-									<AlertDialogAction onClick={() => onDelete?.(role)}>
-										Delete
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
-					</HasPermission>
-				</div>
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</HasPermission>
 			</div>
 		</div>
 	);
 }
+

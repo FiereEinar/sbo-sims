@@ -26,6 +26,8 @@ import {
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
 
+import { seedAdmin } from './database/seedAdmin';
+
 const app = express();
 app.use(helmet());
 app.use(cors(corsOptions));
@@ -58,7 +60,8 @@ app.use(errorHandler);
 export default app;
 
 if (NODE_ENV !== 'test') {
-	app.listen(Number(PORT), '0.0.0.0', () =>
-		console.log(`Server is running on http://localhost:${PORT}`),
-	);
+	app.listen(Number(PORT), '0.0.0.0', () => {
+		console.log(`Server is running on http://localhost:${PORT}`);
+		seedAdmin();
+	});
 }

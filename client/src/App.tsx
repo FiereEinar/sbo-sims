@@ -29,7 +29,7 @@ function App() {
 				<LeftSidebar />
 			</div>
 			<div className='overflow-hidden w-full'>
-				<div className='flex sm:hidden '>
+				<div className='flex w-full'>
 					<TopNavbar />
 				</div>
 				<Outlet />

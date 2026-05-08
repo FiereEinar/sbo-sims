@@ -79,7 +79,7 @@ export default function UpdateUserForm() {
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className='bg-card/40 border rounded-lg p-4 space-y-4'
+			className='space-y-4'
 		>
 			<div>
 				<Header size='sm'>User Profile</Header>

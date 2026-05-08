@@ -1,6 +1,4 @@
 import ApplicationSettingsForm from '@/components/forms/ApplicationSettingsForm';
-import UpdateUserForm from '@/components/forms/UpdateUserForm';
-import UpdateUserPasswordForm from '@/components/forms/UpdateUserPasswordForm';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import Header from '@/components/ui/header';
 
@@ -16,8 +14,6 @@ export default function Settings() {
 				</div>
 
 				<ApplicationSettingsForm />
-				<UpdateUserForm />
-				<UpdateUserPasswordForm />
 			</div>
 		</SidebarPageLayout>
 	);

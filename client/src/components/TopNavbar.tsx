@@ -1,19 +1,20 @@
 import TopNavbarSheet from './TopNavbarSheet';
-import Header from './ui/header';
+import { useUserStore } from '@/store/user';
+import UserProfileSheet from './UserProfileSheet';
 
 export default function TopNavbar() {
+	const { user } = useUserStore((state) => state);
+
 	return (
-		<div className='w-full sticky top-0 z-50 bg- p-3 border-b'>
-			<div className='flex justify-between items-center gap-5'>
-				<div className='flex gap-3 items-center'>
-					<img
-						className='size-12 rounded-full border'
-						src='/images/SBO_LOGO.jpg'
-						alt=''
-					/>
-					<Header>SIMS</Header>
+		<div className='w-full sticky top-0 z-50 bg-card/50 p-2 px-4 border-b flex justify-between items-center h-16'>
+			<div className='flex items-center gap-3'>
+				<div className='sm:hidden'>
+					<TopNavbarSheet />
 				</div>
-				<TopNavbarSheet />
+			</div>
+
+			<div className='flex items-center'>
+				<UserProfileSheet user={user} />
 			</div>
 		</div>
 	);

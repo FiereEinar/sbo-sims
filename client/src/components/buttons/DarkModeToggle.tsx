@@ -34,7 +34,7 @@ export default function DarkModeToggle({
 				onChange={toggleDarkMode}
 				size={20}
 			/>
-			<p className='flex sm:hidden md:flex'>{text}</p>
+			{text && <p className='flex sm:hidden md:flex'>{text}</p>}
 		</button>
 	);
 }

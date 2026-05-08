@@ -1,4 +1,5 @@
 import Header from '@/components/ui/header';
+import DarkModeToggle from '@/components/buttons/DarkModeToggle';
 
 type AuthPageProps = {
 	form: JSX.Element;
@@ -24,10 +25,19 @@ export default function AuthPage({ form, title }: AuthPageProps) {
 			</div>
 			<img
 				src='/images/BUKSU_LOGO_WHITE.png'
-				className='hidden sm:flex size-[15rem] md:size-[20rem] z-50'
+				className='hidden dark:sm:flex size-[15rem] md:size-[20rem] z-50'
+				alt='BUKSU LOGO'
+			/>
+			<img
+				src='/images/BUKSU_LOGO.png'
+				className='hidden sm:flex dark:hidden size-[15rem] md:size-[20rem] z-50'
 				alt='BUKSU LOGO'
 			/>
 			{/* <Stripes /> */}
+
+			<div className='absolute bottom-5 left-5 z-50 p-2 bg-card rounded-full shadow-lg border'>
+				<DarkModeToggle />
+			</div>
 		</main>
 	);
 }

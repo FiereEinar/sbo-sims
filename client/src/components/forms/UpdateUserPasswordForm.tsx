@@ -110,7 +110,7 @@ export default function UpdateUserPasswordForm() {
 
 			<div className='flex justify-end pt-2'>
 				<Button disabled={isSubmitting} size='sm'>
-					Save Profile Changes
+					Save Password
 				</Button>
 			</div>
 		</form>

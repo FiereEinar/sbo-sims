@@ -11,7 +11,6 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover';
 import { Label } from './ui/label';
-import { CalendarIcon } from 'lucide-react';
 
 type DatePickerWithRangeProps = {
 	setStartDate: (date?: Date) => void;

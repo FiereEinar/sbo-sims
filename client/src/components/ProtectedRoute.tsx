@@ -27,6 +27,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 	}, [navigate]);
 
 	if (!isAuthenticated) {
+		const isDark = document.documentElement.classList.contains('dark');
 		return (
 			<section className='w-dvw h-dvh flex flex-col justify-center items-center'>
 				<l-trefoil
@@ -35,7 +36,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 					stroke-length='0.15'
 					bg-opacity='0.1'
 					speed='1.4'
-					color='white'
+					color={isDark ? 'white' : 'black'}
 				/>
 				<p className='text-xl font-bold mt-5'>Authenticating</p>
 			</section>

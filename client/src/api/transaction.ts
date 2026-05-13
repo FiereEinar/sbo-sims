@@ -1,7 +1,7 @@
 import { Transaction, TransactionsFilterValues } from '@/types/transaction';
 import axiosInstance from './axiosInstance';
 import { APIPaginatedResponse, APIResponse } from '@/types/api-response';
-import { TransactionFormValues } from '@/components/forms/AddTransactionForm';
+import { TransactionFormValues, BatchTransactionFormValues } from '@/components/forms/AddTransactionForm';
 import { UpdateTransactionAmountFormValues } from '@/components/forms/UpdateTransactionAmountForm';
 import { DashboardData } from '@/pages/Dashboard';
 
@@ -55,6 +55,18 @@ export const submitTransactionForm = async (
 ): Promise<APIResponse<Transaction> | undefined> => {
 	try {
 		const { data } = await axiosInstance.post('/transaction', formData);
+
+		return data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+
+export const submitBatchTransactionForm = async (
+	formData: BatchTransactionFormValues
+): Promise<APIResponse<Transaction[]> | undefined> => {
+	try {
+		const { data } = await axiosInstance.post('/transaction/batch', formData);
 
 		return data;
 	} catch (err: any) {

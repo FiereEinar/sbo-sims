@@ -14,6 +14,7 @@ import { convertToPdf } from '../services/pdfConverter';
 import { addDays, format, isBefore, startOfDay } from 'date-fns';
 import { BAD_REQUEST, CONFLICT, NOT_FOUND } from '../constants/http';
 import {
+	batchCreateTransactionBody,
 	createTransactionBody,
 	TransactionEJSVariables,
 	updateTransactionAmountBody,
@@ -385,6 +386,113 @@ export const create_transaction = asyncHandler(async (req, res) => {
 
 	res.json(
 		new CustomResponse(true, transaction, 'Transaction saved successfully'),
+	);
+});
+
+/**
+ * POST - create multiple transactions at once (batch)
+ */
+export const create_batch_transactions = asyncHandler(async (req, res) => {
+	const {
+		studentID,
+		date,
+		description,
+		modeOfPayment,
+		items,
+	}: batchCreateTransactionBody = req.body;
+	const user = req.currentUser!;
+
+	appAssert(
+		items && items.length > 0,
+		BAD_REQUEST,
+		'At least one category entry is required',
+	);
+
+	// validate student once
+	const student = await req.StudentModel.findOne({ studentID }).exec();
+	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
+
+	// validate all items first before creating any
+	const validatedItems = [];
+	for (const item of items) {
+		const category = await req.CategoryModel.findById<ICategory>(
+			item.categoryID,
+		).populate({
+			model: req.OrganizationModel,
+			path: 'organization',
+		});
+		appAssert(
+			category,
+			NOT_FOUND,
+			`Category with ID ${item.categoryID} not found`,
+		);
+
+		appAssert(
+			item.amount > 0,
+			BAD_REQUEST,
+			`Enter a valid amount for ${category.name}`,
+		);
+
+		appAssert(
+			item.amount <= category.fee,
+			BAD_REQUEST,
+			`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
+		);
+
+		const isAlreadyPaid = await req.TransactionModel.findOne({
+			owner: student._id,
+			category: category._id,
+		}).exec();
+		appAssert(
+			!isAlreadyPaid,
+			CONFLICT,
+			`This student has already paid for ${category.name}`,
+		);
+
+		const isInOrganization = category.organization.departments.includes(
+			student.course,
+		);
+		appAssert(
+			isInOrganization,
+			BAD_REQUEST,
+			`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization`,
+		);
+
+		const detailsObj: { [key: string]: any } = {};
+		category.details.map((detail) => {
+			detailsObj[detail] = item.details?.[detail];
+		});
+
+		validatedItems.push({ category, detailsObj, amount: item.amount });
+	}
+
+	// all validations passed, create all transactions
+	const transactions = [];
+	for (const item of validatedItems) {
+		const transaction = new req.TransactionModel({
+			amount: item.amount,
+			category: item.category._id,
+			owner: student._id,
+			description: description,
+			date: date ? new Date(date as any).toISOString() : new Date().toISOString(),
+			modeOfPayment: modeOfPayment || 'cash',
+			governor: item.category.organization.governor,
+			viceGovernor: item.category.organization.viceGovernor,
+			treasurer: item.category.organization.treasurer,
+			auditor: item.category.organization.auditor,
+			details: item.detailsObj,
+			recordedBy: user._id,
+		});
+		await transaction.save();
+		transactions.push(transaction);
+	}
+
+	res.json(
+		new CustomResponse(
+			true,
+			transactions,
+			`${transactions.length} transaction(s) saved successfully`,
+		),
 	);
 });
 

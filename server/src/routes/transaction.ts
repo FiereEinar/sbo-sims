@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+	create_batch_transactions,
 	create_transaction,
 	delete_transaction,
 	get_all_transactions,
@@ -53,6 +54,12 @@ router.post(
 	hasRole([MODULES.TRANSACTION_CREATE]),
 	createTransactionValidation,
 	create_transaction,
+);
+
+router.post(
+	'/batch',
+	hasRole([MODULES.TRANSACTION_CREATE]),
+	create_batch_transactions,
 );
 
 router.post(

@@ -8,6 +8,20 @@ export type createTransactionBody = {
 	details: { [key: string]: string };
 };
 
+export type batchTransactionItem = {
+	categoryID: string;
+	amount: number;
+	details: { [key: string]: string };
+};
+
+export type batchCreateTransactionBody = {
+	studentID: string;
+	description?: string;
+	date?: Date;
+	modeOfPayment?: 'cash' | 'gcash';
+	items: batchTransactionItem[];
+};
+
 export type updateTransactionAmountBody = {
 	amount: number;
 };

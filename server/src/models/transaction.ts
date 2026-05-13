@@ -7,6 +7,12 @@ const Schema = mongoose.Schema;
 
 export type ModeOfPayment = 'cash' | 'gcash';
 
+export interface IPaymentHistoryEntry {
+	amount: number;
+	date: Date;
+	modeOfPayment: ModeOfPayment;
+}
+
 export interface ITransaction extends mongoose.Document {
 	_id: mongoose.Types.ObjectId;
 	owner: IStudent;
@@ -21,9 +27,19 @@ export interface ITransaction extends mongoose.Document {
 	viceGovernor: string;
 	auditor: string;
 	details: { [key: string]: string };
+	paymentHistory: IPaymentHistoryEntry[];
 	createdAt: Date;
 	updatedAt: Date;
 }
+
+const PaymentHistoryEntrySchema = new Schema(
+	{
+		amount: { type: Number, required: true },
+		date: { type: Date, required: true },
+		modeOfPayment: { type: String, enum: ['cash', 'gcash'], default: 'cash' },
+	},
+	{ _id: false },
+);
 
 export const TransactionSchema = new Schema<ITransaction>(
 	{
@@ -39,6 +55,7 @@ export const TransactionSchema = new Schema<ITransaction>(
 		treasurer: { type: String, required: true },
 		auditor: { type: String, required: true },
 		details: { type: Schema.Types.Mixed, required: true },
+		paymentHistory: { type: [PaymentHistoryEntrySchema], default: [] },
 	},
 	{ timestamps: true },
 );

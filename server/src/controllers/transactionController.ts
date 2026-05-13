@@ -329,13 +329,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	});
 	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
-	// check if the amount paid is over the amount required for a category
-	appAssert(
-		amount <= category.fee,
-		BAD_REQUEST,
-		`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
-	);
-
 	// check if the amount paid is non-negative
 	appAssert(amount > 0, BAD_REQUEST, `Enter a valid amount`);
 
@@ -345,13 +338,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-	// check if the student already paid
-	const isAlreadyPaid = await req.TransactionModel.findOne({
-		owner: student._id,
-		category: category._id,
-	}).exec();
-	appAssert(!isAlreadyPaid, CONFLICT, 'This student has already paid');
-
 	// check if the student is within the organization
 	const isInOrganization = category.organization.departments.includes(
 		student.course,
@@ -360,6 +346,60 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		isInOrganization,
 		BAD_REQUEST,
 		`Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
+	);
+
+	const paymentDate = date ? new Date(date as any) : new Date();
+	const paymentMode = modeOfPayment || 'cash';
+
+	// check if an existing transaction exists for this student + category
+	const existingTransaction = await req.TransactionModel.findOne({
+		owner: student._id,
+		category: category._id,
+	}).exec();
+
+	if (existingTransaction) {
+		// already fully paid
+		appAssert(
+			existingTransaction.amount < category.fee,
+			CONFLICT,
+			`This student has already fully paid for ${category.name}`,
+		);
+
+		// top-up: validate new total doesn't exceed fee
+		const numericAmount = Number(amount);
+		const newTotal = existingTransaction.amount + numericAmount;
+		appAssert(
+			newTotal <= category.fee,
+			BAD_REQUEST,
+			`Top-up would exceed the required fee for ${category.name}. Remaining balance: ${category.fee - existingTransaction.amount}`,
+		);
+
+		const updatedTransaction = await req.TransactionModel.findByIdAndUpdate(
+			existingTransaction._id,
+			{
+				$inc: { amount: numericAmount },
+				$push: {
+					paymentHistory: {
+						amount: numericAmount,
+						date: paymentDate,
+						modeOfPayment: paymentMode,
+					},
+				},
+			},
+			{ new: true }
+		).exec();
+
+		res.json(
+			new CustomResponse(true, updatedTransaction, 'Payment topped up successfully'),
+		);
+		return;
+	}
+
+	// check if the amount paid is over the amount required for a category
+	appAssert(
+		amount <= category.fee,
+		BAD_REQUEST,
+		`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
 	);
 
 	const detailsObj: { [key: string]: any } = {};
@@ -373,14 +413,21 @@ export const create_transaction = asyncHandler(async (req, res) => {
 		category: categoryID,
 		owner: student._id,
 		description: description,
-		date: date ? date.toISOString() : new Date().toISOString(),
-		modeOfPayment: modeOfPayment || 'cash',
+		date: paymentDate.toISOString(),
+		modeOfPayment: paymentMode,
 		governor: category.organization.governor,
 		viceGovernor: category.organization.viceGovernor,
 		treasurer: category.organization.treasurer,
 		auditor: category.organization.auditor,
 		details: detailsObj,
 		recordedBy: user._id,
+		paymentHistory: [
+			{
+				amount,
+				date: paymentDate,
+				modeOfPayment: paymentMode,
+			},
+		],
 	});
 	await transaction.save();
 
@@ -433,21 +480,34 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 			`Enter a valid amount for ${category.name}`,
 		);
 
-		appAssert(
-			item.amount <= category.fee,
-			BAD_REQUEST,
-			`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
-		);
-
 		const isAlreadyPaid = await req.TransactionModel.findOne({
 			owner: student._id,
 			category: category._id,
 		}).exec();
-		appAssert(
-			!isAlreadyPaid,
-			CONFLICT,
-			`This student has already paid for ${category.name}`,
-		);
+
+		let isTopUp = false;
+		if (isAlreadyPaid) {
+			appAssert(
+				isAlreadyPaid.amount < category.fee,
+				CONFLICT,
+				`This student has already fully paid for ${category.name}`,
+			);
+
+			const numericAmount = Number(item.amount);
+			const newTotal = isAlreadyPaid.amount + numericAmount;
+			appAssert(
+				newTotal <= category.fee,
+				BAD_REQUEST,
+				`Top-up for ${category.name} would exceed the required fee. Remaining balance: ${category.fee - isAlreadyPaid.amount}`,
+			);
+			isTopUp = true;
+		} else {
+			appAssert(
+				item.amount <= category.fee,
+				BAD_REQUEST,
+				`The amount is over the required amount for ${category.name} fee. Fee is ${category.fee}`,
+			);
+		}
 
 		const isInOrganization = category.organization.departments.includes(
 			student.course,
@@ -463,28 +523,63 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 			detailsObj[detail] = item.details?.[detail];
 		});
 
-		validatedItems.push({ category, detailsObj, amount: item.amount });
+		validatedItems.push({
+			category,
+			detailsObj,
+			amount: item.amount,
+			isTopUp,
+			existingTransaction: isAlreadyPaid,
+		});
 	}
 
-	// all validations passed, create all transactions
+	const paymentDate = date ? new Date(date as any) : new Date();
+	const paymentMode = modeOfPayment || 'cash';
+
+	// all validations passed, create or update all transactions
 	const transactions = [];
 	for (const item of validatedItems) {
-		const transaction = new req.TransactionModel({
-			amount: item.amount,
-			category: item.category._id,
-			owner: student._id,
-			description: description,
-			date: date ? new Date(date as any).toISOString() : new Date().toISOString(),
-			modeOfPayment: modeOfPayment || 'cash',
-			governor: item.category.organization.governor,
-			viceGovernor: item.category.organization.viceGovernor,
-			treasurer: item.category.organization.treasurer,
-			auditor: item.category.organization.auditor,
-			details: item.detailsObj,
-			recordedBy: user._id,
-		});
-		await transaction.save();
-		transactions.push(transaction);
+		if (item.isTopUp && item.existingTransaction) {
+			const numericAmount = Number(item.amount);
+			const updatedTransaction = await req.TransactionModel.findByIdAndUpdate(
+				item.existingTransaction._id,
+				{
+					$inc: { amount: numericAmount },
+					$push: {
+						paymentHistory: {
+							amount: numericAmount,
+							date: paymentDate,
+							modeOfPayment: paymentMode,
+						},
+					},
+				},
+				{ new: true }
+			).exec();
+			transactions.push(updatedTransaction);
+		} else {
+			const transaction = new req.TransactionModel({
+				amount: item.amount,
+				category: item.category._id,
+				owner: student._id,
+				description: description,
+				date: paymentDate.toISOString(),
+				modeOfPayment: paymentMode,
+				governor: item.category.organization.governor,
+				viceGovernor: item.category.organization.viceGovernor,
+				treasurer: item.category.organization.treasurer,
+				auditor: item.category.organization.auditor,
+				details: item.detailsObj,
+				recordedBy: user._id,
+				paymentHistory: [
+					{
+						amount: item.amount,
+						date: paymentDate,
+						modeOfPayment: paymentMode,
+					},
+				],
+			});
+			await transaction.save();
+			transactions.push(transaction);
+		}
 	}
 
 	res.json(
@@ -629,7 +724,14 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 	appAssert(amount > 0, BAD_REQUEST, 'Enter a valid amount');
 
 	const update: UpdateQuery<ITransaction> = {
-		amount: transactionAmountSum,
+		$set: { amount: transactionAmountSum },
+		$push: {
+			paymentHistory: {
+				amount,
+				date: new Date(),
+				modeOfPayment: 'cash', // Defaulting to cash since this endpoint doesn't accept modeOfPayment yet
+			},
+		},
 	};
 
 	const result = await req.TransactionModel.findByIdAndUpdate(

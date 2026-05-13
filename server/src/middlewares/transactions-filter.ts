@@ -78,7 +78,7 @@ export const transactionQueryFilter = asyncHandler(
 				model: req.UserModel,
 				path: 'recordedBy',
 			})
-			.sort({ date: sortByDate === 'asc' ? 1 : -1 })
+			.sort({ createdAt: sortByDate === 'asc' ? 1 : -1 })
 			.exec();
 
 		let filteredTransactions = transactions;

@@ -104,6 +104,31 @@ export default function TransactionCheque({
 				})}
 			</div>
 
+			{/* Payment History Log */}
+			{transaction.paymentHistory && transaction.paymentHistory.length > 1 && (
+				<div className='border-t pt-4 space-y-2'>
+					<h4 className='text-sm font-medium text-foreground flex items-center gap-2'>
+						Payment History
+						<span className='text-xs font-normal text-muted-foreground px-2 py-0.5 bg-secondary rounded-full'>
+							{transaction.paymentHistory.length} payments
+						</span>
+					</h4>
+					<div className='space-y-2'>
+						{transaction.paymentHistory.map((entry, index) => (
+							<div key={index} className='flex items-center justify-between text-xs'>
+								<div className='flex flex-col'>
+									<span className='font-medium text-foreground w-16'>P{entry.amount}</span>
+									<span className='text-muted-foreground'>{new Date(entry.date).toDateString()}</span>
+								</div>
+								<span className='uppercase font-medium text-[10px] text-muted-foreground bg-secondary/50 px-2 py-1 rounded'>
+									{entry.modeOfPayment}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
 			{/* Footer */}
 			<div className='border-t pt-4 space-y-1'>
 				<Header size='sm'>

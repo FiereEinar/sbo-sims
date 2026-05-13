@@ -213,9 +213,9 @@ export default function AddTransactionForm({
 				})),
 			};
 
-			reset({ studentID: '', modeOfPayment: 'cash' });
-
 			await submitBatchTransactionForm(batchData);
+
+			reset({ studentID: '', modeOfPayment: 'cash' });
 
 			toast({
 				title: `${categoryEntries.length} transaction(s) added successfully`,

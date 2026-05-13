@@ -3,6 +3,12 @@ import { MongoEntity } from './mongoEntity';
 import { Student } from './student';
 import { User } from './user';
 
+export type PaymentHistoryEntry = {
+	amount: number;
+	date: Date;
+	modeOfPayment: 'cash' | 'gcash';
+};
+
 export type Transaction = MongoEntity & {
 	amount: number;
 	recordedBy?: User;
@@ -16,6 +22,7 @@ export type Transaction = MongoEntity & {
 	viceGovernor: string;
 	auditor: string;
 	details: { [key: string]: string };
+	paymentHistory: PaymentHistoryEntry[];
 	createdAt: Date;
 	updatedAt: Date;
 };

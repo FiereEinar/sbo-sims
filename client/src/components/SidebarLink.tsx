@@ -12,7 +12,7 @@ export default function SidebarLink({ link }: SidebarLinkProps) {
 			to={link.path}
 			className={({ isActive }) =>
 				`hover:opacity-90 select-none ${
-					isActive ? 'text-black active-link' : ''
+					isActive ? 'text-black dark:text-white active-link' : ''
 				}`
 			}
 		>

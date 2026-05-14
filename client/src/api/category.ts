@@ -52,6 +52,54 @@ export const fetchCategoryAndTransactions = async (
 	}
 };
 
+export interface CategoryStudentStatus {
+	student: {
+		_id: string;
+		studentID: string;
+		firstname: string;
+		lastname: string;
+		course: string;
+	};
+	amountPaid: number;
+	status: 'paid' | 'partial' | 'unpaid';
+	datePayed?: string;
+}
+
+export interface CategoryAndStudentsObject {
+	category: Category;
+	students: CategoryStudentStatus[];
+}
+
+export const fetchCategoryStudentStatus = async (
+	filters: TransactionsFilterValues,
+	categoryID: string,
+	page: number = 1,
+	pageSize: number = 50
+): Promise<APIPaginatedResponse<CategoryAndStudentsObject | undefined>> => {
+	try {
+		const url = generateTransactionsFilterURL(
+			filters,
+			`/category/${categoryID}/students?page=${page}&pageSize=${pageSize}`
+		);
+		const { data } = await axiosInstance.get(url);
+
+		return data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+
+export const getCategoryStudentStatusDownloadURL = (
+	categoryID: string,
+	type: 'pdf' | 'csv',
+	filters: TransactionsFilterValues
+) => {
+	return generateTransactionsFilterURL(
+		filters,
+		`/category/${categoryID}/students/download/${type}?1=1`
+	);
+};
+
 export const submitCategoryForm = async (
 	formData: CategoryFormValues
 ): Promise<APIResponse<Category> | undefined> => {

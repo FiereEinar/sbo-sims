@@ -8,6 +8,9 @@ import {
 	get_category,
 	get_category_transactions,
 	update_category,
+	get_category_student_status,
+	download_category_student_status_pdf,
+	download_category_student_status_csv,
 } from '../controllers/categoryController';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
@@ -32,6 +35,26 @@ router.get(
 	'/:categoryID/transaction',
 	isValidMongooseId('categoryID', { from: 'params' }),
 	get_category_transactions,
+);
+
+router.get(
+	'/:categoryID/students',
+	isValidMongooseId('categoryID', { from: 'params' }),
+	get_category_student_status,
+);
+
+router.get(
+	'/:categoryID/students/download/pdf',
+	hasRole([MODULES.TRANSACTION_DOWNLOAD]),
+	isValidMongooseId('categoryID', { from: 'params' }),
+	download_category_student_status_pdf,
+);
+
+router.get(
+	'/:categoryID/students/download/csv',
+	hasRole([MODULES.TRANSACTION_DOWNLOAD]),
+	isValidMongooseId('categoryID', { from: 'params' }),
+	download_category_student_status_csv,
 );
 
 router.post(

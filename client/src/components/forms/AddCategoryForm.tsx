@@ -1,5 +1,5 @@
 import {
-	fetchCategoryAndTransactions,
+	fetchCategoryStudentStatus,
 	submitCategoryForm,
 	submitUpdateCategoryForm,
 } from '@/api/category';
@@ -64,7 +64,7 @@ export default function AddCategoryForm({
 			{ ...getFilterValues(), categoryID: category?._id },
 		],
 		queryFn: () =>
-			fetchCategoryAndTransactions(getFilterValues(), category?._id ?? ''),
+			fetchCategoryStudentStatus(getFilterValues(), category?._id ?? ''),
 	});
 
 	const {

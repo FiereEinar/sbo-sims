@@ -46,7 +46,7 @@ export type TransactionsFilterValues = {
 	course?: string;
 	period?: TransactionPeriodFilter;
 	category?: string;
-	status?: boolean;
+	status?: boolean | string;
 	startDate?: Date;
 	endDate?: Date;
 };

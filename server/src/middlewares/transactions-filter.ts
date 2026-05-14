@@ -33,7 +33,6 @@ export const transactionQueryFilter = asyncHandler(
 		const defaultPage = 1;
 		const defaultPageSize = 100;
 
-		const isPaid = JSON.parse((status as string) ?? 'false');
 		const pageNum = hasSearch
 			? defaultPage
 			: page
@@ -102,14 +101,19 @@ export const transactionQueryFilter = asyncHandler(
 		}
 
 		if (status) {
-			if (isPaid) {
+			const statusStr = String(status).toLowerCase();
+			if (statusStr === 'true' || statusStr === 'paid') {
 				filteredTransactions = filteredTransactions.filter(
 					(transaction) => transaction.amount >= transaction.category.fee,
 				);
-			} else {
+			} else if (statusStr === 'false' || statusStr === 'partial') {
 				filteredTransactions = filteredTransactions.filter(
 					(transaction) => transaction.amount < transaction.category.fee,
 				);
+			} else if (statusStr === 'unpaid') {
+				// A raw transaction query doesn't have "unpaid" transactions because they don't exist.
+				// This handles if the UI accidentally passes 'unpaid' to the generic transaction endpoint.
+				filteredTransactions = [];
 			}
 		}
 

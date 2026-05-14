@@ -19,8 +19,8 @@ import { DatePickerWithRange } from './DatePickerWithRange';
 import SchoolYearInput from './SchoolYearInput';
 import SemInput from './SemInput';
 
-export default function TransactionsFilter() {
-	const { setPeriod, setStartDate, setEndDate, setSearch, search } =
+export default function TransactionsFilter({ showStatus = false }: { showStatus?: boolean }) {
+	const { setPeriod, setStartDate, setEndDate, setSearch, search, setStatus } =
 		useTransactionFilterStore((state) => state);
 
 	const [localSearch, setLocalSearch] =
@@ -89,6 +89,27 @@ export default function TransactionsFilter() {
 			<div className='w-full md:w-full lg:w-[150px]'>
 				<SchoolYearInput />
 			</div>
+
+			{/* Status (Optional) */}
+			{showStatus && (
+				<div className='flex flex-col gap-2 w-full md:w-full lg:w-[120px]'>
+					<Label>Status</Label>
+					<Select
+						defaultValue='all'
+						onValueChange={(value) => setStatus(value === 'all' ? undefined : value)}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder='Select status' />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value='all'>All</SelectItem>
+							<SelectItem value='paid'>Paid</SelectItem>
+							<SelectItem value='partial'>Partial</SelectItem>
+							<SelectItem value='unpaid'>Unpaid</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+			)}
 		</div>
 	);
 }

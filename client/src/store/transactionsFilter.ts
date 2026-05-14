@@ -12,7 +12,7 @@ interface StudentFiltersState extends TransactionsFilterValues {
 	setStartDate: (date?: Date) => void;
 	setEndDate: (date?: Date) => void;
 	setPeriod: (period: string) => void;
-	setStatus: (status?: boolean) => void;
+	setStatus: (status?: boolean | string) => void;
 	setSearch: (search: string) => void;
 	getFilterValues: () => TransactionsFilterValues;
 }

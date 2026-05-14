@@ -1,6 +1,6 @@
-import { fetchCategoryAndTransactions } from '@/api/category';
+import { fetchCategoryStudentStatus } from '@/api/category';
 import BackButton from '@/components/buttons/BackButton';
-import DownloadTransactionsButton from '@/components/buttons/DownloadTransactionsButton';
+import DownloadCategoryStudentStatusButton from '@/components/buttons/DownloadCategoryStudentStatusButton';
 import EditAndDeleteCategoryButton from '@/components/buttons/EditAndDeleteCategoryButton';
 import CategoryDataCard from '@/components/CategoryDataCard';
 import HasPermission from '@/components/HasPermission';
@@ -9,7 +9,7 @@ import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import TransactionsFilter from '@/components/TransactionsFilter';
-import TransactionsTable from '@/components/TransactionsTable';
+import CategoryStudentStatusTable from '@/components/CategoryStudentStatusTable';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +31,7 @@ export default function CategoryInfo() {
 			{ ...getFilterValues(), categoryID, page, pageSize },
 		],
 		queryFn: () =>
-			fetchCategoryAndTransactions(
+			fetchCategoryStudentStatus(
 				getFilterValues(),
 				categoryID,
 				page,
@@ -54,18 +54,17 @@ export default function CategoryInfo() {
 						<EditAndDeleteCategoryButton category={data.data.category} />
 
 						<HasPermission permissions={[MODULES.TRANSACTION_DOWNLOAD]}>
-							<DownloadTransactionsButton categoryID={categoryID} />
+							<DownloadCategoryStudentStatusButton categoryID={categoryID} />
 						</HasPermission>
 					</div>
 				</StickyHeader>
 			)}
 
-			<TransactionsFilter />
+			<TransactionsFilter showStatus />
 
-			<TransactionsTable
-				disableCategories={true}
+			<CategoryStudentStatusTable
 				isLoading={isLoading}
-				transactions={data?.data?.categoryTransactions}
+				students={data?.data?.students}
 			/>
 
 			{data && (

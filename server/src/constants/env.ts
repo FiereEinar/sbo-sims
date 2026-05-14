@@ -19,3 +19,4 @@ export const FRONTEND_URL = getEnv('FRONTEND_URL');
 export const SECRET_ADMIN_KEY = getEnv('SECRET_ADMIN_KEY');
 export const ADMIN_ID = getEnv('ADMIN_ID');
 export const ADMIN_PASS = getEnv('ADMIN_PASS');
+export const RECAPTCHA_SECRET_KEY = getEnv('RECAPTCHA_SECRET_KEY');

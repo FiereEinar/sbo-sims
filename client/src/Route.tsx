@@ -23,6 +23,7 @@ import Users from './pages/Users';
 import UserInfo from './pages/UserInfo';
 import Roles from './pages/Roles';
 import RoleInfo from './pages/RoleInfo';
+import ErrorPage from './pages/ErrorPage';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -202,10 +203,12 @@ export default function Route() {
 		{
 			path: '/login',
 			element: <Login />,
+			errorElement: <ErrorPage />,
 		},
 		{
 			path: '/signup',
 			element: <Signup />,
+			errorElement: <ErrorPage />,
 		},
 	]);
 

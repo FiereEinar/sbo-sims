@@ -57,6 +57,13 @@ export const loginValidation = [
 		.trim()
 		.isLength({ min: 1, max: 30 })
 		.withMessage('Password must be 1-30 characters'),
+
+	body('recaptchaToken')
+		.trim()
+		.isLength({ min: 1 })
+		.withMessage('reCAPTCHA token is required'),
+
+	isFormBodyValidated,
 ];
 
 export const updateUserValidation = [

@@ -20,7 +20,7 @@ export const submitSignupForm = async (
 type DeviceTypes = 'desktop' | 'mobile' | 'tablet';
 
 export const submitLoginForm = async (
-	formData: LoginFormValues,
+	formData: LoginFormValues & { recaptchaToken: string },
 ): Promise<
 	| APIResponse<{ user: User; accessToken: string; device: DeviceTypes }>
 	| undefined

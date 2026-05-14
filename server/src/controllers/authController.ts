@@ -14,6 +14,7 @@ import {
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
 	NODE_ENV,
+	RECAPTCHA_SECRET_KEY,
 	SECRET_ADMIN_KEY,
 } from '../constants/env';
 import {
@@ -113,7 +114,19 @@ export const signup = asyncHandler(async (req, res) => {
  * POST - user login
  */
 export const login = asyncHandler(async (req, res) => {
-	const { studentID, password }: loginUserBody = req.body;
+	const { studentID, password, recaptchaToken }: loginUserBody & { recaptchaToken: string } = req.body;
+
+	// verify reCAPTCHA token with Google
+	const recaptchaResponse = await fetch(
+		'https://www.google.com/recaptcha/api/siteverify',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: `secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
+		},
+	);
+	const recaptchaData = await recaptchaResponse.json();
+	appAssert(recaptchaData.success, BAD_REQUEST, 'reCAPTCHA verification failed. Please try again.');
 
 	// check if studentID is valid
 	const user = await req.UserModel.findOne<IUser>({

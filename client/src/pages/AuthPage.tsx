@@ -25,12 +25,12 @@ export default function AuthPage({ form, title }: AuthPageProps) {
 			</div>
 			<img
 				src='/images/BUKSU_LOGO_WHITE.png'
-				className='hidden dark:sm:flex size-[15rem] md:size-[20rem] z-50'
+				className='hidden dark:sm:flex size-[15rem] md:size-[20rem] z-10'
 				alt='BUKSU LOGO'
 			/>
 			<img
 				src='/images/BUKSU_LOGO.png'
-				className='hidden sm:flex dark:hidden size-[15rem] md:size-[20rem] z-50'
+				className='hidden sm:flex dark:hidden size-[15rem] md:size-[20rem] z-10'
 				alt='BUKSU LOGO'
 			/>
 			{/* <Stripes /> */}

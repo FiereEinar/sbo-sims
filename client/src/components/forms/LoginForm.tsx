@@ -19,6 +19,7 @@ export default function LoginForm() {
 
 	const [showCaptcha, setShowCaptcha] = useState(false);
 	const [pendingData, setPendingData] = useState<LoginFormValues | null>(null);
+	const [isLoggingIn, setIsLoggingIn] = useState(false);
 
 	const {
 		register,
@@ -26,6 +27,8 @@ export default function LoginForm() {
 		setError,
 		formState: { errors, isSubmitting },
 	} = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
+
+	const isFormDisabled = isSubmitting || isLoggingIn;
 
 	// Step 1: form validation passes → show reCAPTCHA overlay
 	const onSubmit = (data: LoginFormValues) => {
@@ -37,6 +40,8 @@ export default function LoginForm() {
 	const handleCaptchaVerify = async (token: string) => {
 		setShowCaptcha(false);
 		if (!pendingData) return;
+
+		setIsLoggingIn(true);
 
 		try {
 			const result = await submitLoginForm({
@@ -56,6 +61,7 @@ export default function LoginForm() {
 			});
 		} finally {
 			setPendingData(null);
+			setIsLoggingIn(false);
 		}
 	};
 
@@ -74,6 +80,7 @@ export default function LoginForm() {
 						label='Student ID:'
 						registerFn={register}
 						errors={errors}
+						isDisabled={isFormDisabled}
 					/>
 					<InputField<LoginFormValues>
 						name='password'
@@ -82,6 +89,7 @@ export default function LoginForm() {
 						type='password'
 						registerFn={register}
 						errors={errors}
+						isDisabled={isFormDisabled}
 					/>
 				</div>
 
@@ -97,7 +105,35 @@ export default function LoginForm() {
 				</div>
 
 				<div className='flex justify-end'>
-					<Button disabled={isSubmitting}>Submit</Button>
+					<Button disabled={isFormDisabled}>
+						{isLoggingIn ? (
+							<span className='flex items-center gap-2'>
+								<svg
+									className='animate-spin size-4'
+									xmlns='http://www.w3.org/2000/svg'
+									fill='none'
+									viewBox='0 0 24 24'
+								>
+									<circle
+										className='opacity-25'
+										cx='12'
+										cy='12'
+										r='10'
+										stroke='currentColor'
+										strokeWidth='4'
+									/>
+									<path
+										className='opacity-75'
+										fill='currentColor'
+										d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+									/>
+								</svg>
+								Logging in...
+							</span>
+						) : (
+							'Submit'
+						)}
+					</Button>
 				</div>
 			</form>
 

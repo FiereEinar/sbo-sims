@@ -17,3 +17,6 @@ export const SessionSchema = new Schema<ISession>({
 	userAgent: { type: String },
 	ip: { type: String },
 });
+
+// TTL index: MongoDB will automatically delete documents once expiresAt has passed
+SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

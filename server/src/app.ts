@@ -39,6 +39,20 @@ app.use(userAgent.express());
 app.set('trust proxy', true);
 app.get('/', healthcheck);
 
+// Ensure seedAdmin runs completely on the first request in serverless environments
+let isSeeded = false;
+app.use(async (req, res, next) => {
+	if (NODE_ENV !== 'test' && !isSeeded) {
+		try {
+			await seedAdmin();
+			isSeeded = true;
+		} catch (err) {
+			console.error('[seed] Startup error:', err);
+		}
+	}
+	next();
+});
+
 // Attach global database models to the request object
 app.use(attachOriginalDatabaseModels);
 app.use('/auth', authRouter);
@@ -62,9 +76,6 @@ app.use(errorHandler);
 export default app;
 
 if (NODE_ENV !== 'test') {
-	// Execute seedAdmin on startup/cold-start, independent of app.listen
-	seedAdmin().catch(err => console.error('[seed] Startup error:', err));
-
 	// Only bind to port if not running in a serverless environment like Vercel
 	// (Vercel automatically handles the listening part)
 	if (!process.env.VERCEL) {

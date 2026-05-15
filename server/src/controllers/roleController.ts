@@ -74,7 +74,7 @@ export const getSingleRole = asyncHandler(async (req, res) => {
  * @body { name: string, description?: string, permissionIds: string[] }
  */
 export const createRole = asyncHandler(async (req, res) => {
-	const { name, description } = req.body;
+	const { name, description, isDefault } = req.body;
 
 	appAssert(name, BAD_REQUEST, 'Role name is required');
 
@@ -84,12 +84,29 @@ export const createRole = asyncHandler(async (req, res) => {
 		'Cannot create Super Admin role',
 	);
 
+	let oldDefaultRole = null;
+	if (isDefault) {
+		oldDefaultRole = await req.RoleModel.findOne({ isDefault: true });
+		if (oldDefaultRole) {
+			oldDefaultRole.isDefault = false;
+			await oldDefaultRole.save();
+		}
+	}
+
 	const role = await req.RoleModel.create({
 		name,
 		description,
 		permissions: [],
+		isDefault: isDefault || false,
 		createdBy: req.currentUser._id,
 	});
+
+	if (isDefault && oldDefaultRole) {
+		await req.UserModel.updateMany(
+			{ rbacRole: oldDefaultRole._id, roleManuallyAssigned: false },
+			{ rbacRole: role._id }
+		);
+	}
 
 	const populatedRole = await req.RoleModel.findById(role._id)
 		.populate('permissions')
@@ -106,7 +123,7 @@ export const createRole = asyncHandler(async (req, res) => {
  */
 export const updateRole = asyncHandler(async (req, res) => {
 	const { roleID } = req.params;
-	const { name, description, permissions } = req.body;
+	const { name, description, permissions, isDefault } = req.body;
 
 	const role = await req.RoleModel.findById(roleID);
 	appAssert(role, NOT_FOUND, 'Role not found');
@@ -135,6 +152,20 @@ export const updateRole = asyncHandler(async (req, res) => {
 	if (description !== undefined) updateData.description = description;
 	if (permissions !== undefined) updateData.permissions = permissions;
 
+	if (isDefault === true && !role.isDefault) {
+		const oldDefaultRole = await req.RoleModel.findOne({ isDefault: true });
+		if (oldDefaultRole && oldDefaultRole._id.toString() !== role._id.toString()) {
+			oldDefaultRole.isDefault = false;
+			await oldDefaultRole.save();
+
+			await req.UserModel.updateMany(
+				{ rbacRole: oldDefaultRole._id, roleManuallyAssigned: false },
+				{ rbacRole: role._id }
+			);
+		}
+		updateData.isDefault = true;
+	}
+
 	const updatedRole = await req.RoleModel.findByIdAndUpdate(
 		roleID,
 		updateData,
@@ -158,6 +189,12 @@ export const deleteRole = asyncHandler(async (req, res) => {
 		role.name !== SUPER_ADMIN,
 		BAD_REQUEST,
 		'Cannot delete Super Admin role',
+	);
+
+	appAssert(
+		role.isDefault !== true,
+		BAD_REQUEST,
+		'Cannot delete the default role. Please assign another role as default first.',
 	);
 
 	const usersWithRole = await req.UserModel.find({ rbacRole: roleID });

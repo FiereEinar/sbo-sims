@@ -7,6 +7,7 @@ export interface IRole extends mongoose.Document {
 	name: string;
 	description?: string;
 	permissions: string[];
+	isDefault: boolean;
 	createdBy: mongoose.Types.ObjectId; // admin who created the role
 	createdAt: Date;
 	updatedAt: Date;
@@ -22,6 +23,7 @@ const RoleSchema = new Schema<IRole>(
 		},
 		description: { type: String, maxlength: 200 },
 		permissions: [String],
+		isDefault: { type: Boolean, default: false },
 		createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	},
 	{

@@ -6,14 +6,13 @@ import { z } from 'zod';
 import { signupSchema } from '@/lib/validations/signupSchema';
 import ErrorText from '../ui/error-text';
 import { submitSignupForm } from '@/api/user';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
 	const { toast } = useToast();
-	const navigate = useNavigate();
 
 	const {
 		register,
@@ -27,10 +26,10 @@ export default function SignupForm() {
 			await submitSignupForm(data);
 
 			toast({
-				title: 'Signed up successfully!',
-				description: 'Login with your created account to proceed.',
+				title: 'Account created!',
+				description: `Please check your BukSU email (${data.studentID}@student.buksu.edu.ph) to verify your account.`,
 			});
-			navigate('/login');
+			// Removed navigate('/login') so user can read the toast
 		} catch (err: any) {
 			setError('root', {
 				message: err.message || 'Failed to submit signup form',

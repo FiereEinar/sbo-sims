@@ -1,4 +1,4 @@
-import { navbarLinks, SidebarNavLinkType } from '@/constants';
+import { navbarLinks, SidebarNavLinkType, MODULES } from '@/constants';
 import DarkModeToggle from './buttons/DarkModeToggle';
 import SidebarLink from './SidebarLink';
 import LogoutButton from './buttons/LogoutButton';
@@ -33,9 +33,11 @@ export default function LeftSidebar() {
 			</div>
 
 			<div className='flex flex-col justify-between gap-3'>
-				<SidebarLink
-					link={{ icon: Settings, name: 'Settings', path: '/settings' }}
-				/>
+				{canView({ name: 'Settings', path: '/settings', icon: Settings, permissions: [MODULES.SETTING_READ] }) && (
+					<SidebarLink
+						link={{ icon: Settings, name: 'Settings', path: '/settings' }}
+					/>
+				)}
 				<DarkModeToggle text='Toggle Theme' />
 				<LogoutButton />
 			</div>

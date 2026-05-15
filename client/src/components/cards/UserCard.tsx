@@ -1,8 +1,8 @@
 import { User } from '@/types/user';
 import { useNavigate } from 'react-router-dom';
 import _ from 'lodash';
-import { User2, Mail, Shield, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { User2, Mail, Shield, Calendar } from 'lucide-react';
 
 interface UserCardProps {
 	user: User;

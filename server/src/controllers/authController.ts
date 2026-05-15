@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import appAssert from '../errors/appAssert';
 import CustomResponse from '../types/response';
 import { loginUserBody, signupUserBody } from '../types/user';
@@ -16,6 +17,9 @@ import {
 	NODE_ENV,
 	RECAPTCHA_SECRET_KEY,
 	SECRET_ADMIN_KEY,
+	STUDENT_EMAIL_DOMAIN,
+	APP_ORIGIN,
+	FRONTEND_URL,
 } from '../constants/env';
 import {
 	BAD_REQUEST,
@@ -40,6 +44,7 @@ import {
 	verifyToken,
 } from '../utils/jwt';
 import { IUser } from '../models/user';
+import { sendVerificationEmail } from '../services/emailService';
 
 /**
  * POST - user signup
@@ -48,20 +53,16 @@ export const signup = asyncHandler(async (req, res) => {
 	const {
 		confirmPassword,
 		password,
-		email,
 		studentID,
 		firstname,
 		lastname,
 		bio,
 	}: signupUserBody = req.body;
 
+	const email = studentID + STUDENT_EMAIL_DOMAIN;
+
 	// check if passwords match
 	appAssert(password === confirmPassword, BAD_REQUEST, 'Password must match');
-
-	// check for errors in form validation
-	if (email?.length) {
-		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
-	}
 
 	// check if studentID is valid
 	appAssert(
@@ -89,6 +90,13 @@ export const signup = asyncHandler(async (req, res) => {
 	// hash the password
 	const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
 
+	// Find the default role
+	const defaultRole = await req.RoleModel.findOne({ isDefault: true }).exec();
+	appAssert(defaultRole, BAD_REQUEST, 'System configuration error: No default role found');
+
+	const verificationToken = crypto.randomBytes(32).toString('hex');
+	const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
 	// create and save the user
 	const user = new req.UserModel({
 		firstname: firstname,
@@ -97,17 +105,25 @@ export const signup = asyncHandler(async (req, res) => {
 		password: hashedPassword,
 		email: email,
 		bio: bio,
+		rbacRole: defaultRole._id,
+		roleManuallyAssigned: false,
 		profile: {
 			url: profileURL,
 			publicID: profilePublicID,
 		},
+		verified: false,
+		verificationToken,
+		verificationTokenExpiresAt,
 	});
 	await user.save();
+
+	const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${verificationToken}&id=${user._id}`;
+	await sendVerificationEmail(email, verificationUrl);
 
 	// hide the password
 	let userCopy = user.omitPassword();
 
-	res.json(new CustomResponse(true, userCopy, 'User signed up successfully'));
+	res.json(new CustomResponse(true, userCopy, 'User signed up successfully. Please check your email to verify your account.'));
 });
 
 /**
@@ -139,6 +155,8 @@ export const login = asyncHandler(async (req, res) => {
 	// check if password is correct
 	const match = await bcrypt.compare(password, user.password);
 	appAssert(match, UNAUTHORIZED, 'Incorrect password');
+
+	appAssert(user.verified, UNAUTHORIZED, 'Please verify your email before logging in');
 
 	const { ip, userAgent } = getUserRequestInfo(req);
 
@@ -338,4 +356,33 @@ export const admin = asyncHandler(async (req, res) => {
 	appAssert(user, NOT_FOUND, 'User not found');
 
 	res.json(new CustomResponse(true, user.omitPassword(), 'Admin found'));
+});
+
+export const verify_email = asyncHandler(async (req, res) => {
+	const { token, id } = req.query;
+
+	appAssert(token && id, BAD_REQUEST, 'Invalid verification link');
+
+	const user = await req.UserModel.findById(id);
+	appAssert(user, NOT_FOUND, 'User not found');
+
+	if (user.verified) {
+		res.redirect(`${FRONTEND_URL}/login?verified=true`);
+		return;
+	}
+
+	appAssert(
+		user.verificationToken === token &&
+			user.verificationTokenExpiresAt &&
+			user.verificationTokenExpiresAt.getTime() > Date.now(),
+		BAD_REQUEST,
+		'Verification link is invalid or has expired',
+	);
+
+	user.verified = true;
+	user.verificationToken = undefined;
+	user.verificationTokenExpiresAt = undefined;
+	await user.save();
+
+	res.redirect(`${FRONTEND_URL}/login?verified=true`);
 });

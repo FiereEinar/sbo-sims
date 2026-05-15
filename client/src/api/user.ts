@@ -83,3 +83,12 @@ export const fetchUserByID = async (
 		throw err;
 	}
 };
+
+export const deleteUser = async (userID: string): Promise<APIResponse<null>> => {
+	try {
+		const { data } = await axiosInstance.delete(`/user/${userID}`);
+		return data;
+	} catch (err: any) {
+		throw err;
+	}
+};

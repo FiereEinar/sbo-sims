@@ -10,6 +10,7 @@ import {
 	logout,
 	refresh,
 	signup,
+	verify_email,
 } from '../controllers/authController';
 
 const router = express.Router();
@@ -17,6 +18,8 @@ const router = express.Router();
 router.post('/login', loginValidation, login);
 
 router.post('/signup', signupValidation, signup);
+
+router.get('/verify-email', verify_email);
 
 router.get('/refresh', refresh);
 

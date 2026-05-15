@@ -182,7 +182,9 @@ export const createUser = asyncHandler(async (req, res) => {
 		password: hashedPassword,
 		email: email,
 		rbacRole: role._id,
+		roleManuallyAssigned: true,
 		bio: bio,
+		verified: true,
 		profile: {
 			url: profileURL,
 			publicID: profilePublicID,
@@ -264,6 +266,7 @@ export const adminUpdateUser = asyncHandler(async (req, res) => {
 		studentID: studentID,
 		bio: bio,
 		rbacRole: role._id,
+		roleManuallyAssigned: true,
 		email: email,
 		activeSchoolYearDB: activeSchoolYearDB || user.activeSchoolYearDB,
 		activeSemDB: activeSemDB || user.activeSemDB,

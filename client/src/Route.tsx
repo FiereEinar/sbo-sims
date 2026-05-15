@@ -196,7 +196,14 @@ export default function Route() {
 				},
 				{
 					path: '/settings',
-					element: <Settings />,
+					element: (
+						<HasPermission
+							permissions={[MODULES.SETTING_READ]}
+							fallback={<NoPermission />}
+						>
+							<Settings />
+						</HasPermission>
+					),
 				},
 			],
 		},

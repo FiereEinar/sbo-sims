@@ -21,8 +21,12 @@ export interface IUser extends mongoose.Document {
 	profile: Image;
 	role: UserRoles;
 	rbacRole: ObjectId; // new rbac role
+	roleManuallyAssigned: boolean;
 	bio: string;
 	token: string;
+	verified: boolean;
+	verificationToken?: string;
+	verificationTokenExpiresAt?: Date;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
 	createdAt: Date;
@@ -47,8 +51,12 @@ const UserSchema = new Schema<IUser>(
 			default: 'regular',
 		},
 		rbacRole: { type: Schema.Types.ObjectId, ref: 'Role' },
+		roleManuallyAssigned: { type: Boolean, default: false },
 		bio: { type: String, default: '' },
 		token: { type: String, default: '' },
+		verified: { type: Boolean, default: false },
+		verificationToken: { type: String },
+		verificationTokenExpiresAt: { type: Date },
 		activeSchoolYearDB: {
 			type: String,
 			default: getYear(new Date()).toString(),

@@ -71,6 +71,8 @@ export async function seedAdmin(): Promise<void> {
 				password: hashedPassword,
 				role: 'admin',
 				rbacRole: superAdminRole._id,
+				roleManuallyAssigned: true,
+				verified: true,
 				profile: {
 					url: 'https://res.cloudinary.com/diirvhsym/image/upload/v1728426644/user/zl85ljimxkrs1uqnqrvu.webp',
 					publicID: 'user/al85leemxkrs2qwnqrvU',
@@ -95,6 +97,24 @@ export async function seedAdmin(): Promise<void> {
 			superAdminRole.createdBy = adminUser._id;
 			await superAdminRole.save();
 			console.log(`[seed] Updated "${SUPER_ADMIN}" role createdBy to admin user`);
+		}
+
+		// ── Regular Default Role ───────────────────────────────────
+		let regularRole = await RoleModel.findOne({ name: 'Regular' });
+		if (!regularRole) {
+			regularRole = await RoleModel.create({
+				name: 'Regular',
+				description: 'Default role for newly registered students. Provides basic read access.',
+				permissions: [
+					MODULES.TRANSACTION_READ,
+					MODULES.PRELISTING_READ,
+					MODULES.CATEGORY_READ,
+					MODULES.ORGANIZATION_READ,
+				],
+				isDefault: true,
+				createdBy: adminUser._id,
+			});
+			console.log(`[seed] Created "Regular" default role`);
 		}
 
 		console.log('[seed] Admin seeding complete ✓');

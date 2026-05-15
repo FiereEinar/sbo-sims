@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import InputField from '../InputField';
 import { Button } from '../ui/button';
@@ -6,15 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import ErrorText from '../ui/error-text';
 import { submitLoginForm } from '@/api/user';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { loginSchema } from '@/lib/validations/loginSchema';
 import { useUserStore } from '@/store/user';
 import RecaptchaOverlay from '../RecaptchaOverlay';
+import { useToast } from '@/hooks/use-toast';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const { toast } = useToast();
 	const setUser = useUserStore((state) => state.setUser);
 
 	const [showCaptcha, setShowCaptcha] = useState(false);
@@ -27,6 +30,18 @@ export default function LoginForm() {
 		setError,
 		formState: { errors, isSubmitting },
 	} = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
+
+	useEffect(() => {
+		if (searchParams.get('verified') === 'true') {
+			toast({
+				title: 'Email Verified',
+				description: 'Your email has been successfully verified. You can now log in.',
+				variant: 'default',
+			});
+			searchParams.delete('verified');
+			setSearchParams(searchParams);
+		}
+	}, [searchParams, setSearchParams, toast]);
 
 	const isFormDisabled = isSubmitting || isLoggingIn;
 

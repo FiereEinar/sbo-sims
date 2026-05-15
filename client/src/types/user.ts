@@ -30,8 +30,10 @@ export type User = MongoEntity & {
 	profile: Image;
 	role: UserRoles;
 	rbacRole: Role;
+	roleManuallyAssigned: boolean;
 	bio: string;
 	token: string;
+	verified: boolean;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
 	createdAt: Date;

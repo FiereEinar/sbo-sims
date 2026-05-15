@@ -60,6 +60,11 @@ export function RoleCard({ role, isLoading, onEdit, onDelete }: RoleCardProps) {
 					<h3 className='text-lg font-semibold flex items-center gap-2'>
 						<ShieldCheck className='size-4 text-primary' />
 						{role.name}
+						{role.isDefault && (
+							<Badge variant='default' className='text-[10px] h-5 px-1.5 bg-blue-500 hover:bg-blue-600'>
+								Default Role
+							</Badge>
+						)}
 					</h3>
 					{role.description && (
 						<p className='text-sm text-muted-foreground mt-1 line-clamp-2'>

@@ -23,7 +23,10 @@ export const attachDatabaseModels = async (
 			return;
 		}
 
-		const dbName = `${currentUser.activeSemDB}${currentUser.activeSchoolYearDB}`;
+		const activeSem = (req.headers['x-active-sem'] as string) || currentUser.activeSemDB;
+		const activeSchoolYear = (req.headers['x-active-school-year'] as string) || currentUser.activeSchoolYearDB;
+
+		const dbName = `${activeSem}${activeSchoolYear}`;
 
 		const dynamicConnection = await getDatabaseConnection(
 			dbName,

@@ -1,6 +1,7 @@
 import { navigate } from '@/lib/navigate';
 import { queryClient } from '@/main';
 import axios, { CreateAxiosDefaults } from 'axios';
+import { useUserStore } from '@/store/user';
 
 const UNAUTHORIZED = 401;
 
@@ -47,6 +48,16 @@ axiosInstance.interceptors.request.use((config) => {
 	const token = localStorage.getItem('accessToken');
 	if (token) {
 		config.headers.Authorization = `Bearer ${token}`;
+	}
+
+	const user = useUserStore.getState().user;
+	if (user) {
+		if (user.activeSemDB) {
+			config.headers['x-active-sem'] = user.activeSemDB;
+		}
+		if (user.activeSchoolYearDB) {
+			config.headers['x-active-school-year'] = user.activeSchoolYearDB;
+		}
 	}
 	return config;
 });

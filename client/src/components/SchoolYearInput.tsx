@@ -1,48 +1,56 @@
 import { useUserStore } from '@/store/user';
-import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { getYear } from 'date-fns';
-import { User } from '@/types/user';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from './ui/select';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/api/axiosInstance';
 import { APIResponse } from '@/types/api-response';
+import { User } from '@/types/user';
 import { useNavigate } from 'react-router-dom';
 import { queryClient } from '@/main';
-import { useState } from 'react';
+import { AVAILABLE_SCHOOL_YEARS } from '@/constants';
 
 export default function SchoolYearInput() {
 	const { toast } = useToast();
 	const navigate = useNavigate();
 	const { user: currentUser, setUser } = useUserStore((state) => state);
-	const activeUserYear = currentUser?.activeSchoolYearDB ?? getYear(new Date());
-	const [year, setYear] = useState<number>(
-		typeof activeUserYear === 'string'
-			? parseInt(activeUserYear)
-			: activeUserYear,
-	);
 
-	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const onChange = async (value: string) => {
+		if (!currentUser) {
+			toast({
+				variant: 'destructive',
+				title: 'No data for current user',
+				description: 'Login first to continue',
+			});
+			navigate('/login');
+			return;
+		}
+
+		const previousYear = currentUser.activeSchoolYearDB;
+
 		try {
-			e.preventDefault();
-			if (!currentUser) {
-				toast({
-					variant: 'destructive',
-					title: 'No data for current user',
-					description: 'Login first to continue',
-				});
-				navigate('/login');
-				return;
-			}
+			// Optimistically update the user store to instantly reflect selection
+			const updatedUser = { ...currentUser, activeSchoolYearDB: value };
+			setUser(updatedUser);
 
-			const { data: result } = await axiosInstance.put<APIResponse<User>>(
-				`/user/${currentUser._id}`,
-				{ ...currentUser, activeSchoolYearDB: year },
-			);
-
-			setUser(result.data);
+			// Instantly reset queries to fetch from the new context
 			queryClient.resetQueries();
+
+			// Save to backend database asynchronously
+			await axiosInstance.put<APIResponse<User>>(
+				`/user/${currentUser._id}`,
+				updatedUser,
+			);
 		} catch (error: any) {
 			console.error('Failed to save', error);
+			// Rollback to previous state on failure
+			setUser({ ...currentUser, activeSchoolYearDB: previousYear });
+			queryClient.resetQueries();
 			toast({
 				title: 'Failed to save',
 				description: error.message || 'An error occured while saving',
@@ -52,23 +60,23 @@ export default function SchoolYearInput() {
 	};
 
 	return (
-		<form onSubmit={onSubmit}>
-			<div className='flex flex-col gap-2 justify-end'>
-				<Label className='ml-1'>School Year <span className='text-xs text-muted-foreground'>(enter)</span>:</Label>
-				<div className='flex gap-1 items-center w-[150px]'>
-					<Input
-						value={year ?? 0}
-						onChange={(e) => setYear(Number(e.target.value ?? 0))}
-						type='number'
-					/>
-					{currentUser && (
-						<p className='w-[150px]'>
-							{' '}
-							- {Number(currentUser.activeSchoolYearDB) + 1}
-						</p>
-					)}
-				</div>
-			</div>
-		</form>
+		<div className='flex flex-col gap-2 justify-end'>
+			<Label className='ml-1'>School Year:</Label>
+			<Select
+				value={currentUser?.activeSchoolYearDB}
+				onValueChange={onChange}
+			>
+				<SelectTrigger className='w-full'>
+					<SelectValue placeholder='Select Year' />
+				</SelectTrigger>
+				<SelectContent>
+					{AVAILABLE_SCHOOL_YEARS.map((year) => (
+						<SelectItem key={year} value={year.toString()}>
+							{year} - {year + 1}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		</div>
 	);
 }

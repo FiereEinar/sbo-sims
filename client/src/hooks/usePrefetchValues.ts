@@ -16,16 +16,19 @@ export function usePefetchValues() {
 	const transactionStore = useTransactionFilterStore((state) => state);
 
 	useEffect(() => {
-		(async () => {
-			await queryClient.prefetchQuery({
-				queryKey: [QUERY_KEYS.DASHBOARD_DATA],
-				queryFn: fetchDashboardData,
-			});
-		})();
+		const prefetch = async () => {
+			try {
+				// 1. Prioritize Dashboard Data prefetch and await it so it completes first
+				await queryClient.prefetchQuery({
+					queryKey: [QUERY_KEYS.DASHBOARD_DATA],
+					queryFn: fetchDashboardData,
+				});
+			} catch (error) {
+				console.error('Failed to prefetch dashboard data:', error);
+			}
 
-		(async () => {
-			// prefetch students
-			await queryClient.prefetchQuery({
+			// 2. Once the dashboard data is loaded, prefetch the remaining values in the background
+			queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.STUDENT, studentStore.getFilterValues()],
 				queryFn: () =>
 					fetchStudents(
@@ -34,11 +37,8 @@ export function usePefetchValues() {
 						studentStore.pageSize
 					),
 			});
-		})();
 
-		(async () => {
-			//prefetch transactions
-			await queryClient.prefetchQuery({
+			queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.TRANSACTION, transactionStore.getFilterValues()],
 				queryFn: () =>
 					fetchTransactions(
@@ -47,22 +47,18 @@ export function usePefetchValues() {
 						transactionStore.pageSize
 					),
 			});
-		})();
 
-		(async () => {
-			// prefetch categories
-			await queryClient.prefetchQuery({
+			queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
 				queryFn: fetchCategoriesWithTransactions,
 			});
-		})();
 
-		(async () => {
-			// prefetch organizations
-			await queryClient.prefetchQuery({
+			queryClient.prefetchQuery({
 				queryKey: [QUERY_KEYS.ORGANIZATION],
 				queryFn: fetchAllOrganizations,
 			});
-		})();
+		};
+
+		prefetch();
 	}, []);
 }

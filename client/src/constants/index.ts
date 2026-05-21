@@ -130,3 +130,7 @@ export const navbarLinks: SidebarNavLinkType[] = [
 		permissions: [MODULES.ROLE_READ],
 	},
 ];
+
+export const AVAILABLE_SCHOOL_YEARS = [
+	2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030,
+];

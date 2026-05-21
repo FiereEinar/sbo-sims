@@ -14,6 +14,9 @@ import Today from '@/components/icons/today';
 import _ from 'lodash';
 import { Transaction } from '@/types/transaction';
 import { Category } from '@/types/category';
+import SchoolYearInput from '@/components/SchoolYearInput';
+import SemInput from '@/components/SemInput';
+import StickyHeader from '@/components/StickyHeader';
 
 export type DashboardDataTransaction = {
 	date: Date;
@@ -142,9 +145,19 @@ export default function Dashboard() {
 
 	return (
 		<SidebarPageLayout>
-			<Header>
-				<p className='font-semibold'>Dashboard Overview</p>
-			</Header>
+			<StickyHeader>
+				<Header>
+					<span className='font-semibold'>Dashboard Overview</span>
+				</Header>
+				<div className='flex gap-4 items-center'>
+					<div className='w-[130px]'>
+						<SemInput />
+					</div>
+					<div className='w-[150px]'>
+						<SchoolYearInput />
+					</div>
+				</div>
+			</StickyHeader>
 
 			<div className='space-y-6'>
 				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>

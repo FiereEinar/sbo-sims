@@ -12,16 +12,20 @@ import InputField from '../InputField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { studentSchema } from '@/lib/validations/studentSchema';
-import { submitStudentForm, submitUpdateStudentForm } from '@/api/student';
+import { fetchAvailableCourses, submitStudentForm, submitUpdateStudentForm } from '@/api/student';
 import { z } from 'zod';
 import Plus from '../icons/plus';
 import { Student } from '@/types/student';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ErrorText from '../ui/error-text';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
 import _ from 'lodash';
+import { useQuery } from '@tanstack/react-query';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { SelectContainer, SelectContainerItem } from '../ui/select';
 
 export type StudentFormValues = z.infer<typeof studentSchema>;
 
@@ -38,6 +42,18 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 	}
 
 	const navigate = useNavigate();
+	const courseInputRef = useRef<HTMLInputElement>(null);
+	const [courseInput, setCourseInput] = useState(student?.course ?? '');
+	const [showCourseSuggestions, setShowCourseSuggestions] = useState(false);
+
+	const { data: availableCourses } = useQuery({
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
+		queryFn: fetchAvailableCourses,
+	});
+
+	const filteredCourses = availableCourses?.filter((course) =>
+		course.toLowerCase().includes(courseInput.toLowerCase())
+	) ?? [];
 
 	const {
 		register,
@@ -60,6 +76,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			setValue('course', student.course);
 			setValue('gender', student.gender);
 			setValue('year', student.year?.toString());
+			setCourseInput(student.course ?? '');
 		}
 	}, [student, setValue]);
 
@@ -72,11 +89,19 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT] });
 			navigate(`/student/${student?.studentID ?? ''}`, { replace: true });
 			reset();
+			setCourseInput('');
 		} catch (err: any) {
 			setError('root', {
 				message: err.message || 'Failed to submit student form',
 			});
 		}
+	};
+
+	const selectCourse = (course: string) => {
+		setCourseInput(course);
+		setValue('course', course);
+		setShowCourseSuggestions(false);
+		if (courseInputRef.current) courseInputRef.current.focus();
 	};
 
 	return (
@@ -134,13 +159,50 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 							id='middlename'
 						/>
 
-						<InputField<StudentFormValues>
-							name='course'
-							registerFn={register}
-							errors={errors}
-							label='Course:'
-							id='course'
-						/>
+						{/* Course combo-box with dropdown suggestions */}
+						<div className='space-y-1 text-muted-foreground w-full'>
+							<Label htmlFor='course'>Course:</Label>
+							<input
+								type='hidden'
+								{...register('course')}
+							/>
+							<Input
+								ref={courseInputRef}
+								id='course'
+								value={courseInput}
+								autoComplete='off'
+								onChange={(e) => {
+									setCourseInput(e.target.value);
+									setValue('course', e.target.value);
+									setShowCourseSuggestions(true);
+								}}
+								onFocus={() => setShowCourseSuggestions(true)}
+								onBlur={() => {
+									// Delay hiding to allow click on dropdown item
+									setTimeout(() => setShowCourseSuggestions(false), 200);
+								}}
+								placeholder='Type or select a course'
+							/>
+							{/* Dropdown suggestions */}
+							<div className='relative w-full'>
+								{showCourseSuggestions && filteredCourses.length > 0 && (
+									<SelectContainer>
+										{filteredCourses.map((course) => (
+											<SelectContainerItem
+												type='button'
+												onClick={() => selectCourse(course)}
+												key={course}
+											>
+												{course}
+											</SelectContainerItem>
+										))}
+									</SelectContainer>
+								)}
+							</div>
+							{errors.course && errors.course.message && (
+								<ErrorText>{errors.course.message.toString()}</ErrorText>
+							)}
+						</div>
 					</div>
 					<div className='flex gap-2'>
 						<InputField<StudentFormValues>
@@ -183,3 +245,4 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 		</Dialog>
 	);
 }
+

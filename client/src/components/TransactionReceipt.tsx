@@ -94,7 +94,7 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 					<tbody className="divide-y divide-gray-200">
 						{txs.map(tx => (
 							<tr key={tx._id}>
-								<td className="py-4 px-2">
+								<td className="py-1 px-2">
 									<p className="font-bold text-base">{tx.category.name}</p>
 									{tx.description && (
 										<p className="text-sm text-gray-600 mt-1">{tx.description}</p>
@@ -109,7 +109,7 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 										);
 									})}
 								</td>
-								<td className="py-4 px-2 text-right font-mono text-base">
+								<td className="py-1 px-2 text-right font-mono text-base">
 									P{tx.category.fee.toFixed(2)}
 								</td>
 							</tr>

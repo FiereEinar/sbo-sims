@@ -22,7 +22,7 @@ export default function TransactionCheque({
 	const isPaid = transaction.amount >= fee;
 
 	return (
-		<article className='relative rounded-2xl border bg-card/50 p-6 shadow-sm space-y-6'>
+		<article id="transaction-receipt-cheque" className='relative rounded-2xl border bg-card/50 p-6 shadow-sm space-y-6'>
 			{/* Header */}
 			<div className='flex items-start justify-between gap-6'>
 				<div>

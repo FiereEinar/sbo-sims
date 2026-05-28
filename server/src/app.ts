@@ -32,6 +32,11 @@ import { seedAdmin } from './database/seedAdmin';
 const app = express();
 app.use(helmet());
 app.use(cors(corsOptions));
+
+// Handle preflight OPTIONS requests immediately — don't let them
+// fall through to auth/seed/database middleware on cold starts
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

@@ -38,6 +38,9 @@ type TransactionsTableProps = {
 	disableCategories?: boolean;
 	disableStatus?: boolean;
 	disableCourse?: boolean;
+	selectable?: boolean;
+	selectedIds?: string[];
+	onSelectionChange?: (ids: string[]) => void;
 };
 
 export default function TransactionsTable({
@@ -47,6 +50,9 @@ export default function TransactionsTable({
 	disableCourse = false,
 	disableCategories = false,
 	disableStatus = false,
+	selectable = false,
+	selectedIds = [],
+	onSelectionChange,
 }: TransactionsTableProps) {
 	const navigate = useNavigate();
 	const [totalAmount, setTotalAmount] = useState(0);
@@ -61,11 +67,41 @@ export default function TransactionsTable({
 		}
 	}, [transactions]);
 
+	const toggleSelection = (id: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (!onSelectionChange) return;
+		if (selectedIds.includes(id)) {
+			onSelectionChange(selectedIds.filter(selectedId => selectedId !== id));
+		} else {
+			onSelectionChange([...selectedIds, id]);
+		}
+	};
+
+	const toggleAll = () => {
+		if (!onSelectionChange || !transactions) return;
+		if (selectedIds.length === transactions.length) {
+			onSelectionChange([]); // Deselect all
+		} else {
+			onSelectionChange(transactions.map(t => t._id)); // Select all
+		}
+	};
+
+	const colSpanOffset = selectable ? 1 : 0;
+
 	return (
 		<Table>
-			{/* <TableCaption>A list of your recent invoices.</TableCaption> */}
 			<TableHeader>
 				<TableRow className='select-none'>
+					{selectable && (
+						<TableHead className='w-[40px]'>
+							<input 
+								type="checkbox" 
+								className="w-4 h-4 cursor-pointer"
+								checked={transactions && transactions.length > 0 && selectedIds.length === transactions.length}
+								onChange={toggleAll}
+							/>
+						</TableHead>
+					)}
 					<TableHead className='w-[100px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Fullname</TableHead>
 					<TableHead className='w-[75px]'>
@@ -95,10 +131,10 @@ export default function TransactionsTable({
 			</TableHeader>
 
 			<TableBody>
-				{isLoading && <TableLoading colSpan={7} />}
+				{isLoading && <TableLoading colSpan={7 + colSpanOffset} />}
 				{!transactions?.length && !isLoading && (
 					<TableRow>
-						<TableCell colSpan={7}>No transactions</TableCell>
+						<TableCell colSpan={7 + colSpanOffset}>No transactions</TableCell>
 					</TableRow>
 				)}
 				{transactions &&
@@ -109,6 +145,16 @@ export default function TransactionsTable({
 								className='cursor-pointer'
 								key={transaction._id}
 							>
+								{selectable && (
+									<TableCell onClick={(e) => toggleSelection(transaction._id, e)}>
+										<input 
+											type="checkbox" 
+											className="w-4 h-4 cursor-pointer"
+											checked={selectedIds.includes(transaction._id)}
+											readOnly
+										/>
+									</TableCell>
+								)}
 								<TableCell className=''>
 									{transaction.owner.studentID}
 								</TableCell>

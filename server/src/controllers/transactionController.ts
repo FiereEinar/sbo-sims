@@ -150,22 +150,44 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 	/**
 	 * Transactions related logic
 	 */
-	const result = await req.TransactionModel?.find();
-	let totalRevenue = 0;
-	let totalRevenueLastMonth = 0;
-	let totalTransactionLastMonth = 0;
-
 	const prevMonth = new Date();
-	prevMonth.setMonth(prevMonth.getMonth()); // reduces the month by 1
-	prevMonth.setDate(0);
+	prevMonth.setDate(0); // Sets to the last day of the previous month
 
-	result?.map((t) => {
-		totalRevenue += t.amount;
-		if (isBefore(t.date as Date, prevMonth)) {
-			totalRevenueLastMonth += t.amount;
-			totalTransactionLastMonth++;
-		}
-	});
+	// Calculate overall totals and previous month totals in a single pass using Facets
+	const totals = await req.TransactionModel?.aggregate([
+		{
+			$facet: {
+				overall: [
+					{
+						$group: {
+							_id: null,
+							totalRevenue: { $sum: '$amount' },
+							totalTransactions: { $sum: 1 },
+						},
+					},
+				],
+				lastMonth: [
+					{
+						$match: {
+							date: { $lt: prevMonth.toISOString() }, // Mongoose stores dates as ISO strings in this schema
+						},
+					},
+					{
+						$group: {
+							_id: null,
+							totalRevenueLastMonth: { $sum: '$amount' },
+							totalTransactionLastMonth: { $sum: 1 },
+						},
+					},
+				],
+			},
+		},
+	]);
+
+	const totalRevenue = totals?.[0]?.overall[0]?.totalRevenue || 0;
+	const totalTransaction = totals?.[0]?.overall[0]?.totalTransactions || 0;
+	const totalRevenueLastMonth = totals?.[0]?.lastMonth[0]?.totalRevenueLastMonth || 0;
+	const totalTransactionLastMonth = totals?.[0]?.lastMonth[0]?.totalTransactionLastMonth || 0;
 
 	const transactions = await req.TransactionModel?.aggregate([
 		{
@@ -191,8 +213,8 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 
 	const transactionsToday = await req.TransactionModel?.countDocuments({
 		$and: [
-			{ date: { $gte: startOfDay(new Date()) } },
-			{ date: { $lt: startOfDay(addDays(new Date(), 1)) } },
+			{ date: { $gte: startOfDay(new Date()).toISOString() } },
+			{ date: { $lt: startOfDay(addDays(new Date(), 1)).toISOString() } },
 		],
 	});
 
@@ -205,49 +227,40 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 		totalTransactions: number;
 	};
 
+	// Get all categories populated with organizations
 	const categories = await req.CategoryModel?.find({}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
-	});
+	}).lean();
 
-	const categoriesMap: { [key: string]: CategoryObjResponse } = {};
+	// Calculate stats grouped by category in the DB
+	const categoryStats = await req.TransactionModel?.aggregate([
+		{
+			$group: {
+				_id: '$category',
+				totalAmount: { $sum: '$amount' },
+				totalTransactions: { $sum: 1 },
+			}
+		}
+	]);
 
-	categories?.map(
-		(cat) =>
-			(categoriesMap[cat._id] = {
-				category: cat,
-				totalAmount: 0,
-				totalTransactions: 0,
-			} as CategoryObjResponse),
-	);
-
-	const allTransactions = await req.TransactionModel?.find({})
-		.populate({
-			model: req.CategoryModel,
-			path: 'category',
-			populate: {
-				model: req.OrganizationModel,
-				path: 'organization',
-			},
-		})
-		.populate({
-			model: req.StudentModel,
-			path: 'owner',
+	const statsMap = new Map();
+	categoryStats?.forEach(stat => {
+		statsMap.set(stat._id.toString(), {
+			totalAmount: stat.totalAmount,
+			totalTransactions: stat.totalTransactions
 		});
-
-	allTransactions?.map((trans) => {
-		const c = categoriesMap[trans.category._id];
-		if (c === undefined) return;
-
-		c.totalAmount += trans.amount;
-		c.totalTransactions++;
-
-		categoriesMap[trans.category._id] = c;
 	});
 
-	const categoriesArray: CategoryObjResponse[] = [
-		...Object.values(categoriesMap),
-	];
+	// Merge DB stats with populated categories
+	const categoriesArray: CategoryObjResponse[] = categories?.map(cat => {
+		const stats = statsMap.get(cat._id.toString()) || { totalAmount: 0, totalTransactions: 0 };
+		return {
+			category: cat as ICategory,
+			totalAmount: stats.totalAmount,
+			totalTransactions: stats.totalTransactions,
+		};
+	}) || [];
 
 	/**
 	 * Students related logic
@@ -260,7 +273,7 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 			{
 				totalRevenue,
 				totalRevenueLastMonth,
-				totalTransaction: result?.length ?? 0,
+				totalTransaction,
 				totalTransactionLastMonth,
 				transactionsToday,
 				totalStudents,

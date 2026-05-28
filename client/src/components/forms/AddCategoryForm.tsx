@@ -65,6 +65,7 @@ export default function AddCategoryForm({
 		],
 		queryFn: () =>
 			fetchCategoryStudentStatus(getFilterValues(), category?._id ?? ''),
+		enabled: mode === 'edit' && !!category?._id,
 	});
 
 	const {

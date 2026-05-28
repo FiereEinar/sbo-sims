@@ -38,8 +38,8 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 	return (
 		<article 
 			id="transaction-receipt-document" 
-			className="relative bg-white text-black p-10 max-w-3xl mx-auto border shadow-sm space-y-8 print:shadow-none"
-			style={{ minHeight: '800px', fontFamily: "'Inter', sans-serif" }}
+			className="bg-white text-black p-10 max-w-3xl mx-auto border shadow-sm space-y-8 print:shadow-none"
+			style={{ fontFamily: "'Inter', sans-serif" }}
 		>
 			{/* Corporate Header */}
 			<div className="flex justify-between items-start border-b-2 border-black pb-6">
@@ -156,7 +156,7 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 			)}
 
 			{/* Footer Signatures */}
-			<div className="absolute bottom-10 left-10 right-10 pt-10">
+			<div className="pt-10">
 				<div className="grid grid-cols-2 gap-8 text-center text-sm mb-8">
 					<div>
 						<div className="border-b border-black mx-8 pb-1 font-semibold uppercase">

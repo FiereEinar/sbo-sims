@@ -46,7 +46,28 @@ export const get_all_students = asyncHandler(async (req, res) => {
 		});
 	}
 
-	const aggregatePipeline: PipelineStage[] = [
+	const aggregatePipeline: PipelineStage[] = [];
+
+	if (filters.length > 0) {
+		aggregatePipeline.push({
+			$match: {
+				$and: filters,
+			},
+		});
+	}
+
+	aggregatePipeline.push(
+		{
+			$sort: {
+				firstname: sortBy === 'dec' ? -1 : 1,
+			},
+		},
+		{
+			$skip: skipAmount,
+		},
+		{
+			$limit: pageSizeNum,
+		},
 		{
 			$lookup: {
 				from: 'transactions',
@@ -65,27 +86,8 @@ export const get_all_students = asyncHandler(async (req, res) => {
 			$project: {
 				transactions: 0,
 			},
-		},
-		{
-			$sort: {
-				firstname: sortBy === 'dec' ? -1 : 1,
-			},
-		},
-		{
-			$skip: skipAmount,
-		},
-		{
-			$limit: pageSizeNum,
-		},
-	];
-
-	if (filters.length > 0) {
-		aggregatePipeline.unshift({
-			$match: {
-				$and: filters,
-			},
-		});
-	}
+		}
+	);
 
 	const students = await req.StudentModel.aggregate(aggregatePipeline);
 

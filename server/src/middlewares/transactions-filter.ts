@@ -58,49 +58,66 @@ export const transactionQueryFilter = asyncHandler(
 
 		if (category) filters.push({ category: category });
 
-		const transactions: ITransaction[] = await req.TransactionModel.find({
-			$and: filters,
-		})
-			.populate({
-				model: req.CategoryModel,
-				path: 'category',
-				populate: {
-					model: req.OrganizationModel,
-					path: 'organization',
-				},
-			})
-			.populate({
-				model: req.StudentModel,
-				path: 'owner',
-			})
-			.populate({
-				model: req.UserModel,
-				path: 'recordedBy',
-			})
-			.sort({ createdAt: sortByDate === 'asc' ? 1 : -1 })
-			.exec();
-
-		let filteredTransactions = transactions;
-
-		if (search?.length) {
-			filteredTransactions = filteredTransactions.filter((transaction) => {
-				const fullname = `${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`;
+		// 1. Resolve Student filters (search, course) first to avoid fetching everything
+		if (hasSearch || course) {
+			const studentFilters: any = {};
+			
+			if (course) {
+				studentFilters.course = course;
+			}
+			
+			if (hasSearch) {
 				const s = search.toString().toLowerCase();
-
-				return (
-					fullname.toLowerCase().includes(s) ||
-					transaction.owner.studentID.includes(s)
-				);
-			});
+				studentFilters.$or = [
+					{ firstname: { $regex: s, $options: 'i' } },
+					{ lastname: { $regex: s, $options: 'i' } },
+					{ studentID: { $regex: s, $options: 'i' } },
+				];
+			}
+			
+			const matchingStudents = await req.StudentModel!.find(studentFilters).select('_id').lean().exec();
+			
+			if (matchingStudents.length === 0) {
+				// No students matched the search/course, so no transactions will match.
+				req.filteredTransactions = [];
+				req.nextPage = -1;
+				req.prevPage = -1;
+				req.skipAmount = 0;
+				req.pageSizeNum = pageSizeNum;
+				return next();
+			}
+			
+			const matchingStudentIds = matchingStudents.map(s => s._id);
+			filters.push({ owner: { $in: matchingStudentIds } });
 		}
 
-		if (course) {
-			filteredTransactions = filteredTransactions.filter(
-				(transaction) => transaction.owner.course === course,
-			);
-		}
+		const queryConditions = filters.length > 0 ? { $and: filters } : {};
 
+		// If a status filter is provided (e.g. on CategoryInfo), we must fallback to fetching all matching 
+		// and doing in-memory filtering because status depends on populated category.fee
 		if (status) {
+			const transactions: ITransaction[] = await req.TransactionModel.find(queryConditions)
+				.populate({
+					model: req.CategoryModel,
+					path: 'category',
+					populate: {
+						model: req.OrganizationModel,
+						path: 'organization',
+					},
+				})
+				.populate({
+					model: req.StudentModel,
+					path: 'owner',
+				})
+				.populate({
+					model: req.UserModel,
+					path: 'recordedBy',
+				})
+				.sort({ createdAt: sortByDate === 'asc' ? 1 : -1 })
+				.exec();
+
+			let filteredTransactions = transactions;
+			
 			const statusStr = String(status).toLowerCase();
 			if (statusStr === 'true' || statusStr === 'paid') {
 				filteredTransactions = filteredTransactions.filter(
@@ -111,23 +128,58 @@ export const transactionQueryFilter = asyncHandler(
 					(transaction) => transaction.amount < transaction.category.fee,
 				);
 			} else if (statusStr === 'unpaid') {
-				// A raw transaction query doesn't have "unpaid" transactions because they don't exist.
-				// This handles if the UI accidentally passes 'unpaid' to the generic transaction endpoint.
 				filteredTransactions = [];
 			}
+
+			const filteredTransactionsLength = filteredTransactions.length;
+			const nextPage = filteredTransactionsLength > skipAmount + pageSizeNum ? pageNum + 1 : -1;
+			const prevPage = pageNum > 1 ? pageNum - 1 : -1;
+
+			req.filteredTransactions = filteredTransactions;
+			req.nextPage = hasSearch ? -1 : nextPage;
+			req.prevPage = hasSearch ? -1 : prevPage;
+			req.skipAmount = skipAmount;
+			req.pageSizeNum = pageSizeNum;
+			return next();
 		}
 
-		const filteredTransactionsLength = filteredTransactions.length;
+		// 2. Database-level pagination (Highly Optimized)
+		const [transactions, totalTransactionsCount] = await Promise.all([
+			req.TransactionModel.find(queryConditions)
+				.populate({
+					model: req.CategoryModel,
+					path: 'category',
+					populate: {
+						model: req.OrganizationModel,
+						path: 'organization',
+					},
+				})
+				.populate({
+					model: req.StudentModel,
+					path: 'owner',
+				})
+				.populate({
+					model: req.UserModel,
+					path: 'recordedBy',
+				})
+				.sort({ createdAt: sortByDate === 'asc' ? 1 : -1 })
+				.skip(skipAmount)
+				.limit(pageSizeNum)
+				.exec(),
+			req.TransactionModel.countDocuments(queryConditions)
+		]);
 
-		const nextPage =
-			filteredTransactionsLength > skipAmount + pageSizeNum ? pageNum + 1 : -1;
+		const nextPage = totalTransactionsCount > skipAmount + pageSizeNum ? pageNum + 1 : -1;
 		const prevPage = pageNum > 1 ? pageNum - 1 : -1;
 
-		req.filteredTransactions = filteredTransactions;
+		req.filteredTransactions = transactions;
+		// For DB pagination, since we already sliced the array, we must tell the controller not to slice again.
+		// By setting skipAmount=0 and filteredTransactions=transactions, the controller's splice will work correctly.
+		req.skipAmount = 0; 
+		req.pageSizeNum = pageSizeNum;
 		req.nextPage = hasSearch ? -1 : nextPage;
 		req.prevPage = hasSearch ? -1 : prevPage;
-		req.skipAmount = skipAmount;
-		req.pageSizeNum = pageSizeNum;
+
 		next();
 	},
 );

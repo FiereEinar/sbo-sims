@@ -2,7 +2,6 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import LeftSidebar from './components/LeftSidebar';
 import TopNavbar from './components/TopNavbar';
 import { setNavigate } from './lib/navigate';
-import { usePefetchValues } from './hooks/usePrefetchValues';
 import { useEffect } from 'react';
 import { useViewModeStore } from './store/viewModeStore';
 import { useMediaQuery } from './hooks/useMediaQuery';
@@ -13,7 +12,7 @@ function App() {
 	const navigate = useNavigate();
 	setNavigate(navigate);
 
-	usePefetchValues();
+	// usePefetchValues();
 
 	useEffect(() => {
 		if (isMobile) {

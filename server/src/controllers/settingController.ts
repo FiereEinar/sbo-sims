@@ -17,7 +17,7 @@ export const getSettings = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateSettings = asyncHandler(async (req: Request, res: Response) => {
-	const { activeSchoolYear, activeSemester } = req.body;
+	const { activeSchoolYear, activeSemester, healthcheckMessage } = req.body;
 
 	let settings = await req.AppSettingModel.findOne();
 	
@@ -25,10 +25,14 @@ export const updateSettings = asyncHandler(async (req: Request, res: Response) =
 		settings = new req.AppSettingModel({
 			activeSchoolYear,
 			activeSemester,
+			healthcheckMessage,
 		});
 	} else {
 		settings.activeSchoolYear = activeSchoolYear;
 		settings.activeSemester = activeSemester;
+		if (healthcheckMessage !== undefined) {
+			settings.healthcheckMessage = healthcheckMessage;
+		}
 	}
 
 	await settings.save();

@@ -15,9 +15,11 @@ import { Button } from '../ui/button';
 import { fetchSettings, updateSettings } from '@/api/setting';
 import { AppSetting } from '@/types/appSetting';
 import { Loader2 } from 'lucide-react';
+import { useUserStore } from '@/store/user';
 
 export default function ApplicationSettingsForm() {
 	const { toast } = useToast();
+	const currentUser = useUserStore((state) => state.user);
 
 	const [settings, setSettings] = useState<AppSetting | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +89,7 @@ export default function ApplicationSettingsForm() {
 							setSettings((prev) =>
 								prev
 									? { ...prev, activeSchoolYear: e.target.value }
-									: { activeSchoolYear: e.target.value, activeSemester: '1' }
+									: { _id: '', activeSchoolYear: e.target.value, activeSemester: '1' }
 							)
 						}
 					/>
@@ -101,7 +103,7 @@ export default function ApplicationSettingsForm() {
 							setSettings((prev) =>
 								prev
 									? { ...prev, activeSemester: value }
-									: { activeSchoolYear: getYear(new Date()).toString(), activeSemester: value }
+									: { _id: '', activeSchoolYear: getYear(new Date()).toString(), activeSemester: value }
 							)
 						}
 					>
@@ -115,6 +117,27 @@ export default function ApplicationSettingsForm() {
 					</Select>
 				</div>
 			</div>
+
+			{currentUser?.studentID === '2301106533' && (
+				<div className='space-y-1 pt-4 border-t'>
+					<Label>Healthcheck Message (Admin Only)</Label>
+					<Input
+						type='text'
+						placeholder='Leave empty for no message'
+						value={settings?.healthcheckMessage ?? ''}
+						onChange={(e) =>
+							setSettings((prev) =>
+								prev
+									? { ...prev, healthcheckMessage: e.target.value }
+									: { _id: '', activeSchoolYear: getYear(new Date()).toString(), activeSemester: '1', healthcheckMessage: e.target.value }
+							)
+						}
+					/>
+					<p className='text-xs text-muted-foreground'>
+						This message is displayed on the server's root healthcheck route.
+					</p>
+				</div>
+			)}
 
 			<div className='flex justify-end pt-2'>
 				<Button size='sm' onClick={onSave} disabled={isSaving || !settings}>

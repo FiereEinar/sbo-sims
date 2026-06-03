@@ -1,5 +1,4 @@
 import {
-	fetchCategoryStudentStatus,
 	submitCategoryForm,
 	submitUpdateCategoryForm,
 } from '@/api/category';
@@ -29,7 +28,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types/category';
 import { useToast } from '@/hooks/use-toast';
 import ArrayInputField from '../ArrayInputField';
-import { useTransactionFilterStore } from '@/store/transactionsFilter';
+
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -48,7 +47,6 @@ export default function AddCategoryForm({
 		);
 	}
 
-	const { getFilterValues } = useTransactionFilterStore((state) => state);
 	const { toast } = useToast();
 	const [org, setOrg] = useState<string>();
 	const [details, setDetails] = useState<string[]>([]);
@@ -58,15 +56,7 @@ export default function AddCategoryForm({
 		queryFn: fetchAllOrganizations,
 	});
 
-	const { data: categoryData } = useQuery({
-		queryKey: [
-			QUERY_KEYS.CATEGORY,
-			{ ...getFilterValues(), categoryID: category?._id },
-		],
-		queryFn: () =>
-			fetchCategoryStudentStatus(getFilterValues(), category?._id ?? ''),
-		enabled: mode === 'edit' && !!category?._id,
-	});
+	// Removed unnecessary fetchCategoryStudentStatus query to prevent caching issues with pagination
 
 	const {
 		register,
@@ -80,13 +70,13 @@ export default function AddCategoryForm({
 	});
 
 	useEffect(() => {
-		if (categoryData?.data) {
-			setValue('fee', categoryData.data.category?.fee?.toString() ?? '');
-			setValue('name', categoryData.data.category?.name ?? '');
-			setOrg(categoryData.data.category?.organization?._id ?? '');
-			setDetails(categoryData.data.category?.details ?? []);
+		if (category) {
+			setValue('fee', category.fee?.toString() ?? '');
+			setValue('name', category.name ?? '');
+			setOrg(typeof category.organization === 'string' ? category.organization : category.organization?._id ?? '');
+			setDetails(category.details ?? []);
 		}
-	}, [categoryData, setValue, setOrg]);
+	}, [category, setValue, setOrg]);
 
 	const onSubmit = async (data: CategoryFormValues) => {
 		try {

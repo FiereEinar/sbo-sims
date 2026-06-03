@@ -18,10 +18,41 @@ import {
 } from './ui/select';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import TableLoading from './loading/TableLoading';
+import { useQuery } from '@tanstack/react-query';
+import { fetchAvailableCourses } from '@/api/student';
+import { QUERY_KEYS } from '@/constants';
 
 interface CategoryStudentStatusTableProps {
 	students: CategoryStudentStatus[] | undefined;
 	isLoading: boolean;
+}
+
+function TableHeadCourseFilter() {
+	const { setCourse } = useTransactionFilterStore((state) => state);
+	const { data: courses } = useQuery({
+		queryKey: [QUERY_KEYS.STUDENT_COURSES],
+		queryFn: fetchAvailableCourses,
+	});
+
+	return (
+		<Select
+			defaultValue='All'
+			onValueChange={(value) => setCourse(value)}
+		>
+			<SelectTrigger className='w-full border-none pl-0 focus:ring-0 min-w-[90px]'>
+				<SelectValue placeholder='Course' />
+			</SelectTrigger>
+			<SelectContent>
+				<SelectItem value='All'>All Courses</SelectItem>
+				{courses &&
+					courses.map((course) => (
+						<SelectItem key={course} value={course}>
+							{course}
+						</SelectItem>
+					))}
+			</SelectContent>
+		</Select>
+	);
 }
 
 function TableHeadStatusFilter() {
@@ -105,7 +136,9 @@ export default function CategoryStudentStatusTable({
 				<TableRow className='select-none'>
 					<TableHead className='w-[110px]'>Student ID</TableHead>
 					<TableHead className='w-[200px]'>Name</TableHead>
-					<TableHead className='w-[100px]'>Course</TableHead>
+					<TableHead className='w-[120px]'>
+						<TableHeadCourseFilter />
+					</TableHead>
 					<TableHead className='w-[110px]'>
 						<TableHeadYearFilter />
 					</TableHead>

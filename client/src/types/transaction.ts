@@ -49,4 +49,6 @@ export type TransactionsFilterValues = {
 	status?: boolean | string;
 	startDate?: Date;
 	endDate?: Date;
+	year?: string;
+	section?: string;
 };

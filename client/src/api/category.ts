@@ -59,6 +59,8 @@ export interface CategoryStudentStatus {
 		firstname: string;
 		lastname: string;
 		course: string;
+		year?: number;
+		section?: string;
 	};
 	amountPaid: number;
 	status: 'paid' | 'partial' | 'unpaid';

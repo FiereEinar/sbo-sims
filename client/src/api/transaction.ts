@@ -24,7 +24,8 @@ export const generateTransactionsFilterURL = (
 	if (filters.category) url += `&category=${filters.category}`;
 	if (filters.status !== undefined) url += `&status=${filters.status}`;
 	if (filters.period) url += `&period=${filters.period}`;
-	// url += `&sortByDate=asc`;
+	if (filters.year && filters.year !== 'All') url += `&year=${filters.year}`;
+	if (filters.section && filters.section !== 'All') url += `&section=${filters.section}`;
 
 	return url;
 };

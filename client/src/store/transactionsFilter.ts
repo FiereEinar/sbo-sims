@@ -14,6 +14,8 @@ interface StudentFiltersState extends TransactionsFilterValues {
 	setPeriod: (period: string) => void;
 	setStatus: (status?: boolean | string) => void;
 	setSearch: (search: string) => void;
+	setYear: (year?: string) => void;
+	setSection: (section?: string) => void;
 	getFilterValues: () => TransactionsFilterValues;
 }
 
@@ -28,6 +30,8 @@ export const useTransactionFilterStore = create<StudentFiltersState>(
 		period: 'all',
 		status: undefined,
 		search: '',
+		year: undefined,
+		section: undefined,
 		setPage: (page) => set({ page: page }),
 		setCourse: (course) => set({ course: course }),
 		setCategory: (category) => set({ category: category }),
@@ -36,6 +40,8 @@ export const useTransactionFilterStore = create<StudentFiltersState>(
 		setPeriod: (period) => set({ period: period as TransactionPeriodFilter }),
 		setStatus: (status) => set({ status: status }),
 		setSearch: (search) => set({ search: search }),
+		setYear: (year) => set({ year: year }),
+		setSection: (section) => set({ section: section }),
 		getFilterValues: () => ({
 			search: get().search,
 			page: get().page,
@@ -46,6 +52,8 @@ export const useTransactionFilterStore = create<StudentFiltersState>(
 			status: get().status,
 			startDate: get().startDate,
 			endDate: get().endDate,
+			year: get().year,
+			section: get().section,
 		}),
 		setFilters: (filters) =>
 			set(() => ({

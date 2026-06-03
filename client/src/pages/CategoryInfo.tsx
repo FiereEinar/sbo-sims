@@ -60,7 +60,7 @@ export default function CategoryInfo() {
 				</StickyHeader>
 			)}
 
-			<TransactionsFilter showStatus />
+			<TransactionsFilter />
 
 			<CategoryStudentStatusTable
 				isLoading={isLoading}

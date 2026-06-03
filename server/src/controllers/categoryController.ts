@@ -150,7 +150,7 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  */
 export const get_category_student_status = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
-	const { page, pageSize, search, course, status } = req.query;
+	const { page, pageSize, search, course, status, year, section } = req.query;
 
 	const category = await req.CategoryModel.findById(categoryID).populate({
 		model: req.OrganizationModel,
@@ -162,6 +162,12 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 	let studentQuery: any = { course: { $in: category.organization.departments } };
 	if (course) {
 		studentQuery.course = course;
+	}
+	if (year && year !== 'All') {
+		studentQuery.year = parseInt(year as string);
+	}
+	if (section && section !== 'All') {
+		studentQuery.section = { $regex: `^${section}$`, $options: 'i' };
 	}
 	if (search && typeof search === 'string') {
 		const s = search.toLowerCase();

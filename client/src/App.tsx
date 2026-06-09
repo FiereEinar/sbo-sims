@@ -4,13 +4,23 @@ import TopNavbar from './components/TopNavbar';
 import { setNavigate } from './lib/navigate';
 import { useEffect } from 'react';
 import { useViewModeStore } from './store/viewModeStore';
+import { useThemeStore } from './store/themeStore';
 import { useMediaQuery } from './hooks/useMediaQuery';
 
 function App() {
 	const isMobile = useMediaQuery('(max-width: 768px)');
 	const { setViewMode } = useViewModeStore();
+	const { primaryColor } = useThemeStore();
 	const navigate = useNavigate();
 	setNavigate(navigate);
+
+	useEffect(() => {
+		if (primaryColor) {
+			document.documentElement.style.setProperty('--primary', primaryColor);
+		} else {
+			document.documentElement.style.removeProperty('--primary');
+		}
+	}, [primaryColor]);
 
 	// usePefetchValues();
 

@@ -1,5 +1,7 @@
 import { Transaction } from '@/types/transaction';
 import _ from 'lodash';
+import { useEffect, useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 
 interface TransactionReceiptProps {
 	transaction?: Transaction;
@@ -35,11 +37,30 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 		}))
 	).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-	return (
+	const [imageUrl, setImageUrl] = useState<string | null>(null);
+	const receiptRef = useRef<HTMLElement>(null);
+
+	useEffect(() => {
+		if (receiptRef.current) {
+			const timer = setTimeout(() => {
+				html2canvas(receiptRef.current!, {
+					scale: 2,
+					useCORS: true,
+					backgroundColor: '#ffffff'
+				}).then((canvas) => {
+					setImageUrl(canvas.toDataURL('image/png'));
+				});
+			}, 300); // slight delay to ensure fonts/images render
+			return () => clearTimeout(timer);
+		}
+	}, [txs]);
+
+	const receiptContent = (
 		<article 
+			ref={receiptRef}
 			id="transaction-receipt-document" 
-			className="bg-white text-black p-10 max-w-3xl mx-auto border shadow-sm space-y-8 print:shadow-none"
-			style={{ fontFamily: "'Inter', sans-serif" }}
+			className="bg-white text-black p-10 space-y-8"
+			style={{ fontFamily: "'Inter', sans-serif", width: '768px' }}
 		>
 			{/* Corporate Header */}
 			<div className="flex justify-between items-start border-b-2 border-black pb-6">
@@ -186,5 +207,30 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 				</p>
 			</div>
 		</article>
+	);
+
+	return (
+		<div className="w-full flex justify-center flex-col items-center">
+			{!imageUrl && (
+				<div className="fixed top-[-9999px] left-[-9999px] pointer-events-none">
+					{receiptContent}
+				</div>
+			)}
+			
+			{imageUrl ? (
+				<img 
+					id="secure-receipt-image"
+					src={imageUrl} 
+					alt="Official Receipt" 
+					className="max-w-3xl w-full border shadow-sm print:shadow-none"
+					draggable={false}
+					onContextMenu={(e) => e.preventDefault()} 
+				/>
+			) : (
+				<div className="p-10 animate-pulse text-muted-foreground text-sm font-medium">
+					Generating secure receipt...
+				</div>
+			)}
+		</div>
 	);
 }

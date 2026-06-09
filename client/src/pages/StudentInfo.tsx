@@ -59,9 +59,38 @@ export default function StudentInfo() {
 	}, [transactions, selectedTxIds]);
 
 	const handleDownloadPDF = async () => {
+		const imgElement = document.getElementById('secure-receipt-image') as HTMLImageElement;
+		
+		if (imgElement && imgElement.src) {
+			try {
+				setIsDownloading(true);
+				
+				// Create PDF based on natural image dimensions (high res)
+				// We'll scale it down to typical A4 or let jsPDF handle pixel sizes
+				const imgWidth = imgElement.naturalWidth || 1536; // 768 * 2
+				const imgHeight = imgElement.naturalHeight || 2048;
+
+				const pdf = new jsPDF({
+					orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+					unit: 'px',
+					format: [imgWidth, imgHeight]
+				});
+
+				pdf.addImage(imgElement.src, 'PNG', 0, 0, imgWidth, imgHeight);
+				pdf.save(`consolidated-receipt-${student?.studentID || 'student'}.pdf`);
+			} catch (error) {
+				console.error('Error generating PDF', error);
+				toast({ variant: 'destructive', title: 'Failed to generate PDF' });
+			} finally {
+				setIsDownloading(false);
+			}
+			return;
+		}
+
+		// Fallback if the image hasn't loaded yet
 		const element = document.getElementById('transaction-receipt-document');
 		if (!element) {
-			toast({ variant: 'destructive', title: 'Receipt element not found' });
+			toast({ variant: 'destructive', title: 'Receipt element not found or still generating...' });
 			return;
 		}
 

@@ -36,7 +36,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Trash2 } from 'lucide-react';
+import { Trash2 , Pencil} from 'lucide-react';
 
 ring.register();
 
@@ -248,8 +248,8 @@ export default function AddTransactionForm({
 						<p>Add Transaction</p>
 					</Button>
 				) : (
-					<Button className='flex gap-1' size='sm' variant='ocean'>
-						<img src='/icons/edit.svg' className='size-5' alt='' />
+					<Button className='flex gap-1' size='sm' variant='outline'>
+						<Pencil className='size-4' />
 						<p>Edit</p>
 					</Button>
 				)}

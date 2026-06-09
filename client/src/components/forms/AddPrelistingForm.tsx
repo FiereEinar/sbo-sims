@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Dialog,
@@ -123,8 +124,8 @@ export default function AddPrelistingForm({
 						<p>Add Prelisting</p>
 					</Button>
 				) : (
-					<Button className='flex gap-1' size='sm' variant='ocean'>
-						<img src='/icons/edit.svg' className='size-5' alt='' />
+					<Button className='flex gap-1' size='sm' variant='outline'>
+						<Pencil className='size-4' />
 						<p>Edit</p>
 					</Button>
 				)}

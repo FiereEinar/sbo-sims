@@ -97,7 +97,7 @@ export default function TransactionsTable({
 							<input 
 								type="checkbox" 
 								className="w-4 h-4 cursor-pointer"
-								checked={transactions && transactions.length > 0 && selectedIds.length === transactions.length}
+								checked={Boolean(transactions && transactions.length > 0 && selectedIds.length === transactions.length)}
 								onChange={toggleAll}
 							/>
 						</TableHead>
@@ -150,7 +150,7 @@ export default function TransactionsTable({
 										<input 
 											type="checkbox" 
 											className="w-4 h-4 cursor-pointer"
-											checked={selectedIds.includes(transaction._id)}
+											checked={selectedIds?.includes(transaction._id) || false}
 											readOnly
 										/>
 									</TableCell>

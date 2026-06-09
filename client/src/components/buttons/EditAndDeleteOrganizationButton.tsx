@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -67,7 +68,7 @@ function DeleteButton({ organizationID }: DeleteButtonProps) {
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
 				<Button className='flex gap-1' variant='destructive' size='sm'>
-					<img src='/icons/delete.svg' className='size-5' alt='' />
+					<Trash2 className='size-4' />
 					<p>Delete</p>
 				</Button>
 			</AlertDialogTrigger>

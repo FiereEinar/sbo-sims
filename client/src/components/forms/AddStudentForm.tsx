@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -113,8 +114,8 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
 						<p>Add Student</p>
 					</Button>
 				) : (
-					<Button className='flex gap-1' size='sm' variant='ocean'>
-						<img src='/icons/edit.svg' className='size-5' alt='' />
+					<Button className='flex gap-1' size='sm' variant='outline'>
+						<Pencil className='size-4' />
 						<p>Edit</p>
 					</Button>
 				)}

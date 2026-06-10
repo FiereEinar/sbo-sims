@@ -4,7 +4,7 @@ import asyncHandler from 'express-async-handler';
 import { adminUpdateUserBody, updateUserBody } from '../types/user';
 import { UpdateQuery } from 'mongoose';
 import { IUser } from '../models/user';
-import { validateEmail } from '../utils/utils';
+import { escapeRegex, validateEmail } from '../utils/utils';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
 import { BCRYPT_SALT } from '../constants/env';
 import bcrypt from 'bcryptjs';
@@ -98,7 +98,7 @@ export const getUsers = asyncHandler(async (req, res) => {
 
 	// search: name, email, institutionalID
 	if (search.trim() !== '') {
-		const regex = { $regex: search, $options: 'i' };
+		const regex = { $regex: escapeRegex(search), $options: 'i' };
 		filter.$or = [
 			{ name: regex },
 			{ email: regex },

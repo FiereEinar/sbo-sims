@@ -102,7 +102,7 @@ export default function AppearanceSettingsForm() {
 	const isCustom = primaryColor && !PRESETS.find(p => p.value === primaryColor);
 
 	return (
-		<Card>
+		<Card className='bg-card/40'>
 			<CardHeader>
 				<CardTitle>Appearance Settings</CardTitle>
 				<CardDescription>

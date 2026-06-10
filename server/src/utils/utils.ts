@@ -19,6 +19,10 @@ export function validateEmail(email: string) {
 	return emailPattern.test(email);
 }
 
+export function escapeRegex(text: string) {
+	return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
 export const getDateFilterByPeriod = (
 	period: string
 ): FilterQuery<ITransaction> | undefined => {

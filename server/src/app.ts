@@ -22,6 +22,7 @@ import { errorHandler } from './middlewares/error';
 import { auth } from './middlewares/authentication/auth';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
+import { globalLimiter } from './middlewares/rateLimiter';
 import {
 	attachDatabaseModels,
 	attachOriginalDatabaseModels,
@@ -42,6 +43,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
+
+// Apply global rate limiter
+app.use(globalLimiter);
+
 app.get('/', healthcheck);
 
 // Ensure seedAdmin runs completely on the first request in serverless environments

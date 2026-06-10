@@ -15,8 +15,8 @@ beforeAll(async () => {
 
 	const user = {
 		studentID: '2301106533',
-		password: '123123',
-		confirmPassword: '123123',
+		password: 'Password123!',
+		confirmPassword: 'Password123!',
 		firstname: 'Jhon',
 		lastname: 'Doe',
 		email: 'jhon@gmail.com',

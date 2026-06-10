@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export interface TransactionImportRow {
 	studentID: string;
@@ -154,12 +154,27 @@ export const validateTransactionHeaders = (
 /**
  * Parse Excel buffer and return rows as objects
  */
-export const parseExcelBuffer = (buffer: Buffer): TransactionImportRow[] => {
-	const workbook = XLSX.read(buffer, { type: 'buffer' });
-	const sheetName = workbook.SheetNames[0];
-	const worksheet = workbook.Sheets[sheetName];
-	const rows = XLSX.utils.sheet_to_json<TransactionImportRow>(worksheet, {
-		raw: false,
+export const parseExcelBuffer = async (buffer: Buffer): Promise<TransactionImportRow[]> => {
+	const workbook = new ExcelJS.Workbook();
+	await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+	const worksheet = workbook.worksheets[0];
+	
+	const rows: TransactionImportRow[] = [];
+	let headers: string[] = [];
+	
+	worksheet.eachRow((row, rowNumber) => {
+		if (rowNumber === 1) {
+			headers = row.values as string[];
+		} else {
+			const rowData: any = {};
+			row.eachCell((cell, colNumber) => {
+				const header = headers[colNumber];
+				if (header) {
+					rowData[header] = cell.value?.toString() || '';
+				}
+			});
+			rows.push(rowData as TransactionImportRow);
+		}
 	});
 	return rows;
 };
@@ -167,12 +182,19 @@ export const parseExcelBuffer = (buffer: Buffer): TransactionImportRow[] => {
 /**
  * Get headers from Excel buffer
  */
-export const getExcelHeaders = (buffer: Buffer): string[] => {
-	const workbook = XLSX.read(buffer, { type: 'buffer' });
-	const sheetName = workbook.SheetNames[0];
-	const worksheet = workbook.Sheets[sheetName];
-	const rows = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
-	return rows[0] || [];
+export const getExcelHeaders = async (buffer: Buffer): Promise<string[]> => {
+	const workbook = new ExcelJS.Workbook();
+	await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+	const worksheet = workbook.worksheets[0];
+	
+	const row = worksheet.getRow(1);
+	const headers: string[] = [];
+	
+	row.eachCell((cell) => {
+		headers.push(cell.value ? cell.value.toString() : '');
+	});
+	
+	return headers;
 };
 
 /**
@@ -193,8 +215,8 @@ export const importTransactionsFromExcel = async (
 
 	try {
 		// Parse Excel file
-		const rows = parseExcelBuffer(buffer);
-		const headers = getExcelHeaders(buffer);
+		const rows = await parseExcelBuffer(buffer);
+		const headers = await getExcelHeaders(buffer);
 
 		if (rows.length === 0) {
 			result.errors.push('Excel file is empty or has no valid data');
@@ -446,8 +468,8 @@ export const previewTransactionsFromExcel = async (
 	};
 
 	try {
-		const rows = parseExcelBuffer(buffer);
-		const headers = getExcelHeaders(buffer);
+		const rows = await parseExcelBuffer(buffer);
+		const headers = await getExcelHeaders(buffer);
 
 		if (rows.length === 0) {
 			return result;

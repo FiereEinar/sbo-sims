@@ -1,5 +1,5 @@
 import express from 'express';
-import { updateUserValidation } from '../middlewares/validations/userValidations';
+import { updateUserValidation, updateUserPasswordValidation } from '../middlewares/validations/userValidations';
 import {
 	adminUpdateUser,
 	createUser,
@@ -46,6 +46,7 @@ router.delete(
 router.patch(
 	'/:userID/password',
 	isValidMongooseId('userID', { from: 'params' }),
+	updateUserPasswordValidation,
 	updateUserPassword,
 );
 

@@ -3,7 +3,7 @@ import appAssert from '../errors/appAssert';
 import { IStudent } from '../models/student';
 import { createStudentBody } from '../types/student';
 import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
-import { validateEmail } from '../utils/utils';
+import { escapeRegex, validateEmail } from '../utils/utils';
 import { serverlessCSVLoader } from '../services/csvLoader';
 import { importStudentsFromFile, previewStudentsFromFile } from '../services/studentExcelLoader';
 import CustomResponse, { CustomPaginatedResponse } from '../types/response';
@@ -33,7 +33,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
 	if (year) filters.push({ year: parseInt(year as string) });
 	if (gender) filters.push({ gender: gender });
 	if (search) {
-		const searchRegex = new RegExp(search as string, 'i');
+		const searchRegex = new RegExp(escapeRegex(search as string), 'i');
 		filters.push({
 			$or: [
 				{ studentID: { $regex: searchRegex } },

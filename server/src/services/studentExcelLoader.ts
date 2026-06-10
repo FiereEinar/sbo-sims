@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export interface StudentImportRow {
 	[key: string]: any;
@@ -165,22 +165,47 @@ const parseYear = (value: any): number => {
 /**
  * Parse Excel/CSV buffer
  */
-export const parseStudentBuffer = (buffer: Buffer): StudentImportRow[] => {
-	const workbook = XLSX.read(buffer, { type: 'buffer' });
-	const sheetName = workbook.SheetNames[0];
-	const worksheet = workbook.Sheets[sheetName];
-	return XLSX.utils.sheet_to_json<StudentImportRow>(worksheet);
+export const parseStudentBuffer = async (buffer: Buffer): Promise<StudentImportRow[]> => {
+	const workbook = new ExcelJS.Workbook();
+	await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+	const worksheet = workbook.worksheets[0];
+	
+	const rows: StudentImportRow[] = [];
+	let headers: string[] = [];
+	
+	worksheet.eachRow((row, rowNumber) => {
+		if (rowNumber === 1) {
+			headers = row.values as string[];
+		} else {
+			const rowData: any = {};
+			row.eachCell((cell, colNumber) => {
+				const header = headers[colNumber];
+				if (header) {
+					rowData[header] = cell.value?.toString() || '';
+				}
+			});
+			rows.push(rowData as StudentImportRow);
+		}
+	});
+	return rows;
 };
 
 /**
  * Get headers from buffer
  */
-export const getStudentHeaders = (buffer: Buffer): string[] => {
-	const workbook = XLSX.read(buffer, { type: 'buffer' });
-	const sheetName = workbook.SheetNames[0];
-	const worksheet = workbook.Sheets[sheetName];
-	const rows = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
-	return (rows[0] || []).map((h: any) => h?.toString() || '');
+export const getStudentHeaders = async (buffer: Buffer): Promise<string[]> => {
+	const workbook = new ExcelJS.Workbook();
+	await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+	const worksheet = workbook.worksheets[0];
+	
+	const row = worksheet.getRow(1);
+	const headers: string[] = [];
+	
+	row.eachCell((cell) => {
+		headers.push(cell.value ? cell.value.toString() : '');
+	});
+	
+	return headers;
 };
 
 /**
@@ -199,8 +224,8 @@ export const previewStudentsFromFile = async (
 	};
 
 	try {
-		const rows = parseStudentBuffer(buffer);
-		const headers = getStudentHeaders(buffer);
+		const rows = await parseStudentBuffer(buffer);
+		const headers = await getStudentHeaders(buffer);
 
 		if (rows.length === 0) return result;
 
@@ -433,8 +458,8 @@ export const importStudentsFromFile = async (
 	const result: StudentImportResult = { success: 0, failed: 0, skipped: 0, errors: [] };
 
 	try {
-		const rows = parseStudentBuffer(buffer);
-		const headers = getStudentHeaders(buffer);
+		const rows = await parseStudentBuffer(buffer);
+		const headers = await getStudentHeaders(buffer);
 
 		if (rows.length === 0) {
 			result.errors.push('File is empty');

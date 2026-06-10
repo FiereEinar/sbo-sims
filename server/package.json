@@ -45,8 +45,10 @@
 		"date-fns": "^4.1.0",
 		"dotenv": "^16.4.5",
 		"ejs": "^3.1.10",
+		"exceljs": "^4.4.0",
 		"express": "^4.21.0",
 		"express-async-handler": "^1.2.0",
+		"express-rate-limit": "^8.5.2",
 		"express-useragent": "^1.0.15",
 		"express-validator": "^7.2.0",
 		"helmet": "^8.0.0",
@@ -56,7 +58,6 @@
 		"multer": "^2.1.1",
 		"nodemailer": "^8.0.7",
 		"puppeteer": "^23.6.1",
-		"server": "file:",
-		"xlsx": "^0.18.5"
+		"server": "file:"
 	}
 }

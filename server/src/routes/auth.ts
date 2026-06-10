@@ -12,12 +12,13 @@ import {
 	signup,
 	verify_email,
 } from '../controllers/authController';
+import { authLimiter } from '../middlewares/rateLimiter';
 
 const router = express.Router();
 
-router.post('/login', loginValidation, login);
+router.post('/login', authLimiter, loginValidation, login);
 
-router.post('/signup', signupValidation, signup);
+router.post('/signup', authLimiter, signupValidation, signup);
 
 router.get('/verify-email', verify_email);
 

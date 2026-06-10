@@ -26,13 +26,17 @@ export const signupValidation = [
 
 	body('password')
 		.trim()
-		.isLength({ min: 1, max: 30 })
-		.withMessage('Password must be 1-30 characters'),
+		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
+		.withMessage('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
+		.isLength({ max: 30 })
+		.withMessage('Password must be max 30 characters'),
 
 	body('confirmPassword')
 		.trim()
-		.isLength({ min: 1, max: 30 })
-		.withMessage('Password must be 1-30 characters'),
+		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
+		.withMessage('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
+		.isLength({ max: 30 })
+		.withMessage('Password must be max 30 characters'),
 
 	body('bio')
 		.trim()
@@ -116,6 +120,27 @@ export const updateUserValidation = [
 		.escape()
 		.isLength({ min: 1 })
 		.withMessage('School semester must not be empty'),
+
+	isFormBodyValidated,
+];
+
+export const updateUserPasswordValidation = [
+	body('currentPassword')
+		.trim()
+		.isLength({ min: 1 })
+		.withMessage('Current password is required'),
+
+	body('newPassword')
+		.trim()
+		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
+		.withMessage('New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
+		.isLength({ max: 30 })
+		.withMessage('New password must be max 30 characters'),
+
+	body('confirmNewPassword')
+		.trim()
+		.isLength({ min: 1 })
+		.withMessage('Confirm new password is required'),
 
 	isFormBodyValidated,
 ];

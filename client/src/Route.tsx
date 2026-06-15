@@ -141,7 +141,7 @@ export default function Route() {
 							permissions={[MODULES.ORGANIZATION_READ]}
 							fallback={<NoPermission />}
 						>
-							<Organization />
+							<OrganizationInfo />
 						</HasPermission>
 					),
 				},

@@ -5,6 +5,7 @@ import LogoutButton from './buttons/LogoutButton';
 import HeaderLogo from './HeaderLogo';
 import { useUserStore } from '@/store/user';
 import { Settings } from 'lucide-react';
+import { Fragment } from 'react';
 
 export default function LeftSidebar() {
 	const { user } = useUserStore((state) => state);
@@ -28,7 +29,10 @@ export default function LeftSidebar() {
 				{navbarLinks
 					.filter((item) => canView(item))
 					.map((link) => (
-						<SidebarLink key={link.name} link={link} />
+						<Fragment key={link.name}>
+							{link.isSeparator && <hr className='border-border/60 -mx-5' />}
+							<SidebarLink link={link} />
+						</Fragment>
 					))}
 			</div>
 

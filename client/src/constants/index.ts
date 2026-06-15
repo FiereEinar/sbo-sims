@@ -79,6 +79,7 @@ export type SidebarNavLinkType = {
 		Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
 	>;
 	permissions?: Modules[];
+	isSeparator?: boolean;
 };
 
 export const navbarLinks: SidebarNavLinkType[] = [
@@ -113,9 +114,10 @@ export const navbarLinks: SidebarNavLinkType[] = [
 	},
 	{
 		path: '/organization',
-		name: 'Organizations',
+		name: 'Organization',
 		icon: Building2,
 		permissions: [MODULES.ORGANIZATION_READ],
+		isSeparator: true,
 	},
 	{
 		path: '/user',

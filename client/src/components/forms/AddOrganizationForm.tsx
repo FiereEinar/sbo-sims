@@ -68,6 +68,7 @@ export default function AddOrganizationForm({
 	useEffect(() => {
 		if (organizationData) {
 			setValue('name', _.startCase(organizationData?.name ?? ''));
+			setValue('slug', organizationData?.slug ?? '');
 			setValue('governor', _.startCase(organizationData?.governor ?? ''));
 			setValue(
 				'viceGovernor',
@@ -92,8 +93,13 @@ export default function AddOrganizationForm({
 			data.departments = departmentsArray;
 
 			if (mode === 'add') await submitOrganizationForm(data);
-			if (mode === 'edit')
+			if (mode === 'edit') {
 				await submitUpdateOrganizationForm(organizationData?._id ?? '', data);
+				if (organizationData?.slug && organizationData.slug !== data.slug) {
+					window.location.href = `/${data.slug}/organization`;
+					return;
+				}
+			}
 
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.ORGANIZATION],
@@ -157,6 +163,19 @@ export default function AddOrganizationForm({
 						label='Organization name:'
 						id='name'
 					/>
+
+					<InputField<OrganizationFormValues>
+						name='slug'
+						registerFn={register}
+						errors={errors}
+						label='Organization URL Slug:'
+						id='slug'
+					/>
+					{mode === 'edit' && (
+						<p className='text-xs text-destructive -mt-1 font-medium leading-tight'>
+							Warning: Changing the slug will alter your organization's login URL and break any bookmarked links.
+						</p>
+					)}
 
 					<DepartmentInputField
 						onSubmit={onDepartmentAdd}

@@ -110,6 +110,7 @@ export const get_organization_categories = asyncHandler(async (req, res) => {
 export const create_organization = asyncHandler(async (req, res) => {
 	const {
 		name,
+		slug,
 		governor,
 		viceGovernor,
 		treasurer,
@@ -131,9 +132,13 @@ export const create_organization = asyncHandler(async (req, res) => {
 
 	departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
+	const existingSlug = await req.OrganizationModel.findOne({ slug }).exec();
+	appAssert(!existingSlug, BAD_REQUEST, 'Organization slug already exists');
+
 	// create and save the organization
 	const organization = new req.OrganizationModel({
 		name,
+		slug,
 		governor,
 		viceGovernor,
 		treasurer,
@@ -183,6 +188,7 @@ export const update_organization = asyncHandler(async (req, res) => {
 
 	const {
 		name,
+		slug,
 		governor,
 		treasurer,
 		viceGovernor,
@@ -204,8 +210,12 @@ export const update_organization = asyncHandler(async (req, res) => {
 
 	departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
+	const existingSlug = await req.OrganizationModel.findOne({ slug, _id: { $ne: organizationID } }).exec();
+	appAssert(!existingSlug, BAD_REQUEST, 'Organization slug already exists');
+
 	const update: UpdateQuery<IOrganization> = {
 		name: name,
+		slug: slug,
 		governor: governor,
 		viceGovernor: viceGovernor,
 		treasurer: treasurer,

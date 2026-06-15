@@ -8,6 +8,15 @@ export const createOrganizationValidation = [
 		.isLength({ min: 1 })
 		.withMessage('Organization name must not be empty'),
 
+	body('slug')
+		.trim()
+		.escape()
+		.matches(/^[a-z0-9-]+$/)
+		.withMessage('Slug must only contain lowercase alphanumeric characters and hyphens')
+		.isLength({ min: 1 })
+		.withMessage('Organization slug must not be empty')
+		.toLowerCase(),
+
 	body('governor')
 		.trim()
 		.escape()

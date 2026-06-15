@@ -92,6 +92,7 @@ export default function UpdateUserForm() {
           name="studentID"
           registerFn={register}
           errors={errors}
+          isDisabled={true}
         />
         <InputField<UpdateUserFormValues>
           id="firstname"

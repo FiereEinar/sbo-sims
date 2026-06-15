@@ -2,7 +2,6 @@ import {
   fetchOrganizationByID,
   fetchOrganizationCategories,
 } from '@/api/organization';
-import BackButton from '@/components/buttons/BackButton';
 import EditAndDeleteOrganizationButton from '@/components/buttons/EditAndDeleteOrganizationButton';
 import CategoriesTable from '@/components/CategoriesTable';
 import OrganizationDetailsLoading from '@/components/loading/OrganizationDetailsLoading';

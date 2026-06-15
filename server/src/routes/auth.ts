@@ -11,10 +11,13 @@ import {
 	refresh,
 	signup,
 	verify_email,
+	get_public_organizations,
 } from '../controllers/authController';
 import { authLimiter } from '../middlewares/rateLimiter';
 
 const router = express.Router();
+
+router.get('/organizations', get_public_organizations);
 
 router.post('/login', authLimiter, loginValidation, login);
 

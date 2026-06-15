@@ -9,8 +9,8 @@ export function useTenantNavigate() {
 			return navigate(to);
 		}
 
-		// Don't prepend orgSlug if it's an auth or absolute root route we want to keep
-		if (to.startsWith('/login') || to.startsWith('/signup') || to === '/') {
+		// Don't prepend orgSlug if it's an absolute root route we want to keep
+		if (to === '/') {
 			return navigate(to, options);
 		}
 

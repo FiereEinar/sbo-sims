@@ -21,14 +21,18 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 
 				if (orgSlug && data.organization?.slug !== orgSlug) {
 					setIsAuthenticated(false);
-					navigate('/login', { replace: true });
+					navigate(`/${orgSlug}/login`, { replace: true });
 					return;
 				}
 
 				setIsAuthenticated(true);
 			} catch (err: any) {
 				setIsAuthenticated(false);
-				navigate('/login', { replace: true });
+				if (orgSlug) {
+					navigate(`/${orgSlug}/login`, { replace: true });
+				} else {
+					navigate('/login', { replace: true });
+				}
 			}
 		})();
 	}, [navigate, orgSlug, setUser]);

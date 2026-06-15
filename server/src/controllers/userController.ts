@@ -21,7 +21,10 @@ export const update_user = asyncHandler(async (req, res) => {
 		activeSemDB,
 	}: updateUserBody = req.body;
 
-	const user = await req.UserModel.findById(userID);
+	const user = await req.UserModel.findOne({
+		_id: userID,
+		organization: req.tenantContext!.organizationId,
+	});
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	appAssert(
@@ -89,7 +92,9 @@ export const getUsers = asyncHandler(async (req, res) => {
 	/** ---------------------
 	 *        FILTERS
 	 *  --------------------*/
-	const filter: Record<string, any> = {};
+	const filter: Record<string, any> = {
+		organization: req.tenantContext!.organizationId,
+	};
 
 	// filter by role (optional)
 	if (role.trim() !== '') {
@@ -149,6 +154,7 @@ export const createUser = asyncHandler(async (req, res) => {
 	// check if studentID already exist
 	const existingUser = await req.UserModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
 	}).exec();
 	appAssert(
 		!existingUser,
@@ -162,7 +168,10 @@ export const createUser = asyncHandler(async (req, res) => {
 	}
 
 	// check if role exists
-	const role = await req.RoleModel.findById(rbacRole).exec();
+	const role = await req.RoleModel.findOne({
+		_id: rbacRole,
+		organization: req.tenantContext!.organizationId,
+	}).exec();
 	appAssert(role, BAD_REQUEST, 'Role not found');
 
 	appAssert(password?.length, BAD_REQUEST, 'Password is required');
@@ -185,6 +194,7 @@ export const createUser = asyncHandler(async (req, res) => {
 		roleManuallyAssigned: true,
 		bio: bio,
 		verified: true,
+		organization: req.tenantContext!.organizationId,
 		profile: {
 			url: profileURL,
 			publicID: profilePublicID,
@@ -201,7 +211,10 @@ export const createUser = asyncHandler(async (req, res) => {
 export const deleteUser = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 
-	const user = await req.UserModel.findByIdAndDelete(userID).exec();
+	const user = await req.UserModel.findOneAndDelete({
+		_id: userID,
+		organization: req.tenantContext!.organizationId,
+	}).exec();
 
 	appAssert(user, NOT_FOUND, 'User not found');
 
@@ -214,7 +227,10 @@ export const deleteUser = asyncHandler(async (req, res) => {
 export const getSingleUser = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 
-	const user = await req.UserModel.findById(userID).populate('rbacRole').exec();
+	const user = await req.UserModel.findOne({
+		_id: userID,
+		organization: req.tenantContext!.organizationId,
+	}).populate('rbacRole').exec();
 
 	appAssert(user, NOT_FOUND, 'User not found');
 
@@ -234,7 +250,10 @@ export const adminUpdateUser = asyncHandler(async (req, res) => {
 		activeSemDB,
 	}: adminUpdateUserBody = req.body;
 
-	const user = await req.UserModel.findById(userID);
+	const user = await req.UserModel.findOne({
+		_id: userID,
+		organization: req.tenantContext!.organizationId,
+	});
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	const year = parseInt(activeSchoolYearDB);
@@ -257,7 +276,10 @@ export const adminUpdateUser = asyncHandler(async (req, res) => {
 		appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
 	}
 
-	const role = await req.RoleModel.findById(rbacRole).exec();
+	const role = await req.RoleModel.findOne({
+		_id: rbacRole,
+		organization: req.tenantContext!.organizationId,
+	}).exec();
 	appAssert(role, BAD_REQUEST, 'Role not found');
 
 	const update: UpdateQuery<IUser> = {
@@ -286,7 +308,10 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 	const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
-	const user = await req.UserModel.findById(userID);
+	const user = await req.UserModel.findOne({
+		_id: userID,
+		organization: req.tenantContext!.organizationId,
+	});
 	appAssert(user, NOT_FOUND, `User with ID: ${userID} not found`);
 
 	const isOldPasswordValid = await bcrypt.compare(

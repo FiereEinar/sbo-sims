@@ -47,6 +47,14 @@ import { IUser } from '../models/user';
 import { sendVerificationEmail } from '../services/emailService';
 
 /**
+ * GET - public organizations
+ */
+export const get_public_organizations = asyncHandler(async (req, res) => {
+	const organizations = await req.OrganizationModel.find({}, 'name slug').exec();
+	res.json(new CustomResponse(true, organizations, 'Public organizations'));
+});
+
+/**
  * POST - user signup
  */
 export const signup = asyncHandler(async (req, res) => {
@@ -71,15 +79,22 @@ export const signup = asyncHandler(async (req, res) => {
 		`Student ID must be 10 numbers and should not contain characters to be valid`,
 	);
 
+	const orgSlug = req.headers['x-organization-slug'] as string;
+	appAssert(orgSlug, BAD_REQUEST, 'Organization slug is required');
+
+	const organization = await req.OrganizationModel.findOne({ slug: orgSlug }).exec();
+	appAssert(organization, NOT_FOUND, 'Organization not found');
+
 	// check if studentID already exist
 	const existingUser = await req.UserModel.findOne({
 		studentID: studentID,
+		organization: organization._id,
 	}).exec();
 
 	appAssert(
 		!existingUser,
 		CONFLICT,
-		`A user with ID '${studentID}' already exist`,
+		`A user with ID '${studentID}' already exist in this organization`,
 	);
 
 	// set default profile picture
@@ -90,9 +105,12 @@ export const signup = asyncHandler(async (req, res) => {
 	// hash the password
 	const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
 
-	// Find the default role
-	const defaultRole = await req.RoleModel.findOne({ isDefault: true }).exec();
-	appAssert(defaultRole, BAD_REQUEST, 'System configuration error: No default role found');
+	// Find the default role for the organization
+	const defaultRole = await req.RoleModel.findOne({ 
+		isDefault: true,
+		organization: organization._id 
+	}).exec();
+	appAssert(defaultRole, BAD_REQUEST, 'System configuration error: No default role found for this organization');
 
 	const verificationToken = crypto.randomBytes(32).toString('hex');
 	const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -112,6 +130,7 @@ export const signup = asyncHandler(async (req, res) => {
 			publicID: profilePublicID,
 		},
 		verified: false,
+		organization: organization._id,
 		verificationToken,
 		verificationTokenExpiresAt,
 	});
@@ -144,9 +163,16 @@ export const login = asyncHandler(async (req, res) => {
 	const recaptchaData = await recaptchaResponse.json();
 	appAssert(recaptchaData.success, BAD_REQUEST, 'reCAPTCHA verification failed. Please try again.');
 
+	const orgSlug = req.headers['x-organization-slug'] as string;
+	appAssert(orgSlug, BAD_REQUEST, 'Organization slug is required');
+
+	const organization = await req.OrganizationModel.findOne({ slug: orgSlug }).exec();
+	appAssert(organization, NOT_FOUND, 'Organization not found');
+
 	// check if studentID is valid
 	const user = await req.UserModel.findOne<IUser>({
 		studentID: studentID,
+		organization: organization._id,
 	})
 		.populate('rbacRole')
 		.populate('organization')

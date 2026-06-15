@@ -12,6 +12,7 @@ import { loginSchema } from '@/lib/validations/loginSchema';
 import { useUserStore } from '@/store/user';
 import RecaptchaOverlay from '../RecaptchaOverlay';
 import { useToast } from '@/hooks/use-toast';
+import { useParams } from 'react-router-dom';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -20,6 +21,7 @@ export default function LoginForm() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const setUser = useUserStore((state) => state.setUser);
+  const { orgSlug } = useParams<{ orgSlug: string }>();
 
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [pendingData, setPendingData] = useState<LoginFormValues | null>(null);
@@ -116,7 +118,7 @@ export default function LoginForm() {
 
         <div className="text-xs text-muted-foreground flex gap-1">
           <p>Don't have an account?</p>
-          <Link to="/signup" className="underline">
+          <Link to={orgSlug ? `/${orgSlug}/signup` : '/signup'} className="underline">
             Sign up
           </Link>
         </div>

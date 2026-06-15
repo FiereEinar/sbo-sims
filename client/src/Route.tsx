@@ -223,6 +223,16 @@ export default function Route() {
 			element: <Signup />,
 			errorElement: <ErrorPage />,
 		},
+		{
+			path: '/:orgSlug/login',
+			element: <Login />,
+			errorElement: <ErrorPage />,
+		},
+		{
+			path: '/:orgSlug/signup',
+			element: <Signup />,
+			errorElement: <ErrorPage />,
+		},
 	]);
 
 	return <RouterProvider router={route} />;

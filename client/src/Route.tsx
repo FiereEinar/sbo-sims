@@ -25,10 +25,16 @@ import Roles from './pages/Roles';
 import RoleInfo from './pages/RoleInfo';
 import ErrorPage from './pages/ErrorPage';
 
+import RootRedirect from './components/RootRedirect';
+
 export default function Route() {
 	const route = createBrowserRouter([
 		{
 			path: '/',
+			element: <RootRedirect />,
+		},
+		{
+			path: '/:orgSlug',
 			element: (
 				<ProtectedRoute>
 					<App />
@@ -41,7 +47,7 @@ export default function Route() {
 					element: <Dashboard />,
 				},
 				{
-					path: '/student',
+					path: 'student',
 					element: (
 						<HasPermission
 							permissions={[MODULES.STUDENT_READ]}
@@ -52,7 +58,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/transaction',
+					path: 'transaction',
 					element: (
 						<HasPermission
 							permissions={[MODULES.TRANSACTION_READ]}
@@ -63,7 +69,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/prelisting',
+					path: 'prelisting',
 					element: (
 						<HasPermission
 							permissions={[MODULES.PRELISTING_READ]}
@@ -74,7 +80,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/category',
+					path: 'category',
 					element: (
 						<HasPermission
 							permissions={[MODULES.CATEGORY_READ]}
@@ -85,7 +91,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/student/:studentID',
+					path: 'student/:studentID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.STUDENT_READ]}
@@ -96,7 +102,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/category/:categoryID',
+					path: 'category/:categoryID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.CATEGORY_READ]}
@@ -107,7 +113,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/transaction/:transactionID',
+					path: 'transaction/:transactionID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.TRANSACTION_READ]}
@@ -118,7 +124,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/prelisting/:prelistingID',
+					path: 'prelisting/:prelistingID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.PRELISTING_READ]}
@@ -129,7 +135,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/organization',
+					path: 'organization',
 					element: (
 						<HasPermission
 							permissions={[MODULES.ORGANIZATION_READ]}
@@ -140,7 +146,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/organization/:organizationID',
+					path: 'organization/:organizationID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.ORGANIZATION_READ]}
@@ -151,7 +157,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/user',
+					path: 'user',
 					element: (
 						<HasPermission
 							permissions={[MODULES.USER_READ]}
@@ -162,7 +168,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/user/:userID',
+					path: 'user/:userID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.USER_READ]}
@@ -173,7 +179,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/role',
+					path: 'role',
 					element: (
 						<HasPermission
 							permissions={[MODULES.ROLE_READ]}
@@ -184,7 +190,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/role/:roleID',
+					path: 'role/:roleID',
 					element: (
 						<HasPermission
 							permissions={[MODULES.ROLE_READ, MODULES.ROLE_UPDATE]}
@@ -195,7 +201,7 @@ export default function Route() {
 					),
 				},
 				{
-					path: '/settings',
+					path: 'settings',
 					element: (
 						<HasPermission
 							permissions={[MODULES.SETTING_READ]}

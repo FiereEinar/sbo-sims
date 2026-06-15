@@ -13,6 +13,9 @@ export interface IStudent extends mongoose.Document {
 	year: number;
 	email?: string;
 	section?: string;
+	semester: string;
+	schoolYear: string;
+	organization: mongoose.Types.ObjectId;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -28,6 +31,9 @@ export const StudentSchema = new Schema<IStudent>(
 		year: { type: Number, required: true },
 		course: { type: String, required: true },
 		section: { type: String, required: false },
+		semester: { type: String, enum: ['1', '2'], required: true },
+		schoolYear: { type: String, required: true },
+		organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
 	},
 	{ timestamps: true }
 );

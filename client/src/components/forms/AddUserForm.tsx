@@ -1,13 +1,14 @@
+import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import InputField from '../InputField';
 import { useForm } from 'react-hook-form';
@@ -17,7 +18,6 @@ import { submitUserForm, submitAdminUpdateUserForm } from '@/api/user';
 import { z } from 'zod';
 import Plus from '../icons/plus';
 import { User } from '@/types/user';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import ErrorText from '../ui/error-text';
 import { queryClient } from '@/main';
@@ -32,148 +32,148 @@ import { useToast } from '@/hooks/use-toast';
 export type UserFormValues = z.infer<typeof createUserSchema>;
 
 type AddUserFormProps = {
-	mode?: 'edit' | 'add';
-	user?: User;
+  mode?: 'edit' | 'add';
+  user?: User;
 };
 
 export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
-	if (user === undefined && mode === 'edit') {
-		throw new Error('No user data provided while user form mode is on edit');
-	}
+  if (user === undefined && mode === 'edit') {
+    throw new Error('No user data provided while user form mode is on edit');
+  }
 
-	const navigate = useNavigate();
-	const [role, setRole] = useState<string | undefined>(
-		user?.rbacRole?._id ?? undefined,
-	);
-	const { toast } = useToast();
+  const navigate = useTenantNavigate();
+  const [role, setRole] = useState<string | undefined>(
+    user?.rbacRole?._id ?? undefined,
+  );
+  const { toast } = useToast();
 
-	const {
-		register,
-		handleSubmit,
-		setValue,
-		setError,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<UserFormValues>({
-		resolver: zodResolver(createUserSchema),
-	});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<UserFormValues>({
+    resolver: zodResolver(createUserSchema),
+  });
 
-	const { data: roles } = useQuery({
-		queryKey: [QUERY_KEYS.ROLES],
-		queryFn: async (): Promise<Role[]> => {
-			const { data } = await axiosInstance.get('/role');
-			return data.data;
-		},
-	});
+  const { data: roles } = useQuery({
+    queryKey: [QUERY_KEYS.ROLES],
+    queryFn: async (): Promise<Role[]> => {
+      const { data } = await axiosInstance.get('/role');
+      return data.data;
+    },
+  });
 
-	useEffect(() => {
-		if (user) {
-			setValue('studentID', user.studentID);
-			setValue('firstname', _.startCase(user.firstname));
-			setValue('lastname', _.startCase(user.lastname));
-			setValue('email', user.email);
-			setValue('bio', user.bio ?? '');
-		}
-	}, [user, setValue]);
+  useEffect(() => {
+    if (user) {
+      setValue('studentID', user.studentID);
+      setValue('firstname', _.startCase(user.firstname));
+      setValue('lastname', _.startCase(user.lastname));
+      setValue('email', user.email);
+      setValue('bio', user.bio ?? '');
+    }
+  }, [user, setValue]);
 
-	const onSubmit = async (data: UserFormValues) => {
-		if (role === undefined)
-			return setError('rbacRole', { message: 'Role is required' });
+  const onSubmit = async (data: UserFormValues) => {
+    if (role === undefined)
+      return setError('rbacRole', { message: 'Role is required' });
 
-		try {
-			const formData = { ...user, ...data, rbacRole: role };
-			if (mode === 'add') await submitUserForm(formData);
-			if (mode === 'edit')
-				await submitAdminUpdateUserForm(user?._id ?? '', formData);
+    try {
+      const formData = { ...user, ...data, rbacRole: role };
+      if (mode === 'add') await submitUserForm(formData);
+      if (mode === 'edit')
+        await submitAdminUpdateUserForm(user?._id ?? '', formData);
 
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.USERS] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.USERS] });
 
-			navigate(`/user/${user?._id ?? ''}`, { replace: true });
+      navigate(`/user/${user?._id ?? ''}`, { replace: true });
 
-			toast({
-				title:
-					mode === 'add'
-						? 'User added successfully!'
-						: 'User updated successfully!',
-			});
-			reset();
-		} catch (err: any) {
-			setError('root', {
-				message: err.message || 'Failed to submit user form',
-			});
-		}
-	};
+      toast({
+        title:
+          mode === 'add'
+            ? 'User added successfully!'
+            : 'User updated successfully!',
+      });
+      reset();
+    } catch (err: any) {
+      setError('root', {
+        message: err.message || 'Failed to submit user form',
+      });
+    }
+  };
 
-	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				{mode === 'add' ? (
-					<Button className='flex justify-center gap-1' size='sm'>
-						<Plus />
-						<p>Add User</p>
-					</Button>
-				) : (
-					<Button className='flex gap-1' size='sm' variant='outline'>
-						<Pencil className='size-4' />
-						<p>Edit</p>
-					</Button>
-				)}
-			</DialogTrigger>
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        {mode === 'add' ? (
+          <Button className="flex justify-center gap-1" size="sm">
+            <Plus />
+            <p>Add User</p>
+          </Button>
+        ) : (
+          <Button className="flex gap-1" size="sm" variant="outline">
+            <Pencil className="size-4" />
+            <p>Edit</p>
+          </Button>
+        )}
+      </DialogTrigger>
 
-			<DialogContent className='sm:max-w-[425px]'>
-				<DialogHeader>
-					<DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} User</DialogTitle>
-					<DialogDescription>Fill up the form</DialogDescription>
-				</DialogHeader>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} User</DialogTitle>
+          <DialogDescription>Fill up the form</DialogDescription>
+        </DialogHeader>
 
-				<form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
-					<InputField<UserFormValues>
-						name='studentID'
-						registerFn={register}
-						errors={errors}
-						label='Student ID:'
-						id='studentID'
-						isDisabled={mode === 'edit'}
-					/>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          <InputField<UserFormValues>
+            name="studentID"
+            registerFn={register}
+            errors={errors}
+            label="Student ID:"
+            id="studentID"
+            isDisabled={mode === 'edit'}
+          />
 
-					<div className='flex gap-2'>
-						<InputField<UserFormValues>
-							name='firstname'
-							registerFn={register}
-							errors={errors}
-							label='Firstname:'
-							id='firstname'
-						/>
+          <div className="flex gap-2">
+            <InputField<UserFormValues>
+              name="firstname"
+              registerFn={register}
+              errors={errors}
+              label="Firstname:"
+              id="firstname"
+            />
 
-						<InputField<UserFormValues>
-							name='lastname'
-							registerFn={register}
-							errors={errors}
-							label='Lastname:'
-							id='lastname'
-						/>
-					</div>
+            <InputField<UserFormValues>
+              name="lastname"
+              registerFn={register}
+              errors={errors}
+              label="Lastname:"
+              id="lastname"
+            />
+          </div>
 
-					<InputField<UserFormValues>
-						name='email'
-						registerFn={register}
-						errors={errors}
-						label='Email:'
-						id='email'
-					/>
+          <InputField<UserFormValues>
+            name="email"
+            registerFn={register}
+            errors={errors}
+            label="Email:"
+            id="email"
+          />
 
-					{mode === 'add' && (
-						<InputField<UserFormValues>
-							name='password'
-							type='password'
-							registerFn={register}
-							errors={errors}
-							label='Password:'
-							id='password'
-						/>
-					)}
+          {mode === 'add' && (
+            <InputField<UserFormValues>
+              name="password"
+              type="password"
+              registerFn={register}
+              errors={errors}
+              label="Password:"
+              id="password"
+            />
+          )}
 
-					{/* <InputField<UserFormValues>
+          {/* <InputField<UserFormValues>
 						name='bio'
 						registerFn={register}
 						errors={errors}
@@ -181,7 +181,7 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
 						id='bio'
 					/> */}
 
-					{/* <InputField<UserFormValues>
+          {/* <InputField<UserFormValues>
 						name='rbacRole'
 						registerFn={register}
 						errors={errors}
@@ -189,28 +189,28 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
 						id='rbacRole'
 					/> */}
 
-					{roles && (
-						<RolePicker
-							roles={roles}
-							setRole={setRole}
-							error={errors.rbacRole?.message}
-							defaultValue={user?.rbacRole?._id}
-						/>
-					)}
+          {roles && (
+            <RolePicker
+              roles={roles}
+              setRole={setRole}
+              error={errors.rbacRole?.message}
+              defaultValue={user?.rbacRole?._id}
+            />
+          )}
 
-					{errors.root && errors.root.message && (
-						<ErrorText>{errors.root.message.toString()}</ErrorText>
-					)}
+          {errors.root && errors.root.message && (
+            <ErrorText>{errors.root.message.toString()}</ErrorText>
+          )}
 
-					<div className='flex justify-end'>
-						<Button disabled={isSubmitting} type='submit'>
-							Submit
-						</Button>
-					</div>
-				</form>
+          <div className="flex justify-end">
+            <Button disabled={isSubmitting} type="submit">
+              Submit
+            </Button>
+          </div>
+        </form>
 
-				<DialogFooter />
-			</DialogContent>
-		</Dialog>
-	);
+        <DialogFooter />
+      </DialogContent>
+    </Dialog>
+  );
 }

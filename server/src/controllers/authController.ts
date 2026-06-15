@@ -149,6 +149,7 @@ export const login = asyncHandler(async (req, res) => {
 		studentID: studentID,
 	})
 		.populate('rbacRole')
+		.populate('organization')
 		.exec();
 	appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
@@ -306,9 +307,9 @@ export const check_auth = asyncHandler(async (req, res) => {
 		AppErrorCodes.InvalidAccessToken,
 	);
 
-	const user = await req.UserModel.findById(payload.userID as string).populate(
-		'rbacRole',
-	);
+	const user = await req.UserModel.findById(payload.userID as string)
+		.populate('rbacRole')
+		.populate('organization');
 	const session = await req.SessionModel.findById(payload.sessionID);
 
 	appAssert(

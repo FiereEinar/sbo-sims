@@ -27,7 +27,13 @@ export const get_all_students = asyncHandler(async (req, res) => {
 	const pageSizeNum = pageSize ? parseInt(pageSize as string) : defaultPageSize;
 	const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
-	const filters: FilterQuery<IStudent>[] = [];
+	const filters: FilterQuery<IStudent>[] = [
+		{
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		}
+	];
 
 	if (course) filters.push({ course: course });
 	if (year) filters.push({ year: parseInt(year as string) });
@@ -193,7 +199,11 @@ export const import_students_smart = asyncHandler(async (req, res) => {
  * GET - get all the distinc courses of students
  */
 export const get_available_course = asyncHandler(async (req, res) => {
-	const courses = await req.StudentModel.find().distinct('course');
+	const courses = await req.StudentModel.find({
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).distinct('course');
 
 	res.json(new CustomResponse(true, courses, 'Students courses'));
 });
@@ -206,6 +216,9 @@ export const get_student = asyncHandler(async (req, res) => {
 
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID ${studentID} does not exist`);
 
@@ -220,6 +233,9 @@ export const get_student_transaction = asyncHandler(async (req, res) => {
 
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID ${studentID} does not exist`);
 
@@ -260,6 +276,9 @@ export const create_student = asyncHandler(async (req, res) => {
 
 	const existingStudentWithID = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(
 		existingStudentWithID === null,
@@ -285,6 +304,9 @@ export const create_student = asyncHandler(async (req, res) => {
 		gender: gender,
 		middlename: middlename,
 		year: year,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	});
 	await student.save();
 
@@ -311,7 +333,12 @@ export const update_student = asyncHandler(async (req, res) => {
 	}
 
 	// check if a student with the given ID exists
-	const student = await req.StudentModel.findOne({ studentID: studentID });
+	const student = await req.StudentModel.findOne({
+		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	if (gender) {
@@ -353,11 +380,19 @@ export const update_student = asyncHandler(async (req, res) => {
 export const delete_student = asyncHandler(async (req, res) => {
 	const { studentID } = req.params;
 
-	const student = await req.StudentModel.findOne({ studentID: studentID });
+	const student = await req.StudentModel.findOne({
+		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	const transactions = await req.TransactionModel?.find({
 		owner: student._id,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(
 		!transactions || transactions.length === 0,

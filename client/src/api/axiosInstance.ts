@@ -59,6 +59,12 @@ axiosInstance.interceptors.request.use((config) => {
 			config.headers['x-active-school-year'] = user.activeSchoolYearDB;
 		}
 	}
+
+	const pathSegments = window.location.pathname.split('/').filter(Boolean);
+	const firstSegment = pathSegments[0];
+	if (firstSegment && !['login', 'signup'].includes(firstSegment)) {
+		config.headers['x-organization-slug'] = firstSegment;
+	}
 	return config;
 });
 

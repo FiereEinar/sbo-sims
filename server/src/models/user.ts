@@ -29,6 +29,7 @@ export interface IUser extends mongoose.Document {
 	verificationTokenExpiresAt?: Date;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
+	organization?: mongoose.Types.ObjectId;
 	createdAt: Date;
 	updatedAt: Date;
 	omitPassword: () => Omit<IUser, 'password'>;
@@ -62,6 +63,7 @@ const UserSchema = new Schema<IUser>(
 			default: getYear(new Date()).toString(),
 		},
 		activeSemDB: { type: String, enum: ['1', '2'], default: '1' },
+		organization: { type: Schema.Types.ObjectId, ref: 'Organization' },
 	},
 	{ timestamps: true },
 );

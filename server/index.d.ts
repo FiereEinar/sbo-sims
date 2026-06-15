@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { IUser } from '../models/user';
 import { ITransaction } from '../models/transaction';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ICategory } from '../models/category';
 import { IOrganization } from '../models/organization';
 import { IStudent } from '../models/student';
@@ -13,6 +13,11 @@ import { IAppSetting } from './src/models/appSetting';
 declare global {
 	namespace Express {
 		interface Request {
+			tenantContext?: {
+				organizationId: mongoose.Types.ObjectId;
+				semester: string;
+				schoolYear: string;
+			};
 			currentUser: IUser;
 			UserModel: Model<IUser>;
 			StudentModel: Model<IStudent>;

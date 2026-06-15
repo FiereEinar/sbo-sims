@@ -24,7 +24,7 @@ import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import {
-	attachDatabaseModels,
+	extractTenantContext,
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
 
@@ -69,7 +69,7 @@ app.use('/auth', authRouter);
 
 // All routes from here requires the user to be authenticated
 app.use(auth);
-app.use(attachDatabaseModels); // Attach dynamic database models to the request object
+app.use(extractTenantContext); // Extract tenant context and attach to request
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);

@@ -19,7 +19,11 @@ import {
  * GET - fetch all categories
  */
 export const get_all_category = asyncHandler(async (req, res) => {
-	const categories = await req.CategoryModel.find().populate({
+	const categories = await req.CategoryModel.find({
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
@@ -32,13 +36,24 @@ export const get_all_category = asyncHandler(async (req, res) => {
  */
 export const get_all_category_with_transactions_data = asyncHandler(
 	async (req, res) => {
-		const categoriesWithOrg = await req.CategoryModel.find().populate({
+		const categoriesWithOrg = await req.CategoryModel.find({
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		}).populate({
 			model: req.OrganizationModel,
 			path: 'organization',
 		});
 
 		const categories =
 			await req.CategoryModel.aggregate<ICategoryWithTransactions>([
+				{
+					$match: {
+						organization: req.tenantContext!.organizationId,
+						semester: req.tenantContext!.semester,
+						schoolYear: req.tenantContext!.schoolYear,
+					}
+				},
 				{
 					$lookup: {
 						from: 'transactions',
@@ -90,7 +105,12 @@ export const get_category = asyncHandler(
 		const { categoryID } = req.params;
 
 		// check if the given category exists
-		const category = await req.CategoryModel.findById(categoryID)
+		const category = await req.CategoryModel.findOne({
+			_id: categoryID,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		})
 			.populate({
 				model: req.OrganizationModel,
 				path: 'organization',
@@ -123,11 +143,19 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 
 	// check if the given category exists
-	const category = await req.CategoryModel.findById(categoryID);
+	const category = await req.CategoryModel.findOne({
+		_id: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(category, NOT_FOUND, `Category wit ID: ${categoryID} not found`);
 
 	const categoryTransactions = await req.TransactionModel.find({
 		category: category._id,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	})
 		.populate({ model: req.StudentModel, path: 'owner' })
 		.populate({
@@ -152,14 +180,24 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
 	const { page, pageSize, search, course, status, year, section } = req.query;
 
-	const category = await req.CategoryModel.findById(categoryID).populate({
+	const category = await req.CategoryModel.findOne({
+		_id: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
 	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
 	// 1. Get all students that belong to the organization
-	let studentQuery: any = { course: { $in: category.organization.departments } };
+	let studentQuery: any = { 
+		course: { $in: category.organization.departments },
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	};
 	if (course) {
 		studentQuery.course = course;
 	}
@@ -181,7 +219,12 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 	const students = await req.StudentModel.find(studentQuery).lean();
 
 	// 2. Get all transactions for this category
-	const transactions = await req.TransactionModel.find({ category: categoryID }).lean();
+	const transactions = await req.TransactionModel.find({ 
+		category: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).lean();
 	const transactionMap = new Map(transactions.map(t => [t.owner.toString(), t]));
 
 	// 3. Map students to their payment status
@@ -232,13 +275,23 @@ export const download_category_student_status_pdf = asyncHandler(async (req, res
 	const { categoryID } = req.params;
 	const { search, course, status } = req.query;
 
-	const category = await req.CategoryModel.findById(categoryID).populate({
+	const category = await req.CategoryModel.findOne({
+		_id: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
 	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
-	let studentQuery: any = { course: { $in: category.organization.departments } };
+	let studentQuery: any = { 
+		course: { $in: category.organization.departments },
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	};
 	if (course) studentQuery.course = course;
 	if (search && typeof search === 'string') {
 		const s = search.toLowerCase();
@@ -250,7 +303,12 @@ export const download_category_student_status_pdf = asyncHandler(async (req, res
 	}
 
 	const students = await req.StudentModel.find(studentQuery).lean();
-	const transactions = await req.TransactionModel.find({ category: categoryID }).lean();
+	const transactions = await req.TransactionModel.find({ 
+		category: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).lean();
 	const transactionMap = new Map(transactions.map(t => [t.owner.toString(), t]));
 
 	let studentStatuses = students.map(student => {
@@ -332,13 +390,23 @@ export const download_category_student_status_csv = asyncHandler(async (req, res
 	const { categoryID } = req.params;
 	const { search, course, status } = req.query;
 
-	const category = await req.CategoryModel.findById(categoryID).populate({
+	const category = await req.CategoryModel.findOne({
+		_id: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	});
 	appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
-	let studentQuery: any = { course: { $in: category.organization.departments } };
+	let studentQuery: any = { 
+		course: { $in: category.organization.departments },
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	};
 	if (course) studentQuery.course = course;
 	if (search && typeof search === 'string') {
 		const s = search.toLowerCase();
@@ -350,7 +418,12 @@ export const download_category_student_status_csv = asyncHandler(async (req, res
 	}
 
 	const students = await req.StudentModel.find(studentQuery).lean();
-	const transactions = await req.TransactionModel.find({ category: categoryID }).lean();
+	const transactions = await req.TransactionModel.find({ 
+		category: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).lean();
 	const transactionMap = new Map(transactions.map(t => [t.owner.toString(), t]));
 
 	let studentStatuses = students.map(student => {
@@ -406,8 +479,10 @@ export const create_category = asyncHandler(async (req, res) => {
 	const category = new req.CategoryModel({
 		name: name,
 		fee: fee,
-		organization: organization._id,
+		organization: req.tenantContext!.organizationId,
 		details: details,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	});
 	await category.save();
 
@@ -439,9 +514,16 @@ export const update_category = asyncHandler(async (req, res) => {
 		details: details,
 	};
 
-	const result = await req.CategoryModel.findByIdAndUpdate(categoryID, update, {
-		new: true,
-	}).exec();
+	const result = await req.CategoryModel.findOneAndUpdate(
+		{
+			_id: categoryID,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		},
+		update, 
+		{ new: true }
+	).exec();
 
 	appAssert(
 		result,
@@ -460,6 +542,9 @@ export const delete_category = asyncHandler(async (req, res) => {
 
 	const transactions = await req.TransactionModel?.find({
 		category: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 
 	appAssert(
@@ -468,7 +553,12 @@ export const delete_category = asyncHandler(async (req, res) => {
 		'The category has existing transactions, make sure to handle and delete them first'
 	);
 
-	const result = await req.CategoryModel.findByIdAndDelete(categoryID);
+	const result = await req.CategoryModel.findOneAndDelete({
+		_id: categoryID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(result, NOT_FOUND, `Category with ID ${categoryID} does not exist`);
 
 	res.json(new CustomResponse(true, result, 'Category deleted successfully'));

@@ -16,6 +16,8 @@ export interface ICategory extends mongoose.Document {
 	organization: IOrganization;
 	details: string[];
 	// type: CategoryType;
+	semester: string;
+	schoolYear: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -31,6 +33,8 @@ export const CategorySchema = new Schema<ICategory>(
 			ref: 'Organization',
 			required: true,
 		},
+		semester: { type: String, enum: ['1', '2'], required: true },
+		schoolYear: { type: String, required: true },
 	},
 	{ timestamps: true }
 );

@@ -30,7 +30,12 @@ export const get_all_prelistings = asyncHandler(
 export const get_prelisting = asyncHandler(async (req, res) => {
 	const { prelistingID } = req.params;
 
-	const prelisting = await req.PrelistingModel.findById(prelistingID)
+	const prelisting = await req.PrelistingModel.findOne({
+		_id: prelistingID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	})
 		.populate({
 			model: req.CategoryModel,
 			path: 'category',
@@ -74,6 +79,9 @@ export const create_prelisting = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
@@ -99,6 +107,9 @@ export const create_prelisting = asyncHandler(async (req, res) => {
 		description: description,
 		date: date ? date.toISOString() : new Date(),
 		details: detailsObj,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	});
 	await prelisting.save();
 
@@ -129,6 +140,9 @@ export const update_prelisting = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
@@ -156,8 +170,13 @@ export const update_prelisting = asyncHandler(async (req, res) => {
 		details: detailsObj,
 	};
 
-	const result = await req.PrelistingModel.findByIdAndUpdate(
-		prelistingID,
+	const result = await req.PrelistingModel.findOneAndUpdate(
+		{
+			_id: prelistingID,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		},
 		update,
 		{ new: true }
 	).exec();
@@ -170,7 +189,12 @@ export const update_prelisting = asyncHandler(async (req, res) => {
 export const delete_prelisting = asyncHandler(async (req, res) => {
 	const { prelistingID } = req.params;
 
-	const result = await req.PrelistingModel.findByIdAndDelete(prelistingID);
+	const result = await req.PrelistingModel.findOneAndDelete({
+		_id: prelistingID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(
 		result,
 		NOT_FOUND,

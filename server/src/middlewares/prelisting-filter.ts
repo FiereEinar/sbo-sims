@@ -39,7 +39,13 @@ export const prelistingQueryFilter = asyncHandler(
 			: defaultPageSize;
 		const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
-		const filters: FilterQuery<IPrelisting>[] = [];
+		const filters: FilterQuery<IPrelisting>[] = [
+			{
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			}
+		];
 
 		if (startDate && endDate)
 			filters.push({

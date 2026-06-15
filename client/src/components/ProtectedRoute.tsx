@@ -1,6 +1,6 @@
 import axiosInstance from '@/api/axiosInstance';
 import { PropsWithChildren, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { trefoil } from 'ldrs';
 import { User } from '@/types/user';
 import { useUserStore } from '@/store/user';
@@ -11,6 +11,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const setUser = useUserStore((state) => state.setUser);
 	const navigate = useNavigate();
+	const { orgSlug } = useParams<{ orgSlug: string }>();
 
 	useEffect(() => {
 		(async () => {
@@ -18,13 +19,19 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 				const { data } = await axiosInstance.get<User>('/auth/check-auth');
 				setUser(data);
 
+				if (orgSlug && data.organization?.slug !== orgSlug) {
+					setIsAuthenticated(false);
+					navigate('/login', { replace: true });
+					return;
+				}
+
 				setIsAuthenticated(true);
 			} catch (err: any) {
 				setIsAuthenticated(false);
 				navigate('/login', { replace: true });
 			}
 		})();
-	}, [navigate]);
+	}, [navigate, orgSlug, setUser]);
 
 	if (!isAuthenticated) {
 		const isDark = document.documentElement.classList.contains('dark');

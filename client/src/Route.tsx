@@ -23,6 +23,7 @@ import UserInfo from './pages/UserInfo';
 import Roles from './pages/Roles';
 import RoleInfo from './pages/RoleInfo';
 import ErrorPage from './pages/ErrorPage';
+import Reports from './pages/Reports';
 
 import RootRedirect from './components/RootRedirect';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
@@ -211,6 +212,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Settings />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'reports',
+          element: (
+            <HasPermission
+              permissions={[MODULES.TRANSACTION_READ]}
+              fallback={<NoPermission />}
+            >
+              <Reports />
             </HasPermission>
           ),
         },

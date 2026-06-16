@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import { AdminOrgWithStats, adminCreateOrg, adminUpdateOrg } from '@/api/admin';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
 import { Department } from '@/types/deparment';
+import _ from 'lodash';
 
 const editOrgSchema = organizationSchema;
 
@@ -55,10 +56,10 @@ export default function OrgFormModal({
     defaultValues: {
       name: org?.name ?? '',
       slug: org?.slug ?? '',
-      governor: org?.governor ?? '',
-      viceGovernor: org?.viceGovernor ?? '',
-      treasurer: org?.treasurer ?? '',
-      auditor: org?.auditor ?? '',
+      governor: _.startCase(org?.governor ?? ''),
+      viceGovernor: _.startCase(org?.viceGovernor ?? ''),
+      treasurer: _.startCase(org?.treasurer ?? ''),
+      auditor: _.startCase(org?.auditor ?? ''),
     },
   });
 

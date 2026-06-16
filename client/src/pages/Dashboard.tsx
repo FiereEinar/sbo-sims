@@ -146,15 +146,13 @@ export default function Dashboard() {
   return (
     <SidebarPageLayout>
       <StickyHeader>
-        <Header>
-          <span className="font-semibold">Dashboard Overview</span>
-        </Header>
+        <Header>Dashboard Overview</Header>
         <div className="flex gap-4 items-center">
           <div className="w-[130px]">
-            <SemInput />
+            <SemInput hideLabel />
           </div>
           <div className="w-[150px]">
-            <SchoolYearInput />
+            <SchoolYearInput hideLabel />
           </div>
         </div>
       </StickyHeader>

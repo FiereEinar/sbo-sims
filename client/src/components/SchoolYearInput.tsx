@@ -15,7 +15,11 @@ import { User } from '@/types/user';
 import { queryClient } from '@/main';
 import { AVAILABLE_SCHOOL_YEARS } from '@/constants';
 
-export default function SchoolYearInput() {
+type SchoolYearInputProps = {
+  hideLabel?: boolean;
+};
+
+export default function SchoolYearInput({ hideLabel }: SchoolYearInputProps) {
   const { toast } = useToast();
   const navigate = useTenantNavigate();
   const { user: currentUser, setUser } = useUserStore((state) => state);
@@ -61,7 +65,7 @@ export default function SchoolYearInput() {
 
   return (
     <div className="flex flex-col gap-2 justify-end">
-      <Label className="ml-1">School Year:</Label>
+      {!hideLabel && <Label className="ml-1">School Year:</Label>}
       <Select value={currentUser?.activeSchoolYearDB} onValueChange={onChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select Year" />

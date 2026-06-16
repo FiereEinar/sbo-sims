@@ -1,6 +1,7 @@
 import {
 	Building2,
 	ClipboardList,
+	FileBarChart2,
 	GraduationCap,
 	LayoutDashboard,
 	LucideProps,
@@ -24,6 +25,8 @@ export const QUERY_KEYS = {
 	DASHBOARD_DATA: 'dashboard_data',
 	USERS: 'users',
 	ROLES: 'roles',
+	REPORT_SUMMARY: 'report_summary',
+	REPORT_MONTHLY: 'report_monthly',
 };
 
 export const MODULES = {
@@ -111,6 +114,12 @@ export const navbarLinks: SidebarNavLinkType[] = [
 		name: 'Categories',
 		icon: Tags,
 		permissions: [MODULES.CATEGORY_READ],
+	},
+	{
+		path: '/reports',
+		name: 'Reports',
+		icon: FileBarChart2,
+		permissions: [MODULES.TRANSACTION_READ],
 	},
 	{
 		path: '/organization',

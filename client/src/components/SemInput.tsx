@@ -14,7 +14,11 @@ import { APIResponse } from '@/types/api-response';
 import { User } from '@/types/user';
 import { queryClient } from '@/main';
 
-export default function SemInput() {
+type SemInputProps = {
+  hideLabel?: boolean;
+};
+
+export default function SemInput({ hideLabel }: SemInputProps) {
   const { toast } = useToast();
   const navigate = useTenantNavigate();
   const { user: currentUser, setUser } = useUserStore((state) => state);
@@ -60,7 +64,7 @@ export default function SemInput() {
 
   return (
     <div className="flex flex-col gap-2 justify-end">
-      <Label className="ml-1">Semester:</Label>
+      {!hideLabel && <Label className="ml-1">Semester:</Label>}
       <Select value={currentUser?.activeSemDB ?? '1'} onValueChange={onChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Semester" />

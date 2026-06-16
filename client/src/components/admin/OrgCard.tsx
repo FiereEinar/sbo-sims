@@ -1,7 +1,15 @@
 import { useState } from 'react';
-import { Building2, Pencil, Trash2, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Building2,
+  Pencil,
+  Trash2,
+  Users,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { AdminOrgWithStats } from '@/api/admin';
 import StatBadge from './StatBadge';
+import _ from 'lodash';
 
 export default function OrgCard({
   org,
@@ -82,8 +90,11 @@ export default function OrgCard({
           <Users className="w-3.5 h-3.5" style={{ color: '#60a5fa' }} />
           <StatBadge label="Users" value={org.userCount} />
         </div>
-        <StatBadge label="Governor" value={org.governor || '—'} />
-        <StatBadge label="Treasurer" value={org.treasurer || '—'} />
+        <StatBadge label="Governor" value={_.startCase(org.governor || '—')} />
+        <StatBadge
+          label="Treasurer"
+          value={_.startCase(org.treasurer || '—')}
+        />
       </div>
 
       {/* Departments collapsible */}

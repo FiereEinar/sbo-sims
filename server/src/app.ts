@@ -16,6 +16,7 @@ import organizationRouter from './routes/organization';
 import roleRouter from './routes/role';
 import settingRouter from './routes/setting';
 import adminRouter from './routes/admin';
+import reportRouter from './routes/report';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -78,6 +79,7 @@ app.use(extractTenantContext); // Extract tenant context and attach to request
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);
+app.use('/report', reportRouter);
 app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);

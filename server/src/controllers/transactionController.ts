@@ -385,6 +385,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
@@ -512,7 +515,12 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 	);
 
 	// validate student once
-	const student = await req.StudentModel.findOne({ studentID }).exec();
+	const student = await req.StudentModel.findOne({ 
+		studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	// validate all items first before creating any
@@ -713,6 +721,9 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 

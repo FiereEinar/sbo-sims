@@ -8,6 +8,7 @@ import {
 	BAD_REQUEST,
 	NOT_FOUND,
 	UNPROCESSABLE_ENTITY,
+	UNAUTHORIZED,
 } from '../constants/http';
 
 /**
@@ -158,6 +159,12 @@ export const create_organization = asyncHandler(async (req, res) => {
 export const delete_organization = asyncHandler(async (req, res) => {
 	const { organizationID } = req.params;
 
+	appAssert(
+		organizationID === req.tenantContext!.organizationId?.toString(),
+		UNAUTHORIZED,
+		'You do not have permission to delete another organization'
+	);
+
 	const categories = await req.CategoryModel?.find({
 		organization: organizationID,
 	}).exec();
@@ -185,6 +192,12 @@ export const delete_organization = asyncHandler(async (req, res) => {
  */
 export const update_organization = asyncHandler(async (req, res) => {
 	const { organizationID } = req.params;
+
+	appAssert(
+		organizationID === req.tenantContext!.organizationId?.toString(),
+		UNAUTHORIZED,
+		'You do not have permission to update another organization'
+	);
 
 	const {
 		name,

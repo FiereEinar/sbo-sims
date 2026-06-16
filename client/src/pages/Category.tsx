@@ -11,6 +11,9 @@ import { MODULES, QUERY_KEYS } from '@/constants';
 import { useViewModeStore } from '@/store/viewModeStore';
 import { useQuery } from '@tanstack/react-query';
 
+import SemInput from '@/components/SemInput';
+import SchoolYearInput from '@/components/SchoolYearInput';
+
 export default function Category() {
 	const { viewMode } = useViewModeStore();
 
@@ -36,8 +39,15 @@ export default function Category() {
 				</HasPermission>
 			</StickyHeader>
 
-			<div className='flex justify-between items-center'>
-				<div />
+			<div className='flex justify-between items-end flex-wrap gap-3 mb-4'>
+				<div className='flex flex-wrap items-end gap-3'>
+					<div className='w-[130px]'>
+						<SemInput />
+					</div>
+					<div className='w-[150px]'>
+						<SchoolYearInput />
+					</div>
+				</div>
 				<ViewModeToggle />
 			</div>
 

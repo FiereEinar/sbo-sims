@@ -17,6 +17,12 @@ export default function RootRedirect() {
 				const { data } = await axiosInstance.get<User>('/auth/check-auth');
 				setUser(data);
 
+				// Global super admin goes to the admin portal
+				if (data.role === 'admin' && !data.organization) {
+					navigate('/admin', { replace: true });
+					return;
+				}
+
 				if (data.organization?.slug) {
 					navigate(`/${data.organization.slug}`, { replace: true });
 				} else {

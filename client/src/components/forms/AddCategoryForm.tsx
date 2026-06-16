@@ -20,16 +20,11 @@ import {
 import { Button } from '../ui/button';
 import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
-import OrganizationPicker from '../OrganizationPicker';
 import { useEffect, useState } from 'react';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
-import { fetchAllOrganizations } from '@/api/organization';
-import { useQuery } from '@tanstack/react-query';
 import { Category } from '@/types/category';
-import { useToast } from '@/hooks/use-toast';
 import ArrayInputField from '../ArrayInputField';
-
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
@@ -48,16 +43,7 @@ export default function AddCategoryForm({
 		);
 	}
 
-	const { toast } = useToast();
-	const [org, setOrg] = useState<string>();
 	const [details, setDetails] = useState<string[]>([]);
-
-	const { data: organizations, error: organizationError } = useQuery({
-		queryKey: [QUERY_KEYS.ORGANIZATION],
-		queryFn: fetchAllOrganizations,
-	});
-
-	// Removed unnecessary fetchCategoryStudentStatus query to prevent caching issues with pagination
 
 	const {
 		register,
@@ -74,19 +60,12 @@ export default function AddCategoryForm({
 		if (category) {
 			setValue('fee', category.fee?.toString() ?? '');
 			setValue('name', category.name ?? '');
-			setOrg(typeof category.organization === 'string' ? category.organization : category.organization?._id ?? '');
 			setDetails(category.details ?? []);
 		}
-	}, [category, setValue, setOrg]);
+	}, [category, setValue]);
 
 	const onSubmit = async (data: CategoryFormValues) => {
 		try {
-			if (!org) {
-				setError('organizationID', { message: 'Select an organization' });
-				return;
-			}
-
-			data.organizationID = org;
 			data.details = details;
 
 			if (mode === 'add') await submitCategoryForm(data);
@@ -97,7 +76,6 @@ export default function AddCategoryForm({
 				queryKey: [QUERY_KEYS.CATEGORY_WITH_TRANSACTIONS],
 			});
 			reset();
-			setOrg('');
 			setDetails([]);
 		} catch (err: any) {
 			setError('root', {
@@ -114,13 +92,6 @@ export default function AddCategoryForm({
 	const onDetailRemove = (value: string) => {
 		setDetails((prev) => prev.filter((detail) => detail !== value));
 	};
-
-	if (organizationError) {
-		toast({
-			variant: 'destructive',
-			title: 'Failed to fetch organizations',
-		});
-	}
 
 	return (
 		<Dialog>
@@ -167,13 +138,6 @@ export default function AddCategoryForm({
 						values={details}
 						onSubmit={onDetailAdd}
 						onRemove={onDetailRemove}
-					/>
-
-					<OrganizationPicker
-						defaultValue={category?.organization._id ?? ''}
-						setOrg={setOrg}
-						organizations={organizations ?? []}
-						error={errors.organizationID?.message}
 					/>
 
 					{errors.root && errors.root.message && (

@@ -1,32 +1,33 @@
 # Agent Handoff Document
 
-Welcome to the **SBO-SIMS** project! This document outlines the progress made in the most recent session, the current architectural state of the application, and the recommended next steps. 
+Welcome to the **SBO-SIMS** project! This document outlines the architectural state of the application and the progress made across recent development sessions.
 
-## 1. What Was Accomplished (Recent Refactoring)
-The primary goal of the previous session was to transform the application into a **multi-tenant system**, isolating organizations both at the UI routing level and the database level.
+## 1. What Was Accomplished (Multi-Tenant Refactoring & Feature Additions)
+The application has been successfully transformed into a **multi-tenant system**, isolating organizations at the UI routing level and the database level.
 
 ### Frontend
-- **Dynamic Routing**: Refactored `react-router-dom` in `client/src/Route.tsx` to support `/:orgSlug/*` routes. All authenticated pages are now nested under their respective organization slug (e.g., `/acms/student`).
+- **Dynamic Routing**: Refactored `react-router-dom` in `client/src/Route.tsx` to support `/:orgSlug/*` routes. All authenticated pages are nested under their respective organization slug (e.g., `/acms/student`).
 - **Root Redirector**: Implemented `<RootRedirect />` for the root path `/` to instantly redirect an authenticated user to their assigned organization's dashboard.
-- **Strict Protected Routes**: Updated `<ProtectedRoute />` to verify if the URL parameter `:orgSlug` matches the user's assigned organization. Unauthenticated or unauthorized users are kicked back to `/login`.
-- **Tenant-Aware Navigation Hooks**: Created the `useTenantNavigate` hook (`client/src/hooks/useTenantNavigate.ts`) to automatically prepend the current `orgSlug` to all internal navigation. Over 30 frontend components were migrated to use this hook instead of the standard `useNavigate`.
-- **Axios Interceptor**: Updated `client/src/utils/axiosInstance.ts` with a request interceptor that parses the `orgSlug` from the URL and automatically attaches it as the `x-organization-slug` header to all outgoing API requests.
+- **Tenant-Aware Login/Signup**: Implemented organization-specific login and signup pages at `/:orgSlug/login` and `/:orgSlug/signup`. The root `/login` and `/signup` pages now show a list of available organizations.
+- **Tenant-Aware Navigation Hooks**: Created the `useTenantNavigate` hook to automatically prepend the current `orgSlug` to all internal navigation.
+- **Axios Interceptor**: Updated `client/src/api/axiosInstance.ts` with a request interceptor that parses the `orgSlug` from the URL and attaches it as the `x-organization-slug` header to all outgoing API requests.
+- **Sidebar & Org Info Update**: Updated the Sidebar to accurately reflect the tenant context, renamed "Organizations" to "Organization" and included a UI separator. Restricted the Organization page to only show the tenant's own info.
+- **Profile Updates**: Disabled the editing of the Student ID in the `UpdateUserForm` profile editor.
 
 ### Backend
-- **CORS Configuration**: Updated `server/src/utils/cors.ts` to allow the `x-organization-slug` header in preflight requests.
-- **Tenant Connections Manager**: Created `DatabaseManager` (`server/src/database/databaseManager.ts`) to dynamically resolve and cache Mongoose database connections based on the `x-organization-slug` header extracted from the request.
-- **Local MongoDB Environment**: Switched the connection string in the local development environment to `mongodb://localhost:27017` to facilitate easier offline development.
-- **Migration Script**: Wrote and executed `server/src/scripts/migrateToV2.ts`, which extracts hardcoded organization logic, creates proper `Organization` documents, and links users to their organizations.
+- **Database Context Middleware**: Completed the refactoring of models and controllers. Implemented `attachOriginalDatabaseModels` and `extractTenantContext` middlewares. All backend controllers now utilize dynamically attached models (e.g., `req.StudentModel`, `req.UserModel`) configured per tenant context, fully replacing global `mongoose.model` usage.
+- **Slug Editing Capability**: Added the ability for tenants to safely edit their organization's URL slug, complete with uniqueness validation on the backend and automatic frontend routing updates upon success.
+- **Database Fixes**: Fixed a bug where roles were not displaying by running a script to assign missing `organization` IDs to orphaned roles in the database.
+- **Migration Scripts**: 
+  - Executed `server/src/scripts/migrateToV2.ts` to extract hardcoded organization logic.
+  - Wrote `server/src/scripts/copyToAtlas.ts` to easily copy local development data seamlessly into an Atlas cloud database.
 
 ## 2. Current State
 - The frontend compiles successfully with 0 TypeScript errors.
-- The backend successfully compiles and the local development server is running via `npm run dev-all` without immediate runtime crashes.
-- The frontend routes seamlessly inject `x-organization-slug` into API headers without any CORS issues.
-- The latest changes have been committed (`git commit -m "refactor: converted system into multi-tenant application"`).
+- The backend successfully compiles and the local development server is running smoothly via `npm run dev-all`.
+- The frontend routes flawlessly inject `x-organization-slug` into API headers.
+- Multi-tenancy is fully implemented across the entire application stack.
 
 ## 3. Next Steps & Areas of Focus
-While the core routing and connection management plumbing are built, **the actual database models and controllers still need to be updated to support the new multi-tenant reality**.
-
-1. **Schema Updates**: The current `User`, `Student`, `Transaction`, and `Category` schemas may still be tightly coupled or missing explicit multi-tenant referencing logic depending on how they interact with `DatabaseManager`. The next agent should inspect the schemas and ensure they are compatible with the new multi-tenant database strategy (whether that is separate databases per tenant or a shared database with `organizationId` filtering).
-2. **Controller Refactoring**: Backend controllers (e.g., `studentController.ts`, `transactionController.ts`) need to be audited. They must utilize the tenant-specific database connection provided by `req.db` (or however the `DatabaseManager` attaches it to the request lifecycle) instead of a global `mongoose.model`.
-3. **API Validation**: End-to-end testing of CRUD operations across different tenants needs to be conducted to ensure data isolation is completely airtight.
+1. **Global Super Admin Portal**: Develop a dedicated global super admin portal outside of the tenant structure (e.g., accessed from the root domain without an organization slug) to manage all tenants centrally.
+2. **Comprehensive API Audits**: Conduct deeper end-to-end security and role-based access control (RBAC) audits across the different tenants to ensure there are no edge cases where data isolation could be compromised.

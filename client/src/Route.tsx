@@ -25,6 +25,10 @@ import RoleInfo from './pages/RoleInfo';
 import ErrorPage from './pages/ErrorPage';
 
 import RootRedirect from './components/RootRedirect';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import AdminApp from './pages/admin/AdminApp';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogin from './pages/admin/AdminLogin';
 
 export default function Route() {
   const route = createBrowserRouter([
@@ -231,6 +235,27 @@ export default function Route() {
       path: '/:orgSlug/signup',
       element: <Signup />,
       errorElement: <ErrorPage />,
+    },
+    // ── Global Super Admin Portal ──
+    {
+      path: '/admin/login',
+      element: <AdminLogin />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: '/admin',
+      element: (
+        <AdminProtectedRoute>
+          <AdminApp />
+        </AdminProtectedRoute>
+      ),
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          index: true,
+          element: <AdminDashboard />,
+        },
+      ],
     },
   ]);
 

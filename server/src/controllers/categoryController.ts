@@ -464,13 +464,13 @@ export const download_category_student_status_csv = asyncHandler(async (req, res
  * POST - create a category
  */
 export const create_category = asyncHandler(async (req, res) => {
-	const { name, fee, organizationID, details }: createCategoryBody = req.body;
+	const { name, fee, details }: createCategoryBody = req.body;
 	// check if the organization exists
-	const organization = await req.OrganizationModel.findById(organizationID);
+	const organization = await req.OrganizationModel.findById(req.tenantContext!.organizationId);
 	appAssert(
 		organization,
 		NOT_FOUND,
-		`Organization with ID: ${organizationID} does not exist`
+		`Organization does not exist`
 	);
 
 	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
@@ -494,14 +494,14 @@ export const create_category = asyncHandler(async (req, res) => {
  */
 export const update_category = asyncHandler(async (req, res) => {
 	const { categoryID } = req.params;
-	const { name, fee, organizationID, details }: updateCategoryBody = req.body;
+	const { name, fee, details }: updateCategoryBody = req.body;
 
 	// appAssert(Array.isArray(details), BAD_REQUEST, 'Details should be an array');
-	const organization = await req.OrganizationModel?.findById(organizationID);
+	const organization = await req.OrganizationModel?.findById(req.tenantContext!.organizationId);
 	appAssert(
 		organization,
 		NOT_FOUND,
-		`Organization with ID: ${organizationID} not found`
+		`Organization not found`
 	);
 
 	appAssert(fee > 0, BAD_REQUEST, 'Please enter a non-negative number for fee');
@@ -510,7 +510,7 @@ export const update_category = asyncHandler(async (req, res) => {
 	const update: UpdateQuery<ICategory> = {
 		name: name,
 		fee: fee,
-		organization: organizationID,
+		organization: req.tenantContext!.organizationId,
 		details: details,
 	};
 

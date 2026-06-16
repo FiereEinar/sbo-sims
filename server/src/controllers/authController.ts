@@ -385,6 +385,61 @@ export const admin = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, user.omitPassword(), 'Admin found'));
 });
 
+/**
+ * POST /auth/admin-login
+ * Login for the global super admin only (no org slug required).
+ * Validates that the user has role === 'admin'.
+ */
+export const admin_login = asyncHandler(async (req, res) => {
+	const { studentID, password }: loginUserBody = req.body;
+
+	// Find the admin user — no organization filter
+	const user = await req.UserModel.findOne<IUser>({ studentID })
+		.populate('rbacRole')
+		.exec();
+	appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
+	appAssert(
+		user.role === 'admin',
+		UNAUTHORIZED,
+		'Access denied: not a super admin',
+	);
+
+	const match = await bcrypt.compare(password, user.password);
+	appAssert(match, UNAUTHORIZED, 'Incorrect Student ID or password');
+
+	const { ip, userAgent } = getUserRequestInfo(req);
+
+	const session = new req.SessionModel({
+		userID: user._id,
+		expiresAt: thirtyDaysFromNow(),
+		ip,
+		userAgent,
+	});
+	await session.save();
+
+	const sessionID = session._id as string;
+	const userID = user._id.toString();
+
+	const accessToken = signToken({ sessionID, userID });
+	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
+	setAuthCookie({ res, accessToken, refreshToken });
+
+	const useragent = req.useragent;
+	const device = useragent?.isMobile
+		? 'mobile'
+		: useragent?.isTablet
+			? 'tablet'
+			: 'desktop';
+
+	res.json(
+		new CustomResponse(
+			true,
+			{ user: user.omitPassword(), accessToken, device },
+			'Admin login successful',
+		),
+	);
+});
+
 export const verify_email = asyncHandler(async (req, res) => {
 	const { token, id } = req.query;
 

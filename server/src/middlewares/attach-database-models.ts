@@ -11,7 +11,7 @@ import { PrelistingSchema } from '../models/prelisting';
 import RoleSchema from '../models/role';
 import { AppSettingSchema } from '../models/appSetting';
 
-export const attachDatabaseModels = async (
+export const extractTenantContext = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
@@ -25,31 +25,27 @@ export const attachDatabaseModels = async (
 
 		const activeSem = (req.headers['x-active-sem'] as string) || currentUser.activeSemDB;
 		const activeSchoolYear = (req.headers['x-active-school-year'] as string) || currentUser.activeSchoolYearDB;
+		const orgSlug = req.headers['x-organization-slug'] as string;
 
-		const dbName = `${activeSem}${activeSchoolYear}`;
+		if (!orgSlug) {
+			return res.status(400).json({ message: 'x-organization-slug header is required' });
+		}
 
-		const dynamicConnection = await getDatabaseConnection(
-			dbName,
-			process.env.ME_CONFIG_MONGODB_URL as string,
-		);
+		const organization = await req.OrganizationModel.findOne({ slug: orgSlug });
+		if (!organization) {
+			return res.status(404).json({ message: 'Organization not found' });
+		}
 
-		req.StudentModel = dynamicConnection.model(DB_MODEL.STUDENT, StudentSchema);
-		req.CategoryModel = dynamicConnection.model(
-			DB_MODEL.CATEGORY,
-			CategorySchema,
-		);
-		req.TransactionModel = dynamicConnection.model(
-			DB_MODEL.TRANSACTION,
-			TransactionSchema,
-		);
-		req.PrelistingModel = dynamicConnection.model(
-			DB_MODEL.PRELISTING,
-			PrelistingSchema,
-		);
+		req.tenantContext = {
+			organizationId: organization._id,
+			semester: activeSem,
+			schoolYear: activeSchoolYear
+		};
 
 		next();
 	} catch (err: any) {
-		console.error('Failed to attach database models', err);
+		console.error('Failed to extract tenant context', err);
+		res.status(500).json({ message: 'Internal server error extracting tenant context' });
 	}
 };
 
@@ -76,6 +72,12 @@ export const attachOriginalDatabaseModels = async (
 		req.RoleModel = originalConnection.model(DB_MODEL.ROLE, RoleSchema);
 
 		req.AppSettingModel = originalConnection.model(DB_MODEL.APPSETTING, AppSettingSchema);
+		
+		// Term models
+		req.StudentModel = originalConnection.model(DB_MODEL.STUDENT, StudentSchema);
+		req.CategoryModel = originalConnection.model(DB_MODEL.CATEGORY, CategorySchema);
+		req.TransactionModel = originalConnection.model(DB_MODEL.TRANSACTION, TransactionSchema);
+		req.PrelistingModel = originalConnection.model(DB_MODEL.PRELISTING, PrelistingSchema);
 		
 		next();
 	} catch (err: any) {

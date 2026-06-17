@@ -156,6 +156,13 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 	// Calculate overall totals and previous month totals in a single pass using Facets
 	const totals = await req.TransactionModel?.aggregate([
 		{
+			$match: {
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			}
+		},
+		{
 			$facet: {
 				overall: [
 					{
@@ -191,6 +198,13 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 
 	const transactions = await req.TransactionModel?.aggregate([
 		{
+			$match: {
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			}
+		},
+		{
 			$group: {
 				_id: '$date',
 				totalAmount: { $sum: '$amount' },
@@ -212,6 +226,9 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 	]);
 
 	const transactionsToday = await req.TransactionModel?.countDocuments({
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 		$and: [
 			{ date: { $gte: startOfDay(new Date()).toISOString() } },
 			{ date: { $lt: startOfDay(addDays(new Date(), 1)).toISOString() } },
@@ -228,13 +245,24 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 	};
 
 	// Get all categories populated with organizations
-	const categories = await req.CategoryModel?.find({}).populate({
+	const categories = await req.CategoryModel?.find({
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).populate({
 		model: req.OrganizationModel,
 		path: 'organization',
 	}).lean();
 
 	// Calculate stats grouped by category in the DB
 	const categoryStats = await req.TransactionModel?.aggregate([
+		{
+			$match: {
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			}
+		},
 		{
 			$group: {
 				_id: '$category',
@@ -265,7 +293,11 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 	/**
 	 * Students related logic
 	 */
-	const totalStudents = await req.StudentModel?.countDocuments();
+	const totalStudents = await req.StudentModel?.countDocuments({
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 
 	res.json(
 		new CustomResponse(
@@ -291,7 +323,12 @@ export const get_dashboard_data = asyncHandler(async (req, res) => {
 export const get_transaction = asyncHandler(async (req, res) => {
 	const { transactionID } = req.params;
 
-	const transaction = await req.TransactionModel.findById(transactionID)
+	const transaction = await req.TransactionModel.findOne({
+		_id: transactionID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	})
 		.populate({
 			model: req.CategoryModel,
 			path: 'category',
@@ -348,6 +385,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
@@ -368,6 +408,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 	const existingTransaction = await req.TransactionModel.findOne({
 		owner: student._id,
 		category: category._id,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 
 	if (existingTransaction) {
@@ -441,6 +484,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
 				modeOfPayment: paymentMode,
 			},
 		],
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	});
 	await transaction.save();
 
@@ -469,7 +515,12 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 	);
 
 	// validate student once
-	const student = await req.StudentModel.findOne({ studentID }).exec();
+	const student = await req.StudentModel.findOne({ 
+		studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
 	// validate all items first before creating any
@@ -496,6 +547,9 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 		const isAlreadyPaid = await req.TransactionModel.findOne({
 			owner: student._id,
 			category: category._id,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
 		}).exec();
 
 		let isTopUp = false;
@@ -589,6 +643,9 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 						modeOfPayment: paymentMode,
 					},
 				],
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
 			});
 			await transaction.save();
 			transactions.push(transaction);
@@ -610,7 +667,12 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
 export const delete_transaction = asyncHandler(async (req, res) => {
 	const { transactionID } = req.params;
 
-	const result = await req.TransactionModel.findByIdAndDelete(transactionID);
+	const result = await req.TransactionModel.findOneAndDelete({
+		_id: transactionID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	});
 	appAssert(
 		result,
 		NOT_FOUND,
@@ -659,6 +721,9 @@ export const update_transaction = asyncHandler(async (req, res) => {
 	// check if the student with the given ID exists
 	const student = await req.StudentModel.findOne({
 		studentID: studentID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
 	}).exec();
 	appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
@@ -688,8 +753,13 @@ export const update_transaction = asyncHandler(async (req, res) => {
 		details: detailsObj,
 	};
 
-	const result = await req.TransactionModel.findByIdAndUpdate(
-		transactionID,
+	const result = await req.TransactionModel.findOneAndUpdate(
+		{
+			_id: transactionID,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		},
 		update,
 		{ new: true },
 	).exec();
@@ -710,7 +780,12 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 	const { transactionID } = req.params;
 	const { amount }: updateTransactionAmountBody = req.body;
 
-	const transaction = await req.TransactionModel.findById(transactionID)
+	const transaction = await req.TransactionModel.findOne({
+		_id: transactionID,
+		organization: req.tenantContext!.organizationId,
+		semester: req.tenantContext!.semester,
+		schoolYear: req.tenantContext!.schoolYear,
+	})
 		.populate({
 			model: req.CategoryModel,
 			path: 'category',
@@ -747,8 +822,13 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
 		},
 	};
 
-	const result = await req.TransactionModel.findByIdAndUpdate(
-		transaction._id,
+	const result = await req.TransactionModel.findOneAndUpdate(
+		{
+			_id: transaction._id,
+			organization: req.tenantContext!.organizationId,
+			semester: req.tenantContext!.semester,
+			schoolYear: req.tenantContext!.schoolYear,
+		},
 		update,
 		{ new: true },
 	).exec();

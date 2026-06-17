@@ -1,11 +1,12 @@
+import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { Pencil } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	Dialog,
-	DialogTrigger,
-	DialogContent,
-	DialogTitle,
-	DialogDescription,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
@@ -17,7 +18,6 @@ import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../CategoryPicker';
 import Plus from '../icons/plus';
-import { useNavigate } from 'react-router-dom';
 import ErrorText from '../ui/error-text';
 import { fetchStudents } from '@/api/student';
 import _ from 'lodash';
@@ -30,211 +30,211 @@ import { useForm } from 'react-hook-form';
 import { prelistingSchema } from '@/lib/validations/prelistingSchema';
 import { Prelisting } from '@/types/prelisting';
 import {
-	submitPrelistingForm,
-	submitUpdatePrelistingForm,
+  submitPrelistingForm,
+  submitUpdatePrelistingForm,
 } from '@/api/prelisting';
 
 ring.register();
 
 type AddPrelistingFormProps = {
-	categories?: Category[];
-	mode?: 'edit' | 'add';
-	prelisting?: Prelisting;
+  categories?: Category[];
+  mode?: 'edit' | 'add';
+  prelisting?: Prelisting;
 };
 
 export type PrelistingFormValues = z.infer<typeof prelistingSchema>;
 
 export default function AddPrelistingForm({
-	categories,
-	prelisting,
-	mode = 'add',
+  categories,
+  prelisting,
+  mode = 'add',
 }: AddPrelistingFormProps) {
-	if (prelisting === undefined && mode === 'edit') {
-		throw new Error('No prelisting data provided while form mode is on edit');
-	}
+  if (prelisting === undefined && mode === 'edit') {
+    throw new Error('No prelisting data provided while form mode is on edit');
+  }
 
-	const [date, setDate] = useState<Date>();
-	const [category, setCategory] = useState<Category>();
-	const [studentIdSearch, setStudentIdSearch] = useState('');
-	const debouncedStudentIdSearch = useDebounce(studentIdSearch);
-	const navigate = useNavigate();
+  const [date, setDate] = useState<Date>();
+  const [category, setCategory] = useState<Category>();
+  const [studentIdSearch, setStudentIdSearch] = useState('');
+  const debouncedStudentIdSearch = useDebounce(studentIdSearch);
+  const navigate = useTenantNavigate();
 
-	const { data: studentsFetchResult, isLoading: fetchingStudents } = useQuery({
-		queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
-		queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
-	});
+  const { data: studentsFetchResult, isLoading: fetchingStudents } = useQuery({
+    queryKey: [QUERY_KEYS.STUDENT, { search: debouncedStudentIdSearch }],
+    queryFn: () => fetchStudents({ search: debouncedStudentIdSearch }, 1, 5),
+  });
 
-	const {
-		register,
-		handleSubmit,
-		setValue,
-		getValues,
-		setError,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<PrelistingFormValues>({
-		resolver: zodResolver(prelistingSchema),
-	});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<PrelistingFormValues>({
+    resolver: zodResolver(prelistingSchema),
+  });
 
-	useEffect(() => {
-		if (prelisting) {
-			setDate(new Date(prelisting.date ?? ''));
-			setCategory(prelisting.category);
-			setValue('studentID', prelisting.owner.studentID);
-			setValue('description', prelisting.description);
+  useEffect(() => {
+    if (prelisting) {
+      setDate(new Date(prelisting.date ?? ''));
+      setCategory(prelisting.category);
+      setValue('studentID', prelisting.owner.studentID);
+      setValue('description', prelisting.description);
 
-			prelisting.category?.details?.forEach((detail) => {
-				if (!prelisting.details) return;
-				setValue(`details.${detail}`, prelisting.details?.[detail]);
-			});
-		}
-	}, [prelisting, setValue]);
+      prelisting.category?.details?.forEach((detail) => {
+        if (!prelisting.details) return;
+        setValue(`details.${detail}`, prelisting.details?.[detail]);
+      });
+    }
+  }, [prelisting, setValue]);
 
-	// TODO: create another input field for time
-	const onSubmit = async (data: PrelistingFormValues) => {
-		try {
-			if (!category) {
-				setError('categoryID', { message: 'Pick a category' });
-				return;
-			}
+  // TODO: create another input field for time
+  const onSubmit = async (data: PrelistingFormValues) => {
+    try {
+      if (!category) {
+        setError('categoryID', { message: 'Pick a category' });
+        return;
+      }
 
-			data.date = date?.toISOString();
-			data.categoryID = category._id;
+      data.date = date?.toISOString();
+      data.categoryID = category._id;
 
-			if (prelisting && mode === 'edit')
-				await submitUpdatePrelistingForm(prelisting._id, data);
-			else if (mode === 'add') await submitPrelistingForm(data);
+      if (prelisting && mode === 'edit')
+        await submitUpdatePrelistingForm(prelisting._id, data);
+      else if (mode === 'add') await submitPrelistingForm(data);
 
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRELISTING] });
-			navigate(`/prelisting/${prelisting?._id ?? ''}`, { replace: true });
-			reset();
-		} catch (err: any) {
-			setError('root', {
-				message: err.message || 'Failed to submit prelisting',
-			});
-		}
-	};
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRELISTING] });
+      navigate(`/prelisting/${prelisting?._id ?? ''}`, { replace: true });
+      reset();
+    } catch (err: any) {
+      setError('root', {
+        message: err.message || 'Failed to submit prelisting',
+      });
+    }
+  };
 
-	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				{mode === 'add' ? (
-					<Button className='flex justify-center gap-1' size='sm'>
-						<Plus />
-						<p>Add Prelisting</p>
-					</Button>
-				) : (
-					<Button className='flex gap-1' size='sm' variant='outline'>
-						<Pencil className='size-4' />
-						<p>Edit</p>
-					</Button>
-				)}
-			</DialogTrigger>
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        {mode === 'add' ? (
+          <Button className="flex justify-center gap-1" size="sm">
+            <Plus />
+            <p>Add Prelisting</p>
+          </Button>
+        ) : (
+          <Button className="flex gap-1" size="sm" variant="outline">
+            <Pencil className="size-4" />
+            <p>Edit</p>
+          </Button>
+        )}
+      </DialogTrigger>
 
-			<DialogContent className='sm:max-w-[425px]'>
-				<DialogHeader>
-					<DialogTitle>
-						{mode === 'add' ? 'Add' : 'Edit'} Prelisting
-					</DialogTitle>
-					<DialogDescription>Fill up the form</DialogDescription>
-				</DialogHeader>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === 'add' ? 'Add' : 'Edit'} Prelisting
+          </DialogTitle>
+          <DialogDescription>Fill up the form</DialogDescription>
+        </DialogHeader>
 
-				<form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
-					<div className='relative'>
-						{fetchingStudents && (
-							<div className='absolute top-[55%] right-2'>
-								<l-ring
-									size='20'
-									stroke='3'
-									bg-opacity='0'
-									speed='2'
-									color='#1f1f1f'
-								></l-ring>
-							</div>
-						)}
-						<InputField<PrelistingFormValues>
-							name='studentID'
-							registerFn={register}
-							errors={errors}
-							label='Student ID:'
-							autoComplete={false}
-							id='studentID'
-							onChange={() => {
-								setValue('studentID', getValues('studentID'));
-								setStudentIdSearch(getValues('studentID'));
-							}}
-						/>
-						<div className='relative w-full'>
-							{studentsFetchResult && studentIdSearch && (
-								<SelectContainer>
-									{studentsFetchResult.data.map((student) => (
-										<SelectContainerItem
-											type='button'
-											onClick={() => {
-												setValue('studentID', student.studentID);
-												setStudentIdSearch('');
-											}}
-											key={student._id}
-										>
-											{student.studentID} -{' '}
-											{_.startCase(`${student.firstname} ${student.lastname}`)}
-										</SelectContainerItem>
-									))}
-								</SelectContainer>
-							)}
-						</div>
-					</div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          <div className="relative">
+            {fetchingStudents && (
+              <div className="absolute top-[55%] right-2">
+                <l-ring
+                  size="20"
+                  stroke="3"
+                  bg-opacity="0"
+                  speed="2"
+                  color="#1f1f1f"
+                ></l-ring>
+              </div>
+            )}
+            <InputField<PrelistingFormValues>
+              name="studentID"
+              registerFn={register}
+              errors={errors}
+              label="Student ID:"
+              autoComplete={false}
+              id="studentID"
+              onChange={() => {
+                setValue('studentID', getValues('studentID'));
+                setStudentIdSearch(getValues('studentID'));
+              }}
+            />
+            <div className="relative w-full">
+              {studentsFetchResult && studentIdSearch && (
+                <SelectContainer>
+                  {studentsFetchResult.data.map((student) => (
+                    <SelectContainerItem
+                      type="button"
+                      onClick={() => {
+                        setValue('studentID', student.studentID);
+                        setStudentIdSearch('');
+                      }}
+                      key={student._id}
+                    >
+                      {student.studentID} -{' '}
+                      {_.startCase(`${student.firstname} ${student.lastname}`)}
+                    </SelectContainerItem>
+                  ))}
+                </SelectContainer>
+              )}
+            </div>
+          </div>
 
-					<DatePicker
-						date={date}
-						setDate={setDate}
-						error={errors.date?.message?.toString()}
-						note='(Defaults to now when empty)'
-					/>
+          <DatePicker
+            date={date}
+            setDate={setDate}
+            error={errors.date?.message?.toString()}
+            note="(Defaults to now when empty)"
+          />
 
-					<CategoryPicker
-						defaultValue={category?._id ?? ''}
-						categories={categories || []}
-						setCategory={setCategory}
-						error={errors.categoryID?.message?.toString()}
-					/>
+          <CategoryPicker
+            defaultValue={category?._id ?? ''}
+            categories={categories || []}
+            setCategory={setCategory}
+            error={errors.categoryID?.message?.toString()}
+          />
 
-					<div className='grid grid-cols-2 gap-2'>
-						{category &&
-							category.details.map((detail, i) => (
-								<InputField<PrelistingFormValues>
-									key={i}
-									name={`details.${detail}`}
-									type='text'
-									registerFn={register}
-									errors={errors}
-									label={_.startCase(`${detail}`) + ':'}
-									id={`details.${detail}`}
-								/>
-							))}
-					</div>
+          <div className="grid grid-cols-2 gap-2">
+            {category &&
+              category.details.map((detail, i) => (
+                <InputField<PrelistingFormValues>
+                  key={i}
+                  name={`details.${detail}`}
+                  type="text"
+                  registerFn={register}
+                  errors={errors}
+                  label={_.startCase(`${detail}`) + ':'}
+                  id={`details.${detail}`}
+                />
+              ))}
+          </div>
 
-					<InputField<PrelistingFormValues>
-						name='description'
-						registerFn={register}
-						errors={errors}
-						label='Description(optional):'
-						id='description'
-					/>
+          <InputField<PrelistingFormValues>
+            name="description"
+            registerFn={register}
+            errors={errors}
+            label="Description(optional):"
+            id="description"
+          />
 
-					{errors.root && errors.root.message && (
-						<ErrorText>{errors.root.message.toString()}</ErrorText>
-					)}
+          {errors.root && errors.root.message && (
+            <ErrorText>{errors.root.message.toString()}</ErrorText>
+          )}
 
-					<div className='flex justify-end'>
-						<Button className='' disabled={isSubmitting} type='submit'>
-							Submit
-						</Button>
-					</div>
-				</form>
+          <div className="flex justify-end">
+            <Button className="" disabled={isSubmitting} type="submit">
+              Submit
+            </Button>
+          </div>
+        </form>
 
-				<DialogFooter></DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
+        <DialogFooter></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

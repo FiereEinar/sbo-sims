@@ -1,19 +1,19 @@
+import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { Trash2 } from 'lucide-react';
 import { Transaction } from '@/types/transaction';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { requestDeleteTransaction } from '@/api/transaction';
-import { useNavigate } from 'react-router-dom';
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import AddTransactionForm from '../forms/AddTransactionForm';
 import { Category } from '@/types/category';
@@ -22,85 +22,85 @@ import { MODULES, QUERY_KEYS } from '@/constants';
 import HasPermission from '../HasPermission';
 
 type EditAndDeleteTransactionButtonProps = {
-	transaction: Transaction;
-	categories: Category[];
+  transaction: Transaction;
+  categories: Category[];
 };
 
 export default function EditAndDeleteTransactionButton({
-	transaction,
-	categories,
+  transaction,
+  categories,
 }: EditAndDeleteTransactionButtonProps) {
-	return (
-		<div className='space-x-2 flex'>
-			<HasPermission permissions={[MODULES.TRANSACTION_UPDATE]}>
-				<EditButton transaction={transaction} categories={categories} />
-			</HasPermission>
+  return (
+    <div className="space-x-2 flex">
+      <HasPermission permissions={[MODULES.TRANSACTION_UPDATE]}>
+        <EditButton transaction={transaction} categories={categories} />
+      </HasPermission>
 
-			<HasPermission permissions={[MODULES.TRANSACTION_DELETE]}>
-				<DeleteButton transactionID={transaction._id} />
-			</HasPermission>
-		</div>
-	);
+      <HasPermission permissions={[MODULES.TRANSACTION_DELETE]}>
+        <DeleteButton transactionID={transaction._id} />
+      </HasPermission>
+    </div>
+  );
 }
 
 type DeleteButtonProps = {
-	transactionID: string;
+  transactionID: string;
 };
 
 function DeleteButton({ transactionID }: DeleteButtonProps) {
-	const { toast } = useToast();
-	const navigate = useNavigate();
+  const { toast } = useToast();
+  const navigate = useTenantNavigate();
 
-	const onDelete = async () => {
-		try {
-			navigate('/transaction');
+  const onDelete = async () => {
+    try {
+      navigate('/transaction');
 
-			await requestDeleteTransaction(transactionID);
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
-		} catch (err: any) {
-			toast({
-				title: 'Failed to delete transaction',
-				description:
-					err.message ||
-					'A network error occured while trying to delete transaction',
-			});
-		}
-	};
+      await requestDeleteTransaction(transactionID);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTION] });
+    } catch (err: any) {
+      toast({
+        title: 'Failed to delete transaction',
+        description:
+          err.message ||
+          'A network error occured while trying to delete transaction',
+      });
+    }
+  };
 
-	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button className='flex gap-1' variant='destructive' size='sm'>
-					<Trash2 className='size-4' />
-					<p>Delete</p>
-				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-					<AlertDialogDescription>
-						This action cannot be undone. This will permanently delete the
-						transaction and remove your data from the database.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
-	);
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button className="flex gap-1" variant="destructive" size="sm">
+          <Trash2 className="size-4" />
+          <p>Delete</p>
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            transaction and remove your data from the database.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function EditButton({
-	transaction,
-	categories,
+  transaction,
+  categories,
 }: EditAndDeleteTransactionButtonProps) {
-	return (
-		<AddTransactionForm
-			mode='edit'
-			transaction={transaction}
-			categories={categories}
-		/>
-	);
+  return (
+    <AddTransactionForm
+      mode="edit"
+      transaction={transaction}
+      categories={categories}
+    />
+  );
 }

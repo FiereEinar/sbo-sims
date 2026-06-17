@@ -70,6 +70,26 @@ export const loginValidation = [
 	isFormBodyValidated,
 ];
 
+/**
+ * Validation for the super admin login endpoint.
+ * No reCAPTCHA required — the admin portal is not public-facing.
+ * No strict 10-digit length check — admin ID comes from env.
+ */
+export const adminLoginValidation = [
+	body('studentID')
+		.trim()
+		.escape()
+		.isLength({ min: 1 })
+		.withMessage('Admin ID is required'),
+
+	body('password')
+		.trim()
+		.isLength({ min: 1, max: 100 })
+		.withMessage('Password is required'),
+
+	isFormBodyValidated,
+];
+
 export const updateUserValidation = [
 	body('studentID')
 		.trim()

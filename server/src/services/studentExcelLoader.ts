@@ -424,7 +424,12 @@ export const previewStudentsFromFile = async (
 				previewItem.email = email;
 
 				// Check if exists
-				const existingStudent = await req.StudentModel.findOne({ studentID });
+				const existingStudent = await req.StudentModel.findOne({
+					studentID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
+				});
 				if (existingStudent) {
 					previewItem.status = 'exists';
 					previewItem.error = 'Already exists';
@@ -513,7 +518,12 @@ export const importStudentsFromFile = async (
 				}
 
 				// Check if exists
-				const existingStudent = await req.StudentModel.findOne({ studentID });
+				const existingStudent = await req.StudentModel.findOne({
+					studentID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
+				});
 				if (existingStudent) {
 					if (skipExisting) {
 						result.skipped++;
@@ -627,6 +637,9 @@ export const importStudentsFromFile = async (
 					gender,
 					section,
 					email,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
 				});
 
 				await newStudent.save();

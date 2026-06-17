@@ -1,17 +1,17 @@
+import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Category } from '@/types/category';
 import { queryClient } from '@/main';
@@ -22,85 +22,85 @@ import { requestDeletePrelisting } from '@/api/prelisting';
 import HasPermission from '../HasPermission';
 
 type EditAndDeletePrelistingButtonProps = {
-	prelisting: Prelisting;
-	categories: Category[];
+  prelisting: Prelisting;
+  categories: Category[];
 };
 
 export default function EditAndDeletePrelistingButton({
-	prelisting,
-	categories,
+  prelisting,
+  categories,
 }: EditAndDeletePrelistingButtonProps) {
-	return (
-		<div className='space-x-2 flex'>
-			<HasPermission permissions={[MODULES.PRELISTING_UPDATE]}>
-				<EditButton prelisting={prelisting} categories={categories} />
-			</HasPermission>
+  return (
+    <div className="space-x-2 flex">
+      <HasPermission permissions={[MODULES.PRELISTING_UPDATE]}>
+        <EditButton prelisting={prelisting} categories={categories} />
+      </HasPermission>
 
-			<HasPermission permissions={[MODULES.PRELISTING_DELETE]}>
-				<DeleteButton prelistingID={prelisting._id} />
-			</HasPermission>
-		</div>
-	);
+      <HasPermission permissions={[MODULES.PRELISTING_DELETE]}>
+        <DeleteButton prelistingID={prelisting._id} />
+      </HasPermission>
+    </div>
+  );
 }
 
 type DeleteButtonProps = {
-	prelistingID: string;
+  prelistingID: string;
 };
 
 function DeleteButton({ prelistingID }: DeleteButtonProps) {
-	const { toast } = useToast();
-	const navigate = useNavigate();
+  const { toast } = useToast();
+  const navigate = useTenantNavigate();
 
-	const onDelete = async () => {
-		try {
-			navigate('/prelisting');
+  const onDelete = async () => {
+    try {
+      navigate('/prelisting');
 
-			await requestDeletePrelisting(prelistingID);
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRELISTING] });
-		} catch (err: any) {
-			toast({
-				title: 'Failed to delete prelisting',
-				description:
-					err.message ||
-					'A network error occured while trying to delete prelisting',
-			});
-		}
-	};
+      await requestDeletePrelisting(prelistingID);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRELISTING] });
+    } catch (err: any) {
+      toast({
+        title: 'Failed to delete prelisting',
+        description:
+          err.message ||
+          'A network error occured while trying to delete prelisting',
+      });
+    }
+  };
 
-	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button className='flex gap-1' variant='destructive' size='sm'>
-					<Trash2 className='size-4' />
-					<p>Delete</p>
-				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-					<AlertDialogDescription>
-						This action cannot be undone. This will permanently delete the
-						prelisting and remove your data from the database.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
-	);
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button className="flex gap-1" variant="destructive" size="sm">
+          <Trash2 className="size-4" />
+          <p>Delete</p>
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            prelisting and remove your data from the database.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function EditButton({
-	prelisting,
-	categories,
+  prelisting,
+  categories,
 }: EditAndDeletePrelistingButtonProps) {
-	return (
-		<AddPrelistingForm
-			mode='edit'
-			prelisting={prelisting}
-			categories={categories}
-		/>
-	);
+  return (
+    <AddPrelistingForm
+      mode="edit"
+      prelisting={prelisting}
+      categories={categories}
+    />
+  );
 }

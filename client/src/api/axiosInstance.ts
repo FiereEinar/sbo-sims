@@ -59,6 +59,13 @@ axiosInstance.interceptors.request.use((config) => {
 			config.headers['x-active-school-year'] = user.activeSchoolYearDB;
 		}
 	}
+
+	const pathSegments = window.location.pathname.split('/').filter(Boolean);
+	const firstSegment = pathSegments[0];
+	// Only inject org slug for tenant routes (not /admin, /login, /signup)
+	if (firstSegment && !['login', 'signup', 'admin'].includes(firstSegment)) {
+		config.headers['x-organization-slug'] = firstSegment;
+	}
 	return config;
 });
 

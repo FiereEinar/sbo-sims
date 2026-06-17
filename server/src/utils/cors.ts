@@ -13,5 +13,6 @@ export const corsOptions: CorsOptions = {
 		'Authorization',
 		'x-active-sem',
 		'x-active-school-year',
+		'x-organization-slug',
 	],
 };

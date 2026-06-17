@@ -47,6 +47,14 @@ import { IUser } from '../models/user';
 import { sendVerificationEmail } from '../services/emailService';
 
 /**
+ * GET - public organizations
+ */
+export const get_public_organizations = asyncHandler(async (req, res) => {
+	const organizations = await req.OrganizationModel.find({}, 'name slug').exec();
+	res.json(new CustomResponse(true, organizations, 'Public organizations'));
+});
+
+/**
  * POST - user signup
  */
 export const signup = asyncHandler(async (req, res) => {
@@ -71,15 +79,22 @@ export const signup = asyncHandler(async (req, res) => {
 		`Student ID must be 10 numbers and should not contain characters to be valid`,
 	);
 
+	const orgSlug = req.headers['x-organization-slug'] as string;
+	appAssert(orgSlug, BAD_REQUEST, 'Organization slug is required');
+
+	const organization = await req.OrganizationModel.findOne({ slug: orgSlug }).exec();
+	appAssert(organization, NOT_FOUND, 'Organization not found');
+
 	// check if studentID already exist
 	const existingUser = await req.UserModel.findOne({
 		studentID: studentID,
+		organization: organization._id,
 	}).exec();
 
 	appAssert(
 		!existingUser,
 		CONFLICT,
-		`A user with ID '${studentID}' already exist`,
+		`A user with ID '${studentID}' already exist in this organization`,
 	);
 
 	// set default profile picture
@@ -90,9 +105,12 @@ export const signup = asyncHandler(async (req, res) => {
 	// hash the password
 	const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
 
-	// Find the default role
-	const defaultRole = await req.RoleModel.findOne({ isDefault: true }).exec();
-	appAssert(defaultRole, BAD_REQUEST, 'System configuration error: No default role found');
+	// Find the default role for the organization
+	const defaultRole = await req.RoleModel.findOne({ 
+		isDefault: true,
+		organization: organization._id 
+	}).exec();
+	appAssert(defaultRole, BAD_REQUEST, 'System configuration error: No default role found for this organization');
 
 	const verificationToken = crypto.randomBytes(32).toString('hex');
 	const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -112,6 +130,7 @@ export const signup = asyncHandler(async (req, res) => {
 			publicID: profilePublicID,
 		},
 		verified: false,
+		organization: organization._id,
 		verificationToken,
 		verificationTokenExpiresAt,
 	});
@@ -144,11 +163,19 @@ export const login = asyncHandler(async (req, res) => {
 	const recaptchaData = await recaptchaResponse.json();
 	appAssert(recaptchaData.success, BAD_REQUEST, 'reCAPTCHA verification failed. Please try again.');
 
+	const orgSlug = req.headers['x-organization-slug'] as string;
+	appAssert(orgSlug, BAD_REQUEST, 'Organization slug is required');
+
+	const organization = await req.OrganizationModel.findOne({ slug: orgSlug }).exec();
+	appAssert(organization, NOT_FOUND, 'Organization not found');
+
 	// check if studentID is valid
 	const user = await req.UserModel.findOne<IUser>({
 		studentID: studentID,
+		organization: organization._id,
 	})
 		.populate('rbacRole')
+		.populate('organization')
 		.exec();
 	appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
@@ -306,9 +333,9 @@ export const check_auth = asyncHandler(async (req, res) => {
 		AppErrorCodes.InvalidAccessToken,
 	);
 
-	const user = await req.UserModel.findById(payload.userID as string).populate(
-		'rbacRole',
-	);
+	const user = await req.UserModel.findById(payload.userID as string)
+		.populate('rbacRole')
+		.populate('organization');
 	const session = await req.SessionModel.findById(payload.sessionID);
 
 	appAssert(
@@ -356,6 +383,61 @@ export const admin = asyncHandler(async (req, res) => {
 	appAssert(user, NOT_FOUND, 'User not found');
 
 	res.json(new CustomResponse(true, user.omitPassword(), 'Admin found'));
+});
+
+/**
+ * POST /auth/admin-login
+ * Login for the global super admin only (no org slug required).
+ * Validates that the user has role === 'admin'.
+ */
+export const admin_login = asyncHandler(async (req, res) => {
+	const { studentID, password }: loginUserBody = req.body;
+
+	// Find the admin user — no organization filter
+	const user = await req.UserModel.findOne<IUser>({ studentID })
+		.populate('rbacRole')
+		.exec();
+	appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
+	appAssert(
+		user.role === 'admin',
+		UNAUTHORIZED,
+		'Access denied: not a super admin',
+	);
+
+	const match = await bcrypt.compare(password, user.password);
+	appAssert(match, UNAUTHORIZED, 'Incorrect Student ID or password');
+
+	const { ip, userAgent } = getUserRequestInfo(req);
+
+	const session = new req.SessionModel({
+		userID: user._id,
+		expiresAt: thirtyDaysFromNow(),
+		ip,
+		userAgent,
+	});
+	await session.save();
+
+	const sessionID = session._id as string;
+	const userID = user._id.toString();
+
+	const accessToken = signToken({ sessionID, userID });
+	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
+	setAuthCookie({ res, accessToken, refreshToken });
+
+	const useragent = req.useragent;
+	const device = useragent?.isMobile
+		? 'mobile'
+		: useragent?.isTablet
+			? 'tablet'
+			: 'desktop';
+
+	res.json(
+		new CustomResponse(
+			true,
+			{ user: user.omitPassword(), accessToken, device },
+			'Admin login successful',
+		),
+	);
 });
 
 export const verify_email = asyncHandler(async (req, res) => {

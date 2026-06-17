@@ -1,6 +1,7 @@
 import {
 	Building2,
 	ClipboardList,
+	FileBarChart2,
 	GraduationCap,
 	LayoutDashboard,
 	LucideProps,
@@ -24,6 +25,8 @@ export const QUERY_KEYS = {
 	DASHBOARD_DATA: 'dashboard_data',
 	USERS: 'users',
 	ROLES: 'roles',
+	REPORT_SUMMARY: 'report_summary',
+	REPORT_MONTHLY: 'report_monthly',
 };
 
 export const MODULES = {
@@ -68,6 +71,9 @@ export const MODULES = {
 
 	SETTING_READ: 'setting:read',
 	SETTING_UPDATE: 'setting:update',
+
+	REPORT_READ: 'report:read',
+	REPORT_DOWNLOAD: 'report:download',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];
@@ -79,6 +85,7 @@ export type SidebarNavLinkType = {
 		Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
 	>;
 	permissions?: Modules[];
+	isSeparator?: boolean;
 };
 
 export const navbarLinks: SidebarNavLinkType[] = [
@@ -112,10 +119,17 @@ export const navbarLinks: SidebarNavLinkType[] = [
 		permissions: [MODULES.CATEGORY_READ],
 	},
 	{
+		path: '/reports',
+		name: 'Reports',
+		icon: FileBarChart2,
+		permissions: [MODULES.REPORT_READ],
+	},
+	{
 		path: '/organization',
-		name: 'Organizations',
+		name: 'Organization',
 		icon: Building2,
 		permissions: [MODULES.ORGANIZATION_READ],
+		isSeparator: true,
 	},
 	{
 		path: '/user',

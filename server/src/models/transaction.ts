@@ -28,6 +28,9 @@ export interface ITransaction extends mongoose.Document {
 	auditor: string;
 	details: { [key: string]: string };
 	paymentHistory: IPaymentHistoryEntry[];
+	semester: string;
+	schoolYear: string;
+	organization: mongoose.Types.ObjectId;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -56,6 +59,9 @@ export const TransactionSchema = new Schema<ITransaction>(
 		auditor: { type: String, required: true },
 		details: { type: Schema.Types.Mixed, required: true },
 		paymentHistory: { type: [PaymentHistoryEntrySchema], default: [] },
+		semester: { type: String, enum: ['1', '2'], required: true },
+		schoolYear: { type: String, required: true },
+		organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
 	},
 	{ timestamps: true },
 );

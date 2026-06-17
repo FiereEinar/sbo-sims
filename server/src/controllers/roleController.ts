@@ -25,7 +25,9 @@ export const getRoles = asyncHandler(async (req, res) => {
 	/** ---------------------
 	 *        FILTERS
 	 *  --------------------*/
-	const filter: Record<string, any> = {};
+	const filter: Record<string, any> = {
+		organization: req.tenantContext!.organizationId,
+	};
 
 	// search: name, description
 	if (search.trim() !== '') {
@@ -60,7 +62,10 @@ export const getRoles = asyncHandler(async (req, res) => {
 export const getSingleRole = asyncHandler(async (req, res) => {
 	const { roleID } = req.params;
 
-	const role = await req.RoleModel.findById(roleID)
+	const role = await req.RoleModel.findOne({
+		_id: roleID,
+		organization: req.tenantContext!.organizationId,
+	})
 		.populate('createdBy', 'name studentID')
 		.exec();
 
@@ -86,7 +91,10 @@ export const createRole = asyncHandler(async (req, res) => {
 
 	let oldDefaultRole = null;
 	if (isDefault) {
-		oldDefaultRole = await req.RoleModel.findOne({ isDefault: true });
+		oldDefaultRole = await req.RoleModel.findOne({ 
+			isDefault: true,
+			organization: req.tenantContext!.organizationId,
+		});
 		if (oldDefaultRole) {
 			oldDefaultRole.isDefault = false;
 			await oldDefaultRole.save();
@@ -99,6 +107,7 @@ export const createRole = asyncHandler(async (req, res) => {
 		permissions: [],
 		isDefault: isDefault || false,
 		createdBy: req.currentUser._id,
+		organization: req.tenantContext!.organizationId,
 	});
 
 	if (isDefault && oldDefaultRole) {
@@ -125,7 +134,10 @@ export const updateRole = asyncHandler(async (req, res) => {
 	const { roleID } = req.params;
 	const { name, description, permissions, isDefault } = req.body;
 
-	const role = await req.RoleModel.findById(roleID);
+	const role = await req.RoleModel.findOne({
+		_id: roleID,
+		organization: req.tenantContext!.organizationId,
+	});
 	appAssert(role, NOT_FOUND, 'Role not found');
 
 	appAssert(
@@ -153,7 +165,10 @@ export const updateRole = asyncHandler(async (req, res) => {
 	if (permissions !== undefined) updateData.permissions = permissions;
 
 	if (isDefault === true && !role.isDefault) {
-		const oldDefaultRole = await req.RoleModel.findOne({ isDefault: true });
+		const oldDefaultRole = await req.RoleModel.findOne({ 
+			isDefault: true,
+			organization: req.tenantContext!.organizationId,
+		});
 		if (oldDefaultRole && oldDefaultRole._id.toString() !== role._id.toString()) {
 			oldDefaultRole.isDefault = false;
 			await oldDefaultRole.save();
@@ -183,7 +198,10 @@ export const updateRole = asyncHandler(async (req, res) => {
 export const deleteRole = asyncHandler(async (req, res) => {
 	const { roleID } = req.params;
 
-	const role = await req.RoleModel.findById(roleID);
+	const role = await req.RoleModel.findOne({
+		_id: roleID,
+		organization: req.tenantContext!.organizationId,
+	});
 	appAssert(role, NOT_FOUND, 'Role not found');
 	appAssert(
 		role.name !== SUPER_ADMIN,

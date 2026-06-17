@@ -6,13 +6,14 @@ import { z } from 'zod';
 import { signupSchema } from '@/lib/validations/signupSchema';
 import ErrorText from '../ui/error-text';
 import { submitSignupForm } from '@/api/user';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
 	const { toast } = useToast();
+	const { orgSlug } = useParams<{ orgSlug: string }>();
 
 	const {
 		register,
@@ -87,7 +88,7 @@ export default function SignupForm() {
 
 			<div className='text-xs text-muted-foreground flex gap-1'>
 				<p>Already have an account?</p>
-				<Link to='/login' className='underline'>
+				<Link to={orgSlug ? `/${orgSlug}/login` : '/login'} className='underline'>
 					Log in
 				</Link>
 			</div>

@@ -36,6 +36,11 @@ export type User = MongoEntity & {
 	verified: boolean;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
+	organization?: {
+		_id: string;
+		name: string;
+		slug: string;
+	};
 	createdAt: Date;
 	updatedAt: Date;
 };

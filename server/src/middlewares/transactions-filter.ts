@@ -43,7 +43,13 @@ export const transactionQueryFilter = asyncHandler(
 			: defaultPageSize;
 		const skipAmount = (pageNum - 1 || 0) * pageSizeNum;
 
-		const filters: FilterQuery<ITransaction>[] = [];
+		const filters: FilterQuery<ITransaction>[] = [
+			{
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			}
+		];
 
 		const periodFilter = getDateFilterByPeriod(period as string);
 		if (periodFilter) filters.push(periodFilter);
@@ -60,7 +66,11 @@ export const transactionQueryFilter = asyncHandler(
 
 		// 1. Resolve Student filters (search, course) first to avoid fetching everything
 		if (hasSearch || course) {
-			const studentFilters: any = {};
+			const studentFilters: any = {
+				organization: req.tenantContext!.organizationId,
+				semester: req.tenantContext!.semester,
+				schoolYear: req.tenantContext!.schoolYear,
+			};
 			
 			if (course) {
 				studentFilters.course = course;

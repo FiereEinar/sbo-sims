@@ -15,6 +15,8 @@ import categoryRouter from './routes/category';
 import organizationRouter from './routes/organization';
 import roleRouter from './routes/role';
 import settingRouter from './routes/setting';
+import adminRouter from './routes/admin';
+import reportRouter from './routes/report';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -24,7 +26,7 @@ import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import {
-	attachDatabaseModels,
+	extractTenantContext,
 	attachOriginalDatabaseModels,
 } from './middlewares/attach-database-models';
 
@@ -69,10 +71,15 @@ app.use('/auth', authRouter);
 
 // All routes from here requires the user to be authenticated
 app.use(auth);
-app.use(attachDatabaseModels); // Attach dynamic database models to the request object
+
+// Super admin portal — does NOT require tenant context
+app.use('/admin', adminRouter);
+
+app.use(extractTenantContext); // Extract tenant context and attach to request
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
 app.use('/transaction', transactionRouter);
+app.use('/report', reportRouter);
 app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);

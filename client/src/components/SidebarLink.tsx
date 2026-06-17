@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 import { SidebarNavLinkType } from '@/constants';
 
 type SidebarLinkProps = {
@@ -6,10 +6,20 @@ type SidebarLinkProps = {
 };
 
 export default function SidebarLink({ link }: SidebarLinkProps) {
+	const { orgSlug } = useParams<{ orgSlug: string }>();
+
+	let resolvedPath = link.path;
+	if (orgSlug) {
+		const cleanPath = link.path.startsWith('/') ? link.path.substring(1) : link.path;
+		// If it's the dashboard route ('/'), avoid trailing slash when combining
+		resolvedPath = cleanPath ? `/${orgSlug}/${cleanPath}` : `/${orgSlug}`;
+	}
+
 	return (
 		<NavLink
 			title={link.name}
-			to={link.path}
+			to={resolvedPath}
+			end={link.path === '/'}
 			className={({ isActive }) =>
 				`hover:opacity-90 select-none ${
 					isActive ? 'text-primary dark:text-primary' : ''

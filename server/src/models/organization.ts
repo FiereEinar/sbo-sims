@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 export interface IOrganization extends mongoose.Document {
 	_id: mongoose.Types.ObjectId;
 	name: string;
+	slug: string;
 	governor: string;
 	viceGovernor: string;
 	treasurer: string;
@@ -17,6 +18,7 @@ export interface IOrganization extends mongoose.Document {
 export const OrganizationSchema = new Schema<IOrganization>(
 	{
 		name: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
 		governor: { type: String, required: true },
 		viceGovernor: { type: String, required: true },
 		treasurer: { type: String, required: true },

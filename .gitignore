@@ -3,3 +3,4 @@ package-lock.json
 /data/db/*
 !/data/db/.gitkeep
 /backup-full
+handoff.md

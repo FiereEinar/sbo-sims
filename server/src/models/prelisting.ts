@@ -12,6 +12,9 @@ export interface IPrelisting extends mongoose.Document {
 	description?: string;
 	date?: Date;
 	details: { [key: string]: string };
+	semester: string;
+	schoolYear: string;
+	organization: mongoose.Types.ObjectId;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -23,6 +26,9 @@ export const PrelistingSchema = new Schema<IPrelisting>(
 		description: { type: String, required: false },
 		date: { type: Date, default: Date.now },
 		details: { type: Schema.Types.Mixed, required: true },
+		semester: { type: String, enum: ['1', '2'], required: true },
+		schoolYear: { type: String, required: true },
+		organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
 	},
 	{ timestamps: true }
 );

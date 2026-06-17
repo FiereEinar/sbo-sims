@@ -319,6 +319,9 @@ export const importTransactionsFromExcel = async (
 				// Find student
 				const student = await req.StudentModel.findOne({
 					studentID: studentID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
 				});
 
 				if (!student) {
@@ -333,6 +336,9 @@ export const importTransactionsFromExcel = async (
 				const existingTransaction = await req.TransactionModel.findOne({
 					owner: student._id,
 					category: categoryID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
 				});
 
 				if (existingTransaction) {
@@ -404,6 +410,9 @@ export const importTransactionsFromExcel = async (
 						treasurer: category.organization.treasurer,
 						auditor: category.organization.auditor,
 						details: detailsObj,
+						organization: req.tenantContext!.organizationId,
+						semester: req.tenantContext!.semester,
+						schoolYear: req.tenantContext!.schoolYear,
 					});
 
 					await transaction.save();
@@ -609,7 +618,12 @@ export const previewTransactionsFromExcel = async (
 				}
 
 				// Find student in database
-				const student = await req.StudentModel.findOne({ studentID });
+				const student = await req.StudentModel.findOne({
+					studentID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
+				});
 
 				if (!student) {
 					previewItem.status = 'error';
@@ -625,6 +639,9 @@ export const previewTransactionsFromExcel = async (
 				const existingTransaction = await req.TransactionModel.findOne({
 					owner: student._id,
 					category: categoryID,
+					organization: req.tenantContext!.organizationId,
+					semester: req.tenantContext!.semester,
+					schoolYear: req.tenantContext!.schoolYear,
 				});
 
 				if (existingTransaction) {

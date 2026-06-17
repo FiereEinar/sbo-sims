@@ -9,13 +9,8 @@ import { MODULES } from '../constants/modules';
 
 const router = express.Router();
 
-// All report routes require at least TRANSACTION_READ
-router.get('/summary', hasRole([MODULES.TRANSACTION_READ]), get_summary_report);
-router.get('/monthly', hasRole([MODULES.TRANSACTION_READ]), get_monthly_report);
-router.get(
-	'/download/pdf',
-	hasRole([MODULES.TRANSACTION_DOWNLOAD]),
-	download_report_pdf
-);
+router.get('/summary', hasRole([MODULES.REPORT_READ]), get_summary_report);
+router.get('/monthly', hasRole([MODULES.REPORT_READ]), get_monthly_report);
+router.get('/download/pdf', hasRole([MODULES.REPORT_DOWNLOAD]), download_report_pdf);
 
 export default router;

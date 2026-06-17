@@ -219,7 +219,7 @@ export default function Route() {
           path: 'reports',
           element: (
             <HasPermission
-              permissions={[MODULES.TRANSACTION_READ]}
+              permissions={[MODULES.REPORT_READ]}
               fallback={<NoPermission />}
             >
               <Reports />

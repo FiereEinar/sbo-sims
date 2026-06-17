@@ -36,6 +36,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useUserStore } from '@/store/user';
 import StatCard from '@/components/reports/StatCard';
 import ModeOfPaymentChart from '@/components/reports/ModeOfPaymentChart';
+import HasPermission from '@/components/HasPermission';
+import { MODULES } from '@/constants';
 
 const QUERY_KEY_SUMMARY = 'report_summary';
 const QUERY_KEY_MONTHLY = 'report_monthly';
@@ -291,7 +293,9 @@ export default function Reports() {
           <div className="w-[150px]">
             <SchoolYearInput hideLabel />
           </div>
-          <DownloadPDFButton />
+          <HasPermission permissions={[MODULES.REPORT_DOWNLOAD]}>
+            <DownloadPDFButton />
+          </HasPermission>
         </div>
       </StickyHeader>
 

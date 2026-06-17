@@ -71,6 +71,9 @@ export const MODULES = {
 
 	SETTING_READ: 'setting:read',
 	SETTING_UPDATE: 'setting:update',
+
+	REPORT_READ: 'report:read',
+	REPORT_DOWNLOAD: 'report:download',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];
@@ -119,7 +122,7 @@ export const navbarLinks: SidebarNavLinkType[] = [
 		path: '/reports',
 		name: 'Reports',
 		icon: FileBarChart2,
-		permissions: [MODULES.TRANSACTION_READ],
+		permissions: [MODULES.REPORT_READ],
 	},
 	{
 		path: '/organization',

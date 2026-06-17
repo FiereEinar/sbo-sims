@@ -40,6 +40,9 @@ export const MODULES = {
 
 	SETTING_READ: 'setting:read',
 	SETTING_UPDATE: 'setting:update',
+
+	REPORT_READ: 'report:read',
+	REPORT_DOWNLOAD: 'report:download',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];

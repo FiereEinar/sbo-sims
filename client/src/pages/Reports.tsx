@@ -353,7 +353,7 @@ export default function Reports() {
 
       {/* Period indicator */}
       {summary && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg py-2 w-fit">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
           <AlertCircle className="w-3.5 h-3.5" />
           Showing data for{' '}
           <strong>
@@ -590,7 +590,7 @@ export default function Reports() {
       {/* Top paying students */}
       <ReportSection title="Top 10 Paying Students">
         <div className="flex items-center gap-2 mb-4">
-          <Award className="w-4 h-4 text-amber-500" />
+          <Award className="w-4 h-4 text-amber-500 shrink-0" />
           <p className="text-xs text-muted-foreground">
             Students with the highest total payment amount this period
           </p>

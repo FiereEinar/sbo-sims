@@ -20,12 +20,12 @@ export default function UserCard({ user }: UserCardProps) {
       {/* Header */}
       <div className="flex justify-between items-center gap-2">
         <div className="flex items-center gap-2">
-          <User2 size={24} className="text-muted-foreground" />
-          <h3 className="font-semibold text-lg">{fullName}</h3>
+          <User2 size={24} className="text-muted-foreground shrink-0" />
+          <h3 className="font-semibold text-lg truncate w-40">{fullName}</h3>
         </div>
 
-        <div className="text-right text-sm font-medium">
-          <Calendar size={16} className="text-muted-foreground inline mr-1" />
+        <div className="text-right text-sm font-medium flex items-center gap-2 shrink-0">
+          <Calendar size={16} className="text-muted-foreground shrink-0" />
           {format(new Date(user.createdAt), 'MM/dd/yyyy')}
         </div>
       </div>
@@ -33,24 +33,24 @@ export default function UserCard({ user }: UserCardProps) {
       {/* Details */}
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <Shield size={18} className="text-muted-foreground" />
+          <Shield size={20} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Role</p>
             <p>{_.startCase(user.rbacRole?.name ?? user.role ?? '--')}</p>
           </div>
         </div>
 
+        <div>
+          <p className="text-muted-foreground text-xs">Student ID</p>
+          <p>{user.studentID}</p>
+        </div>
+
         <div className="flex items-center gap-2">
-          <Mail size={18} className="text-muted-foreground" />
+          <Mail size={20} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Email</p>
             <p>{user.email ?? '--'}</p>
           </div>
-        </div>
-
-        <div>
-          <p className="text-muted-foreground text-xs">Student ID</p>
-          <p>{user.studentID}</p>
         </div>
       </div>
     </div>

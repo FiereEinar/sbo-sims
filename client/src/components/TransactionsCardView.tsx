@@ -72,24 +72,33 @@ export default function TransactionsCardView({
 
             <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <BookOpen size={14} />
+                <BookOpen
+                  size={14}
+                  className="text-muted-foreground shrink-0"
+                />
                 <p>{tx.owner.course}</p>
               </div>
               <div className="flex items-center gap-1">
-                <Clock size={14} />
+                <Clock size={14} className="text-muted-foreground shrink-0" />
                 <p>{formatOrdinals(tx.owner.year)} year</p>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar size={14} />
+                <Calendar
+                  size={14}
+                  className="text-muted-foreground shrink-0"
+                />
                 <p>{format(new Date(tx.date), 'MM/dd/yyyy')}</p>
               </div>
               <div className="flex items-center gap-1">
-                <Building2 size={14} />
+                <Building2
+                  size={14}
+                  className="text-muted-foreground shrink-0"
+                />
                 <p>{tx.category.organization.name}</p>
               </div>
               <div className="flex items-center gap-1">
-                <Tags size={14} />
-                <p>{tx.category.name}</p>
+                <Tags size={18} className="text-muted-foreground shrink-0" />
+                <p className="truncate">{tx.category.name}</p>
               </div>
               <div className="flex items-center gap-1">
                 <CheckCircle

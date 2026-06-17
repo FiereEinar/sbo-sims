@@ -33,19 +33,19 @@ export default function StudentCard({ student }: StudentCardProps) {
       <div className="flex justify-between items-start gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <User size={24} className="text-muted-foreground" />
+            <User size={26} className="text-muted-foreground shrink-0" />
             <h3 className="font-semibold text-lg leading-none">{fullName}</h3>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BadgeCheck size={14} />
+            <BadgeCheck size={14} className="shrink-0" />
             <span>{student.studentID}</span>
           </div>
         </div>
 
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 text-sm font-medium">
-            <Wallet size={16} className="text-muted-foreground" />
+            <Wallet size={16} className="text-muted-foreground shrink-0" />
             <span>₱ {student.totalTransactionsAmount ?? 0}</span>
           </div>
           <p className="text-xs text-muted-foreground shrink-0">
@@ -57,7 +57,7 @@ export default function StudentCard({ student }: StudentCardProps) {
       {/* Details */}
       <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <BookOpen size={18} className="text-muted-foreground" />
+          <BookOpen size={22} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Course</p>
             <p>{student.course}</p>
@@ -65,7 +65,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <GraduationCap size={18} className="text-muted-foreground" />
+          <GraduationCap size={22} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Year</p>
             <p>{student.year}</p>
@@ -73,7 +73,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Users size={18} className="text-muted-foreground" />
+          <Users size={22} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Gender</p>
             <p>{student.gender}</p>
@@ -81,7 +81,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Hash size={18} className="text-muted-foreground" />
+          <Hash size={22} className="text-muted-foreground shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">Section</p>
             <p>{student.section}</p>

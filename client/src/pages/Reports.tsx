@@ -8,10 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
 } from 'recharts';
 import {
   fetchReportSummary,
@@ -38,62 +34,11 @@ import {
 import axiosInstance from '@/api/axiosInstance';
 import { useToast } from '@/hooks/use-toast';
 import { useUserStore } from '@/store/user';
+import StatCard from '@/components/reports/StatCard';
+import ModeOfPaymentChart from '@/components/reports/ModeOfPaymentChart';
 
 const QUERY_KEY_SUMMARY = 'report_summary';
 const QUERY_KEY_MONTHLY = 'report_monthly';
-
-const PIE_COLORS = [
-  '#6366f1',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#06b6d4',
-];
-
-// ── Stat card ──────────────────────────────────────────────────────────────
-function StatCard({
-  title,
-  value,
-  sub,
-  icon,
-  color = '#6366f1',
-  isLoading,
-}: {
-  title: string;
-  value: string;
-  sub?: string;
-  icon: React.ReactNode;
-  color?: string;
-  isLoading: boolean;
-}) {
-  return (
-    <div className="rounded-2xl border bg-card/50 p-5 shadow-sm flex justify-between items-start">
-      <div className="space-y-1">
-        <p className="text-xs text-muted-foreground uppercase tracking-wide">
-          {title}
-        </p>
-        {isLoading ? (
-          <>
-            <Skeleton className="h-7 w-32" />
-            <Skeleton className="h-4 w-24" />
-          </>
-        ) : (
-          <>
-            <p className="text-2xl font-semibold">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-          </>
-        )}
-      </div>
-      <div
-        className="rounded-xl p-3"
-        style={{ background: `${color}18`, color }}
-      >
-        {icon}
-      </div>
-    </div>
-  );
-}
 
 // ── Section wrapper ─────────────────────────────────────────────────────────
 function ReportSection({
@@ -333,7 +278,6 @@ export default function Reports() {
     queryFn: fetchMonthlyReport,
   });
 
-  const mopTotal = summary?.modeOfPayment.reduce((s, m) => s + m.total, 0) ?? 0;
 
   return (
     <SidebarPageLayout>
@@ -452,73 +396,11 @@ export default function Reports() {
         </div>
 
         {/* Mode of payment pie */}
-        <ReportSection title="Mode of Payment">
-          {summaryLoading ? (
-            <Skeleton className="h-64 w-full" />
-          ) : summary?.modeOfPayment && mopTotal > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={summary.modeOfPayment}
-                    dataKey="total"
-                    nameKey="mode"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={3}
-                  >
-                    {summary.modeOfPayment.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(val: number) => [`₱${numberWithCommas(val)}`]}
-                    contentStyle={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Legend
-                    formatter={(val?: string) =>
-                      val ? val.charAt(0).toUpperCase() + val.slice(1) : ''
-                    }
-                    iconSize={10}
-                    wrapperStyle={{ fontSize: 12 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-2 mt-2">
-                {summary.modeOfPayment.map((m, i) => (
-                  <div key={m.mode} className="flex justify-between text-sm">
-                    <span className="flex items-center gap-2 text-muted-foreground capitalize">
-                      <span
-                        className="inline-block w-2 h-2 rounded-full"
-                        style={{
-                          background: PIE_COLORS[i % PIE_COLORS.length],
-                        }}
-                      />
-                      {m.mode}
-                    </span>
-                    <span className="font-medium">
-                      ₱{numberWithCommas(m.total)}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        ({((m.total / mopTotal) * 100).toFixed(1)}%)
-                      </span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="h-64 flex items-center justify-center text-muted-foreground text-sm italic">
-              No payment data for this period.
-            </div>
-          )}
-        </ReportSection>
+        <ModeOfPaymentChart
+          data={summary?.modeOfPayment}
+          isLoading={summaryLoading}
+          chartHeight={200}
+        />
       </div>
 
       {/* Category performance */}

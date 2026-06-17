@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import ejs from 'ejs';
 import path from 'path';
 import fs from 'fs/promises';
-import { startOfMonth, endOfMonth, format, subMonths } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import CustomResponse from '../types/response';
 import { convertToPdf } from '../services/pdfConverter';
 import { ICategory } from '../models/category';
@@ -16,96 +16,105 @@ const MONTHS = [
 
 // ── GET /report/summary ──────────────────────────────────────────────────────
 /**
- * Returns a full report summary for the active sem/school year:
- * - overall totals
- * - monthly breakdown (last 12 months)
- * - per-category breakdown
- * - collection rate per category
- * - top 10 paying students
- * - mode of payment distribution
+ * Returns a full report summary for the active sem/school year.
+ * Optimised: all transaction sub-aggregations run inside a single $facet
+ * pipeline (one DB round-trip). Categories and student count are fetched in
+ * parallel with Promise.all.
  */
 export const get_summary_report = asyncHandler(async (req, res) => {
 	const { organizationId, semester, schoolYear } = req.tenantContext!;
 
-	// ── Overall totals ───────────────────────────────────────────────────────
-	const overallAgg = await req.TransactionModel.aggregate([
-		{
-			$match: {
-				organization: organizationId,
-				semester,
-				schoolYear,
+	const matchStage = {
+		organization: organizationId,
+		semester,
+		schoolYear,
+	};
+
+	// ── Single $facet aggregation — one round-trip for all tx metrics ────────
+	const [facetResult, categories, totalStudents] = await Promise.all([
+		req.TransactionModel.aggregate([
+			{ $match: matchStage },
+			{
+				$facet: {
+					// 1. Overall totals
+					overall: [
+						{
+							$group: {
+								_id: null,
+								totalRevenue: { $sum: '$amount' },
+								totalTransactions: { $sum: 1 },
+							},
+						},
+					],
+					// 2. Monthly breakdown (within current sem/year)
+					monthly: [
+						{
+							$group: {
+								_id: { $month: { $toDate: '$date' } },
+								totalAmount: { $sum: '$amount' },
+								count: { $sum: 1 },
+							},
+						},
+						{ $sort: { _id: 1 } },
+					],
+					// 3. Per-category stats
+					categoryStats: [
+						{
+							$group: {
+								_id: '$category',
+								totalAmount: { $sum: '$amount' },
+								count: { $sum: 1 },
+							},
+						},
+					],
+					// 4. Mode of payment
+					modeOfPayment: [
+						{
+							$group: {
+								_id: '$modeOfPayment',
+								total: { $sum: '$amount' },
+								count: { $sum: 1 },
+							},
+						},
+					],
+					// 5. Top 10 paying students — limited to 10 inside the DB
+					topStudents: [
+						{
+							$group: {
+								_id: '$owner',
+								totalPaid: { $sum: '$amount' },
+								txCount: { $sum: 1 },
+							},
+						},
+						{ $sort: { totalPaid: -1 } },
+						{ $limit: 10 },
+					],
+				},
 			},
-		},
-		{
-			$group: {
-				_id: null,
-				totalRevenue: { $sum: '$amount' },
-				totalTransactions: { $sum: 1 },
-			},
-		},
+		]),
+
+		// Categories and student count fetched in parallel
+		req.CategoryModel.find({ organization: organizationId, semester, schoolYear }).lean(),
+		req.StudentModel.countDocuments({ organization: organizationId, semester, schoolYear }),
 	]);
 
-	const totalRevenue = overallAgg[0]?.totalRevenue ?? 0;
-	const totalTransactions = overallAgg[0]?.totalTransactions ?? 0;
+	const facet = facetResult[0];
 
-	// ── Monthly breakdown ────────────────────────────────────────────────────
-	const monthlyAgg = await req.TransactionModel.aggregate([
-		{
-			$match: {
-				organization: organizationId,
-				semester,
-				schoolYear,
-			},
-		},
-		{
-			$group: {
-				_id: { $month: { $toDate: '$date' } },
-				totalAmount: { $sum: '$amount' },
-				count: { $sum: 1 },
-			},
-		},
-		{ $sort: { _id: 1 } },
-	]);
+	// ── Unpack overall ───────────────────────────────────────────────────────
+	const totalRevenue = facet.overall[0]?.totalRevenue ?? 0;
+	const totalTransactions = facet.overall[0]?.totalTransactions ?? 0;
 
-	const monthly = monthlyAgg.map((m) => ({
+	// ── Unpack monthly ───────────────────────────────────────────────────────
+	const monthly = (facet.monthly as any[]).map((m) => ({
 		month: MONTHS[(m._id as number) - 1],
 		monthIndex: m._id,
 		totalAmount: m.totalAmount,
 		count: m.count,
 	}));
 
-	// ── Per-category breakdown ───────────────────────────────────────────────
-	const categories = await req.CategoryModel.find({
-		organization: organizationId,
-		semester,
-		schoolYear,
-	}).lean();
-
-	const totalStudents = await req.StudentModel.countDocuments({
-		organization: organizationId,
-		semester,
-		schoolYear,
-	});
-
-	const categoryStats = await req.TransactionModel.aggregate([
-		{
-			$match: {
-				organization: organizationId,
-				semester,
-				schoolYear,
-			},
-		},
-		{
-			$group: {
-				_id: '$category',
-				totalAmount: { $sum: '$amount' },
-				count: { $sum: 1 },
-			},
-		},
-	]);
-
+	// ── Unpack category stats ────────────────────────────────────────────────
 	const statsMap = new Map(
-		categoryStats.map((s) => [s._id.toString(), s])
+		(facet.categoryStats as any[]).map((s) => [s._id.toString(), s])
 	);
 
 	const categoryBreakdown = categories.map((cat) => {
@@ -125,61 +134,27 @@ export const get_summary_report = asyncHandler(async (req, res) => {
 		};
 	});
 
-	// ── Mode of payment ──────────────────────────────────────────────────────
-	const mopAgg = await req.TransactionModel.aggregate([
-		{
-			$match: {
-				organization: organizationId,
-				semester,
-				schoolYear,
-			},
-		},
-		{
-			$group: {
-				_id: '$modeOfPayment',
-				total: { $sum: '$amount' },
-				count: { $sum: 1 },
-			},
-		},
-	]);
-
-	const modeOfPayment = mopAgg.map((m) => ({
+	// ── Unpack mode of payment ───────────────────────────────────────────────
+	const modeOfPayment = (facet.modeOfPayment as any[]).map((m) => ({
 		mode: m._id,
 		total: m.total,
 		count: m.count,
 	}));
 
-	// ── Top 10 paying students ───────────────────────────────────────────────
-	const topStudentsAgg = await req.TransactionModel.aggregate([
-		{
-			$match: {
-				organization: organizationId,
-				semester,
-				schoolYear,
-			},
-		},
-		{
-			$group: {
-				_id: '$owner',
-				totalPaid: { $sum: '$amount' },
-				txCount: { $sum: 1 },
-			},
-		},
-		{ $sort: { totalPaid: -1 } },
-		{ $limit: 10 },
-	]);
-
-	const ownerIds = topStudentsAgg.map((s) => s._id);
-	const studentDocs = await req.StudentModel.find({ _id: { $in: ownerIds } }).lean();
+	// ── Unpack top students — hydrate names from StudentModel ────────────────
+	const topStudentsRaw = facet.topStudents as any[];
+	const ownerIds = topStudentsRaw.map((s) => s._id);
+	const studentDocs = await req.StudentModel
+		.find({ _id: { $in: ownerIds } })
+		.select('_id studentID firstname lastname course')
+		.lean();
 	const studentMap = new Map(studentDocs.map((s) => [s._id.toString(), s]));
 
-	const topStudents = topStudentsAgg.map((s) => {
+	const topStudents = topStudentsRaw.map((s) => {
 		const student = studentMap.get(s._id.toString());
 		return {
 			studentID: student?.studentID ?? 'N/A',
-			name: student
-				? `${student.firstname} ${student.lastname}`
-				: 'Unknown',
+			name: student ? `${student.firstname} ${student.lastname}` : 'Unknown',
 			course: student?.course ?? 'N/A',
 			totalPaid: s.totalPaid,
 			txCount: s.txCount,
@@ -206,45 +181,62 @@ export const get_summary_report = asyncHandler(async (req, res) => {
 
 // ── GET /report/monthly ──────────────────────────────────────────────────────
 /**
- * Returns last 12 rolling months of data regardless of current sem filter
+ * Returns last 12 rolling months of data for the organisation (across all
+ * semesters). Optimised: single aggregation grouped by year+month instead of
+ * 12 separate aggregate calls.
  */
 export const get_monthly_report = asyncHandler(async (req, res) => {
 	const { organizationId } = req.tenantContext!;
 
 	const now = new Date();
-	const months = Array.from({ length: 12 }, (_, i) => subMonths(now, i)).reverse();
+	// 12-month rolling window
+	const cutoff = subMonths(now, 12);
 
-	const monthlyData = await Promise.all(
-		months.map(async (monthDate) => {
-			const start = startOfMonth(monthDate);
-			const end = endOfMonth(monthDate);
-
-			const agg = await req.TransactionModel.aggregate([
-				{
-					$match: {
-						organization: organizationId,
-						date: { $gte: start.toISOString(), $lte: end.toISOString() },
-					},
+	const raw = await req.TransactionModel.aggregate([
+		{
+			$match: {
+				organization: organizationId,
+				date: { $gte: cutoff.toISOString() },
+			},
+		},
+		{
+			$group: {
+				_id: {
+					year: { $year: { $toDate: '$date' } },
+					month: { $month: { $toDate: '$date' } },
 				},
-				{
-					$group: {
-						_id: null,
-						totalAmount: { $sum: '$amount' },
-						count: { $sum: 1 },
-					},
-				},
-			]);
+				totalAmount: { $sum: '$amount' },
+				count: { $sum: 1 },
+			},
+		},
+		{
+			$sort: { '_id.year': 1, '_id.month': 1 },
+		},
+	]);
 
-			return {
-				month: format(monthDate, 'MMMM yyyy'),
-				totalAmount: agg[0]?.totalAmount ?? 0,
-				count: agg[0]?.count ?? 0,
-			};
-		})
+	// Build a map from "YYYY-MM" → stats
+	const dataMap = new Map(
+		raw.map((r: any) => [
+			`${r._id.year}-${String(r._id.month).padStart(2, '0')}`,
+			{ totalAmount: r.totalAmount, count: r.count },
+		])
 	);
+
+	// Fill all 12 months, zero-filling months with no data
+	const monthlyData = Array.from({ length: 12 }, (_, i) => {
+		const d = subMonths(now, 11 - i); // oldest first
+		const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+		const stats = dataMap.get(key) ?? { totalAmount: 0, count: 0 };
+		return {
+			month: format(d, 'MMMM yyyy'),
+			totalAmount: stats.totalAmount,
+			count: stats.count,
+		};
+	});
 
 	res.json(new CustomResponse(true, monthlyData, 'Monthly report (last 12 months)'));
 });
+
 
 // ── GET /report/download/pdf ─────────────────────────────────────────────────
 /**

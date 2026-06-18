@@ -22,18 +22,6 @@ declare global {
         schoolYear: string;
       };
       currentUser: IUser;
-      UserModel: Model<IUser>;
-      StudentModel: Model<IStudent>;
-      TransactionModel: Model<ITransaction>;
-      PrelistingModel: Model<IPrelisting>;
-      CategoryModel: Model<ICategory>;
-      OrganizationModel: Model<IOrganization>;
-      SessionModel: Model<ISession>;
-      RoleModel: Model<IRole>;
-      AppSettingModel: Model<IAppSetting>;
-      EventModel: Model<IEvent>;
-      EventSessionModel: Model<IEventSession>;
-      AttendanceRecordModel: Model<IAttendanceRecord>;
     }
   }
 }

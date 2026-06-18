@@ -68,62 +68,62 @@ export const extractTenantContext = async (
   }
 };
 
-export const attachOriginalDatabaseModels = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const originalConnection = await getDatabaseConnection(
-      originalDbName,
-      process.env.ME_CONFIG_MONGODB_URL as string,
-    );
+// export const attachOriginalDatabaseModels = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ) => {
+//   try {
+//     const originalConnection = await getDatabaseConnection(
+//       originalDbName,
+//       process.env.ME_CONFIG_MONGODB_URL as string,
+//     );
 
-    req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);
-    req.SessionModel = originalConnection.model(
-      DB_MODEL.SESSION,
-      SessionSchema,
-    );
-    req.OrganizationModel = originalConnection.model(
-      DB_MODEL.ORGANIZATION,
-      OrganizationSchema,
-    );
-    req.RoleModel = originalConnection.model(DB_MODEL.ROLE, RoleSchema);
+//     req.UserModel = originalConnection.model(DB_MODEL.USER, UserSchema);
+//     req.SessionModel = originalConnection.model(
+//       DB_MODEL.SESSION,
+//       SessionSchema,
+//     );
+//     req.OrganizationModel = originalConnection.model(
+//       DB_MODEL.ORGANIZATION,
+//       OrganizationSchema,
+//     );
+//     req.RoleModel = originalConnection.model(DB_MODEL.ROLE, RoleSchema);
 
-    req.AppSettingModel = originalConnection.model(
-      DB_MODEL.APPSETTING,
-      AppSettingSchema,
-    );
+//     req.AppSettingModel = originalConnection.model(
+//       DB_MODEL.APPSETTING,
+//       AppSettingSchema,
+//     );
 
-    // Term models
-    req.StudentModel = originalConnection.model(
-      DB_MODEL.STUDENT,
-      StudentSchema,
-    );
-    req.CategoryModel = originalConnection.model(
-      DB_MODEL.CATEGORY,
-      CategorySchema,
-    );
-    req.TransactionModel = originalConnection.model(
-      DB_MODEL.TRANSACTION,
-      TransactionSchema,
-    );
-    req.PrelistingModel = originalConnection.model(
-      DB_MODEL.PRELISTING,
-      PrelistingSchema,
-    );
-    req.EventModel = originalConnection.model(DB_MODEL.EVENT, EventSchema);
-    req.EventSessionModel = originalConnection.model(
-      DB_MODEL.EVENT_SESSION,
-      EventSessionSchema,
-    );
-    req.AttendanceRecordModel = originalConnection.model(
-      DB_MODEL.ATTENDANCE_RECORD,
-      AttendanceRecordSchema,
-    );
+//     // Term models
+//     req.StudentModel = originalConnection.model(
+//       DB_MODEL.STUDENT,
+//       StudentSchema,
+//     );
+//     req.CategoryModel = originalConnection.model(
+//       DB_MODEL.CATEGORY,
+//       CategorySchema,
+//     );
+//     req.TransactionModel = originalConnection.model(
+//       DB_MODEL.TRANSACTION,
+//       TransactionSchema,
+//     );
+//     req.PrelistingModel = originalConnection.model(
+//       DB_MODEL.PRELISTING,
+//       PrelistingSchema,
+//     );
+//     req.EventModel = originalConnection.model(DB_MODEL.EVENT, EventSchema);
+//     req.EventSessionModel = originalConnection.model(
+//       DB_MODEL.EVENT_SESSION,
+//       EventSessionSchema,
+//     );
+//     req.AttendanceRecordModel = originalConnection.model(
+//       DB_MODEL.ATTENDANCE_RECORD,
+//       AttendanceRecordSchema,
+//     );
 
-    next();
-  } catch (err: any) {
-    console.error('Failed to attach original database models', err);
-  }
-};
+//     next();
+//   } catch (err: any) {
+//     console.error('Failed to attach original database models', err);
+//   }
+// };

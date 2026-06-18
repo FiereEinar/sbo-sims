@@ -79,8 +79,7 @@ export const transactionQueryFilter = asyncHandler(
         ];
       }
 
-      const matchingStudents = await req
-        .StudentModel!.find(studentFilters)
+      const matchingStudents = await StudentModel.find(studentFilters)
         .select('_id')
         .lean()
         .exec();

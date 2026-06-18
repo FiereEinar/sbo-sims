@@ -1,9 +1,9 @@
+import { RoleCard } from '@/components/role/RoleCard';
 import { useTenantNavigate } from '../hooks/useTenantNavigate';
 import axiosInstance from '@/api/axiosInstance';
 import { AddRoleForm } from '@/components/forms/AddRoleForm';
 import HasPermission from '@/components/HasPermission';
 import BouncyLoading from '@/components/loading/BouncyLoading';
-import { RoleCard } from '@/components/RoleCard';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';

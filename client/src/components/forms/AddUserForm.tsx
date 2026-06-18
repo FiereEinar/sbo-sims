@@ -26,7 +26,7 @@ import _ from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 import { Role } from '@/types/role';
 import axiosInstance from '@/api/axiosInstance';
-import RolePicker from '../RolePicker';
+import RolePicker from '../role/RolePicker';
 import { useToast } from '@/hooks/use-toast';
 
 export type UserFormValues = z.infer<typeof createUserSchema>;

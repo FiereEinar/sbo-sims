@@ -1,4 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { MODULES } from './constants';
+
 import App from './App';
 import Dashboard from './pages/Dashboard';
 import Student from './pages/Student';
@@ -16,7 +18,6 @@ import Settings from './pages/Settings';
 import Prelisting from './pages/Prelisting';
 import PrelistingInfo from './pages/PrelistingInfo';
 import HasPermission from './components/HasPermission';
-import { MODULES } from './constants';
 import NoPermission from './pages/NoPermission';
 import Users from './pages/Users';
 import UserInfo from './pages/UserInfo';

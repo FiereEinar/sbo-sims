@@ -7,7 +7,7 @@ import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import StudentDataCardLoading from '@/components/loading/StudentDataCardLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
-import StudentDataCard from '@/components/StudentDataCard';
+import StudentDataCard from '@/components/student/StudentDataCard';
 import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';

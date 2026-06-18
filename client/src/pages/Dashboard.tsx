@@ -14,7 +14,7 @@ import SemInput from '@/components/SemInput';
 import StickyHeader from '@/components/StickyHeader';
 import { TrendingUp, Users, CreditCard, BookOpen } from 'lucide-react';
 import StatCard from '@/components/reports/StatCard';
-import TransactionPieChart from '@/components/TransactionPieChart';
+import TransactionPieChart from '@/components/transaction/TransactionPieChart';
 
 export type DashboardDataTransaction = {
   date: Date;
@@ -62,14 +62,18 @@ function RecentTransactions({ data, isLoading }: RecentTransactionsProps) {
                 <p className="text-sm font-medium">
                   {_.startCase(t.owner.firstname.toLowerCase())}
                 </p>
-                <p className="text-xs text-muted-foreground">{t.owner.studentID}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t.owner.studentID}
+                </p>
               </div>
               <p className="font-semibold">₱{numberWithCommas(t.amount)}</p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground italic">No recent transactions</p>
+        <p className="text-sm text-muted-foreground italic">
+          No recent transactions
+        </p>
       )}
     </div>
   );

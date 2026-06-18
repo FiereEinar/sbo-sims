@@ -3,10 +3,9 @@ import {
   fetchOrganizationCategories,
 } from '@/api/organization';
 import EditAndDeleteOrganizationButton from '@/components/buttons/EditAndDeleteOrganizationButton';
-import CategoriesTable from '@/components/CategoriesTable';
 import OrganizationDetailsLoading from '@/components/loading/OrganizationDetailsLoading';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
-import OrganizationDetails from '@/components/OrganizationDetails';
+import OrganizationDetails from '@/components/organization/OrganizationDetails';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
@@ -15,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
 import { useUserStore } from '@/store/user';
+import CategoriesTable from '@/components/category/CategoriesTable';
 
 export default function OrganizationInfo() {
   const { organizationID } = useParams();

@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react';
 import { Category } from '@/types/category';
 import { z } from 'zod';
 import DatePicker from '../DatePicker';
-import CategoryPicker from '../CategoryPicker';
+import CategoryPicker from '../category/CategoryPicker';
 import Plus from '../icons/plus';
 import { Transaction } from '@/types/transaction';
 import ErrorText from '../ui/error-text';

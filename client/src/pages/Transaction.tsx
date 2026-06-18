@@ -4,8 +4,6 @@ import AddTransactionForm from '@/components/forms/AddTransactionForm';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
-import TransactionsFilter from '@/components/TransactionsFilter';
-import TransactionsTable from '@/components/TransactionsTable';
 import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
@@ -15,88 +13,90 @@ import { useQuery } from '@tanstack/react-query';
 import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
 import HasPermission from '@/components/HasPermission';
 import ViewModeToggle from '@/components/ViewModeToggle';
-import TransactionsCardView from '@/components/TransactionsCardView';
 import { useViewModeStore } from '@/store/viewModeStore';
+import TransactionsCardView from '@/components/transaction/TransactionsCardView';
+import TransactionsTable from '@/components/transaction/TransactionsTable';
+import TransactionsFilter from '@/components/transaction/TransactionsFilter';
 
 export default function Transaction() {
-	const { viewMode } = useViewModeStore();
-	const { page, pageSize, getFilterValues, setPage } =
-		useTransactionFilterStore((state) => state);
+  const { viewMode } = useViewModeStore();
+  const { page, pageSize, getFilterValues, setPage } =
+    useTransactionFilterStore((state) => state);
 
-	const {
-		data: fetchTransactionsResult,
-		isLoading: transactionsLoading,
-		error: transactionsError,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.TRANSACTION, getFilterValues()],
-		queryFn: () => fetchTransactions(getFilterValues(), page, pageSize),
-	});
+  const {
+    data: fetchTransactionsResult,
+    isLoading: transactionsLoading,
+    error: transactionsError,
+  } = useQuery({
+    queryKey: [QUERY_KEYS.TRANSACTION, getFilterValues()],
+    queryFn: () => fetchTransactions(getFilterValues(), page, pageSize),
+  });
 
-	const { data: categories, error: categoriesError } = useQuery({
-		queryKey: [QUERY_KEYS.CATEGORY],
-		queryFn: fetchCategories,
-	});
+  const { data: categories, error: categoriesError } = useQuery({
+    queryKey: [QUERY_KEYS.CATEGORY],
+    queryFn: fetchCategories,
+  });
 
-	const prefetchPageFn = (page: number) => {
-		const filters: TransactionsFilterValues = {
-			...getFilterValues(),
-			page: page,
-		};
+  const prefetchPageFn = (page: number) => {
+    const filters: TransactionsFilterValues = {
+      ...getFilterValues(),
+      page: page,
+    };
 
-		// check if it was already prefetched
-		const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
-		if (data) return;
+    // check if it was already prefetched
+    const data = queryClient.getQueryData([QUERY_KEYS.TRANSACTION, filters]);
+    if (data) return;
 
-		queryClient.prefetchQuery({
-			queryKey: [QUERY_KEYS.TRANSACTION, filters],
-			queryFn: () => fetchTransactions(filters, page, pageSize),
-		});
-	};
+    queryClient.prefetchQuery({
+      queryKey: [QUERY_KEYS.TRANSACTION, filters],
+      queryFn: () => fetchTransactions(filters, page, pageSize),
+    });
+  };
 
-	if (transactionsError || categoriesError) {
-		return <p>Session expired, login again.</p>;
-	}
+  if (transactionsError || categoriesError) {
+    return <p>Session expired, login again.</p>;
+  }
 
-	return (
-		<SidebarPageLayout>
-			<StickyHeader>
-				<Header>Transactions</Header>
+  return (
+    <SidebarPageLayout>
+      <StickyHeader>
+        <Header>Transactions</Header>
 
-				<HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
-					<AddTransactionForm categories={categories} />
-				</HasPermission>
-			</StickyHeader>
+        <HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
+          <AddTransactionForm categories={categories} />
+        </HasPermission>
+      </StickyHeader>
 
-			<div className='flex justify-between items-end flex-wrap gap-3'>
-				<TransactionsFilter />
+      <div className="flex justify-between items-end flex-wrap gap-3">
+        <TransactionsFilter />
 
-				<HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
-					<ImportTransactionsButton categories={categories} />
-				</HasPermission>
-				<ViewModeToggle />
-			</div>
+        <HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
+          <ImportTransactionsButton categories={categories} />
+        </HasPermission>
+        <ViewModeToggle />
+      </div>
 
-			{viewMode === 'table' ? (
-				<TransactionsTable
-					isLoading={transactionsLoading}
-					transactions={fetchTransactionsResult?.data}
-				/>
-			) : (
-				<TransactionsCardView
-					transactions={fetchTransactionsResult?.data}
-					isLoading={transactionsLoading}
-				/>
-			)}
+      {viewMode === 'table' ? (
+        <TransactionsTable
+          isLoading={transactionsLoading}
+          transactions={fetchTransactionsResult?.data}
+        />
+      ) : (
+        <TransactionsCardView
+          transactions={fetchTransactionsResult?.data}
+          isLoading={transactionsLoading}
+        />
+      )}
 
-			{fetchTransactionsResult && (
-				<PaginationController
-					currentPage={page ?? 1}
-					nextPage={fetchTransactionsResult.next}
-					prevPage={fetchTransactionsResult.prev}
-					setPage={setPage}
-					prefetchFn={prefetchPageFn}
-				/>
-			)}
-		</SidebarPageLayout>
-	);
+      {fetchTransactionsResult && (
+        <PaginationController
+          currentPage={page ?? 1}
+          nextPage={fetchTransactionsResult.next}
+          prevPage={fetchTransactionsResult.prev}
+          setPage={setPage}
+          prefetchFn={prefetchPageFn}
+        />
+      )}
+    </SidebarPageLayout>
+  );
 }

@@ -23,9 +23,9 @@ export default function LeftSidebar() {
   }
 
   return (
-    <aside className="transition-all w-auto md:w-[200px] bg-card/50 border-r min-h-dvh flex flex-col gap-20 flex-shrink-0 justify-between p-5 text-sm text-muted-foreground">
-      <div className="flex flex-col justify-between gap-5">
-        <HeaderLogo />
+    <aside className="transition-all w-auto md:w-[200px] bg-[#F6F6F6] dark:bg-[#121212] border-r h-dvh flex flex-col flex-shrink-0 justify-between text-sm text-muted-foreground overflow-auto">
+      <HeaderLogo />
+      <div className="flex flex-col justify-between gap-5 p-5">
         {navbarLinks
           .filter((item) => canView(item))
           .map((link) => (
@@ -41,7 +41,7 @@ export default function LeftSidebar() {
           ))}
       </div>
 
-      <div className="flex flex-col justify-between gap-3">
+      <div className="flex flex-col justify-between gap-3 p-5 mt-10">
         {canView({
           name: 'Settings',
           path: '/settings',

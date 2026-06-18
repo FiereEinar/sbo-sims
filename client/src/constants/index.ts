@@ -76,6 +76,21 @@ export const MODULES = {
 
   REPORT_READ: 'report:read',
   REPORT_DOWNLOAD: 'report:download',
+
+  EVENT_CREATE: 'event:create',
+  EVENT_READ: 'event:read',
+  EVENT_UPDATE: 'event:update',
+  EVENT_DELETE: 'event:delete',
+
+  EVENT_SESSION_CREATE: 'event_session:create',
+  EVENT_SESSION_READ: 'event_session:read',
+  EVENT_SESSION_UPDATE: 'event_session:update',
+  EVENT_SESSION_DELETE: 'event_session:delete',
+
+  ATTENDANCE_RECORD_CREATE: 'attendance_record:create',
+  ATTENDANCE_RECORD_READ: 'attendance_record:read',
+  ATTENDANCE_RECORD_UPDATE: 'attendance_record:update',
+  ATTENDANCE_RECORD_DELETE: 'attendance_record:delete',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];

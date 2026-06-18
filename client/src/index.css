@@ -6,8 +6,8 @@
 @tailwind utilities;
 
 body {
-	font-family: 'Poppins', sans-serif;
-	/* font-family: 'Nunito Sans', sans-serif; */
+  font-family: 'Poppins', sans-serif;
+  /* font-family: 'Nunito Sans', sans-serif; */
 }
 
 /* custom colors in google autofill / remove colors */
@@ -15,44 +15,44 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: hsl(var(--muted-foreground));
-	transition: background-color 5000s ease-in-out 0s;
-	box-shadow: inset 0 0 20px 20px #00000000;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: hsl(var(--muted-foreground));
+  transition: background-color 5000s ease-in-out 0s;
+  box-shadow: inset 0 0 20px 20px #00000000;
 }
 
 @layer base {
-	:root {
-		--background: 0 0% 100%;
-		--foreground: 0 0% 3.9%;
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
 
-		--card: 0 0% 93%;
-		--card-foreground: 0 0% 3.9%;
+    --card: 0 0% 93%;
+    --card-foreground: 0 0% 3.9%;
 
-		--popover: 0 0% 100%;
-		--popover-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
 
-		--primary-1: 197, 100%, 45%;
-		--primary-1-foreground: 0 0% 98%;
+    --primary-1: 197, 100%, 45%;
+    --primary-1-foreground: 0 0% 98%;
 
-		/* #171717 */
-		--primary: 0 0% 9%;
-		--primary-foreground: 0 0% 98%;
+    /* #171717 */
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
-		--secondary: 0 0% 96.1%;
-		--secondary-foreground: 0 0% 9%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
 
-		--muted: 0 0% 96.1%;
-		/* hex: #737373 */
-		--muted-foreground: 0 0% 45.1%;
+    --muted: 0 0% 96.1%;
+    /* hex: #737373 */
+    --muted-foreground: 0 0% 45.1%;
 
-		--accent: 0 0% 96.1%;
-		--accent-foreground: 0 0% 9%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
 
-		--destructive: 0 84.2% 60.2%;
-		--destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-		/* --border: 0 0% 89.8%;
+    /* --border: 0 0% 89.8%;
 		--input: 0 0% 89.8%;
 		--ring: 0 0% 3.9%;
 		--chart-1: 12 76% 61%;
@@ -60,99 +60,99 @@ input:-webkit-autofill:active {
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%; */
-		--radius: 0.5rem;
+    --radius: 0.5rem;
 
-		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
-		--ring: 221.2 83.2% 53.3%;
-		--chart-1: 221.2 83.2% 53.3%;
-		--chart-2: 212 95% 68%;
-		--chart-3: 216 92% 60%;
-		--chart-4: 210 98% 78%;
-		--chart-5: 212 97% 87%;
-	}
-	.dark {
-		--background: 0 0% 3.9%;
-		--foreground: 0 0% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --chart-1: 221.2 83.2% 53.3%;
+    --chart-2: 212 95% 68%;
+    --chart-3: 216 92% 60%;
+    --chart-4: 210 98% 78%;
+    --chart-5: 212 97% 87%;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
 
-		--card: 0 0% 10%;
-		--card-foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
 
-		--popover: 0 0% 3.9%;
-		--popover-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-		--primary-1: 203, 100%, 33%;
-		--primary-1-foreground: 0 0% 98%;
+    --primary-1: 203, 100%, 33%;
+    --primary-1-foreground: 0 0% 98%;
 
-		--primary: 0 0% 98%;
-		--primary-foreground: 0 0% 9%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
 
-		--secondary: 0 0% 14.9%;
-		--secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
 
-		--muted: 0 0% 14.9%;
-		--muted-foreground: 0 0% 63.9%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
 
-		--accent: 0 0% 14.9%;
-		--accent-foreground: 0 0% 98%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
 
-		--destructive: 0 62.8% 30.6%;
-		--destructive-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-		--border: 0 0% 14.9%;
-		--input: 0 0% 14.9%;
-		--ring: 0 0% 83.1%;
-		--chart-1: 220 70% 50%;
-		--chart-2: 160 60% 45%;
-		--chart-3: 30 80% 55%;
-		--chart-4: 280 65% 60%;
-		--chart-5: 340 75% 55%;
-	}
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 }
 @layer base {
-	* {
-		@apply border-border;
-	}
-	body {
-		@apply bg-background text-foreground;
-	}
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 .svg-component {
-	fill: hsl(var(--muted-foreground));
+  fill: hsl(var(--muted-foreground));
 }
 
 .active-link .svg-component {
-	fill: hsl(var(--primary-1));
+  fill: hsl(var(--primary-1));
 }
 
 .plus-icon-svg {
-	fill: hsl(var(--primary-foreground));
-	transition: all 0.3s ease;
+  fill: hsl(var(--primary-foreground));
+  transition: all 0.3s ease;
 }
 
 /* CUSTOM SCROLLBAR */
 /* width */
 ::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+  width: 3px;
+  height: 8px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-	border-radius: 5px;
-	/* background: #f1f1f1; */
-	background: #bcc0c4;
+  border-radius: 5px;
+  /* background: #f1f1f1; */
+  background: #e5e7eb;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-	background: #888;
-	border-radius: 5px;
-	transition: all 0.3s ease;
+  background: #a8afb3;
+  border-radius: 5px;
+  transition: all 0.3s ease;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-	background: #555;
+  background: #555;
 }

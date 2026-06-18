@@ -31,6 +31,7 @@ import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import AdminApp from './pages/admin/AdminApp';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
+import Events from './pages/Events';
 
 export default function Route() {
   const route = createBrowserRouter([
@@ -224,6 +225,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Reports />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'events',
+          element: (
+            <HasPermission
+              permissions={[MODULES.EVENT_READ]}
+              fallback={<NoPermission />}
+            >
+              <Events />
             </HasPermission>
           ),
         },

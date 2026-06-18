@@ -118,7 +118,10 @@ export default function LoginForm() {
 
         <div className="text-xs text-muted-foreground flex gap-1">
           <p>Don't have an account?</p>
-          <Link to={orgSlug ? `/${orgSlug}/signup` : '/signup'} className="underline">
+          <Link
+            to={orgSlug ? `/${orgSlug}/signup` : '/signup'}
+            className="underline"
+          >
             Sign up
           </Link>
         </div>

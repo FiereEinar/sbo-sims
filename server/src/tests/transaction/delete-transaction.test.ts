@@ -3,15 +3,15 @@ import supertest from 'supertest';
 import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
-import { IUser } from '../../models/user';
-import { IOrganization } from '../../models/organization';
-import { ICategory } from '../../models/category';
-import { IStudent } from '../../models/student';
+import { IUser } from '../../models/user.model';
+import { IOrganization } from '../../models/organization.model';
+import { ICategory } from '../../models/category.model';
+import { IStudent } from '../../models/student.model';
 import {
-	createMockCategory,
-	createMockOrganization,
-	createMockStudent,
-	createMockUser,
+  createMockCategory,
+  createMockOrganization,
+  createMockStudent,
+  createMockUser,
 } from '..';
 import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
 
@@ -25,70 +25,70 @@ let category: ICategory;
 let student: IStudent;
 
 beforeAll(async () => {
-	mongoServer = await MongoMemoryServer.create();
-	process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
+  mongoServer = await MongoMemoryServer.create();
+  process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
 
-	const res = await createMockUser();
-	user = res.user;
-	accessToken = res.accessToken;
+  const res = await createMockUser();
+  user = res.user;
+  accessToken = res.accessToken;
 
-	organization = await createMockOrganization(accessToken);
-	category = await createMockCategory(accessToken, organization._id);
-	student = await createMockStudent(accessToken);
+  organization = await createMockOrganization(accessToken);
+  category = await createMockCategory(accessToken, organization._id);
+  student = await createMockStudent(accessToken);
 });
 
 afterAll(async () => {
-	await mongoServer.stop();
+  await mongoServer.stop();
 });
 
 describe('DELETE - Delete Transaction', () => {
-	it('should delete a transaction', async () => {
-		const transaction = {
-			amount: 100,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should delete a transaction', async () => {
+    const transaction = {
+      amount: 100,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(OK);
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(OK);
 
-		const deleteRes = await supertest(app)
-			.delete(`/transaction/${res.body.data._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(OK);
-	});
+    const deleteRes = await supertest(app)
+      .delete(`/transaction/${res.body.data._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .expect(OK);
+  });
 
-	it('should not delete a transaction with invalid id', async () => {
-		const res = await supertest(app)
-			.delete(`/transaction/123`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(BAD_REQUEST);
-	});
+  it('should not delete a transaction with invalid id', async () => {
+    const res = await supertest(app)
+      .delete(`/transaction/123`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .expect(BAD_REQUEST);
+  });
 
-	it('should not delete a transaction that no longer exists', async () => {
-		const transaction = {
-			amount: 100,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should not delete a transaction that no longer exists', async () => {
+    const transaction = {
+      amount: 100,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(OK);
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(OK);
 
-		const deleteRes = await supertest(app)
-			.delete(`/transaction/${res.body.data._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(OK);
+    const deleteRes = await supertest(app)
+      .delete(`/transaction/${res.body.data._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .expect(OK);
 
-		const deleteRes2 = await supertest(app)
-			.delete(`/transaction/${res.body.data._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.expect(NOT_FOUND);
-	});
+    const deleteRes2 = await supertest(app)
+      .delete(`/transaction/${res.body.data._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .expect(NOT_FOUND);
+  });
 });

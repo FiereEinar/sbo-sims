@@ -1,23 +1,23 @@
 import { RequestHandler } from 'express';
 import { FORBIDDEN, UNAUTHORIZED } from '../../constants/http';
-import { UserRoles } from '../../models/user';
+import { UserRoles } from '../../models/user.model';
 
 export const authorizeRoles =
-	(...roles: UserRoles[]): RequestHandler =>
-	(req, res, next) => {
-		const user = req.currentUser;
+  (...roles: UserRoles[]): RequestHandler =>
+  (req, res, next) => {
+    const user = req.currentUser;
 
-		if (!user) {
-			res.sendStatus(UNAUTHORIZED);
-			return;
-		}
+    if (!user) {
+      res.sendStatus(UNAUTHORIZED);
+      return;
+    }
 
-		if (user.role === 'admin') return next();
+    if (user.role === 'admin') return next();
 
-		if (!roles.includes(user.role as UserRoles)) {
-			res.sendStatus(FORBIDDEN);
-			return;
-		}
+    if (!roles.includes(user.role as UserRoles)) {
+      res.sendStatus(FORBIDDEN);
+      return;
+    }
 
-		next();
-	};
+    next();
+  };

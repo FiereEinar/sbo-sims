@@ -1,4 +1,4 @@
 export type MongoEntity = {
-	__v: number;
-	_id: string;
+  __v: number;
+  _id: string;
 };

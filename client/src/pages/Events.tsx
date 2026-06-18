@@ -1,12 +1,28 @@
+import { fetchEvents } from '@/api/event';
+import EventTable from '@/components/event/EventTable';
 import HasPermission from '@/components/HasPermission';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
-import { MODULES } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 
 export default function Events() {
+  const {
+    data: events,
+    isLoading: eventsLoading,
+    error: eventsError,
+  } = useQuery({
+    queryKey: [QUERY_KEYS.EVENT],
+    queryFn: fetchEvents,
+  });
+
+  if (eventsError) {
+    return <p>Session expired, login again.</p>;
+  }
+
   return (
     <SidebarPageLayout>
       <StickyHeader>
@@ -23,6 +39,12 @@ export default function Events() {
       <div className="flex justify-between items-end flex-wrap gap-3">
         {/* <EventFilter /> */}
       </div>
+
+      <EventTable
+        events={events ?? []}
+        eventSessions={[]}
+        isLoading={eventsLoading}
+      />
 
       {/* {studentsFetchResult && (
         <PaginationController

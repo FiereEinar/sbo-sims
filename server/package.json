@@ -45,7 +45,7 @@
 		"date-fns": "^4.1.0",
 		"dotenv": "^16.4.5",
 		"ejs": "^3.1.10",
-		"exceljs": "^4.4.0",
+		"exceljs": "^3.4.0",
 		"express": "^4.21.0",
 		"express-async-handler": "^1.2.0",
 		"express-rate-limit": "^8.5.2",
@@ -58,6 +58,7 @@
 		"multer": "^2.1.1",
 		"nodemailer": "^8.0.7",
 		"puppeteer": "^23.6.1",
-		"server": "file:"
+		"server": "file:",
+		"zod": "^4.4.3"
 	}
 }

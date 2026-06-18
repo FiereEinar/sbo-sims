@@ -50,6 +50,11 @@ export default function CategoriesTable({
 
       <TableBody>
         {isLoading && <TableLoading colSpan={5} />}
+        {!categories?.length && !isLoading && (
+          <TableRow>
+            <TableCell colSpan={5}>No categories</TableCell>
+          </TableRow>
+        )}
         {categories &&
           categories.map((category) => (
             <TableRow

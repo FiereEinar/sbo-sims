@@ -29,6 +29,9 @@ export const QUERY_KEYS = {
   ROLES: 'roles',
   REPORT_SUMMARY: 'report_summary',
   REPORT_MONTHLY: 'report_monthly',
+  EVENT: 'events',
+  EVENT_SESSION: 'event_sessions',
+  ATTENDANCE_RECORD: 'attendance_records',
 };
 
 export const MODULES = {

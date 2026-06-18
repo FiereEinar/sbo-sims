@@ -1,25 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { getDatabaseConnection } from '../database/databaseManager';
-import { DB_MODEL, originalDbName } from '../constants';
-import { UserSchema } from '../models/user.model';
-import { StudentSchema } from '../models/student.model';
-import { CategorySchema } from '../models/category.model';
-import { TransactionSchema } from '../models/transaction.model';
-import OrganizationModel, {
-  OrganizationSchema,
-} from '../models/organization.model';
-import { SessionSchema } from '../models/session.model';
-import { PrelistingSchema } from '../models/prelisting.model';
-import { RoleSchema } from '../models/role.model';
-import { AppSettingSchema } from '../models/app-setting.model';
+import OrganizationModel from '../models/organization.model';
 import {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
   UNAUTHORIZED,
 } from '../constants/http';
-import { EventSchema } from '../models/event.model';
-import { EventSessionSchema } from '../models/event-session.model';
-import { AttendanceRecordSchema } from '../models/attendance-record.model';
 
 export const extractTenantContext = async (
   req: Request,

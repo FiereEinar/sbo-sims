@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 export interface IEvent extends mongoose.Document {
   title: string;
   description: string;
-  type: string;
   venue: string;
   start: Date;
   end: Date;
@@ -19,7 +18,6 @@ export const EventSchema = new Schema<IEvent>(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    type: { type: String, required: true },
     venue: { type: String, required: true },
     start: { type: Date, required: true },
     end: { type: Date, required: true },

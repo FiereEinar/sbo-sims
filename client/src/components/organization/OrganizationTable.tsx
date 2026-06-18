@@ -38,6 +38,11 @@ export default function OrganizationTable({
 
       <TableBody>
         {isLoading && <TableLoading colSpan={6} />}
+        {!organizations?.length && !isLoading && (
+          <TableRow>
+            <TableCell colSpan={6}>No organizations</TableCell>
+          </TableRow>
+        )}
         {organizations &&
           organizations.map((org) => (
             <TableRow

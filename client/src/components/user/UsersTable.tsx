@@ -35,6 +35,11 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
 
       <TableBody>
         {isLoading && <TableLoading colSpan={6} />}
+        {!users?.length && !isLoading && (
+          <TableRow>
+            <TableCell colSpan={6}>No users</TableCell>
+          </TableRow>
+        )}
         {users &&
           users.map((user) => (
             <TableRow

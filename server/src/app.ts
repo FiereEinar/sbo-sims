@@ -17,6 +17,7 @@ import roleRouter from './routes/role.route';
 import settingRouter from './routes/setting.route';
 import adminRouter from './routes/admin.route';
 import reportRouter from './routes/report.route';
+import eventRouter from './routes/event.route';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -69,6 +70,7 @@ app.use('/prelisting', prelistingRouter);
 app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);
 app.use('/role', roleRouter);
+app.use('/event', eventRouter);
 app.use('/setting', settingRouter);
 
 // Error handlers

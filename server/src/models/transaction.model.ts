@@ -1,0 +1,74 @@
+import mongoose from 'mongoose';
+import { ICategory } from './category.model';
+import { IStudent } from './student.model';
+import { IUser } from './user.model';
+
+const Schema = mongoose.Schema;
+
+export type ModeOfPayment = 'cash' | 'gcash';
+
+export interface IPaymentHistoryEntry {
+  amount: number;
+  date: Date;
+  modeOfPayment: ModeOfPayment;
+}
+
+export interface ITransaction extends mongoose.Document {
+  _id: mongoose.Types.ObjectId;
+  owner: IStudent;
+  amount: number;
+  category: ICategory;
+  description?: string;
+  date?: Date;
+  recordedBy?: IUser;
+  modeOfPayment: ModeOfPayment;
+  governor: string;
+  treasurer: string;
+  viceGovernor: string;
+  auditor: string;
+  details: { [key: string]: string };
+  paymentHistory: IPaymentHistoryEntry[];
+  semester: string;
+  schoolYear: string;
+  organization: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PaymentHistoryEntrySchema = new Schema(
+  {
+    amount: { type: Number, required: true },
+    date: { type: Date, required: true },
+    modeOfPayment: { type: String, enum: ['cash', 'gcash'], default: 'cash' },
+  },
+  { _id: false },
+);
+
+export const TransactionSchema = new Schema<ITransaction>(
+  {
+    amount: { type: Number, minlength: 1, required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
+    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+    description: { type: String, required: false },
+    date: { type: Date, default: Date.now },
+    recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    modeOfPayment: { type: String, enum: ['cash', 'gcash'], default: 'cash' },
+    governor: { type: String, required: true },
+    viceGovernor: { type: String, required: true },
+    treasurer: { type: String, required: true },
+    auditor: { type: String, required: true },
+    details: { type: Schema.Types.Mixed, required: true },
+    paymentHistory: { type: [PaymentHistoryEntrySchema], default: [] },
+    semester: { type: String, enum: ['1', '2'], required: true },
+    schoolYear: { type: String, required: true },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
+const TransactionModel = mongoose.model('Transaction', TransactionSchema);
+export default TransactionModel;

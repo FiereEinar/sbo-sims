@@ -3,17 +3,17 @@ import supertest from 'supertest';
 import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
-import { IUser } from '../../models/user';
-import { IOrganization } from '../../models/organization';
-import { ICategory } from '../../models/category';
-import { IStudent } from '../../models/student';
+import { IUser } from '../../models/user.model';
+import { IOrganization } from '../../models/organization.model';
+import { ICategory } from '../../models/category.model';
+import { IStudent } from '../../models/student.model';
 import {
-	createMockCategory,
-	createMockOrganization,
-	createMockStudent,
-	createMockUser,
+  createMockCategory,
+  createMockOrganization,
+  createMockStudent,
+  createMockUser,
 } from '..';
-import { ITransaction } from '../../models/transaction';
+import { ITransaction } from '../../models/transaction.model';
 import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from '../../constants/http';
 
 let accessToken: string;
@@ -27,129 +27,129 @@ let student: IStudent;
 let transaction: ITransaction;
 
 beforeAll(async () => {
-	mongoServer = await MongoMemoryServer.create();
-	process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
+  mongoServer = await MongoMemoryServer.create();
+  process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
 
-	const res = await createMockUser();
-	user = res.user;
-	accessToken = res.accessToken;
+  const res = await createMockUser();
+  user = res.user;
+  accessToken = res.accessToken;
 
-	organization = await createMockOrganization(accessToken);
-	category = await createMockCategory(accessToken, organization._id);
-	student = await createMockStudent(accessToken);
+  organization = await createMockOrganization(accessToken);
+  category = await createMockCategory(accessToken, organization._id);
+  student = await createMockStudent(accessToken);
 
-	// create a mock transaction
-	const transactionData = {
-		amount: 100,
-		categoryID: category._id,
-		studentID: student.studentID,
-	};
+  // create a mock transaction
+  const transactionData = {
+    amount: 100,
+    categoryID: category._id,
+    studentID: student.studentID,
+  };
 
-	const res2 = await supertest(app)
-		.post(`/transaction`)
-		.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-		.send(transactionData)
-		.expect(OK);
+  const res2 = await supertest(app)
+    .post(`/transaction`)
+    .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+    .send(transactionData)
+    .expect(OK);
 
-	transaction = res2.body.data as ITransaction;
+  transaction = res2.body.data as ITransaction;
 });
 
 afterAll(async () => {
-	await mongoServer.stop();
+  await mongoServer.stop();
 });
 
 describe('PUT - Update Transaction', () => {
-	it('should update transaction amount', async () => {
-		const updateData = {
-			amount: 200,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should update transaction amount', async () => {
+    const updateData = {
+      amount: 200,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(OK);
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(OK);
 
-		expect(res.body.data.amount).toBe(updateData.amount);
-	});
+    expect(res.body.data.amount).toBe(updateData.amount);
+  });
 
-	it('should update transaction category', async () => {
-		const newCategory = await createMockCategory(accessToken, organization._id);
+  it('should update transaction category', async () => {
+    const newCategory = await createMockCategory(accessToken, organization._id);
 
-		const updateData = {
-			amount: 200,
-			categoryID: newCategory._id,
-			studentID: student.studentID,
-		};
+    const updateData = {
+      amount: 200,
+      categoryID: newCategory._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(OK);
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(OK);
 
-		expect(res.body.data.category).toBe(updateData.categoryID);
-	});
+    expect(res.body.data.category).toBe(updateData.categoryID);
+  });
 
-	it('should update transaction student', async () => {
-		const newStudent = await createMockStudent(accessToken, '2301106598');
+  it('should update transaction student', async () => {
+    const newStudent = await createMockStudent(accessToken, '2301106598');
 
-		const updateData = {
-			amount: 200,
-			categoryID: category._id,
-			studentID: newStudent.studentID,
-		};
+    const updateData = {
+      amount: 200,
+      categoryID: category._id,
+      studentID: newStudent.studentID,
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(OK);
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(OK);
 
-		expect(res.body.data.owner).toBe(newStudent._id);
-	});
+    expect(res.body.data.owner).toBe(newStudent._id);
+  });
 
-	it('should not update transaction with invalid studentID', async () => {
-		const updateData = {
-			amount: 200,
-			categoryID: category._id,
-			studentID: '2301106577',
-		};
+  it('should not update transaction with invalid studentID', async () => {
+    const updateData = {
+      amount: 200,
+      categoryID: category._id,
+      studentID: '2301106577',
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(NOT_FOUND);
-	});
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(NOT_FOUND);
+  });
 
-	it('should not update transaction with invalid categoryID', async () => {
-		const updateData = {
-			amount: 200,
-			categoryID: '60f1d1f6c9d9b6a5c8b5e7d9',
-			studentID: student.studentID,
-		};
+  it('should not update transaction with invalid categoryID', async () => {
+    const updateData = {
+      amount: 200,
+      categoryID: '60f1d1f6c9d9b6a5c8b5e7d9',
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(NOT_FOUND);
-	});
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(NOT_FOUND);
+  });
 
-	it('should not update transaction with invalid amount', async () => {
-		const updateData = {
-			amount: -1,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should not update transaction with invalid amount', async () => {
+    const updateData = {
+      amount: -1,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.put(`/transaction/${transaction._id}`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(updateData)
-			.expect(BAD_REQUEST);
-	});
+    const res = await supertest(app)
+      .put(`/transaction/${transaction._id}`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(updateData)
+      .expect(BAD_REQUEST);
+  });
 });

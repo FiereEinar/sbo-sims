@@ -1,23 +1,25 @@
 import { NextFunction, Request, Response } from 'express';
 import { getDatabaseConnection } from '../database/databaseManager';
 import { DB_MODEL, originalDbName } from '../constants';
-import { UserSchema } from '../models/user';
-import { StudentSchema } from '../models/student';
-import { CategorySchema } from '../models/category';
-import { TransactionSchema } from '../models/transaction';
-import { OrganizationSchema } from '../models/organization';
-import { SessionSchema } from '../models/session';
-import { PrelistingSchema } from '../models/prelisting';
-import RoleSchema from '../models/role';
-import { AppSettingSchema } from '../models/appSetting';
+import { UserSchema } from '../models/user.model';
+import { StudentSchema } from '../models/student.model';
+import { CategorySchema } from '../models/category.model';
+import { TransactionSchema } from '../models/transaction.model';
+import OrganizationModel, {
+  OrganizationSchema,
+} from '../models/organization.model';
+import { SessionSchema } from '../models/session.model';
+import { PrelistingSchema } from '../models/prelisting.model';
+import { RoleSchema } from '../models/role.model';
+import { AppSettingSchema } from '../models/app-setting.model';
 import {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
   UNAUTHORIZED,
 } from '../constants/http';
-import { EventSchema } from '../models/event';
-import { EventSessionSchema } from '../models/event-session';
-import { AttendanceRecordSchema } from '../models/attendance-record';
+import { EventSchema } from '../models/event.model';
+import { EventSessionSchema } from '../models/event-session.model';
+import { AttendanceRecordSchema } from '../models/attendance-record.model';
 
 export const extractTenantContext = async (
   req: Request,
@@ -44,7 +46,7 @@ export const extractTenantContext = async (
         .json({ message: 'x-organization-slug header is required' });
     }
 
-    const organization = await req.OrganizationModel.findOne({ slug: orgSlug });
+    const organization = await OrganizationModel.findOne({ slug: orgSlug });
     if (!organization) {
       return res
         .status(BAD_REQUEST)

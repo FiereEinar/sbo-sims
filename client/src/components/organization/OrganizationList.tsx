@@ -21,6 +21,7 @@ export default function OrganizationList({ type }: OrganizationListProps) {
     const fetchOrganizations = async () => {
       try {
         const { data } = await axiosInstance.get('/auth/organizations');
+        console.log(data.data);
         setOrganizations(data.data);
       } catch (error) {
         console.error('Failed to fetch organizations', error);

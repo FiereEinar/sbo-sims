@@ -3,15 +3,15 @@ import supertest from 'supertest';
 import app from '../../app';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { accessTokenCookieName } from '../../constants';
-import { IUser } from '../../models/user';
-import { IOrganization } from '../../models/organization';
-import { ICategory } from '../../models/category';
-import { IStudent } from '../../models/student';
+import { IUser } from '../../models/user.model';
+import { IOrganization } from '../../models/organization.model';
+import { ICategory } from '../../models/category.model';
+import { IStudent } from '../../models/student.model';
 import {
-	createMockCategory,
-	createMockOrganization,
-	createMockStudent,
-	createMockUser,
+  createMockCategory,
+  createMockOrganization,
+  createMockStudent,
+  createMockUser,
 } from '..';
 import { BAD_REQUEST, NOT_FOUND, OK } from '../../constants/http';
 
@@ -25,76 +25,76 @@ let category: ICategory;
 let student: IStudent;
 
 beforeAll(async () => {
-	mongoServer = await MongoMemoryServer.create();
-	process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
+  mongoServer = await MongoMemoryServer.create();
+  process.env.ME_CONFIG_MONGODB_URL = mongoServer.getUri();
 
-	const res = await createMockUser();
-	user = res.user;
-	accessToken = res.accessToken;
+  const res = await createMockUser();
+  user = res.user;
+  accessToken = res.accessToken;
 
-	organization = await createMockOrganization(accessToken);
-	category = await createMockCategory(accessToken, organization._id);
-	student = await createMockStudent(accessToken);
+  organization = await createMockOrganization(accessToken);
+  category = await createMockCategory(accessToken, organization._id);
+  student = await createMockStudent(accessToken);
 });
 
 afterAll(async () => {
-	await mongoServer.stop();
+  await mongoServer.stop();
 });
 
 describe('POST - Create Transaction', () => {
-	it('should create a transaction', async () => {
-		const transaction = {
-			amount: 100,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should create a transaction', async () => {
+    const transaction = {
+      amount: 100,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(OK);
-	});
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(OK);
+  });
 
-	it('should not create a transaction with invalid category', async () => {
-		const transaction = {
-			amount: 100,
-			categoryID: '60f1d1f6c9d9b6a5c8b5e7d9',
-			studentID: student.studentID,
-		};
+  it('should not create a transaction with invalid category', async () => {
+    const transaction = {
+      amount: 100,
+      categoryID: '60f1d1f6c9d9b6a5c8b5e7d9',
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(NOT_FOUND);
-	});
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(NOT_FOUND);
+  });
 
-	it('should not create a transaction with invalid student', async () => {
-		const transaction = {
-			amount: 100,
-			categoryID: category._id,
-			studentID: '2301106590',
-		};
+  it('should not create a transaction with invalid student', async () => {
+    const transaction = {
+      amount: 100,
+      categoryID: category._id,
+      studentID: '2301106590',
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(NOT_FOUND);
-	});
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(NOT_FOUND);
+  });
 
-	it('should not create a transaction with invalid amount', async () => {
-		const transaction = {
-			amount: -1,
-			categoryID: category._id,
-			studentID: student.studentID,
-		};
+  it('should not create a transaction with invalid amount', async () => {
+    const transaction = {
+      amount: -1,
+      categoryID: category._id,
+      studentID: student.studentID,
+    };
 
-		const res = await supertest(app)
-			.post(`/transaction`)
-			.set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-			.send(transaction)
-			.expect(BAD_REQUEST);
-	});
+    const res = await supertest(app)
+      .post(`/transaction`)
+      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
+      .send(transaction)
+      .expect(BAD_REQUEST);
+  });
 });

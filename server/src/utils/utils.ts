@@ -1,136 +1,136 @@
 import {
-	addDays,
-	format,
-	startOfDay,
-	startOfMonth,
-	startOfWeek,
-	startOfYear,
+  addDays,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
 } from 'date-fns';
 import { FilterQuery } from 'mongoose';
-import { ITransaction } from '../models/transaction';
+import { ITransaction } from '../models/transaction.model';
 import os from 'os';
 import { EJSTransaction } from '../types/transaction';
 import _ from 'lodash';
 import { Request } from 'express';
 
 export function validateEmail(email: string) {
-	const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-	return emailPattern.test(email);
+  return emailPattern.test(email);
 }
 
 export function escapeRegex(text: string) {
-	return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
 export const getDateFilterByPeriod = (
-	period: string
+  period: string,
 ): FilterQuery<ITransaction> | undefined => {
-	const currentDate = new Date();
+  const currentDate = new Date();
 
-	if (period === 'today') {
-		return {
-			date: {
-				$gte: startOfDay(currentDate).toISOString(),
-				$lt: startOfDay(addDays(currentDate, 1)).toISOString(),
-			},
-		};
-	} else if (period === 'weekly') {
-		return {
-			date: {
-				$gte: startOfWeek(currentDate).toISOString(),
-			},
-		};
-	} else if (period === 'monthly') {
-		return {
-			date: {
-				$gte: startOfMonth(currentDate).toISOString(),
-			},
-		};
-	} else if (period === 'yearly') {
-		return {
-			date: {
-				$gte: startOfYear(currentDate).toISOString(),
-			},
-		};
-	}
+  if (period === 'today') {
+    return {
+      date: {
+        $gte: startOfDay(currentDate).toISOString(),
+        $lt: startOfDay(addDays(currentDate, 1)).toISOString(),
+      },
+    };
+  } else if (period === 'weekly') {
+    return {
+      date: {
+        $gte: startOfWeek(currentDate).toISOString(),
+      },
+    };
+  } else if (period === 'monthly') {
+    return {
+      date: {
+        $gte: startOfMonth(currentDate).toISOString(),
+      },
+    };
+  } else if (period === 'yearly') {
+    return {
+      date: {
+        $gte: startOfYear(currentDate).toISOString(),
+      },
+    };
+  }
 };
 
 export const getPeriodLabel = (period: string): string | undefined => {
-	switch (period) {
-		case 'today':
-			return 'Today';
-		case 'weekly':
-			return 'This Week';
-		case 'monthly':
-			return 'This Month';
-		case 'yearly':
-			return 'This Year';
-	}
+  switch (period) {
+    case 'today':
+      return 'Today';
+    case 'weekly':
+      return 'This Week';
+    case 'monthly':
+      return 'This Month';
+    case 'yearly':
+      return 'This Year';
+  }
 };
 
 export const getIPv4Address = () => {
-	const interfaces = os.networkInterfaces();
-	let result = null;
+  const interfaces = os.networkInterfaces();
+  let result = null;
 
-	for (const name in interfaces) {
-		if (!interfaces[name]) continue;
-		for (const iface of interfaces[name]) {
-			console.log(`${iface.family}: ${iface.address}`);
-			if (iface.family === 'IPv4' && !iface.internal) {
-				result = iface.address; // Return the first non-internal IPv4 address
-			}
-		}
-	}
-	return result ? result : 'localhost'; // Fallback to localhost if no IPv4 address is found
+  for (const name in interfaces) {
+    if (!interfaces[name]) continue;
+    for (const iface of interfaces[name]) {
+      console.log(`${iface.family}: ${iface.address}`);
+      if (iface.family === 'IPv4' && !iface.internal) {
+        result = iface.address; // Return the first non-internal IPv4 address
+      }
+    }
+  }
+  return result ? result : 'localhost'; // Fallback to localhost if no IPv4 address is found
 };
 
 export const getEJSTransactionsData = (transactions: ITransaction[]) => {
-	const EJSTransactions: EJSTransaction[] = [];
-	let totalAmount = 0;
+  const EJSTransactions: EJSTransaction[] = [];
+  let totalAmount = 0;
 
-	transactions.forEach((transaction) => {
-		const tDate = transaction.date
-			? format(
-					new Date(transaction.date.toISOString()) ?? undefined,
-					'MM/dd/yyyy'
-			  )
-			: 'No date provided';
+  transactions.forEach((transaction) => {
+    const tDate = transaction.date
+      ? format(
+          new Date(transaction.date.toISOString()) ?? undefined,
+          'MM/dd/yyyy',
+        )
+      : 'No date provided';
 
-		const tStatus =
-			transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
+    const tStatus =
+      transaction.amount >= transaction.category.fee ? 'Paid' : 'Partial';
 
-		const t: EJSTransaction = {
-			amount: transaction.amount.toString(),
-			category: `${_.startCase(transaction.category.name)}`,
-			organization: `${_.startCase(transaction.category.organization.name)}`,
-			course: transaction.owner.course.toUpperCase(),
-			date: tDate,
-			fullname: _.startCase(
-				`${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`
-			),
-			status: tStatus,
-			studentID: transaction.owner.studentID,
-			year: transaction.owner.year.toString(),
-		};
+    const t: EJSTransaction = {
+      amount: transaction.amount.toString(),
+      category: `${_.startCase(transaction.category.name)}`,
+      organization: `${_.startCase(transaction.category.organization.name)}`,
+      course: transaction.owner.course.toUpperCase(),
+      date: tDate,
+      fullname: _.startCase(
+        `${transaction.owner.firstname} ${transaction.owner.middlename} ${transaction.owner.lastname}`,
+      ),
+      status: tStatus,
+      studentID: transaction.owner.studentID,
+      year: transaction.owner.year.toString(),
+    };
 
-		EJSTransactions.push(t);
-		totalAmount += transaction.amount;
-	});
+    EJSTransactions.push(t);
+    totalAmount += transaction.amount;
+  });
 
-	return {
-		EJSTransactions,
-		totalAmount,
-	};
+  return {
+    EJSTransactions,
+    totalAmount,
+  };
 };
 
 export const getUserRequestInfo = (req: Request) => {
-	const xforwarded = req.headers['x-forwarded-for'];
-	const forwarded =
-		typeof xforwarded === 'string' ? xforwarded : xforwarded?.[0];
-	const ip = forwarded ? forwarded.split(',')[0] : req.ip;
+  const xforwarded = req.headers['x-forwarded-for'];
+  const forwarded =
+    typeof xforwarded === 'string' ? xforwarded : xforwarded?.[0];
+  const ip = forwarded ? forwarded.split(',')[0] : req.ip;
 
-	const userAgent = req.headers['user-agent'];
+  const userAgent = req.headers['user-agent'];
 
-	return { ip, userAgent };
+  return { ip, userAgent };
 };

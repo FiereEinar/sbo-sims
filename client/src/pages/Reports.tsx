@@ -280,12 +280,11 @@ export default function Reports() {
     queryFn: fetchMonthlyReport,
   });
 
-
   return (
     <SidebarPageLayout>
       {/* Header */}
       <StickyHeader>
-        <Header>Reports</Header>
+        <Header>Transaction Reports</Header>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="w-[130px]">
             <SemInput hideLabel />

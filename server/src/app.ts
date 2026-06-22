@@ -20,6 +20,7 @@ import reportRouter from './routes/report.route';
 import eventRouter from './routes/event.route';
 import eventSessionRouter from './routes/event-session.route';
 import attendanceRouter from './routes/attendance.route';
+import attendanceReportRouter from './routes/attendance-report.route';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -75,6 +76,7 @@ app.use('/role', roleRouter);
 app.use('/event', eventRouter);
 app.use('/event-session', eventSessionRouter);
 app.use('/attendance', attendanceRouter);
+app.use('/attendance-report', attendanceReportRouter);
 app.use('/setting', settingRouter);
 
 // Error handlers

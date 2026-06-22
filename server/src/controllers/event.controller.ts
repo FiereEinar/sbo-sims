@@ -58,13 +58,33 @@ export const create_event = asyncHandler(async (req, res) => {
  * GET - Read All Events for Tenant (EVENT_READ)
  */
 export const get_all_events = asyncHandler(async (req, res) => {
-  // Fetch only non-archived events belonging to this tenant organization
-  const events = await EventModel.find({
-    organization: req.tenantContext!.organizationId,
-    archived: false,
-  })
-    .sort({ createdAt: -1 })
-    .exec();
+  const events = await EventModel.aggregate([
+    {
+      $match: {
+        organization: req.tenantContext!.organizationId,
+        archived: false,
+      },
+    },
+    {
+      $lookup: {
+        from: 'eventsessionmodels',
+        localField: '_id',
+        foreignField: 'event',
+        as: 'sessions',
+      },
+    },
+    {
+      $addFields: {
+        sessionsCount: { $size: '$sessions' },
+      },
+    },
+    {
+      $project: {
+        sessions: 0,
+      },
+    },
+    { $sort: { createdAt: -1 } },
+  ]);
 
   res.json(new CustomResponse(true, events, 'Events retrieved successfully'));
 });

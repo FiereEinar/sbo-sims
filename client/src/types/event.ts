@@ -11,6 +11,7 @@ export type Event = MongoEntity & {
   end: Date;
   organization: Organization;
   archived: boolean;
+  sessionsCount?: number;
   createdAt: Date;
   updatedAt: Date;
 };

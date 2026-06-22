@@ -9,22 +9,17 @@ import {
   Table,
 } from '../ui/table';
 import TableLoading from '../loading/TableLoading';
-import { Event, EventSession } from '../../types/event';
+import { Event } from '../../types/event';
 import { format } from 'date-fns';
 
 type EventTableProps = {
   events: Event[];
-  eventSessions: EventSession[];
   isLoading: boolean;
 };
 
-export default function EventTable({
-  events,
-  eventSessions,
-  isLoading,
-}: EventTableProps) {
+export default function EventTable({ events, isLoading }: EventTableProps) {
   const navigate = useTenantNavigate();
-
+  console.log(events);
   return (
     <Table>
       <TableHeader>
@@ -60,7 +55,7 @@ export default function EventTable({
                 </p>
               </TableCell>
               <TableCell className="">{event.venue}</TableCell>
-              <TableCell className="">{eventSessions.length}</TableCell>
+              <TableCell className="">{event.sessionsCount ?? 0}</TableCell>
             </TableRow>
           ))}
       </TableBody>

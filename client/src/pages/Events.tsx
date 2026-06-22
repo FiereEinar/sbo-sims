@@ -35,11 +35,7 @@ export default function Events() {
         {/* <EventFilter /> */}
       </div>
 
-      <EventTable
-        events={events ?? []}
-        eventSessions={[]}
-        isLoading={eventsLoading}
-      />
+      <EventTable events={events ?? []} isLoading={eventsLoading} />
 
       {/* {studentsFetchResult && (
         <PaginationController

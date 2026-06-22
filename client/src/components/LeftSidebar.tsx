@@ -28,8 +28,8 @@ export default function LeftSidebar() {
       <div className="flex flex-col justify-between gap-5 p-5">
         {navbarLinks
           .filter((item) => canView(item))
-          .map((link) => (
-            <Fragment key={link.name}>
+          .map((link, i) => (
+            <Fragment key={`${link.name}-${i}`}>
               {link.isSeparator && <hr className="border-border/60 -mx-5" />}
               {link.title && (
                 <p className="text-[0.7rem] text-muted-foreground">

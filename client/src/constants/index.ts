@@ -9,7 +9,6 @@ import {
   Receipt,
   ShieldCheck,
   Tags,
-  UserCheck,
   Users,
 } from 'lucide-react';
 import { ForwardRefExoticComponent, RefAttributes } from 'react';
@@ -32,6 +31,7 @@ export const QUERY_KEYS = {
   EVENT: 'events',
   EVENT_SESSION: 'event_sessions',
   ATTENDANCE_RECORD: 'attendance_records',
+  ATTENDANCE_REPORT_SUMMARY: 'attendance_report_summary',
 };
 
 export const MODULES = {
@@ -147,19 +147,27 @@ export const navbarLinks: SidebarNavLinkType[] = [
     icon: FileBarChart2,
     permissions: [MODULES.REPORT_READ],
   },
-  {
-    path: '/attendances',
-    name: 'Records',
-    icon: UserCheck,
-    permissions: [],
-    isSeparator: true,
-    title: 'Attendance',
-  },
+  // {
+  //   path: '/attendances',
+  //   name: 'Records',
+  //   icon: UserCheck,
+  //   permissions: [],
+  //   isSeparator: true,
+  //   title: 'Attendance',
+  // },
   {
     path: '/events',
     name: 'Events',
     icon: Calendar,
-    permissions: [],
+    permissions: [MODULES.EVENT_READ],
+    isSeparator: true,
+    title: 'Attendance',
+  },
+  {
+    path: '/attendance-reports',
+    name: 'Reports',
+    icon: FileBarChart2,
+    permissions: [MODULES.REPORT_READ],
   },
   {
     path: '/organization',

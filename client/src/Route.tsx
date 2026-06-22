@@ -34,6 +34,7 @@ import AdminApp from './pages/admin/AdminApp';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
 import Events from './pages/Events';
+import AttendanceReports from './pages/AttendanceReports';
 
 export default function Route() {
   const route = createBrowserRouter([
@@ -227,6 +228,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Reports />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'attendance-reports',
+          element: (
+            <HasPermission
+              permissions={[MODULES.REPORT_READ]}
+              fallback={<NoPermission />}
+            >
+              <AttendanceReports />
             </HasPermission>
           ),
         },

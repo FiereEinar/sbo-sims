@@ -58,6 +58,7 @@ export const MODULES = {
   ATTENDANCE_RECORD_READ: 'attendance_record:read',
   ATTENDANCE_RECORD_UPDATE: 'attendance_record:update',
   ATTENDANCE_RECORD_DELETE: 'attendance_record:delete',
+  ATTENDANCE_RECORD_DOWNLOAD: 'attendance_record:download',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];

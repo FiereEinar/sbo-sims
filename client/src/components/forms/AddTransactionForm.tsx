@@ -26,7 +26,6 @@ import { Category } from '@/types/category';
 import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../category/CategoryPicker';
-import Plus from '../icons/plus';
 import { Transaction } from '@/types/transaction';
 import ErrorText from '../ui/error-text';
 import { fetchStudents } from '@/api/student';
@@ -48,7 +47,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, Plus } from 'lucide-react';
 
 ring.register();
 
@@ -267,7 +266,7 @@ export default function AddTransactionForm({
       <DialogTrigger asChild>
         {mode === 'add' ? (
           <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+            <Plus className="w-4 h-4" />
             <p>Add Transaction</p>
           </Button>
         ) : (
@@ -446,7 +445,7 @@ export default function AddTransactionForm({
                   className="h-7 text-xs text-dark dark:text-white"
                   onClick={addCategoryEntry}
                 >
-                  <Plus /> Add Category
+                  <Plus className="w-4 h-4" /> Add Category
                 </Button>
               </div>
 

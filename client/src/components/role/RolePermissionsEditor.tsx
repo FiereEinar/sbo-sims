@@ -45,6 +45,17 @@ export function RolePermissionsEditor({ role }: Props) {
 		);
 	};
 
+	const allPermissions = Object.values(MODULES);
+	const isAllSelected = selectedPermissions.length === allPermissions.length;
+
+	const handleSelectAll = () => {
+		if (isAllSelected) {
+			setSelectedPermissions([]);
+		} else {
+			setSelectedPermissions([...allPermissions]);
+		}
+	};
+
 	const handleSave = async () => {
 		try {
 			setIsLoading(true);
@@ -67,11 +78,16 @@ export function RolePermissionsEditor({ role }: Props) {
 
 	return (
 		<div className='rounded-2xl border bg-card/50 p-6 shadow-sm space-y-6'>
-			<div>
-				<h2 className='text-xl font-semibold'>Permissions</h2>
-				<p className='text-sm text-muted-foreground'>
-					Manage access control for this role.
-				</p>
+			<div className='flex justify-between items-start'>
+				<div>
+					<h2 className='text-xl font-semibold'>Permissions</h2>
+					<p className='text-sm text-muted-foreground'>
+						Manage access control for this role.
+					</p>
+				</div>
+				<Button variant="outline" size="sm" onClick={handleSelectAll}>
+					{isAllSelected ? 'Deselect All' : 'Select All'}
+				</Button>
 			</div>
 
 			{Object.entries(groupedPermissions).map(([module, permissions]) => (

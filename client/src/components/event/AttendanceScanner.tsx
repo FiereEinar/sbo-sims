@@ -88,8 +88,26 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
 
   const isActive = session.status === 'active';
 
+  const FallbackScanner = (
+    <div className="space-y-4 max-w-2xl mx-auto w-full">
+      <div className="flex items-center">
+        <div className="relative flex-1">
+          <ScanBarcode className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
+          <Input
+            placeholder="You do not have permission to record attendance"
+            className="pl-14 h-14 text-lg rounded-r-none rounded-l-full"
+            disabled={true}
+          />
+        </div>
+        <Button disabled className="h-14 px-8 rounded-l-none rounded-r-full">
+          Submit
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <HasPermission permissions={[MODULES.EVENT_UPDATE]}>
+    <HasPermission permissions={[MODULES.ATTENDANCE_RECORD_CREATE]} fallback={FallbackScanner}>
       <div className="space-y-4 max-w-2xl mx-auto w-full">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex items-center">

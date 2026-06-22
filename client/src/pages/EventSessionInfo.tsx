@@ -158,7 +158,11 @@ export default function EventSessionInfo() {
             <h3 className="text-xl font-bold">Attendance Records</h3>
           </div>
 
-          <HasPermission permissions={[MODULES.EVENT_READ]}>
+          <HasPermission permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]} fallback={
+            <Button variant="outline" disabled title="You do not have permission to download attendance">
+              <Download className="mr-2 h-4 w-4" /> Download
+            </Button>
+          }>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">

@@ -12,3 +12,9 @@ export const updateEventSessionSchema = z.object({
 });
 
 export type UpdateEventSessionBody = z.infer<typeof updateEventSessionSchema>;
+
+export const updateEventSessionStatusSchema = z.object({
+  status: z.enum(['upcoming', 'active', 'completed', 'paused']),
+});
+
+export type UpdateEventSessionStatusBody = z.infer<typeof updateEventSessionStatusSchema>;

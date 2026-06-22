@@ -25,6 +25,8 @@ import Roles from './pages/Roles';
 import RoleInfo from './pages/RoleInfo';
 import ErrorPage from './pages/ErrorPage';
 import Reports from './pages/Reports';
+import EventInfo from './pages/EventInfo';
+import EventSessionInfo from './pages/EventSessionInfo';
 
 import RootRedirect from './components/RootRedirect';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
@@ -32,7 +34,6 @@ import AdminApp from './pages/admin/AdminApp';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
 import Events from './pages/Events';
-import EventInfo from './pages/EventInfo';
 
 export default function Route() {
   const route = createBrowserRouter([
@@ -248,6 +249,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <EventInfo />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'event/:eventID/session/:sessionID',
+          element: (
+            <HasPermission
+              permissions={[MODULES.EVENT_READ]}
+              fallback={<NoPermission />}
+            >
+              <EventSessionInfo />
             </HasPermission>
           ),
         },

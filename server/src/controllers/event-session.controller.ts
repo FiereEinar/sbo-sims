@@ -9,6 +9,7 @@ import {
   createEventSessionSchema,
   UpdateEventSessionBody,
   updateEventSessionSchema,
+  updateEventSessionStatusSchema,
 } from '../middlewares/validations/event-session.validation';
 
 /**
@@ -56,7 +57,9 @@ export const create_event_session = asyncHandler(async (req, res) => {
 
   await session.save();
 
-  res.json(new CustomResponse(true, session, 'Event session created successfully'));
+  res.json(
+    new CustomResponse(true, session, 'Event session created successfully'),
+  );
 });
 
 /**
@@ -71,9 +74,15 @@ export const get_event_sessions = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
   })
     .sort({ createdAt: 1 })
+    .populate({
+      model: EventModel,
+      path: 'event',
+    })
     .exec();
 
-  res.json(new CustomResponse(true, sessions, 'Event sessions retrieved successfully'));
+  res.json(
+    new CustomResponse(true, sessions, 'Event sessions retrieved successfully'),
+  );
 });
 
 /**
@@ -108,7 +117,11 @@ export const update_event_session = asyncHandler(async (req, res) => {
   );
 
   res.json(
-    new CustomResponse(true, updatedSession, 'Event session updated successfully'),
+    new CustomResponse(
+      true,
+      updatedSession,
+      'Event session updated successfully',
+    ),
   );
 });
 
@@ -132,5 +145,54 @@ export const delete_event_session = asyncHandler(async (req, res) => {
     'Session not found or access denied',
   );
 
-  res.json(new CustomResponse(true, null, 'Event session deleted successfully'));
+  res.json(
+    new CustomResponse(true, null, 'Event session deleted successfully'),
+  );
+});
+
+/**
+ * PATCH - Update Event Session Status (EVENT_UPDATE)
+ */
+export const update_event_session_status = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  appAssert(id, BAD_REQUEST, 'Session ID parameter is required');
+
+  const parseResult = updateEventSessionStatusSchema.safeParse(req.body);
+  appAssert(
+    parseResult.success,
+    BAD_REQUEST,
+    parseResult.error?.message || 'Invalid status data',
+  );
+
+  const { status } = parseResult.data;
+
+  // First fetch the session to know its current state
+  const session = await EventSessionModel.findOne({
+    _id: id,
+    organization: req.tenantContext!.organizationId,
+  }).exec();
+
+  appAssert(session !== null, NOT_FOUND, 'Session not found or access denied');
+
+  // If changing to active and hasn't started yet, set startedAt
+  if (status === 'active' && session.status === 'upcoming') {
+    session.startedAt = new Date();
+  } else if (status === 'paused' && session.status === 'active') {
+    session.pausedAt = new Date();
+  } else if (status === 'active' && session.status === 'paused') {
+    // resuming
+  } else if (status === 'completed' && session.status !== 'completed') {
+    session.endedAt = new Date();
+  }
+
+  session.status = status;
+  await session.save();
+
+  res.json(
+    new CustomResponse(
+      true,
+      session,
+      'Event session status updated successfully',
+    ),
+  );
 });

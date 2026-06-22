@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { EventSession } from '@/types/event';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -10,6 +11,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +22,19 @@ import AddEventSessionForm from '../forms/AddEventSessionForm';
 import { requestDeleteEventSession } from '@/api/eventSession';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
+import { QUERY_KEYS, MODULES } from '@/constants';
 import HasPermission from '../HasPermission';
-import { MODULES } from '@/constants';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
 
 type EventSessionCardProps = {
   session: EventSession;
@@ -30,6 +42,7 @@ type EventSessionCardProps = {
 
 export default function EventSessionCard({ session }: EventSessionCardProps) {
   const { toast } = useToast();
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const getStatusIcon = (status: EventSession['status']) => {
     switch (status) {
@@ -48,7 +61,7 @@ export default function EventSessionCard({ session }: EventSessionCardProps) {
   const getStatusBadgeVariant = (status: EventSession['status']) => {
     switch (status) {
       case 'active':
-        return 'default'; // Or a custom green variant
+        return 'default';
       case 'paused':
         return 'secondary';
       case 'completed':
@@ -60,7 +73,6 @@ export default function EventSessionCard({ session }: EventSessionCardProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this session?')) return;
     try {
       await requestDeleteEventSession(session._id);
       await queryClient.invalidateQueries({
@@ -75,38 +87,60 @@ export default function EventSessionCard({ session }: EventSessionCardProps) {
     }
   };
 
+  const navigate = useTenantNavigate();
+
   return (
-    <Card className="flex flex-col border shadow-sm bg-card/50">
+    <Card 
+      className="flex flex-col border shadow-sm bg-card/50 hover:border-primary/50 cursor-pointer transition-colors"
+      onClick={() => navigate(`/event/${session.event}/session/${session._id}`)}
+    >
       <CardContent className="p-4 flex flex-col h-full gap-2 relative">
         <div className="absolute top-4 right-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
-              <HasPermission permissions={[MODULES.EVENT_UPDATE]}>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <AddEventSessionForm mode="edit" session={session} />
-                </div>
-              </HasPermission>
-              <HasPermission permissions={[MODULES.EVENT_DELETE]}>
-                <Button
-                  className="w-full justify-start font-normal flex gap-2 h-9 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete();
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                  <p>Delete</p>
+          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                  <span className="sr-only">Open menu</span>
+                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </HasPermission>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <HasPermission permissions={[MODULES.EVENT_UPDATE]}>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <AddEventSessionForm mode="edit" session={session} />
+                  </div>
+                </HasPermission>
+                <HasPermission permissions={[MODULES.EVENT_DELETE]}>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      className="w-full justify-start font-normal flex gap-2 h-9 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      variant="ghost"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="size-4" />
+                      <p>Delete</p>
+                    </Button>
+                  </AlertDialogTrigger>
+                </HasPermission>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  event session.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div className="flex gap-2 items-center mr-6">

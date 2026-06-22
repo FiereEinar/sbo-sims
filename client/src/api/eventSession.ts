@@ -41,6 +41,18 @@ export const submitUpdateEventSessionForm = async (
   }
 };
 
+export const updateEventSessionStatus = async (
+  sessionId: string,
+  status: EventSession['status']
+) => {
+  try {
+    const res = await axiosInstance.patch(`/event-session/${sessionId}/status`, { status });
+    return res.data;
+  } catch (err: any) {
+    throw err.response?.data || err;
+  }
+};
+
 export const requestDeleteEventSession = async (sessionId: string) => {
   try {
     const { data } = await axiosInstance.delete(`/event-session/${sessionId}`);

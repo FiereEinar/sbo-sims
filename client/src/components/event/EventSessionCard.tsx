@@ -90,16 +90,22 @@ export default function EventSessionCard({ session }: EventSessionCardProps) {
   const navigate = useTenantNavigate();
 
   return (
-    <Card 
+    <Card
       className="flex flex-col border shadow-sm bg-card/50 hover:border-primary/50 cursor-pointer transition-colors"
-      onClick={() => navigate(`/event/${session.event}/session/${session._id}`)}
+      onClick={() =>
+        navigate(`/event/${session.event._id}/session/${session._id}`)
+      }
     >
       <CardContent className="p-4 flex flex-col h-full gap-2 relative">
         <div className="absolute top-4 right-4">
           <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <span className="sr-only">Open menu</span>
                   <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 </Button>

@@ -1,19 +1,37 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import BackButton from '@/components/buttons/BackButton';
 import { fetchEventSessions } from '@/api/eventSession';
-import { fetchSessionAttendance } from '@/api/attendance';
-import { QUERY_KEYS } from '@/constants';
+import {
+  fetchSessionAttendance,
+  getAttendanceDownloadURL,
+} from '@/api/attendance';
+import { QUERY_KEYS, MODULES } from '@/constants';
 import SessionControls from '@/components/event/SessionControls';
 import AttendanceScanner from '@/components/event/AttendanceScanner';
 import AttendanceRecordTable from '@/components/event/AttendanceRecordTable';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { format } from 'date-fns';
+import PaginationController from '@/components/PaginationController';
+import HasPermission from '@/components/HasPermission';
+import { queryClient } from '@/main';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import axiosInstance from '@/api/axiosInstance';
 
 export default function EventSessionInfo() {
   const { eventID, sessionID } = useParams();
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
   // Fetch all sessions and find this one
   const { data: sessions, isLoading: isSessionsLoading } = useQuery({
@@ -24,13 +42,30 @@ export default function EventSessionInfo() {
 
   const session = sessions?.find((s) => s._id === sessionID);
 
-  const { data: attendanceRecords, isLoading: isAttendanceLoading } = useQuery({
-    queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance'],
-    queryFn: () => fetchSessionAttendance(sessionID as string),
+  const { data: attendanceResult, isLoading: isAttendanceLoading } = useQuery({
+    queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance', { page, pageSize }],
+    queryFn: () => fetchSessionAttendance(sessionID as string, page, pageSize),
     enabled: !!sessionID,
     // Poll every 3 seconds if active to keep table up to date if multiple devices are scanning
     refetchInterval: session?.status === 'active' ? 3000 : false,
   });
+
+  const prefetchPageFn = (prefetchPage: number) => {
+    const queryKey = [
+      QUERY_KEYS.EVENT,
+      sessionID,
+      'attendance',
+      { page: prefetchPage, pageSize },
+    ];
+    const data = queryClient.getQueryData(queryKey);
+    if (data) return;
+
+    queryClient.prefetchQuery({
+      queryKey,
+      queryFn: () =>
+        fetchSessionAttendance(sessionID as string, prefetchPage, pageSize),
+    });
+  };
 
   if (isSessionsLoading) {
     return (
@@ -52,6 +87,29 @@ export default function EventSessionInfo() {
       </SidebarPageLayout>
     );
   }
+
+  const [_isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async (type: 'pdf' | 'csv') => {
+    try {
+      setIsDownloading(true);
+      const url = getAttendanceDownloadURL(sessionID as string, type);
+      const result = await axiosInstance.get(url, { responseType: 'blob' });
+
+      const blob = new Blob([result.data], {
+        type: type === 'pdf' ? 'application/pdf' : 'text/csv',
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${session?.name || 'session'}-attendance.${type}`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (err) {
+      console.error('Error downloading the file:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <SidebarPageLayout>
@@ -95,17 +153,52 @@ export default function EventSessionInfo() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">Attendance Records</h3>
-          <Badge variant="secondary">
-            {attendanceRecords?.length || 0} Scanned
-          </Badge>
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <h3 className="text-xl font-bold">Attendance Records</h3>
+          </div>
+
+          <HasPermission permissions={[MODULES.EVENT_READ]}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => handleDownload('pdf')}
+                  className="cursor-pointer"
+                >
+                  <FileText className="mr-2 h-4 w-4" /> As PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleDownload('csv')}
+                  className="cursor-pointer"
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" /> As CSV / Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </HasPermission>
         </div>
 
         {isAttendanceLoading ? (
           <p className="text-muted-foreground">Loading records...</p>
         ) : (
-          <AttendanceRecordTable records={attendanceRecords || []} />
+          <div className="space-y-4">
+            <AttendanceRecordTable records={attendanceResult?.data || []} />
+
+            {attendanceResult && (
+              <PaginationController
+                currentPage={page}
+                nextPage={attendanceResult.next}
+                prevPage={attendanceResult.prev}
+                setPage={setPage}
+                prefetchFn={prefetchPageFn}
+              />
+            )}
+          </div>
         )}
       </div>
     </SidebarPageLayout>

@@ -68,6 +68,7 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
       // Invalidate attendance query
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.EVENT, session._id, 'attendance'],
+        exact: false, // Make sure it invalidates all pages
       });
     } catch (err: any) {
       setLastScanResult({

@@ -63,7 +63,7 @@ export const get_all_events = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
     archived: false,
   })
-    .sort({ start: 1 })
+    .sort({ createdAt: -1 })
     .exec();
 
   res.json(new CustomResponse(true, events, 'Events retrieved successfully'));

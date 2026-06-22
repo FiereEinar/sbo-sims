@@ -38,8 +38,8 @@ export default function CategoriesTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[200px]">Organization</TableHead>
-          <TableHead className="w-[200px]">Category name</TableHead>
+          {/* <TableHead className="w-[200px]">Organization</TableHead> */}
+          <TableHead className="w-[400px]">Category name</TableHead>
           <TableHead className="w-[200px]">Category fee</TableHead>
           <TableHead className="w-[200px]">Total transactions</TableHead>
           <TableHead className="w-[200px] text-right">
@@ -49,10 +49,10 @@ export default function CategoriesTable({
       </TableHeader>
 
       <TableBody>
-        {isLoading && <TableLoading colSpan={5} />}
+        {isLoading && <TableLoading colSpan={4} />}
         {!categories?.length && !isLoading && (
           <TableRow>
-            <TableCell colSpan={5}>No categories</TableCell>
+            <TableCell colSpan={4}>No categories</TableCell>
           </TableRow>
         )}
         {categories &&
@@ -62,7 +62,7 @@ export default function CategoriesTable({
               onClick={() => navigate(`/category/${category._id}`)}
               key={category._id}
             >
-              <TableCell className="">{category.organization.name}</TableCell>
+              {/* <TableCell className="">{category.organization.name}</TableCell> */}
               <TableCell className="">{category.name}</TableCell>
               <TableCell className="">
                 {numberWithCommas(category.fee)}
@@ -77,7 +77,7 @@ export default function CategoriesTable({
 
       <TableFooter>
         <TableRow>
-          <TableCell colSpan={4}>Total</TableCell>
+          <TableCell colSpan={3}>Total</TableCell>
           <TableCell className="text-right">
             {numberWithCommas(totalAmount)}
           </TableCell>

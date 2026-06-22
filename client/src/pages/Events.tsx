@@ -3,11 +3,10 @@ import EventTable from '@/components/event/EventTable';
 import HasPermission from '@/components/HasPermission';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
-import { Button } from '@/components/ui/button';
 import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import AddEventForm from '@/components/forms/AddEventForm';
 
 export default function Events() {
   const {
@@ -29,11 +28,7 @@ export default function Events() {
         <Header>Events</Header>
 
         <HasPermission permissions={[MODULES.EVENT_CREATE]}>
-          {/* create AddEventForm in /components/forms in the future */}
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
-            <p>Add Event</p>
-          </Button>
+          <AddEventForm />
         </HasPermission>
       </StickyHeader>
       <div className="flex justify-between items-end flex-wrap gap-3">

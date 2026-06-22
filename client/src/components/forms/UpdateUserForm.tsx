@@ -1,6 +1,5 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { useUserStore } from '@/store/user';
-import Header from '../ui/header';
 import InputField from '../InputField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,7 +78,9 @@ export default function UpdateUserForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <Header size="sm">User Profile</Header>
+        <h3 className="scroll-m-20 text-md font-semibold tracking-tight">
+          User Profile
+        </h3>
         <p className="text-sm text-muted-foreground">
           Update your personal information associated with this account.
         </p>

@@ -18,6 +18,7 @@ import settingRouter from './routes/setting.route';
 import adminRouter from './routes/admin.route';
 import reportRouter from './routes/report.route';
 import eventRouter from './routes/event.route';
+import eventSessionRouter from './routes/event-session.route';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -71,6 +72,7 @@ app.use('/category', categoryRouter);
 app.use('/organization', organizationRouter);
 app.use('/role', roleRouter);
 app.use('/event', eventRouter);
+app.use('/event-session', eventSessionRouter);
 app.use('/setting', settingRouter);
 
 // Error handlers

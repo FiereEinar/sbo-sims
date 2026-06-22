@@ -1,5 +1,5 @@
 import { Pencil } from 'lucide-react';
-import { submitEventForm } from '@/api/event';
+import { submitEventForm, submitUpdateEventForm } from '@/api/event';
 import { eventSchema } from '@/lib/validations/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -67,8 +67,8 @@ export default function AddEventForm({
       if (mode === 'add') {
         await submitEventForm(data);
       }
-      if (mode === 'edit') {
-        // Edit logic here later
+      if (mode === 'edit' && event) {
+        await submitUpdateEventForm(event._id, data);
       }
 
       await queryClient.invalidateQueries({

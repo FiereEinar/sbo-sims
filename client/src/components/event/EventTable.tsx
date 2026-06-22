@@ -29,10 +29,10 @@ export default function EventTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[250px]">Event Name</TableHead>
-          <TableHead className="w-[250px]">Date & Time</TableHead>
-          <TableHead className="w-[250px]">Venue</TableHead>
-          <TableHead className="w-[250px]">Sessions</TableHead>
+          <TableHead className="w-[300px]">Event Name</TableHead>
+          <TableHead className="w-[200px]">Date & Time</TableHead>
+          <TableHead className="w-[300px]">Venue</TableHead>
+          <TableHead className="w-[100px]">Sessions</TableHead>
         </TableRow>
       </TableHeader>
 

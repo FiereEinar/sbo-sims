@@ -9,7 +9,7 @@ trefoil.register();
 
 /**
  * ProtectedRoute for the Global Super Admin portal.
- * Verifies the user is authenticated AND has role === 'admin'.
+ * Verifies the user is authenticated AND has role === 'central-admin'.
  * Redirects to /admin/login otherwise.
  */
 export default function AdminProtectedRoute({ children }: PropsWithChildren) {
@@ -22,7 +22,7 @@ export default function AdminProtectedRoute({ children }: PropsWithChildren) {
 			try {
 				const { data } = await adminAxiosInstance.get<User>('/auth/check-auth');
 
-				if (data.role !== 'admin') {
+				if (data.role !== 'central-admin') {
 					setIsAuthenticated(false);
 					navigate('/admin/login', { replace: true });
 					return;

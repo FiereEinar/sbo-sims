@@ -6,11 +6,9 @@ type Image = {
 };
 
 export type UserRoles =
-	| 'governor'
-	| 'treasurer'
-	| 'auditor'
-	| 'regular'
-	| 'admin';
+	| 'student'
+	| 'org-admin'
+	| 'central-admin';
 
 export interface Role {
 	_id: string;

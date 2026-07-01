@@ -7,6 +7,7 @@ import BackButton from '@/components/buttons/BackButton';
 import { fetchEventSessions } from '@/api/eventSession';
 import {
   fetchSessionAttendance,
+  fetchSessionAttendanceStats,
   getAttendanceDownloadURL,
   AttendanceFilterValues,
 } from '@/api/attendance';
@@ -14,6 +15,7 @@ import { QUERY_KEYS, MODULES } from '@/constants';
 import SessionControls from '@/components/event/SessionControls';
 import AttendanceScanner from '@/components/event/AttendanceScanner';
 import AttendanceRecordTable from '@/components/event/AttendanceRecordTable';
+import AttendanceStatsPanel from '@/components/event/AttendanceStatsPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +87,13 @@ export default function EventSessionInfo() {
     queryFn: () =>
       fetchSessionAttendance(sessionID as string, page, pageSize, filters),
     enabled: !!sessionID,
-    // Poll every 3 seconds if active to keep table up to date if multiple devices are scanning
+    refetchInterval: session?.status === 'active' ? 3000 : false,
+  });
+
+  const { data: statsResult, isLoading: isStatsLoading } = useQuery({
+    queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance-stats'],
+    queryFn: () => fetchSessionAttendanceStats(sessionID as string),
+    enabled: !!sessionID,
     refetchInterval: session?.status === 'active' ? 3000 : false,
   });
 
@@ -131,7 +139,6 @@ export default function EventSessionInfo() {
       </SidebarPageLayout>
     );
   }
-
 
   const handleDownload = async (type: 'pdf' | 'csv') => {
     try {
@@ -197,9 +204,23 @@ export default function EventSessionInfo() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
           <div className="flex items-center gap-4">
             <h3 className="text-xl font-bold">Attendance Records</h3>
+          </div>
+        </div>
+
+        <div className="flex justify-between gap-2 items-center mb-4">
+          {/* Search Bar */}
+          <div className="relative w-[300px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="attendance-search"
+              className="pl-9"
+              placeholder="Search by name or student ID..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
           </div>
 
           <HasPermission
@@ -238,22 +259,14 @@ export default function EventSessionInfo() {
           </HasPermission>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-4 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="attendance-search"
-            className="pl-9"
-            placeholder="Search by name or student ID..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </div>
-
         {isAttendanceLoading ? (
           <p className="text-muted-foreground">Loading records...</p>
         ) : (
           <div className="space-y-4">
+            <AttendanceStatsPanel
+              stats={statsResult}
+              isLoading={isStatsLoading}
+            />
             <AttendanceRecordTable
               records={attendanceResult?.data || []}
               filters={filters}

@@ -8,6 +8,7 @@ export interface IAttendanceRecord extends mongoose.Document {
   session: mongoose.Types.ObjectId;
   student: mongoose.Types.ObjectId;
   studentIdInput: string;
+  recordedBy?: mongoose.Types.ObjectId; // the user who scanned/recorded
   recordedAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +37,11 @@ export const AttendanceRecordSchema = new Schema<IAttendanceRecord>(
       required: true,
     },
     studentIdInput: { type: String, required: true },
+    recordedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
     recordedAt: { type: Date, required: true, default: Date.now() },
   },
   { timestamps: true },

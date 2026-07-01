@@ -63,3 +63,19 @@ export const recordAttendance = async (
     throw err.response?.data || err;
   }
 };
+
+export type AttendanceStats = {
+  total: number;
+  byGender: { _id: string; count: number }[];
+  byCourse: { _id: string; count: number }[];
+  byYear: { _id: number; count: number }[];
+};
+
+export const fetchSessionAttendanceStats = async (
+  sessionId: string,
+): Promise<AttendanceStats> => {
+  const { data } = await axiosInstance.get(
+    `/attendance/session/${sessionId}/stats`,
+  );
+  return data.data;
+};

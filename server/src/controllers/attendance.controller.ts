@@ -165,6 +165,7 @@ export const record_attendance = asyncHandler(async (req, res) => {
     session: session._id,
     student: student._id,
     studentIdInput,
+    recordedBy: (req as any).userId ?? undefined,
     recordedAt: new Date(),
   });
 
@@ -359,3 +360,74 @@ export const download_session_attendance_csv = asyncHandler(
     res.send(csvLines.join('\n'));
   },
 );
+
+/**
+ * GET /attendance/session/:sessionId/stats
+ * Returns aggregate breakdowns for the session's attendance:
+ *  - total count
+ *  - by gender
+ *  - by course
+ *  - by year level
+ *
+ * Uses a single $facet aggregation for efficiency.
+ */
+export const get_session_attendance_stats = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+
+  appAssert(sessionId, BAD_REQUEST, 'Session ID parameter is required');
+
+  const pipeline: mongoose.PipelineStage[] = [
+    {
+      $match: {
+        session: new mongoose.Types.ObjectId(toStr(sessionId)!),
+        organization: new mongoose.Types.ObjectId(
+          req.tenantContext!.organizationId.toString(),
+        ),
+      },
+    },
+    {
+      $lookup: {
+        from: 'students',
+        localField: 'student',
+        foreignField: '_id',
+        as: 'student',
+      },
+    },
+    { $unwind: '$student' },
+    {
+      $facet: {
+        total: [{ $count: 'count' }],
+        byGender: [
+          { $group: { _id: '$student.gender', count: { $sum: 1 } } },
+          { $sort: { _id: 1 } },
+        ],
+        byCourse: [
+          { $group: { _id: '$student.course', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ],
+        byYear: [
+          { $group: { _id: '$student.year', count: { $sum: 1 } } },
+          { $sort: { _id: 1 } },
+        ],
+      },
+    },
+    {
+      $project: {
+        total: { $ifNull: [{ $arrayElemAt: ['$total.count', 0] }, 0] },
+        byGender: 1,
+        byCourse: 1,
+        byYear: 1,
+      },
+    },
+  ];
+
+  const [result] = await AttendanceRecordModel.aggregate(pipeline);
+
+  res.json(
+    new CustomResponse(
+      true,
+      result ?? { total: 0, byGender: [], byCourse: [], byYear: [] },
+      'Session attendance stats',
+    ),
+  );
+});

@@ -70,7 +70,11 @@ function DeleteButton({ eventID }: DeleteButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="flex gap-1" variant="destructive" size="sm">
+        <Button
+          className="flex gap-2 items-center rounded-full"
+          variant="destructive"
+          size="sm"
+        >
           <Trash2 className="size-4" />
           <p>Delete</p>
         </Button>

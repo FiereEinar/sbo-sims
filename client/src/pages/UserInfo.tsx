@@ -71,7 +71,12 @@ export default function UserInfo() {
 
       {user && (
         <StickyHeader>
-          <Header>User Information</Header>
+          <div className="space-y-2">
+            <Header>User Information</Header>
+            <p className="text-sm text-muted-foreground">
+              Showing information of the user
+            </p>
+          </div>
 
           <div className="flex items-center gap-2">
             <HasPermission permissions={[MODULES.USER_UPDATE]}>
@@ -83,7 +88,7 @@ export default function UserInfo() {
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    className="flex gap-1"
+                    className="flex gap-2 items-center rounded-full"
                     size="sm"
                   >
                     <Trash size={16} />

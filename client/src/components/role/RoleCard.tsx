@@ -80,14 +80,14 @@ export function RoleCard({ role, isLoading, onEdit, onDelete }: RoleCardProps) {
       {/* Permissions */}
       <div className="mt-4 flex-1">
         <div className="flex flex-wrap gap-1.5">
-          {role.permissions.slice(0, 3).map((perm) => (
+          {role.permissions.slice(0, 2).map((perm) => (
             <Badge key={perm} variant="secondary" className="text-xs">
               {perm}
             </Badge>
           ))}
-          {permissionCount > 3 && (
+          {permissionCount > 2 && (
             <Badge variant="outline" className="text-xs">
-              +{permissionCount - 3} more
+              +{permissionCount - 2} more
             </Badge>
           )}
         </div>

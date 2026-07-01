@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { AttendanceStats } from '@/api/attendance';
 import { ChevronDown, ChevronUp, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   PieChart,
   Pie,
@@ -22,8 +21,14 @@ const GENDER_COLORS: Record<string, string> = {
 };
 
 const COURSE_COLORS = [
-  '#6366f1', '#f59e0b', '#10b981', '#f43f5e',
-  '#8b5cf6', '#0ea5e9', '#84cc16', '#fb923c',
+  '#6366f1',
+  '#f59e0b',
+  '#10b981',
+  '#f43f5e',
+  '#8b5cf6',
+  '#0ea5e9',
+  '#84cc16',
+  '#fb923c',
 ];
 
 const YEAR_LABELS: Record<number, string> = {
@@ -101,9 +106,7 @@ export default function AttendanceStatsPanel({
                       outerRadius={70}
                       paddingAngle={3}
                       dataKey="value"
-                      label={({ name, value }) =>
-                        `${name}: ${value}`
-                      }
+                      label={({ name, value }) => `${name}: ${value}`}
                       labelLine={false}
                     >
                       {genderData.map((entry) => (
@@ -121,9 +124,7 @@ export default function AttendanceStatsPanel({
                     <Legend
                       iconType="circle"
                       iconSize={8}
-                      formatter={(v) => (
-                        <span className="text-xs">{v}</span>
-                      )}
+                      formatter={(v) => <span className="text-xs">{v}</span>}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -142,9 +143,7 @@ export default function AttendanceStatsPanel({
                     return (
                       <div key={yr}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium">
-                            {YEAR_LABELS[yr]}
-                          </span>
+                          <span className="font-medium">{YEAR_LABELS[yr]}</span>
                           <span className="text-muted-foreground">
                             {count} ({pct}%)
                           </span>

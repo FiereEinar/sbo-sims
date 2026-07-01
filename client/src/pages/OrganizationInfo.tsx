@@ -52,7 +52,12 @@ export default function OrganizationInfo() {
 
       {organization && (
         <StickyHeader>
-          <Header>{organization.name}</Header>
+          <div className="space-y-2">
+            <Header>{organization.name}</Header>
+            <p className="text-sm text-muted-foreground">
+              Showing information of the organization
+            </p>
+          </div>
           <EditAndDeleteOrganizationButton organizationID={organization._id} />
         </StickyHeader>
       )}

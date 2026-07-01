@@ -47,7 +47,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Trash2, Pencil, Plus } from 'lucide-react';
+import { Trash2, Plus, Edit } from 'lucide-react';
 
 ring.register();
 
@@ -265,13 +265,13 @@ export default function AddTransactionForm({
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus className="w-4 h-4" />
+          <Button className="flex justify-center gap-2 rounded-full" size="sm">
+            <Plus className="size-4" />
             <p>Add Transaction</p>
           </Button>
         ) : (
-          <Button className="flex gap-1" size="sm" variant="outline">
-            <Pencil className="size-4" />
+          <Button className="flex gap-2 rounded-full" size="sm" variant="ghost">
+            <Edit className="size-4" />
             <p>Edit</p>
           </Button>
         )}

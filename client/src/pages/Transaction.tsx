@@ -12,7 +12,6 @@ import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
 import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
 import HasPermission from '@/components/HasPermission';
-import ViewModeToggle from '@/components/ViewModeToggle';
 import { useViewModeStore } from '@/store/viewModeStore';
 import TransactionsCardView from '@/components/transaction/TransactionsCardView';
 import TransactionsTable from '@/components/transaction/TransactionsTable';
@@ -62,18 +61,20 @@ export default function Transaction() {
       <StickyHeader>
         <Header>Transactions</Header>
 
-        <HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
-          <AddTransactionForm categories={categories} />
-        </HasPermission>
+        <div className="flex gap-2 items-center">
+          <HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
+            <ImportTransactionsButton categories={categories} />
+          </HasPermission>
+          <HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
+            <AddTransactionForm categories={categories} />
+          </HasPermission>
+        </div>
       </StickyHeader>
 
       <div className="flex justify-between items-end flex-wrap gap-3">
         <TransactionsFilter />
 
-        <HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
-          <ImportTransactionsButton categories={categories} />
-        </HasPermission>
-        <ViewModeToggle />
+        {/* <ViewModeToggle /> */}
       </div>
 
       {viewMode === 'table' ? (

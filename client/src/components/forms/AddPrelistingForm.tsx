@@ -1,5 +1,5 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
-import { Pencil } from 'lucide-react';
+import { EditIcon, PlusIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
@@ -17,7 +17,6 @@ import { Category } from '@/types/category';
 import { z } from 'zod';
 import DatePicker from '../DatePicker';
 import CategoryPicker from '../category/CategoryPicker';
-import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import { fetchStudents } from '@/api/student';
 import _ from 'lodash';
@@ -119,13 +118,13 @@ export default function AddPrelistingForm({
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+          <Button className="flex gap-2 rounded-full" size="sm">
+            <PlusIcon className="size-4" />
             <p>Add Prelisting</p>
           </Button>
         ) : (
-          <Button className="flex gap-1" size="sm" variant="outline">
-            <Pencil className="size-4" />
+          <Button className="flex gap-2 rounded-full" size="sm" variant="ghost">
+            <EditIcon className="size-4" />
             <p>Edit</p>
           </Button>
         )}

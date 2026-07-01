@@ -20,7 +20,10 @@ export default function SessionControls({ session }: SessionControlsProps) {
     try {
       setLoading(true);
       await updateEventSessionStatus(session._id, newStatus);
-      const eventId = typeof session.event === 'string' ? session.event : (session.event as any)._id;
+      const eventId =
+        typeof session.event === 'string'
+          ? session.event
+          : (session.event as any)._id;
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.EVENT, eventId, 'sessions'],
       });
@@ -45,9 +48,14 @@ export default function SessionControls({ session }: SessionControlsProps) {
           <Button
             onClick={() => handleStatusChange('active')}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-full"
           >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />} Start Session
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="mr-2 h-4 w-4" />
+            )}{' '}
+            Start Session
           </Button>
         ) : null}
 
@@ -56,9 +64,14 @@ export default function SessionControls({ session }: SessionControlsProps) {
             onClick={() => handleStatusChange('paused')}
             disabled={loading}
             variant="outline"
-            className="border-orange-500 text-orange-500 hover:bg-orange-50"
+            className="border-orange-500 text-orange-500 hover:bg-orange-50 rounded-full"
           >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Pause className="mr-2 h-4 w-4" />} Pause Session
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Pause className="mr-2 h-4 w-4" />
+            )}{' '}
+            Pause Session
           </Button>
         ) : null}
 
@@ -67,9 +80,14 @@ export default function SessionControls({ session }: SessionControlsProps) {
             onClick={() => handleStatusChange('completed')}
             disabled={loading}
             variant="outline"
-            className="border-blue-500 text-blue-500 hover:bg-blue-50"
+            className="border-blue-500 text-blue-500 hover:bg-blue-50 rounded-full"
           >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckSquare className="mr-2 h-4 w-4" />} Complete Session
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <CheckSquare className="mr-2 h-4 w-4" />
+            )}{' '}
+            Complete Session
           </Button>
         ) : null}
       </div>

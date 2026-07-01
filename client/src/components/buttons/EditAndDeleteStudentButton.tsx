@@ -67,9 +67,13 @@ function DeleteButton({ studentID }: DeleteButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="flex gap-1" variant="destructive" size="sm">
+        <Button
+          className="flex gap-1 rounded-full"
+          variant="destructive"
+          size="sm"
+        >
           <Trash2 className="size-4" />
-          <p>Delete</p>
+          <p className="hidden md:block">Delete</p>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

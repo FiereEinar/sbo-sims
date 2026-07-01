@@ -70,7 +70,11 @@ function DeleteButton({ transactionID }: DeleteButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="flex gap-1" variant="destructive" size="sm">
+        <Button
+          className="flex gap-2 rounded-full"
+          variant="destructive"
+          size="sm"
+        >
           <Trash2 className="size-4" />
           <p>Delete</p>
         </Button>

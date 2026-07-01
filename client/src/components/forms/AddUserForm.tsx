@@ -1,5 +1,5 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
-import { Pencil } from 'lucide-react';
+import { Edit, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,7 +16,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createUserSchema } from '@/lib/validations/userSchema';
 import { submitUserForm, submitAdminUpdateUserForm } from '@/api/user';
 import { z } from 'zod';
-import Plus from '../icons/plus';
 import { User } from '@/types/user';
 import { useEffect, useState } from 'react';
 import ErrorText from '../ui/error-text';
@@ -108,13 +107,13 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+          <Button className="flex items-center gap-2 rounded-full" size="sm">
+            <PlusIcon className="size-4" />
             <p>Add User</p>
           </Button>
         ) : (
-          <Button className="flex gap-1" size="sm" variant="outline">
-            <Pencil className="size-4" />
+          <Button className="flex gap-2 rounded-full" size="sm" variant="ghost">
+            <Edit className="size-4" />
             <p>Edit</p>
           </Button>
         )}

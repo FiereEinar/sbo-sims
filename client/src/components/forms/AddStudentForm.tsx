@@ -1,5 +1,5 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
-import { Pencil } from 'lucide-react';
+import { Edit, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,7 +20,6 @@ import {
   submitUpdateStudentForm,
 } from '@/api/student';
 import { z } from 'zod';
-import Plus from '../icons/plus';
 import { Student } from '@/types/student';
 import { useEffect, useRef, useState } from 'react';
 import ErrorText from '../ui/error-text';
@@ -114,14 +113,18 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+          <Button className="flex justify-center gap-2 rounded-full" size="sm">
+            <PlusIcon className="size-4" />
             <p>Add Student</p>
           </Button>
         ) : (
-          <Button className="flex gap-1" size="sm" variant="outline">
-            <Pencil className="size-4" />
-            <p>Edit</p>
+          <Button
+            className="flex gap-2 bg-inherit rounded-full"
+            size="sm"
+            variant="ghost"
+          >
+            <Edit className="size-4 text-inherit" />
+            <p className="text-inherit">Edit</p>
           </Button>
         )}
       </DialogTrigger>
@@ -237,7 +240,7 @@ export function AddStudentForm({ mode = 'add', student }: AddStudentFormProps) {
           )}
 
           <div className="flex justify-end">
-            <Button className="" disabled={isSubmitting} type="submit">
+            <Button disabled={isSubmitting} type="submit">
               Submit
             </Button>
           </div>

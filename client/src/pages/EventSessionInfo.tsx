@@ -167,7 +167,7 @@ export default function EventSessionInfo() {
       <BackButton />
 
       <StickyHeader>
-        <div className="w-full flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Viewing Session</p>
             <h2 className="text-2xl font-bold">

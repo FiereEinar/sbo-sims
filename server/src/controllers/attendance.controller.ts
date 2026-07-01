@@ -40,7 +40,11 @@ export const record_attendance = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
   }).exec();
 
-  appAssert(student !== null, NOT_FOUND, 'Student not found in this organization');
+  appAssert(
+    student !== null,
+    NOT_FOUND,
+    'Student not found in this organization',
+  );
 
   // 3. Check for duplicate attendance record for this session and student
   const existingRecord = await AttendanceRecordModel.findOne({
@@ -70,7 +74,9 @@ export const record_attendance = asyncHandler(async (req, res) => {
   // Populate student info for immediate UI feedback
   await record.populate('student', 'firstname lastname course year studentID');
 
-  res.json(new CustomResponse(true, record, 'Attendance recorded successfully'));
+  res.json(
+    new CustomResponse(true, record, 'Attendance recorded successfully'),
+  );
 });
 
 /**
@@ -92,7 +98,7 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
   };
 
   const records = await AttendanceRecordModel.find(filter)
-    .populate('student', 'firstname lastname course year studentID')
+    .populate('student')
     .sort({ recordedAt: -1 })
     .skip(skipAmount)
     .limit(pageSizeNum)
@@ -108,29 +114,30 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
       records,
       'Attendance records retrieved successfully',
       nextPage,
-      prevPage
-    )
+      prevPage,
+    ),
   );
 });
-export const download_session_attendance_pdf = asyncHandler(async (req, res) => {
-  const { sessionId } = req.params;
+export const download_session_attendance_pdf = asyncHandler(
+  async (req, res) => {
+    const { sessionId } = req.params;
 
-  const session = await EventSessionModel.findOne({
-    _id: sessionId,
-    organization: req.tenantContext!.organizationId,
-  }).populate('event');
+    const session = await EventSessionModel.findOne({
+      _id: sessionId,
+      organization: req.tenantContext!.organizationId,
+    }).populate('event');
 
-  appAssert(session, NOT_FOUND, 'Session not found');
+    appAssert(session, NOT_FOUND, 'Session not found');
 
-  const records = await AttendanceRecordModel.find({
-    session: sessionId,
-    organization: req.tenantContext!.organizationId,
-  })
-    .populate('student', 'firstname lastname course year studentID')
-    .sort({ recordedAt: -1 })
-    .exec();
+    const records = await AttendanceRecordModel.find({
+      session: sessionId,
+      organization: req.tenantContext!.organizationId,
+    })
+      .populate('student', 'firstname lastname course year studentID')
+      .sort({ recordedAt: -1 })
+      .exec();
 
-  const html = `
+    const html = `
     <html>
     <head>
       <style>
@@ -157,14 +164,16 @@ export const download_session_attendance_pdf = asyncHandler(async (req, res) => 
         </thead>
         <tbody>
           ${records
-            .map((r: any) => `
+            .map(
+              (r: any) => `
             <tr>
               <td>${r.student.studentID}</td>
               <td>${r.student.firstname} ${r.student.lastname}</td>
               <td>${r.student.course} - ${r.student.year}</td>
               <td>${new Date(r.recordedAt).toLocaleString()}</td>
             </tr>
-          `)
+          `,
+            )
             .join('')}
         </tbody>
       </table>
@@ -172,47 +181,53 @@ export const download_session_attendance_pdf = asyncHandler(async (req, res) => 
     </html>
   `;
 
-  const { convertToPdf } = require('../services/pdfConverter');
-  const buffer = await convertToPdf(html);
+    const { convertToPdf } = require('../services/pdfConverter');
+    const buffer = await convertToPdf(html);
 
-  res.set({
-    'Content-Type': 'application/pdf',
-    'Content-Disposition': `inline; filename="${session.name}-attendance.pdf"`,
-    'Content-Length': buffer.length,
-  });
-  res.end(buffer);
-});
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${session.name}-attendance.pdf"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
+  },
+);
 
-export const download_session_attendance_csv = asyncHandler(async (req, res) => {
-  const { sessionId } = req.params;
+export const download_session_attendance_csv = asyncHandler(
+  async (req, res) => {
+    const { sessionId } = req.params;
 
-  const session = await EventSessionModel.findOne({
-    _id: sessionId,
-    organization: req.tenantContext!.organizationId,
-  }).populate('event');
+    const session = await EventSessionModel.findOne({
+      _id: sessionId,
+      organization: req.tenantContext!.organizationId,
+    }).populate('event');
 
-  appAssert(session, NOT_FOUND, 'Session not found');
+    appAssert(session, NOT_FOUND, 'Session not found');
 
-  const records = await AttendanceRecordModel.find({
-    session: sessionId,
-    organization: req.tenantContext!.organizationId,
-  })
-    .populate('student', 'firstname lastname course year studentID')
-    .sort({ recordedAt: -1 })
-    .exec();
+    const records = await AttendanceRecordModel.find({
+      session: sessionId,
+      organization: req.tenantContext!.organizationId,
+    })
+      .populate('student', 'firstname lastname course year studentID')
+      .sort({ recordedAt: -1 })
+      .exec();
 
-  const csvLines = records.map((r: any) => {
-    const name = `${r.student.firstname} ${r.student.lastname}`.replace(/,/g, '');
-    const courseYear = `${r.student.course} - ${r.student.year}`;
-    const time = new Date(r.recordedAt).toLocaleString().replace(/,/g, '');
-    return `${r.student.studentID},${name},${courseYear},${time}`;
-  });
+    const csvLines = records.map((r: any) => {
+      const name = `${r.student.firstname} ${r.student.lastname}`.replace(
+        /,/g,
+        '',
+      );
+      const courseYear = `${r.student.course} - ${r.student.year}`;
+      const time = new Date(r.recordedAt).toLocaleString().replace(/,/g, '');
+      return `${r.student.studentID},${name},${courseYear},${time}`;
+    });
 
-  csvLines.unshift('Student ID,Name,Course & Year,Time Recorded');
+    csvLines.unshift('Student ID,Name,Course & Year,Time Recorded');
 
-  res.set({
-    'Content-Type': 'text/csv',
-    'Content-Disposition': `inline; filename="${session.name}-attendance.csv"`,
-  });
-  res.send(csvLines.join('\n'));
-});
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `inline; filename="${session.name}-attendance.csv"`,
+    });
+    res.send(csvLines.join('\n'));
+  },
+);

@@ -7,6 +7,8 @@ import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import AddEventForm from '@/components/forms/AddEventForm';
+import SemInput from '@/components/SemInput';
+import SchoolYearInput from '@/components/SchoolYearInput';
 
 export default function Events() {
   const {
@@ -31,8 +33,9 @@ export default function Events() {
           <AddEventForm />
         </HasPermission>
       </StickyHeader>
-      <div className="flex justify-between items-end flex-wrap gap-3">
-        {/* <EventFilter /> */}
+      <div className="flex items-end flex-wrap gap-3">
+        <SemInput />
+        <SchoolYearInput />
       </div>
 
       <EventTable events={events ?? []} isLoading={eventsLoading} />

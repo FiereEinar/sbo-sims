@@ -31,6 +31,7 @@ export default function AttendanceRecordTable({
           <TableRow>
             <TableHead>Student ID</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Gender</TableHead>
             <TableHead>Course & Year</TableHead>
             <TableHead>Time Recorded</TableHead>
           </TableRow>
@@ -44,6 +45,7 @@ export default function AttendanceRecordTable({
               <TableCell>
                 {record.student.firstname} {record.student.lastname}
               </TableCell>
+              <TableCell>{record.student.gender}</TableCell>
               <TableCell>
                 {record.student.course} - {record.student.year}
               </TableCell>

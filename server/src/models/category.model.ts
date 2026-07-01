@@ -15,7 +15,6 @@ export interface ICategory extends mongoose.Document {
   fee: number;
   organization: IOrganization;
   details: string[];
-  // type: CategoryType;
   semester: string;
   schoolYear: string;
   createdAt: Date;
@@ -27,7 +26,6 @@ export const CategorySchema = new Schema<ICategory>(
     name: { type: String, required: true },
     fee: { type: Number, required: true },
     details: { type: [String], required: true },
-    // type: { type: String, enum: ['transaction', 'prelisting'], required: true },
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',

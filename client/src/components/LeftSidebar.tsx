@@ -23,7 +23,7 @@ export default function LeftSidebar() {
   }
 
   return (
-    <aside className="transition-all w-auto md:w-[200px] bg-[#F6F6F6] dark:bg-[#121212] border-r h-dvh flex flex-col flex-shrink-0 justify-between text-sm text-muted-foreground overflow-auto">
+    <aside className="transition-all w-auto md:w-[200px] bg-[#F6F6F6] dark:bg-[#121212] border-r h-dvh flex flex-col flex-shrink-0 text-sm text-muted-foreground overflow-auto">
       <HeaderLogo />
       <div className="flex flex-col justify-between gap-5 p-5">
         {navbarLinks

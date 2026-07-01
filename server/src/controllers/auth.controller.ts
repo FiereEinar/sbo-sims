@@ -10,6 +10,7 @@ import {
   accessTokenCookieName,
   AppErrorCodes,
   refreshTokenCookieName,
+  SUPER_ADMIN,
 } from '../constants';
 import {
   BCRYPT_SALT,
@@ -49,6 +50,7 @@ import SessionModel from '../models/session.model';
 import OrganizationModel from '../models/organization.model';
 import RoleModel from '../models/role.model';
 import AppSettingModel from '../models/app-setting.model';
+import { MODULES } from '../constants/modules';
 
 /**
  * GET - public organizations
@@ -111,16 +113,8 @@ export const signup = asyncHandler(async (req, res) => {
   // hash the password
   const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
 
-  // Find the default role for the organization
-  const defaultRole = await RoleModel.findOne({
-    isDefault: true,
-    organization: organization._id,
-  }).exec();
-  appAssert(
-    defaultRole,
-    BAD_REQUEST,
-    'System configuration error: No default role found for this organization',
-  );
+  // Note: we no longer automatically assign an rbacRole to new student signups.
+  // They will default to role: 'student' and only have access to their own data via specific endpoints.
 
   const verificationToken = crypto.randomBytes(32).toString('hex');
   const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -133,7 +127,7 @@ export const signup = asyncHandler(async (req, res) => {
     password: hashedPassword,
     email: email,
     bio: bio,
-    rbacRole: defaultRole._id,
+    role: 'student',
     roleManuallyAssigned: false,
     profile: {
       url: profileURL,
@@ -200,10 +194,55 @@ export const login = asyncHandler(async (req, res) => {
     studentID: studentID,
     organization: organization._id,
   })
-    .populate('rbacRole')
     .populate('organization')
     .exec();
   appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
+
+  if (user.rbacRole) {
+    const role = await RoleModel.findOne({
+      _id: user.rbacRole,
+      organization: organization._id,
+    }).exec();
+    if (role) {
+      // Self-heal: ensure every module permission is present
+      // Collect ALL permission values from the MODULES constant
+      const allPermissions = Object.values(MODULES);
+      const currentPerms = new Set(role.permissions as string[]);
+      const missing = allPermissions.filter((p) => !currentPerms.has(p));
+
+      if (missing.length > 0) {
+        role.permissions = allPermissions;
+        await role.save();
+        console.log(
+          `[seed] Healed "${role.name}" role — added ${missing.length} new permission(s): ${missing.join(', ')}`,
+        );
+      }
+    }
+  }
+
+  // Self-heal rbacRole if it belongs to a different organization (due to seeding issues)
+  // if (
+  //   user.rbacRole &&
+  //   (user.rbacRole as any).organization.toString() !==
+  //     organization._id.toString()
+  // ) {
+  //   const roleName = (user.rbacRole as any).name;
+  //   const correctRole = await RoleModel.findOne({
+  //     name: roleName,
+  //     organization: organization._id,
+  //   });
+
+  //   if (correctRole) {
+  //     user.rbacRole = correctRole._id as any;
+  //     // We must save this correction to the database
+  //     await UserModel.updateOne(
+  //       { _id: user._id },
+  //       { $set: { rbacRole: correctRole._id } },
+  //     );
+  //     // Mutate the object for the rest of the login flow
+  //     (user as any).rbacRole = correctRole;
+  //   }
+  // }
 
   // check if password is correct
   const match = await bcrypt.compare(password, user.password);
@@ -406,7 +445,7 @@ export const admin = asyncHandler(async (req, res) => {
 
   const user = await UserModel.findByIdAndUpdate(
     userID,
-    { role: 'governor' },
+    { role: 'org-admin' },
     { new: true },
   );
 
@@ -424,15 +463,13 @@ export const admin_login = asyncHandler(async (req, res) => {
   const { studentID, password }: loginUserBody = req.body;
 
   // Find the admin user — no organization filter
-  const user = await UserModel.findOne<IUser>({ studentID })
+  const user = await UserModel.findOne<IUser>({
+    studentID,
+    role: 'central-admin',
+  })
     .populate('rbacRole')
     .exec();
   appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
-  appAssert(
-    user.role === 'admin',
-    UNAUTHORIZED,
-    'Access denied: not a super admin',
-  );
 
   const match = await bcrypt.compare(password, user.password);
   appAssert(match, UNAUTHORIZED, 'Incorrect Student ID or password');

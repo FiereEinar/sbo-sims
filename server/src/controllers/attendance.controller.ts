@@ -38,6 +38,8 @@ export const record_attendance = asyncHandler(async (req, res) => {
   const student = await StudentModel.findOne({
     studentID: studentIdInput,
     organization: req.tenantContext!.organizationId,
+    semester: req.tenantContext!.semester,
+    schoolYear: req.tenantContext!.schoolYear,
   }).exec();
 
   appAssert(

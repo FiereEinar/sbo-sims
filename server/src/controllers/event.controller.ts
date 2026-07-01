@@ -47,6 +47,8 @@ export const create_event = asyncHandler(async (req, res) => {
     start,
     end,
     organization: req.tenantContext!.organizationId,
+    semester: req.tenantContext!.semester,
+    schoolYear: req.tenantContext!.schoolYear,
   });
 
   await event.save();
@@ -62,6 +64,8 @@ export const get_all_events = asyncHandler(async (req, res) => {
     {
       $match: {
         organization: req.tenantContext!.organizationId,
+        semester: req.tenantContext!.semester,
+        schoolYear: req.tenantContext!.schoolYear,
         archived: false,
       },
     },

@@ -112,7 +112,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     lastname: adminLastname.toLowerCase(),
     email: '',
     password: hashedPassword,
-    role: 'governor',
+    role: 'org-admin',
     rbacRole: superAdminRole._id,
     roleManuallyAssigned: true,
     verified: true,

@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { Pencil, PlusIcon } from 'lucide-react';
 import {
   submitEventSessionForm,
   submitUpdateEventSessionForm,
@@ -18,7 +18,6 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import { useState } from 'react';
 import { queryClient } from '@/main';
@@ -90,8 +89,8 @@ export default function AddEventSessionForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+          <Button className="flex items-center gap-2 rounded-full" size="sm">
+            <PlusIcon className="size-4" />
             <p>Add Session</p>
           </Button>
         ) : (
@@ -109,7 +108,8 @@ export default function AddEventSessionForm({
         <DialogHeader>
           <DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} Session</DialogTitle>
           <DialogDescription>
-            {mode === 'add' ? 'Create a new' : 'Edit the'} session for this event.
+            {mode === 'add' ? 'Create a new' : 'Edit the'} session for this
+            event.
           </DialogDescription>
         </DialogHeader>
 

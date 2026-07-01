@@ -5,11 +5,9 @@ const Schema = mongoose.Schema;
 
 // REMINDER: update the schema below if you want to add/remove roles
 export type UserRoles =
-  | 'governor'
-  | 'treasurer'
-  | 'auditor'
-  | 'regular'
-  | 'admin';
+  | 'central-admin'
+  | 'org-admin'
+  | 'student';
 
 export interface IUser extends mongoose.Document {
   _id: mongoose.Types.ObjectId;
@@ -48,8 +46,8 @@ export const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['governor', 'treasurer', 'auditor', 'regular', 'admin'],
-      default: 'regular',
+      enum: ['central-admin', 'org-admin', 'student'],
+      default: 'student',
     },
     rbacRole: { type: Schema.Types.ObjectId, ref: 'Role' },
     roleManuallyAssigned: { type: Boolean, default: false },

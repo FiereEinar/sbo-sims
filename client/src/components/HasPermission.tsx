@@ -17,7 +17,7 @@ export default function HasPermission({
 
 	if (!user) return fallback;
 
-	if (user.role === 'admin') return children;
+	if (user.role === 'central-admin') return children;
 
 	// --- Permission Check (admin only)
 	if (permissions.length > 0) {

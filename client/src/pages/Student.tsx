@@ -10,7 +10,6 @@ import { useStudentFilterStore } from '@/store/studentsFilter';
 import ImportStudentsButtonSmart from '@/components/buttons/ImportStudentsButtonSmart';
 import { queryClient } from '@/main';
 import HasPermission from '@/components/HasPermission';
-import ViewModeToggle from '@/components/ViewModeToggle';
 import StudentsCardView from '@/components/student/StudentsCardView';
 import { useViewModeStore } from '@/store/viewModeStore';
 import StudentsTable from '@/components/student/StudentsTable';
@@ -56,16 +55,20 @@ export default function Student() {
       <StickyHeader>
         <Header>Students</Header>
 
-        <HasPermission permissions={[MODULES.STUDENT_CREATE]}>
-          <AddStudentForm />
-        </HasPermission>
+        <div className="flex gap-2  items-center">
+          <HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
+            <ImportStudentsButtonSmart />
+          </HasPermission>
+
+          <HasPermission permissions={[MODULES.STUDENT_CREATE]}>
+            <AddStudentForm />
+          </HasPermission>
+        </div>
       </StickyHeader>
+
       <div className="flex justify-between items-end flex-wrap gap-3">
         <StudentFilter />
-        <HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
-          <ImportStudentsButtonSmart />
-        </HasPermission>
-        <ViewModeToggle />
+        {/* <ViewModeToggle /> */}
       </div>
 
       {viewMode === 'table' ? (

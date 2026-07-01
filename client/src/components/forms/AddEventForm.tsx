@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { Edit, PlusIcon } from 'lucide-react';
 import { submitEventForm, submitUpdateEventForm } from '@/api/event';
 import { eventSchema } from '@/lib/validations/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +16,6 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import Plus from '../icons/plus';
 import ErrorText from '../ui/error-text';
 import { useState } from 'react';
 import { queryClient } from '@/main';
@@ -35,9 +34,7 @@ export default function AddEventForm({
   mode = 'add',
 }: AddEventFormProps) {
   if (event === undefined && mode === 'edit') {
-    throw new Error(
-      'No event data provided while event form mode is on edit',
-    );
+    throw new Error('No event data provided while event form mode is on edit');
   }
 
   const [open, setOpen] = useState(false);
@@ -87,13 +84,13 @@ export default function AddEventForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-1" size="sm">
-            <Plus />
+          <Button className="flex items-center gap-2 rounded-full" size="sm">
+            <PlusIcon className="size-4" />
             <p>Add Event</p>
           </Button>
         ) : (
-          <Button className="flex gap-1" size="sm" variant="outline">
-            <Pencil className="size-4" />
+          <Button className="flex gap-2 rounded-full" size="sm" variant="ghost">
+            <Edit className="size-4" />
             <p>Edit</p>
           </Button>
         )}
@@ -102,7 +99,10 @@ export default function AddEventForm({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} Event</DialogTitle>
-          <DialogDescription>Fill up the form to {mode === 'add' ? 'add a new' : 'edit an'} event.</DialogDescription>
+          <DialogDescription>
+            Fill up the form to {mode === 'add' ? 'add a new' : 'edit an'}{' '}
+            event.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">

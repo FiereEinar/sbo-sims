@@ -128,7 +128,7 @@ export default function UpdateUserForm() {
       {errors.root?.message && <ErrorText>{errors.root.message}</ErrorText>}
 
       <div className="flex justify-end pt-2">
-        <Button disabled={isSubmitting} size="sm">
+        <Button disabled={isSubmitting} size="sm" className="rounded-full">
           Save Profile Changes
         </Button>
       </div>

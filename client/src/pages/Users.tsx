@@ -7,7 +7,6 @@ import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import UsersTable from '@/components/user/UsersTable';
-import ViewModeToggle from '@/components/ViewModeToggle';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import { useViewModeStore } from '@/store/viewModeStore';
@@ -60,10 +59,10 @@ export default function Users() {
         </HasPermission>
       </StickyHeader>
 
-      <div className="flex justify-between items-center">
+      {/* <div className="flex justify-between items-center">
         <div />
         <ViewModeToggle />
-      </div>
+      </div> */}
 
       {viewMode === 'table' ? (
         <UsersTable users={response?.data ?? []} isLoading={isLoading} />

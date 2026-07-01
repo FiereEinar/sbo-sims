@@ -17,7 +17,8 @@ export const hasRole = (requiredPermissions: Modules[]) => {
 
     appAssert(user, UNAUTHORIZED, 'User not found');
 
-    if (user.role === 'admin') return next();
+    // the central admin will not have any restriction on this platform.
+    if (user.role === 'central-admin') return next();
 
     // Collect all permissions from user's roles
     const userPermissions: string[] = [];

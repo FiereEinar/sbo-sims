@@ -18,7 +18,7 @@ export default function RootRedirect() {
 				setUser(data);
 
 				// Global super admin goes to the admin portal
-				if (data.role === 'admin' && !data.organization) {
+				if (data.role === 'central-admin' && !data.organization) {
 					navigate('/admin', { replace: true });
 					return;
 				}

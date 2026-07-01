@@ -141,7 +141,12 @@ export default function StudentInfo() {
 
       {student && (
         <StickyHeader>
-          <Header>Student Information</Header>
+          <div className="space-y-2">
+            <Header>Student Information</Header>
+            <p className="text-sm text-muted-foreground">
+              Showing information and recent transaction of the student
+            </p>
+          </div>
           <div className="flex items-center gap-4">
             {selectedTxIds.length > 0 && (
               <Dialog>

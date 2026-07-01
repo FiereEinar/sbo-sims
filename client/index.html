@@ -6,6 +6,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>SIMS</title>
 		<script>
+			if (!localStorage.getItem('theme')) {
+				localStorage.setItem('theme', 'light');
+			}
+
 			if (localStorage.getItem('theme') === 'dark') {
 				document.documentElement.classList.add('dark');
 			} else {

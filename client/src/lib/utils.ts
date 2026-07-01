@@ -15,7 +15,7 @@ export function isAuthorized(
 	...allowedRoles: UserRoles[]
 ) {
 	if (!userRole) return false;
-	if (userRole === 'admin') return true;
+	if (userRole === 'central-admin') return true;
 	return allowedRoles.includes(userRole);
 }
 

@@ -12,7 +12,8 @@ export const authorizeRoles =
       return;
     }
 
-    if (user.role === 'admin') return next();
+    // the central admin will not have any restriction on this platform.
+    if (user.role === 'central-admin') return next();
 
     if (!roles.includes(user.role as UserRoles)) {
       res.sendStatus(FORBIDDEN);

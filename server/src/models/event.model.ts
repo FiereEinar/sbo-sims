@@ -12,6 +12,8 @@ export interface IEvent extends mongoose.Document {
   archived: boolean;
   createdAt: Date;
   updatedAt: Date;
+  semester: string;
+  schoolYear: string;
 }
 
 export const EventSchema = new Schema<IEvent>(
@@ -30,6 +32,8 @@ export const EventSchema = new Schema<IEvent>(
       type: Boolean,
       default: false,
     },
+    semester: { type: String, enum: ['1', '2'], required: true },
+    schoolYear: { type: String, required: true },
   },
   { timestamps: true },
 );

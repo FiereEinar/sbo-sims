@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
@@ -8,6 +8,7 @@ import { fetchEventSessions } from '@/api/eventSession';
 import {
   fetchSessionAttendance,
   getAttendanceDownloadURL,
+  AttendanceFilterValues,
 } from '@/api/attendance';
 import { QUERY_KEYS, MODULES } from '@/constants';
 import SessionControls from '@/components/event/SessionControls';
@@ -15,7 +16,8 @@ import AttendanceScanner from '@/components/event/AttendanceScanner';
 import AttendanceRecordTable from '@/components/event/AttendanceRecordTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Download, FileText, FileSpreadsheet, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import PaginationController from '@/components/PaginationController';
 import HasPermission from '@/components/HasPermission';
@@ -27,11 +29,36 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import axiosInstance from '@/api/axiosInstance';
+import { fetchAvailableCourses } from '@/api/student';
 
 export default function EventSessionInfo() {
   const { eventID, sessionID } = useParams();
   const [page, setPage] = useState(1);
   const pageSize = 50;
+
+  // Filter state — local only, no store needed
+  const [filters, setFiltersState] = useState<AttendanceFilterValues>({
+    sortBy: 'desc',
+  });
+  const [searchInput, setSearchInput] = useState('');
+  const [_isDownloading, setIsDownloading] = useState(false);
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFiltersState((prev) => ({
+        ...prev,
+        search: searchInput || undefined,
+      }));
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  const setFilters = useCallback((partial: Partial<AttendanceFilterValues>) => {
+    setFiltersState((prev) => ({ ...prev, ...partial }));
+    setPage(1);
+  }, []);
 
   // Fetch all sessions and find this one
   const { data: sessions, isLoading: isSessionsLoading } = useQuery({
@@ -42,9 +69,21 @@ export default function EventSessionInfo() {
 
   const session = sessions?.find((s) => s._id === sessionID);
 
+  // Fetch available courses for the Course filter dropdown
+  const { data: courses = [] } = useQuery({
+    queryKey: [QUERY_KEYS.STUDENT_COURSES],
+    queryFn: fetchAvailableCourses,
+  });
+
   const { data: attendanceResult, isLoading: isAttendanceLoading } = useQuery({
-    queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance', { page, pageSize }],
-    queryFn: () => fetchSessionAttendance(sessionID as string, page, pageSize),
+    queryKey: [
+      QUERY_KEYS.EVENT,
+      sessionID,
+      'attendance',
+      { page, pageSize, ...filters },
+    ],
+    queryFn: () =>
+      fetchSessionAttendance(sessionID as string, page, pageSize, filters),
     enabled: !!sessionID,
     // Poll every 3 seconds if active to keep table up to date if multiple devices are scanning
     refetchInterval: session?.status === 'active' ? 3000 : false,
@@ -55,7 +94,7 @@ export default function EventSessionInfo() {
       QUERY_KEYS.EVENT,
       sessionID,
       'attendance',
-      { page: prefetchPage, pageSize },
+      { page: prefetchPage, pageSize, ...filters },
     ];
     const data = queryClient.getQueryData(queryKey);
     if (data) return;
@@ -63,7 +102,12 @@ export default function EventSessionInfo() {
     queryClient.prefetchQuery({
       queryKey,
       queryFn: () =>
-        fetchSessionAttendance(sessionID as string, prefetchPage, pageSize),
+        fetchSessionAttendance(
+          sessionID as string,
+          prefetchPage,
+          pageSize,
+          filters,
+        ),
     });
   };
 
@@ -88,12 +132,12 @@ export default function EventSessionInfo() {
     );
   }
 
-  const [_isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async (type: 'pdf' | 'csv') => {
     try {
       setIsDownloading(true);
-      const url = getAttendanceDownloadURL(sessionID as string, type);
+      // Pass the current filters so the downloaded file matches the table
+      const url = getAttendanceDownloadURL(sessionID as string, type, filters);
       const result = await axiosInstance.get(url, { responseType: 'blob' });
 
       const blob = new Blob([result.data], {
@@ -153,16 +197,23 @@ export default function EventSessionInfo() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <h3 className="text-xl font-bold">Attendance Records</h3>
           </div>
 
-          <HasPermission permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]} fallback={
-            <Button variant="outline" disabled title="You do not have permission to download attendance">
-              <Download className="mr-2 h-4 w-4" /> Download
-            </Button>
-          }>
+          <HasPermission
+            permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]}
+            fallback={
+              <Button
+                variant="outline"
+                disabled
+                title="You do not have permission to download attendance"
+              >
+                <Download className="mr-2 h-4 w-4" /> Download
+              </Button>
+            }
+          >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -187,11 +238,28 @@ export default function EventSessionInfo() {
           </HasPermission>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative mb-4 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="attendance-search"
+            className="pl-9"
+            placeholder="Search by name or student ID..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+
         {isAttendanceLoading ? (
           <p className="text-muted-foreground">Loading records...</p>
         ) : (
           <div className="space-y-4">
-            <AttendanceRecordTable records={attendanceResult?.data || []} />
+            <AttendanceRecordTable
+              records={attendanceResult?.data || []}
+              filters={filters}
+              setFilters={setFilters}
+              courses={courses}
+            />
 
             {attendanceResult && (
               <PaginationController

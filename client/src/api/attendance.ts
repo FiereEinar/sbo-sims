@@ -2,13 +2,31 @@ import axiosInstance from './axiosInstance';
 import { AttendanceRecord } from '@/types/attendance';
 import { APIPaginatedResponse } from '@/types/api-response';
 
+export type AttendanceFilterValues = {
+  course?: string;
+  year?: string;
+  gender?: string;
+  search?: string;
+  sortBy?: 'asc' | 'desc';
+};
+
 export const fetchSessionAttendance = async (
   sessionId: string,
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
+  filters: AttendanceFilterValues = {},
 ): Promise<APIPaginatedResponse<AttendanceRecord[]> | undefined> => {
   try {
-    const { data } = await axiosInstance.get(`/attendance/session/${sessionId}?page=${page}&pageSize=${pageSize}`);
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('pageSize', String(pageSize));
+    if (filters.course && filters.course !== 'All') params.set('course', filters.course);
+    if (filters.year && filters.year !== 'All') params.set('year', filters.year);
+    if (filters.gender && filters.gender !== 'All') params.set('gender', filters.gender);
+    if (filters.search) params.set('search', filters.search);
+    if (filters.sortBy) params.set('sortBy', filters.sortBy);
+
+    const { data } = await axiosInstance.get(`/attendance/session/${sessionId}?${params.toString()}`);
     return data;
   } catch (err: any) {
     throw err;
@@ -17,9 +35,18 @@ export const fetchSessionAttendance = async (
 
 export const getAttendanceDownloadURL = (
   sessionId: string,
-  type: 'pdf' | 'csv'
+  type: 'pdf' | 'csv',
+  filters: AttendanceFilterValues = {},
 ) => {
-  return `/attendance/session/${sessionId}/download/${type}`;
+  const params = new URLSearchParams();
+  if (filters.course && filters.course !== 'All') params.set('course', filters.course);
+  if (filters.year && filters.year !== 'All') params.set('year', filters.year);
+  if (filters.gender && filters.gender !== 'All') params.set('gender', filters.gender);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.sortBy) params.set('sortBy', filters.sortBy);
+
+  const qs = params.toString();
+  return `/attendance/session/${sessionId}/download/${type}${qs ? `?${qs}` : ''}`;
 };
 
 export const recordAttendance = async (

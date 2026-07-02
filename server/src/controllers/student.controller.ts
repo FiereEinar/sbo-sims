@@ -24,7 +24,8 @@ import TransactionModel from '../models/transaction.model';
  * GET - fetch all students
  */
 export const get_all_students = asyncHandler(async (req, res) => {
-  const { page, pageSize, search, course, year, gender, sortBy, section } = req.query;
+  const { page, pageSize, search, course, year, gender, sortBy, section } =
+    req.query;
 
   const defaultPage = 1;
   const defaultPageSize = 100;
@@ -69,7 +70,12 @@ export const get_all_students = asyncHandler(async (req, res) => {
     });
   }
 
-  const isTxnSort = ['txn_asc', 'txn_desc', 'amount_asc', 'amount_desc'].includes(sortBy as string);
+  const isTxnSort = [
+    'txn_asc',
+    'txn_desc',
+    'amount_asc',
+    'amount_desc',
+  ].includes(sortBy as string);
 
   if (isTxnSort) {
     // For transaction-based sorts: lookup first, then sort the FULL dataset, then paginate
@@ -93,11 +99,17 @@ export const get_all_students = asyncHandler(async (req, res) => {
     if (sortBy === 'txn_asc') {
       aggregatePipeline.push({ $sort: { totalTransactions: 1, firstname: 1 } });
     } else if (sortBy === 'txn_desc') {
-      aggregatePipeline.push({ $sort: { totalTransactions: -1, firstname: 1 } });
+      aggregatePipeline.push({
+        $sort: { totalTransactions: -1, firstname: 1 },
+      });
     } else if (sortBy === 'amount_asc') {
-      aggregatePipeline.push({ $sort: { totalTransactionsAmount: 1, firstname: 1 } });
+      aggregatePipeline.push({
+        $sort: { totalTransactionsAmount: 1, firstname: 1 },
+      });
     } else if (sortBy === 'amount_desc') {
-      aggregatePipeline.push({ $sort: { totalTransactionsAmount: -1, firstname: 1 } });
+      aggregatePipeline.push({
+        $sort: { totalTransactionsAmount: -1, firstname: 1 },
+      });
     }
 
     aggregatePipeline.push(
@@ -246,7 +258,7 @@ export const get_available_section = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
     semester: req.tenantContext!.semester,
     schoolYear: req.tenantContext!.schoolYear,
-    section: { $exists: true, $ne: null, $ne: '' },
+    section: { $exists: true, $ne: null },
   }).distinct('section');
 
   res.json(new CustomResponse(true, sections, 'Student sections'));

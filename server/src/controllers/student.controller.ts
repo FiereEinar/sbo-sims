@@ -71,7 +71,8 @@ export const get_all_students = asyncHandler(async (req, res) => {
   aggregatePipeline.push(
     {
       $sort: {
-        firstname: sortBy === 'dec' ? -1 : 1,
+        firstname: sortBy === 'name_desc' ? -1 : 1,
+        lastname: sortBy === 'name_desc' ? -1 : 1,
       },
     },
     {

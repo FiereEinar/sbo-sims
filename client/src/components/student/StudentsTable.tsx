@@ -52,7 +52,9 @@ export default function StudentsTable({
       <TableHeader>
         <TableRow className="select-none">
           <TableHead className="w-[100px]">Student ID</TableHead>
-          <TableHead className="w-[250px]">Full name</TableHead>
+          <TableHead className="w-[250px]">
+            <TableHeadNameSort />
+          </TableHead>
           <TableHead className="w-[150px]">
             <TableHeadCoursePicker />
           </TableHead>
@@ -250,5 +252,26 @@ function TableHeadGenderPicker() {
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+function TableHeadNameSort() {
+  const { sortBy, setSortBy } = useStudentFilterStore((state) => state);
+
+  return (
+    <div className="space-x-1">
+      <Select
+        value={sortBy}
+        onValueChange={(value) => setSortBy(value as StudentFilterValues['sortBy'])}
+      >
+        <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
+          <SelectValue placeholder="Full name" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="name_asc">Name: A-Z</SelectItem>
+          <SelectItem value="name_desc">Name: Z-A</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

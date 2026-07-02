@@ -7,7 +7,7 @@ export type AttendanceFilterValues = {
   year?: string;
   gender?: string;
   search?: string;
-  sortBy?: 'asc' | 'desc';
+  sortBy?: 'time_desc' | 'time_asc' | 'name_asc' | 'name_desc';
 };
 
 export const fetchSessionAttendance = async (

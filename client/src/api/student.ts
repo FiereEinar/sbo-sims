@@ -28,6 +28,7 @@ export const fetchStudents = async (
 		if (filters.course) url = url + `&course=${filters.course}`;
 		if (filters.year) url = url + `&year=${filters.year}`;
 		if (filters.gender) url = url + `&gender=${filters.gender}`;
+		if (filters.section && filters.section !== 'All') url = url + `&section=${filters.section}`;
 		if (filters.sortBy) url = url + `&sortBy=${filters.sortBy}`;
 
 		const { data } =
@@ -109,6 +110,18 @@ export const fetchAvailableCourses = async (): Promise<
 > => {
 	try {
 		const { data } = await axiosInstance.get(`/student/courses`);
+
+		return data.data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+
+export const fetchAvailableSections = async (): Promise<
+	string[] | undefined
+> => {
+	try {
+		const { data } = await axiosInstance.get(`/student/sections`);
 
 		return data.data;
 	} catch (err: any) {

@@ -22,6 +22,7 @@ export const QUERY_KEYS = {
   CATEGORY: 'categories',
   CATEGORY_WITH_TRANSACTIONS: 'categories_with_transactions',
   STUDENT_COURSES: 'student_courses',
+  STUDENT_SECTIONS: 'student_sections',
   STUDENT_TRANSACTIONS: 'student_transactions',
   DASHBOARD_DATA: 'dashboard_data',
   USERS: 'users',

@@ -9,6 +9,7 @@ interface StudentFiltersState extends StudentFilterValues {
 	setYear: (year: StudentFilterValues['year']) => void;
 	setGender: (gender: StudentFilterValues['gender']) => void;
 	setSortBy: (sortBy: StudentFilterValues['sortBy']) => void;
+	setSection: (section: string) => void;
 	getFilterValues: () => StudentFilterValues;
 }
 
@@ -21,12 +22,14 @@ export const useStudentFilterStore = create<StudentFiltersState>(
 		search: '',
 		sortBy: 'name_asc',
 		year: 'All',
+		section: 'All',
 		setPage: (page) => set({ page: page }),
 		setSearch: (search) => set({ search: search, page: 1 }),
 		setCourse: (course) => set({ course: course }),
 		setYear: (year) => set({ year: year }),
 		setGender: (gender) => set({ gender: gender }),
 		setSortBy: (sortBy) => set({ sortBy: sortBy }),
+		setSection: (section) => set({ section: section }),
 		getFilterValues: () => ({
 			page: get().page,
 			pageSize: get().pageSize,
@@ -34,6 +37,7 @@ export const useStudentFilterStore = create<StudentFiltersState>(
 			gender: get().gender,
 			course: get().course,
 			year: get().year,
+			section: get().section,
 			sortBy: get().sortBy,
 		}),
 		setFilters: (filters) =>

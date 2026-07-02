@@ -21,7 +21,7 @@ import {
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
-import { fetchAvailableCourses, fetchStudents } from '@/api/student';
+import { fetchAvailableCourses, fetchAvailableSections, fetchStudents } from '@/api/student';
 import TableLoading from '../loading/TableLoading';
 import { queryClient } from '@/main';
 
@@ -64,10 +64,14 @@ export default function StudentsTable({
           <TableHead className="w-[100px]">
             <TableHeadGenderPicker />
           </TableHead>
-          <TableHead className="w-[100px]">Section</TableHead>
-          <TableHead className="w-[100px]">Transactions made</TableHead>
-          <TableHead className="w-[200px] text-right ">
-            Transactions amount
+          <TableHead className="w-[100px]">
+            <TableHeadSectionPicker />
+          </TableHead>
+          <TableHead className="w-[100px]">
+            <TableHeadTxnSort field="txn" label="Transactions made" />
+          </TableHead>
+          <TableHead className="w-[200px] text-right">
+            <TableHeadTxnSort field="amount" label="Transactions amount" right />
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -261,7 +265,7 @@ function TableHeadNameSort() {
   return (
     <div className="space-x-1">
       <Select
-        value={sortBy}
+        value={['name_asc', 'name_desc'].includes(sortBy || '') ? sortBy : 'name_asc'}
         onValueChange={(value) => setSortBy(value as StudentFilterValues['sortBy'])}
       >
         <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
@@ -273,5 +277,71 @@ function TableHeadNameSort() {
         </SelectContent>
       </Select>
     </div>
+  );
+}
+
+function TableHeadSectionPicker() {
+  const { section, setSection } = useStudentFilterStore((state) => state);
+  const { data: sections } = useQuery({
+    queryKey: [QUERY_KEYS.STUDENT_SECTIONS],
+    queryFn: fetchAvailableSections,
+  });
+
+  return (
+    <div className="space-x-1">
+      <Select value={section} onValueChange={(value) => setSection(value)}>
+        <SelectTrigger className="w-full border-none pl-0 focus:ring-0">
+          <SelectValue placeholder="Section" />
+        </SelectTrigger>
+        <SelectContent>
+          {sections &&
+            ['All'].concat(sections).map((s, i) => (
+              <SelectItem key={i} value={s}>
+                {s === 'All' ? 'Section: All' : s}
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function TableHeadTxnSort({
+  field,
+  label,
+  right,
+}: {
+  field: 'txn' | 'amount';
+  label: string;
+  right?: boolean;
+}) {
+  const { sortBy, setSortBy } = useStudentFilterStore((state) => state);
+
+  const ascKey = `${field}_asc` as StudentFilterValues['sortBy'];
+  const descKey = `${field}_desc` as StudentFilterValues['sortBy'];
+  const isActive = sortBy === ascKey || sortBy === descKey;
+
+  return (
+    <Select
+      value={isActive ? sortBy : 'none'}
+      onValueChange={(value) =>
+        setSortBy(value === 'none' ? 'name_asc' : (value as StudentFilterValues['sortBy']))
+      }
+    >
+      <SelectTrigger
+        className={`w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground ${right ? 'justify-end pr-0 [&>span]:text-right' : ''}`}
+      >
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">{label}</SelectItem>
+        <SelectItem value={ascKey!}>
+          {field === 'amount' ? 'Amount: Low to High' : 'Transactions: Low to High'}
+        </SelectItem>
+        <SelectItem value={descKey!}>
+          {field === 'amount' ? 'Amount: High to Low' : 'Transactions: High to Low'}
+        </SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

@@ -24,7 +24,7 @@ import TransactionModel from '../models/transaction.model';
  * GET - fetch all students
  */
 export const get_all_students = asyncHandler(async (req, res) => {
-  const { page, pageSize, search, course, year, gender, sortBy } = req.query;
+  const { page, pageSize, search, course, year, gender, sortBy, section } = req.query;
 
   const defaultPage = 1;
   const defaultPageSize = 100;
@@ -44,6 +44,7 @@ export const get_all_students = asyncHandler(async (req, res) => {
   if (course) filters.push({ course: course });
   if (year) filters.push({ year: parseInt(year as string) });
   if (gender) filters.push({ gender: gender });
+  if (section) filters.push({ section: section });
   if (search) {
     const searchRegex = new RegExp(escapeRegex(search as string), 'i');
     filters.push({
@@ -68,39 +69,70 @@ export const get_all_students = asyncHandler(async (req, res) => {
     });
   }
 
-  aggregatePipeline.push(
-    {
-      $sort: {
-        firstname: sortBy === 'name_desc' ? -1 : 1,
-        lastname: sortBy === 'name_desc' ? -1 : 1,
+  const isTxnSort = ['txn_asc', 'txn_desc', 'amount_asc', 'amount_desc'].includes(sortBy as string);
+
+  if (isTxnSort) {
+    // For transaction-based sorts: lookup first, then sort the FULL dataset, then paginate
+    aggregatePipeline.push(
+      {
+        $lookup: {
+          from: 'transactions',
+          localField: '_id',
+          foreignField: 'owner',
+          as: 'transactions',
+        },
       },
-    },
-    {
-      $skip: skipAmount,
-    },
-    {
-      $limit: pageSizeNum,
-    },
-    {
-      $lookup: {
-        from: 'transactions',
-        localField: '_id',
-        foreignField: 'owner',
-        as: 'transactions',
+      {
+        $addFields: {
+          totalTransactions: { $size: '$transactions' },
+          totalTransactionsAmount: { $sum: '$transactions.amount' },
+        },
       },
-    },
-    {
-      $addFields: {
-        totalTransactions: { $size: '$transactions' },
-        totalTransactionsAmount: { $sum: '$transactions.amount' },
+    );
+
+    if (sortBy === 'txn_asc') {
+      aggregatePipeline.push({ $sort: { totalTransactions: 1, firstname: 1 } });
+    } else if (sortBy === 'txn_desc') {
+      aggregatePipeline.push({ $sort: { totalTransactions: -1, firstname: 1 } });
+    } else if (sortBy === 'amount_asc') {
+      aggregatePipeline.push({ $sort: { totalTransactionsAmount: 1, firstname: 1 } });
+    } else if (sortBy === 'amount_desc') {
+      aggregatePipeline.push({ $sort: { totalTransactionsAmount: -1, firstname: 1 } });
+    }
+
+    aggregatePipeline.push(
+      { $skip: skipAmount },
+      { $limit: pageSizeNum },
+      { $project: { transactions: 0 } },
+    );
+  } else {
+    // For name sorts: sort first, paginate, then lookup (more efficient — avoids loading transactions for skipped docs)
+    aggregatePipeline.push(
+      {
+        $sort: {
+          firstname: sortBy === 'name_desc' ? -1 : 1,
+          lastname: sortBy === 'name_desc' ? -1 : 1,
+        },
       },
-    },
-    {
-      $project: {
-        transactions: 0,
+      { $skip: skipAmount },
+      { $limit: pageSizeNum },
+      {
+        $lookup: {
+          from: 'transactions',
+          localField: '_id',
+          foreignField: 'owner',
+          as: 'transactions',
+        },
       },
-    },
-  );
+      {
+        $addFields: {
+          totalTransactions: { $size: '$transactions' },
+          totalTransactionsAmount: { $sum: '$transactions.amount' },
+        },
+      },
+      { $project: { transactions: 0 } },
+    );
+  }
 
   const students = await StudentModel.aggregate(aggregatePipeline);
 
@@ -204,6 +236,20 @@ export const import_students_smart = asyncHandler(async (req, res) => {
       `Import: ${importResult.success} added, ${importResult.skipped} skipped, ${importResult.failed} failed`,
     ),
   );
+});
+
+/**
+ * GET - get all the distinct sections of students
+ */
+export const get_available_section = asyncHandler(async (req, res) => {
+  const sections = await StudentModel.find({
+    organization: req.tenantContext!.organizationId,
+    semester: req.tenantContext!.semester,
+    schoolYear: req.tenantContext!.schoolYear,
+    section: { $exists: true, $ne: null, $ne: '' },
+  }).distinct('section');
+
+  res.json(new CustomResponse(true, sections, 'Student sections'));
 });
 
 /**

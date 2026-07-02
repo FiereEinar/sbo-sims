@@ -4,6 +4,7 @@ import {
   delete_student,
   get_all_students,
   get_available_course,
+  get_available_section,
   get_student,
   get_student_transaction,
   post_csv_students,
@@ -24,6 +25,8 @@ const router = express.Router();
 router.get('/', get_all_students);
 
 router.get('/courses', get_available_course);
+
+router.get('/sections', get_available_section);
 
 router.get('/:studentID', get_student);
 

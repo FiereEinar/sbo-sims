@@ -63,7 +63,7 @@ export const get_summary_report = asyncHandler(async (req, res) => {
           monthly: [
             {
               $group: {
-                _id: { $month: { $toDate: '$date' } },
+                _id: { $month: '$date' },
                 totalAmount: { $sum: '$amount' },
                 count: { $sum: 1 },
               },
@@ -219,14 +219,14 @@ export const get_monthly_report = asyncHandler(async (req, res) => {
     {
       $match: {
         organization: organizationId,
-        date: { $gte: cutoff.toISOString() },
+        date: { $gte: cutoff },
       },
     },
     {
       $group: {
         _id: {
-          year: { $year: { $toDate: '$date' } },
-          month: { $month: { $toDate: '$date' } },
+          year: { $year: '$date' },
+          month: { $month: '$date' },
         },
         totalAmount: { $sum: '$amount' },
         count: { $sum: 1 },
@@ -303,7 +303,7 @@ export const download_report_pdf = asyncHandler(async (req, res) => {
     { $match: { organization: organizationId, semester, schoolYear } },
     {
       $group: {
-        _id: { $month: { $toDate: '$date' } },
+        _id: { $month: '$date' },
         totalAmount: { $sum: '$amount' },
         count: { $sum: 1 },
       },

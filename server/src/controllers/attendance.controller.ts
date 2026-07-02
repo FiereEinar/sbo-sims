@@ -25,7 +25,7 @@ interface AttendanceAggregationOptions {
   year?: string;
   gender?: string;
   search?: string;
-  sortBy?: 'asc' | 'desc';
+  sortBy?: 'time_asc' | 'time_desc' | 'name_asc' | 'name_desc';
   skip?: number;
   limit?: number;
   countOnly?: boolean;
@@ -45,7 +45,7 @@ async function buildAttendanceAggregation(
     year,
     gender,
     search,
-    sortBy = 'desc',
+    sortBy = 'time_desc',
     skip,
     limit,
     countOnly = false,
@@ -97,8 +97,16 @@ async function buildAttendanceAggregation(
     return AttendanceRecordModel.aggregate(pipeline);
   }
 
-  // 5. Sort by recordedAt
-  pipeline.push({ $sort: { recordedAt: sortBy === 'asc' ? 1 : -1 } });
+  // 5. Sort by requested field
+  if (sortBy === 'time_asc') {
+    pipeline.push({ $sort: { recordedAt: 1 } });
+  } else if (sortBy === 'name_asc') {
+    pipeline.push({ $sort: { 'student.firstname': 1, 'student.lastname': 1 } });
+  } else if (sortBy === 'name_desc') {
+    pipeline.push({ $sort: { 'student.firstname': -1, 'student.lastname': -1 } });
+  } else {
+    pipeline.push({ $sort: { recordedAt: -1 } });
+  }
 
   // 6. Pagination
   if (skip !== undefined) pipeline.push({ $skip: skip });
@@ -202,7 +210,7 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
-      sortBy: (toStr(sortBy) as 'asc' | 'desc') || 'desc',
+      sortBy: (toStr(sortBy) as any) || 'time_desc',
       skip: skipAmount,
       limit: pageSizeNum,
     }),
@@ -254,7 +262,7 @@ export const download_session_attendance_pdf = asyncHandler(
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
-      sortBy: (toStr(sortBy) as 'asc' | 'desc') || 'desc',
+      sortBy: (toStr(sortBy) as any) || 'time_desc',
     });
 
     const html = `
@@ -339,7 +347,7 @@ export const download_session_attendance_csv = asyncHandler(
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
-      sortBy: (toStr(sortBy) as 'asc' | 'desc') || 'desc',
+      sortBy: (toStr(sortBy) as any) || 'time_desc',
     });
 
     const csvLines = records.map((r: any) => {

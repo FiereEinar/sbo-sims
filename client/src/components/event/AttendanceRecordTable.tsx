@@ -1,5 +1,6 @@
 import { AttendanceRecord } from '@/types/attendance';
 import { format } from 'date-fns';
+import { startCase } from 'lodash';
 import {
   Table,
   TableBody,
@@ -36,7 +37,29 @@ export default function AttendanceRecordTable({
         <TableHeader>
           <TableRow className="select-none">
             <TableHead className="w-[120px]">Student ID</TableHead>
-            <TableHead className="w-[220px]">Name</TableHead>
+            <TableHead className="w-[220px]">
+              {/* Name Sort */}
+              <Select
+                value={['name_asc', 'name_desc'].includes(filters.sortBy || '') ? filters.sortBy : 'name_none'}
+                onValueChange={(v) =>
+                  setFilters({
+                    sortBy:
+                      v === 'name_none'
+                        ? 'time_desc'
+                        : (v as AttendanceFilterValues['sortBy']),
+                  })
+                }
+              >
+                <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
+                  <SelectValue placeholder="Name" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name_none">Name</SelectItem>
+                  <SelectItem value="name_asc">Name: A-Z</SelectItem>
+                  <SelectItem value="name_desc">Name: Z-A</SelectItem>
+                </SelectContent>
+              </Select>
+            </TableHead>
             <TableHead className="w-[80px]">
               {/* Gender Filter */}
               <Select
@@ -92,17 +115,25 @@ export default function AttendanceRecordTable({
               </Select>
             </TableHead>
             <TableHead className="w-[180px]">
-              {/* Time Recorded (Sort) */}
+              {/* Time Recorded Sort */}
               <Select
-                value={filters.sortBy || 'desc'}
-                onValueChange={(v) => setFilters({ sortBy: v as 'asc' | 'desc' })}
+                value={['time_asc', 'time_desc'].includes(filters.sortBy || '') ? filters.sortBy : 'time_none'}
+                onValueChange={(v) =>
+                  setFilters({
+                    sortBy:
+                      v === 'time_none'
+                        ? 'time_desc'
+                        : (v as AttendanceFilterValues['sortBy']),
+                  })
+                }
               >
-                <SelectTrigger className="w-full border-none pl-0 focus:ring-0">
+                <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
                   <SelectValue placeholder="Time Recorded" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="desc">Time: Newest First</SelectItem>
-                  <SelectItem value="asc">Time: Oldest First</SelectItem>
+                  <SelectItem value="time_none">Time Recorded</SelectItem>
+                  <SelectItem value="time_desc">Time: Newest First</SelectItem>
+                  <SelectItem value="time_asc">Time: Oldest First</SelectItem>
                 </SelectContent>
               </Select>
             </TableHead>
@@ -125,7 +156,7 @@ export default function AttendanceRecordTable({
                   {record.student.studentID}
                 </TableCell>
                 <TableCell>
-                  {record.student.firstname} {record.student.lastname}
+                  {startCase(`${record.student.firstname} ${record.student.lastname}`)}
                 </TableCell>
                 <TableCell>{record.student.gender}</TableCell>
                 <TableCell>{record.student.course}</TableCell>

@@ -40,7 +40,7 @@ export default function EventSessionInfo() {
 
   // Filter state — local only, no store needed
   const [filters, setFiltersState] = useState<AttendanceFilterValues>({
-    sortBy: 'desc',
+    sortBy: 'time_desc',
   });
   const [searchInput, setSearchInput] = useState('');
   const [_isDownloading, setIsDownloading] = useState(false);

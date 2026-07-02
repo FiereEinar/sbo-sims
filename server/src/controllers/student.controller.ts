@@ -258,7 +258,7 @@ export const get_available_section = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
     semester: req.tenantContext!.semester,
     schoolYear: req.tenantContext!.schoolYear,
-    section: { $exists: true, $ne: null },
+    section: { $exists: true, $nin: [null, ''] },
   }).distinct('section');
 
   res.json(new CustomResponse(true, sections, 'Student sections'));

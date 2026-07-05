@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
-// app.use(globalLimiter);
+app.use(globalLimiter);
 
 app.get('/', healthcheck);
 

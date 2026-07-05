@@ -33,7 +33,7 @@ export default function OrganizationDetails({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {organization.departments.map((department) => (
+          {organization.departments?.map((department) => (
             <Badge key={department} variant="secondary">
               {department}
             </Badge>

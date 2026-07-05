@@ -114,7 +114,7 @@ export default function OrgCard({
           <ChevronDown className="w-3.5 h-3.5" />
         )}
       </button>
-      {expanded && org.departments?.length > 0 && (
+      {expanded && org.departments && org.departments.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {org.departments.map((dep) => (
             <span

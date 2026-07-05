@@ -8,7 +8,7 @@ export type Organization = MongoEntity & {
   viceGovernor: string;
   treasurer: string;
   auditor: string;
-  departments: string[];
+  departments?: string[];
   createdAt: Date;
   updatedAt: Date;
 };

@@ -52,11 +52,12 @@ function TableHeadCourseFilter() {
   );
 }
 
+// set default filter value of status to paid, if this is updated, also update the useEffect in CategoryInfo page
 function TableHeadStatusFilter() {
   const { setStatus } = useTransactionFilterStore((state) => state);
   return (
     <Select
-      defaultValue="all"
+      defaultValue="paid"
       onValueChange={(value) => setStatus(value === 'all' ? undefined : value)}
     >
       <SelectTrigger className="w-full border-none pl-0 focus:ring-0 min-w-[90px]">

@@ -45,8 +45,6 @@ export const createOrganizationValidation = [
 		.withMessage('Auditor name must not be empty')
 		.toLowerCase(),
 
-	body('departments').isArray(),
-
 	isFormBodyValidated,
 ];
 
@@ -74,8 +72,6 @@ export const adminCreateOrganizationValidation = [
 	body('viceGovernor').trim().escape().isLength({ min: 1 }).withMessage('Vice governor name must not be empty').toLowerCase(),
 	body('treasurer').trim().escape().isLength({ min: 1 }).withMessage('Treasurer name must not be empty').toLowerCase(),
 	body('auditor').trim().escape().isLength({ min: 1 }).withMessage('Auditor name must not be empty').toLowerCase(),
-
-	body('departments').isArray(),
 
 	// Seeded admin account credentials
 	body('adminStudentID')

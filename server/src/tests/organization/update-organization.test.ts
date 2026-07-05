@@ -54,7 +54,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -76,7 +75,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -86,38 +84,7 @@ describe('PUT - Update Organization', () => {
       .expect(BAD_REQUEST);
   });
 
-  it('should return 400 if no department is provided', async () => {
-    const updatedOrganization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-      departments: [],
-    };
 
-    const res = await supertest(app)
-      .put(`/organization/${organization._id}`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(updatedOrganization)
-      .expect(BAD_REQUEST);
-  });
-
-  it('should return 400 if department is empty', async () => {
-    const updatedOrganization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-    };
-
-    const res = await supertest(app)
-      .put(`/organization/${organization._id}`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(updatedOrganization)
-      .expect(BAD_REQUEST);
-  });
 
   it('should return 400 if name is empty', async () => {
     const updatedOrganization = {
@@ -126,7 +93,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -143,7 +109,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -160,7 +125,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: '',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -177,7 +141,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: '',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -194,7 +157,6 @@ describe('PUT - Update Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: '',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)

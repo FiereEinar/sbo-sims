@@ -15,6 +15,7 @@ import { SUPER_ADMIN } from '../constants';
 import UserModel from '../models/user.model';
 import RoleModel from '../models/role.model';
 import CategoryModel from '../models/category.model';
+import StudentModel from '../models/student.model';
 
 /**
  * GET /admin/organizations
@@ -28,7 +29,10 @@ export const admin_get_all_organizations = asyncHandler(async (req, res) => {
       const userCount = await UserModel.countDocuments({
         organization: org._id,
       });
-      return { ...org, userCount };
+      const departments = await StudentModel.distinct('course', {
+        organization: org._id,
+      });
+      return { ...org, userCount, departments };
     }),
   );
 
@@ -48,7 +52,6 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
-    departments,
     // Org admin seed credentials
     adminStudentID,
     adminPassword,
@@ -61,19 +64,6 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     adminLastname: string;
   };
 
-  appAssert(
-    departments.length > 0,
-    BAD_REQUEST,
-    'Enter at least 1 department for this organization',
-  );
-  appAssert(
-    typeof departments[0] === 'string',
-    BAD_REQUEST,
-    'Invalid department',
-  );
-
-  departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
-
   const existingSlug = await OrganizationModel.findOne({ slug }).exec();
   appAssert(!existingSlug, BAD_REQUEST, 'Organization slug already exists');
 
@@ -85,7 +75,6 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
-    departments,
   });
   await organization.save();
 
@@ -169,22 +158,7 @@ export const admin_update_organization = asyncHandler(async (req, res) => {
     treasurer,
     viceGovernor,
     auditor,
-    departments,
   }: Omit<IOrganization, '_id'> = req.body;
-
-  appAssert(
-    departments.length > 0,
-    BAD_REQUEST,
-    'Enter at least 1 department for this organization',
-  );
-
-  appAssert(
-    typeof departments[0] === 'string',
-    BAD_REQUEST,
-    'Invalid department',
-  );
-
-  departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
   const existingSlug = await OrganizationModel.findOne({
     slug,
@@ -199,7 +173,6 @@ export const admin_update_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
-    departments,
   };
 
   const result = await OrganizationModel.findByIdAndUpdate(

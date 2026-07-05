@@ -197,7 +197,6 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 
   // 1. Get all students that belong to the organization
   let studentQuery: any = {
-    course: { $in: category.organization.departments },
     organization: req.tenantContext!.organizationId,
     semester: req.tenantContext!.semester,
     schoolYear: req.tenantContext!.schoolYear,
@@ -297,7 +296,6 @@ export const download_category_student_status_pdf = asyncHandler(
     appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
     let studentQuery: any = {
-      course: { $in: category.organization.departments },
       organization: req.tenantContext!.organizationId,
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,
@@ -420,7 +418,6 @@ export const download_category_student_status_csv = asyncHandler(
     appAssert(category, NOT_FOUND, `Category with ID ${categoryID} not found`);
 
     let studentQuery: any = {
-      course: { $in: category.organization.departments },
       organization: req.tenantContext!.organizationId,
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,

@@ -402,15 +402,6 @@ export const create_transaction = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-  // check if the student is within the organization
-  const isInOrganization = category.organization.departments.includes(
-    student.course,
-  );
-  appAssert(
-    isInOrganization,
-    BAD_REQUEST,
-    `Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
-  );
 
   const paymentDate = date ? new Date(date as any) : new Date();
   const paymentMode = modeOfPayment || 'cash';
@@ -591,14 +582,6 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
       );
     }
 
-    const isInOrganization = category.organization.departments.includes(
-      student.course,
-    );
-    appAssert(
-      isInOrganization,
-      BAD_REQUEST,
-      `Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization`,
-    );
 
     const detailsObj: { [key: string]: any } = {};
     category.details.map((detail) => {
@@ -740,15 +723,6 @@ export const update_transaction = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-  // check if the student is within the organization
-  const isInOrganization = category.organization.departments.includes(
-    student.course,
-  );
-  appAssert(
-    isInOrganization,
-    BAD_REQUEST,
-    `Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
-  );
 
   const detailsObj: { [key: string]: any } = {};
   category.details.map((detail) => {

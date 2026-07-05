@@ -55,6 +55,7 @@ type AddTransactionFormProps = {
   categories?: Category[];
   mode?: 'edit' | 'add';
   transaction?: Transaction;
+  autoselect?: boolean;
 };
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -72,6 +73,7 @@ export default function AddTransactionForm({
   categories,
   transaction,
   mode = 'add',
+  autoselect = false,
 }: AddTransactionFormProps) {
   if (transaction === undefined && mode === 'edit') {
     throw new Error('No transaction data provided while form mode is on edit');
@@ -147,6 +149,21 @@ export default function AddTransactionForm({
       }
     }
   }, [transaction, setValue]);
+
+  useEffect(() => {
+    if (autoselect) {
+      const cat = categories?.[0];
+      console.log(cat);
+      setCategoryEntries([
+        {
+          id: crypto.randomUUID(),
+          category: cat,
+          amount: cat?.fee?.toString() ?? '',
+          details: {},
+        },
+      ]);
+    }
+  }, [autoselect, categories, setValue]);
 
   // ── Batch entry helpers ───────────────────────────
   const addCategoryEntry = () => {
@@ -478,19 +495,33 @@ export default function AddTransactionForm({
                       value={entry.category?._id ?? ''}
                       onValueChange={(value) => {
                         const cat = categories?.find((c) => c._id === value);
-                        updateEntry(entry.id, { category: cat, details: {} });
+                        updateEntry(entry.id, {
+                          category: cat,
+                          details: {},
+                          amount: cat?.fee?.toString() || '',
+                        });
                       }}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(categories || []).map((cat) => (
-                          <SelectItem key={cat._id} value={cat._id}>
-                            {cat.organization.name}{' '}
-                            {cat.organization.name ? '-' : ''} {cat.name}
-                          </SelectItem>
-                        ))}
+                        {(categories || []).map((cat) => {
+                          const isSelectedElsewhere = categoryEntries.some(
+                            (e) =>
+                              e.category?._id === cat._id && e.id !== entry.id,
+                          );
+                          return (
+                            <SelectItem
+                              key={cat._id}
+                              value={cat._id}
+                              disabled={isSelectedElsewhere}
+                            >
+                              {cat.organization.name}{' '}
+                              {cat.organization.name ? '-' : ''} {cat.name}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

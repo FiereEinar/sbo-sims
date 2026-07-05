@@ -7,5 +7,4 @@ export const organizationSchema = z.object({
 	viceGovernor: z.string().min(1, 'Vice Governor must not be empty'),
 	treasurer: z.string().min(1, 'Treasurer name must not be empty'),
 	auditor: z.string().min(1, 'Auditor name must not be empty'),
-	departments: z.array(z.string()).optional(), // backend will validate this
 });

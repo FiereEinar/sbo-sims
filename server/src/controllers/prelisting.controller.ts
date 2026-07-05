@@ -87,15 +87,6 @@ export const create_prelisting = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-  // check if the student is within the organization
-  const isInOrganization = category.organization.departments.includes(
-    student.course,
-  );
-  appAssert(
-    isInOrganization,
-    BAD_REQUEST,
-    `Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
-  );
 
   const detailsObj: { [key: string]: any } = {};
   category.details.map((detail) => {
@@ -148,15 +139,6 @@ export const update_prelisting = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(student, NOT_FOUND, `Student with ID: ${studentID} not found`);
 
-  // check if the student is within the organization
-  const isInOrganization = category.organization.departments.includes(
-    student.course,
-  );
-  appAssert(
-    isInOrganization,
-    BAD_REQUEST,
-    `Student with ID: ${student.studentID} does not belong in the ${category.organization.name} organization. Please double check the student course if it exactly matches the departments under ${category.organization.name}`,
-  );
 
   const detailsObj: { [key: string]: any } = {};
   category.details.map((detail) => {

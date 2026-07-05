@@ -11,6 +11,7 @@ import {
   UNAUTHORIZED,
 } from '../constants/http';
 import CategoryModel from '../models/category.model';
+import StudentModel from '../models/student.model';
 
 /**
  * GET - get all organizations and its categories
@@ -38,7 +39,12 @@ export const get_all_organizations = asyncHandler(async (req, res) => {
         organization: org._id,
       }).exec();
 
+      const departments = await StudentModel.distinct('course', {
+        organization: org._id,
+      });
+
       org.categories = categories;
+      org.departments = departments;
       return org;
     }),
   );
@@ -61,7 +67,17 @@ export const get_organization = asyncHandler(async (req, res) => {
     `Organization with ID ${organizationID} does not exist`,
   );
 
-  res.json(new CustomResponse(true, organization, 'Organization details'));
+  const departments = await StudentModel.distinct('course', {
+    organization: organizationID,
+  });
+
+  res.json(
+    new CustomResponse(
+      true,
+      { ...organization.toObject(), departments },
+      'Organization details',
+    ),
+  );
 });
 
 /**
@@ -116,22 +132,7 @@ export const create_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
-    departments,
   }: Omit<IOrganization, '_id'> = req.body;
-
-  appAssert(
-    departments.length > 0,
-    BAD_REQUEST,
-    'Enter atleast 1 department for this organization',
-  );
-
-  appAssert(
-    typeof departments[0] === 'string',
-    BAD_REQUEST,
-    'Invalid department',
-  );
-
-  departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
   const existingSlug = await OrganizationModel.findOne({ slug }).exec();
   appAssert(!existingSlug, BAD_REQUEST, 'Organization slug already exists');
@@ -144,7 +145,6 @@ export const create_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
-    departments,
   });
   await organization.save();
 
@@ -206,22 +206,7 @@ export const update_organization = asyncHandler(async (req, res) => {
     treasurer,
     viceGovernor,
     auditor,
-    departments,
   }: Omit<IOrganization, '_id'> = req.body;
-
-  appAssert(
-    departments.length > 0,
-    BAD_REQUEST,
-    'Enter atleast 1 department for this organization',
-  );
-
-  appAssert(
-    typeof departments[0] === 'string',
-    BAD_REQUEST,
-    'Invalid department',
-  );
-
-  departments.forEach((dep, index, arr) => (arr[index] = dep.toUpperCase()));
 
   const existingSlug = await OrganizationModel.findOne({
     slug,
@@ -236,7 +221,6 @@ export const update_organization = asyncHandler(async (req, res) => {
     viceGovernor: viceGovernor,
     treasurer: treasurer,
     auditor: auditor,
-    departments: departments,
   };
 
   const result = await OrganizationModel.findByIdAndUpdate(

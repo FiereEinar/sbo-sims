@@ -124,24 +124,24 @@ export const navbarLinks: SidebarNavLinkType[] = [
     permissions: [MODULES.STUDENT_READ],
   },
   {
+    path: '/category',
+    name: 'Categories',
+    icon: Tags,
+    permissions: [MODULES.CATEGORY_READ],
+    isSeparator: true,
+    title: 'Collection',
+  },
+  {
     path: '/transaction',
     name: 'Transactions',
     icon: Receipt,
     permissions: [MODULES.TRANSACTION_READ],
-    isSeparator: true,
-    title: 'Collection',
   },
   {
     path: '/prelisting',
     name: 'Prelistings',
     icon: ClipboardList,
     permissions: [MODULES.PRELISTING_READ],
-  },
-  {
-    path: '/category',
-    name: 'Categories',
-    icon: Tags,
-    permissions: [MODULES.CATEGORY_READ],
   },
   {
     path: '/reports',

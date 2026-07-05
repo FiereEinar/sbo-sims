@@ -20,12 +20,9 @@ import {
   submitOrganizationForm,
   submitUpdateOrganizationForm,
 } from '@/api/organization';
-import { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from 'react';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
-import { Department } from '@/types/deparment';
-import DepartmentInputField from '../DepartmentInputField';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
@@ -45,8 +42,6 @@ export default function AddOrganizationForm({
       'No organizationID provided while organization form mode is on edit',
     );
   }
-
-  const [departments, setDepartments] = useState<Department[]>([]);
 
   const {
     register,
@@ -75,22 +70,11 @@ export default function AddOrganizationForm({
       );
       setValue('treasurer', _.startCase(organizationData?.treasurer ?? ''));
       setValue('auditor', _.startCase(organizationData?.auditor ?? ''));
-
-      const departmentsArray: Department[] = [];
-      organizationData?.departments?.forEach((dep) => {
-        departmentsArray.push({ id: uuidv4(), name: dep });
-      });
-
-      setDepartments(departmentsArray);
     }
-  }, [organizationData, setValue, setDepartments]);
+  }, [organizationData, setValue]);
 
   const onSubmit = async (data: OrganizationFormValues) => {
     try {
-      const departmentsArray: string[] = [];
-      departments.map((dep) => departmentsArray.push(dep.name));
-      data.departments = departmentsArray;
-
       if (mode === 'add') await submitOrganizationForm(data);
       if (mode === 'edit') {
         await submitUpdateOrganizationForm(organizationData?._id ?? '', data);
@@ -104,24 +88,11 @@ export default function AddOrganizationForm({
         queryKey: [QUERY_KEYS.ORGANIZATION],
       });
       reset();
-      setDepartments([]);
     } catch (err: any) {
       setError('root', {
         message: err.message || 'Failed to submit create organization form',
       });
     }
-  };
-
-  const onDepartmentAdd = (value: string) => {
-    if (value.length === 0) return;
-    setDepartments((prev) => [
-      ...prev,
-      { name: value.toUpperCase(), id: uuidv4() },
-    ]);
-  };
-
-  const onDepartmentRemove = (id: string) => {
-    setDepartments((prev) => prev.filter((org) => org.id !== id));
   };
 
   return (
@@ -180,12 +151,6 @@ export default function AddOrganizationForm({
               URL and break any bookmarked links.
             </p>
           )}
-
-          <DepartmentInputField
-            onSubmit={onDepartmentAdd}
-            onRemove={onDepartmentRemove}
-            selectedDepartments={departments}
-          />
 
           <InputField<OrganizationFormValues>
             name="governor"

@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
 import { X } from 'lucide-react';
 import { AdminOrgWithStats, adminCreateOrg, adminUpdateOrg } from '@/api/admin';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
-import { Department } from '@/types/deparment';
 import _ from 'lodash';
 
 const editOrgSchema = organizationSchema;
@@ -38,10 +36,6 @@ export default function OrgFormModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [departments, setDepartments] = useState<Department[]>(
-    org?.departments?.map((d) => ({ id: uuidv4(), name: d })) ?? [],
-  );
-  const [depInput, setDepInput] = useState('');
   const [rootError, setRootError] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
 
@@ -65,13 +59,8 @@ export default function OrgFormModal({
 
   const onSubmit = async (data: AddOrgFormValues) => {
     setRootError('');
-    const deps = departments.map((d) => d.name);
-    if (deps.length === 0) {
-      setRootError('Add at least one department');
-      return;
-    }
     try {
-      const payload = { ...data, departments: deps };
+      const payload = { ...data };
       if (mode === 'add') {
         await adminCreateOrg(payload);
       } else {
@@ -82,16 +71,6 @@ export default function OrgFormModal({
       setRootError(err.message || 'An error occurred');
     }
   };
-
-  const addDep = () => {
-    const trimmed = depInput.trim().toUpperCase();
-    if (!trimmed) return;
-    setDepartments((prev) => [...prev, { id: uuidv4(), name: trimmed }]);
-    setDepInput('');
-  };
-
-  const removeDep = (id: string) =>
-    setDepartments((prev) => prev.filter((d) => d.id !== id));
 
   const inputStyle = {
     background: 'rgba(255,255,255,0.06)',
@@ -168,68 +147,6 @@ export default function OrgFormModal({
               )}
             </div>
           ))}
-
-          {/* ── Departments ─────────────────────────────────────────── */}
-          <div className="space-y-1">
-            <label
-              className="text-xs font-semibold uppercase tracking-wider"
-              style={labelStyle}
-            >
-              Departments
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="depInput"
-                value={depInput}
-                onChange={(e) => setDepInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addDep();
-                  }
-                }}
-                placeholder="Type and press Enter"
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none transition-all placeholder:opacity-30"
-                style={inputStyle}
-              />
-              <button
-                type="button"
-                id="addDepartment"
-                onClick={addDep}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white"
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-                }}
-              >
-                Add
-              </button>
-            </div>
-            {departments.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {departments.map((dep) => (
-                  <span
-                    key={dep.id}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-                    style={{
-                      background: 'rgba(124,58,237,0.15)',
-                      border: '1px solid rgba(124,58,237,0.25)',
-                      color: '#c4b5fd',
-                    }}
-                  >
-                    {dep.name}
-                    <button
-                      type="button"
-                      id={`removeDep-${dep.id}`}
-                      onClick={() => removeDep(dep.id)}
-                      className="ml-0.5 hover:text-red-400 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* ── Admin seed account (add mode only) ──────────────────── */}
           {mode === 'add' && (

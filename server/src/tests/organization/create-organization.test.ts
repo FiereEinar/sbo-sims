@@ -54,7 +54,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT', 'BSEMC-DAT'],
     };
 
     const res = await supertest(app)
@@ -67,72 +66,7 @@ describe('POST - Create Organization', () => {
     expect(res.body.data.governor).toBe(organization.governor.toLowerCase());
   });
 
-  it('should return 400 if no department is provided', async () => {
-    const organization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-      departments: [],
-    };
 
-    const res = await supertest(app)
-      .post(`/organization`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(organization)
-      .expect(BAD_REQUEST);
-  });
-
-  it('should return 400 if department is empty', async () => {
-    const organization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-    };
-
-    const res = await supertest(app)
-      .post(`/organization`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(organization)
-      .expect(BAD_REQUEST);
-  });
-
-  it('should return 400 if department is not an array', async () => {
-    const organization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-      departments: 'BSIT',
-    };
-
-    const res = await supertest(app)
-      .post(`/organization`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(organization)
-      .expect(BAD_REQUEST);
-  });
-
-  it('should return 400 if department is not a string', async () => {
-    const organization = {
-      name: 'ACM',
-      governor: 'Jhon Doe',
-      viceGovernor: 'Jane Doe',
-      treasurer: 'Jhonny Doe',
-      auditor: 'Jhane Doe',
-      departments: [1],
-    };
-
-    const res = await supertest(app)
-      .post(`/organization`)
-      .set('Cookie', [`${accessTokenCookieName}=${accessToken}`])
-      .send(organization)
-      .expect(BAD_REQUEST);
-  });
 
   it('should return 400 if name is empty', async () => {
     const organization = {
@@ -141,7 +75,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT'],
     };
 
     const res = await supertest(app)
@@ -158,7 +91,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT'],
     };
 
     const res = await supertest(app)
@@ -175,7 +107,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: '',
       treasurer: 'Jhonny Doe',
       auditor: 'Jhane Doe',
-      departments: ['BSIT'],
     };
 
     const res = await supertest(app)
@@ -192,7 +123,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: '',
       auditor: 'Jhane Doe',
-      departments: ['BSIT'],
     };
 
     const res = await supertest(app)
@@ -209,7 +139,6 @@ describe('POST - Create Organization', () => {
       viceGovernor: 'Jane Doe',
       treasurer: 'Jhonny Doe',
       auditor: '',
-      departments: ['BSIT'],
     };
 
     const res = await supertest(app)

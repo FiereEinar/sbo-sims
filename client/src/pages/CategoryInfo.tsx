@@ -11,10 +11,11 @@ import CategoryStudentStatusTable from '@/components/category/CategoryStudentSta
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CategoryDataCard from '@/components/category/CategoryDataCard';
 import TransactionsFilter from '@/components/transaction/TransactionsFilter';
+import AddTransactionForm from '@/components/forms/AddTransactionForm';
 
 const pageSize = 10;
 
@@ -22,7 +23,9 @@ export default function CategoryInfo() {
   const { categoryID } = useParams();
   if (!categoryID) return;
 
-  const { getFilterValues } = useTransactionFilterStore((state) => state);
+  const { getFilterValues, setStatus } = useTransactionFilterStore(
+    (state) => state,
+  );
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useQuery({
@@ -33,6 +36,11 @@ export default function CategoryInfo() {
     queryFn: () =>
       fetchCategoryStudentStatus(getFilterValues(), categoryID, page, pageSize),
   });
+
+  // set default filter value of status to paid, if this is updated, also update the TableHeadStatusFilter in CategoryStudentStatusTable
+  useEffect(() => {
+    if (categoryID) setStatus('paid');
+  }, [setStatus, categoryID]);
 
   if (error) {
     return <p>Session expired, login again</p>;
@@ -46,11 +54,19 @@ export default function CategoryInfo() {
         <StickyHeader>
           <CategoryDataCard category={data.data.category} />
           <div className="flex flex-col items-start sm:items-end space-y-2">
-            <EditAndDeleteCategoryButton category={data.data.category} />
+            <div className="flex gap-2">
+              <HasPermission permissions={[MODULES.TRANSACTION_DOWNLOAD]}>
+                <DownloadCategoryStudentStatusButton categoryID={categoryID} />
+              </HasPermission>
+              <HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
+                <AddTransactionForm
+                  categories={[data.data.category]}
+                  autoselect
+                />
+              </HasPermission>
+            </div>
 
-            <HasPermission permissions={[MODULES.TRANSACTION_DOWNLOAD]}>
-              <DownloadCategoryStudentStatusButton categoryID={categoryID} />
-            </HasPermission>
+            <EditAndDeleteCategoryButton category={data.data.category} />
           </div>
         </StickyHeader>
       )}

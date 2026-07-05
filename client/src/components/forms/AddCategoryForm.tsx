@@ -40,6 +40,7 @@ export default function AddCategoryForm({
   }
 
   const [details, setDetails] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
 
   const {
     register,
@@ -73,6 +74,7 @@ export default function AddCategoryForm({
       });
       reset();
       setDetails([]);
+      setOpen(false);
     } catch (err: any) {
       setError('root', {
         message: err.message || 'Failed to submit category form',
@@ -90,7 +92,7 @@ export default function AddCategoryForm({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === 'add' ? (
           <Button className="flex gap-2 items-center rounded-full" size="sm">
@@ -117,6 +119,7 @@ export default function AddCategoryForm({
             registerFn={register}
             errors={errors}
             label="Category name:"
+            placeholder="eg. Shirt"
             id="name"
           />
 
@@ -125,12 +128,13 @@ export default function AddCategoryForm({
             registerFn={register}
             errors={errors}
             label="Category fee:"
+            placeholder="eg. 500, 1000, etc."
             id="fee"
           />
 
           <ArrayInputField
-            label="Details:"
-            placeholder="Add details"
+            label="Details: (optional)"
+            placeholder="size, color, brand, ..."
             values={details}
             onSubmit={onDetailAdd}
             onRemove={onDetailRemove}

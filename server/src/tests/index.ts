@@ -8,7 +8,7 @@ import { SECRET_ADMIN_KEY } from '../constants/env';
 import { OK } from '../constants/http';
 import app from '../app';
 import mongoose from 'mongoose';
-
+import { expect } from 'vitest';
 export const createMockUser = async (): Promise<{
   user: IUser;
   accessToken: string;
@@ -22,7 +22,11 @@ export const createMockUser = async (): Promise<{
     email: 'jhon@gmail.com',
   };
 
-  let res = await supertest(app).post('/auth/signup').send(userData).expect(OK);
+  let res = await supertest(app).post('/auth/signup').send(userData);
+  if (res.status !== OK) {
+    console.error('SIGNUP ERROR:', res.body);
+  }
+  expect(res.status).toBe(OK);
 
   // set mock user to admin
   await supertest(app)
@@ -72,7 +76,6 @@ export const createMockOrganization = async (
     treasurer: 'Jane Doe',
     viceGovernor: 'Jhonny Doe',
     auditor: 'Jhane Doe',
-    departments: ['BSIT', 'BSEMC-DAT'],
   };
 
   const res = await supertest(app)

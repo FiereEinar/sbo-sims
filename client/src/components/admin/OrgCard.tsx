@@ -6,6 +6,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  RotateCcw,
 } from 'lucide-react';
 import { AdminOrgWithStats } from '@/api/admin';
 import StatBadge from './StatBadge';
@@ -15,10 +16,12 @@ export default function OrgCard({
   org,
   onEdit,
   onDelete,
+  onResetTour,
 }: {
   org: AdminOrgWithStats;
   onEdit: (org: AdminOrgWithStats) => void;
   onDelete: (org: AdminOrgWithStats) => void;
+  onResetTour: (org: AdminOrgWithStats) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -56,6 +59,18 @@ export default function OrgCard({
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+          <button
+            id={`resetTour-${org._id}`}
+            onClick={() => onResetTour(org)}
+            title="Reset Onboarding Tour"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+            style={{
+              background: 'rgba(16,185,129,0.1)',
+              border: '1px solid rgba(16,185,129,0.2)',
+            }}
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-emerald-400" />
+          </button>
           <button
             id={`editOrg-${org._id}`}
             onClick={() => onEdit(org)}

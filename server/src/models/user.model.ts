@@ -23,6 +23,7 @@ export interface IUser extends mongoose.Document {
   bio: string;
   token: string;
   verified: boolean;
+  isOnboardingCompleted: boolean;
   verificationToken?: string;
   verificationTokenExpiresAt?: Date;
   activeSchoolYearDB: string;
@@ -54,6 +55,7 @@ export const UserSchema = new Schema<IUser>(
     bio: { type: String, default: '' },
     token: { type: String, default: '' },
     verified: { type: Boolean, default: false },
+    isOnboardingCompleted: { type: Boolean, default: false },
     verificationToken: { type: String },
     verificationTokenExpiresAt: { type: Date },
     activeSchoolYearDB: {

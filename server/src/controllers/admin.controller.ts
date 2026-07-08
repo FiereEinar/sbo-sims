@@ -221,3 +221,26 @@ export const admin_delete_organization = asyncHandler(async (req, res) => {
     new CustomResponse(true, result, 'Organization deleted successfully'),
   );
 });
+
+/**
+ * PUT /admin/organizations/:organizationID/reset-onboarding
+ * Resets the onboarding status for all org-admins in the organization (or specifically the seeded admin).
+ * Here we'll reset it for anyone in the org who is an org-admin.
+ */
+export const admin_reset_onboarding = asyncHandler(async (req, res) => {
+  const { organizationID } = req.params;
+
+  // Find all org-admins in the specified organization and set isOnboardingCompleted to false
+  const updateResult = await UserModel.updateMany(
+    { organization: organizationID, role: 'org-admin' },
+    { $set: { isOnboardingCompleted: false } }
+  );
+
+  res.json(
+    new CustomResponse(
+      true,
+      updateResult,
+      'Onboarding reset successfully for organization admins'
+    )
+  );
+});

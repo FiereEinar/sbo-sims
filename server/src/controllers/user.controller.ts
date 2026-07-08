@@ -345,3 +345,21 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
     new CustomResponse(true, safeUser, 'Password updated successfully!'),
   );
 });
+
+/**
+ * @route PUT /api/v1/user/complete-onboarding
+ */
+export const completeOnboarding = asyncHandler(async (req, res) => {
+  const userID = req.currentUser?._id;
+  appAssert(userID, UNAUTHORIZED, 'User not authenticated');
+
+  const update: UpdateQuery<IUser> = {
+    isOnboardingCompleted: true,
+  };
+
+  const result = await UserModel.findByIdAndUpdate(userID, update, {
+    new: true,
+  }).exec();
+
+  res.json(new CustomResponse(true, result, 'Onboarding completed!'));
+});

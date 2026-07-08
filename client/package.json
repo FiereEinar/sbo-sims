@@ -39,6 +39,7 @@
 		"react-day-picker": "^8.10.1",
 		"react-dom": "^18.3.1",
 		"react-hook-form": "^7.65.0",
+		"react-joyride": "^3.1.0",
 		"react-router-dom": "^6.26.2",
 		"react-toggle-dark-mode": "^1.1.1",
 		"recharts": "^2.15.4",

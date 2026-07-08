@@ -11,6 +11,7 @@ import {
   getUsers,
   updateUserPassword,
   update_user,
+  completeOnboarding,
 } from '../controllers/user.controller';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { hasRole } from '../middlewares/authentication/role';
@@ -21,6 +22,8 @@ const router = express.Router();
 router.get('/', getUsers);
 
 router.get('/:userID', getSingleUser);
+
+router.put('/complete-onboarding', completeOnboarding);
 
 router.post('/', hasRole([MODULES.USER_CREATE]), createUser);
 

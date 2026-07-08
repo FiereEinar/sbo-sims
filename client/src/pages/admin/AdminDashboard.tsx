@@ -4,6 +4,7 @@ import {
   fetchAllOrgsAdmin,
   adminDeleteOrg,
   AdminOrgWithStats,
+  resetOrgOnboarding,
 } from '@/api/admin';
 import OrgCard from '@/components/admin/OrgCard';
 import OrgFormModal from '@/components/admin/OrgFormModal';
@@ -39,6 +40,13 @@ export default function AdminDashboard() {
     },
   });
 
+  const resetTourMutation = useMutation({
+    mutationFn: (id: string) => resetOrgOnboarding(id),
+    onSuccess: () => {
+      // maybe add a toast here in the future
+    },
+  });
+
   const closeModal = () => {
     setModal(null);
     setSelectedOrg(null);
@@ -57,6 +65,11 @@ export default function AdminDashboard() {
     setSelectedOrg(org);
     setModal('delete');
     setDeleteError('');
+  };
+  const handleResetTour = (org: AdminOrgWithStats) => {
+    if (confirm(`Reset onboarding tour for all admins in ${org.name}?`)) {
+      resetTourMutation.mutate(org._id);
+    }
   };
   const handleFormSuccess = () => {
     qc.invalidateQueries({ queryKey: ['admin-organizations'] });
@@ -200,6 +213,7 @@ export default function AdminDashboard() {
               org={org}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onResetTour={handleResetTour}
             />
           ))}
         </div>

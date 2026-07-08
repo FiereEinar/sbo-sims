@@ -54,3 +54,13 @@ export async function adminDeleteOrg(id: string) {
 	);
 	return data.data as Organization;
 }
+
+/**
+ * PUT /admin/organizations/:id/reset-onboarding
+ */
+export async function resetOrgOnboarding(id: string) {
+	const { data } = await adminAxiosInstance.put(
+		`/admin/organizations/${id}/reset-onboarding`,
+	);
+	return data;
+}

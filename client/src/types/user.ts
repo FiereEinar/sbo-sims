@@ -32,6 +32,7 @@ export type User = MongoEntity & {
 	bio: string;
 	token: string;
 	verified: boolean;
+	isOnboardingCompleted: boolean;
 	activeSchoolYearDB: string;
 	activeSemDB: '1' | '2';
 	organization?: {

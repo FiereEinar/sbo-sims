@@ -4,6 +4,7 @@ import {
   admin_create_organization,
   admin_update_organization,
   admin_delete_organization,
+  admin_reset_onboarding,
 } from '../controllers/admin.controller';
 import { isSuperAdmin } from '../middlewares/authentication/isSuperAdmin';
 import { isValidMongooseId } from '../middlewares/validations/validation';
@@ -36,6 +37,12 @@ router.delete(
   '/organizations/:organizationID',
   isValidMongooseId('organizationID', { from: 'params' }),
   admin_delete_organization,
+);
+
+router.put(
+  '/organizations/:organizationID/reset-onboarding',
+  isValidMongooseId('organizationID', { from: 'params' }),
+  admin_reset_onboarding,
 );
 
 export default router;

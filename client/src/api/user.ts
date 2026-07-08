@@ -92,3 +92,12 @@ export const deleteUser = async (userID: string): Promise<APIResponse<null>> => 
 		throw err;
 	}
 };
+
+export const completeOnboarding = async (): Promise<APIResponse<null>> => {
+	try {
+		const { data } = await axiosInstance.put(`/user/complete-onboarding`);
+		return data;
+	} catch (err: any) {
+		throw err;
+	}
+};

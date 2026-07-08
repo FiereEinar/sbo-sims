@@ -19,6 +19,7 @@ export default function SidebarLink({ link }: SidebarLinkProps) {
 
   return (
     <NavLink
+      id={`nav-link-${link.name.toLowerCase().replace(/\s+/g, '-')}`}
       title={link.name}
       to={resolvedPath}
       end={link.path === '/'}

@@ -7,6 +7,7 @@ import HeaderLogo from '@/components/HeaderLogo';
 import { LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import StudentTopNavbar from '@/components/student-portal/StudentTopNavbar';
 
 function StudentSidebarLink({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
   const location = useLocation();
@@ -33,8 +34,9 @@ export default function StudentApp() {
 
   return (
     <main className="transition-all bg-background flex h-dvh">
-      {/* Sidebar */}
-      <aside className="transition-all w-auto md:w-[200px] bg-[#F6F6F6] dark:bg-[#121212] border-r h-dvh flex flex-col flex-shrink-0 text-sm text-muted-foreground overflow-auto">
+      {/* Sidebar - hidden on mobile */}
+      <div className="hidden sm:flex">
+        <aside className="transition-all w-auto md:w-[200px] bg-[#F6F6F6] dark:bg-[#121212] border-r h-dvh flex flex-col flex-shrink-0 text-sm text-muted-foreground overflow-auto">
         <HeaderLogo />
         <div className="flex flex-col gap-2 p-4 flex-1">
           {/* Student portal label */}
@@ -48,10 +50,16 @@ export default function StudentApp() {
           <LogoutButton />
         </div>
       </aside>
+      </div>
 
       {/* Main content */}
-      <div className="overflow-auto w-full">
-        <Outlet />
+      <div className="overflow-hidden w-full">
+        <div className="flex w-full">
+          <StudentTopNavbar />
+        </div>
+        <div className="overflow-auto h-[calc(100vh-4rem)]">
+          <Outlet />
+        </div>
       </div>
     </main>
   );

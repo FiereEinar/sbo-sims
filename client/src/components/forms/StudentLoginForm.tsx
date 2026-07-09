@@ -1,28 +1,27 @@
-import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import InputField from '../InputField';
-import { Button } from '../ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import InputField from '../InputField';
+import { Button } from '../ui/button';
 import ErrorText from '../ui/error-text';
-import { submitLoginForm } from '@/api/user';
-import { useSearchParams } from 'react-router-dom';
-import { loginSchema } from '@/lib/validations/loginSchema';
-import { useUserStore } from '@/store/user';
 import RecaptchaOverlay from '../RecaptchaOverlay';
 import { useToast } from '@/hooks/use-toast';
+import { useUserStore } from '@/store/user';
+import { loginSchema } from '@/lib/validations/loginSchema';
+import { studentLogin } from '@/api/student-portal';
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
+export type StudentLoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginForm() {
-  const navigate = useTenantNavigate();
+export default function StudentLoginForm() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const setUser = useUserStore((state) => state.setUser);
 
   const [showCaptcha, setShowCaptcha] = useState(false);
-  const [pendingData, setPendingData] = useState<LoginFormValues | null>(null);
+  const [pendingData, setPendingData] = useState<StudentLoginFormValues | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const {
@@ -30,14 +29,13 @@ export default function LoginForm() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
+  } = useForm<StudentLoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
       toast({
         title: 'Email Verified',
-        description:
-          'Your email has been successfully verified. You can now log in.',
+        description: 'Your email has been successfully verified. You can now log in.',
         variant: 'default',
       });
       searchParams.delete('verified');
@@ -47,35 +45,24 @@ export default function LoginForm() {
 
   const isFormDisabled = isSubmitting || isLoggingIn;
 
-  // Step 1: form validation passes → show reCAPTCHA overlay
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = (data: StudentLoginFormValues) => {
     setPendingData(data);
     setShowCaptcha(true);
   };
 
-  // Step 2: reCAPTCHA passed → submit login with token
   const handleCaptchaVerify = async (token: string) => {
     setShowCaptcha(false);
     if (!pendingData) return;
-
     setIsLoggingIn(true);
-
     try {
-      const result = await submitLoginForm({
-        ...pendingData,
-        recaptchaToken: token,
-      });
-
+      const result = await studentLogin({ ...pendingData, recaptchaToken: token });
       if (result) {
-        // Store access token for all devices
         localStorage.setItem('accessToken', result.data.accessToken);
         setUser(result.data.user);
       }
-      navigate('/');
+      navigate('/student/dashboard', { replace: true });
     } catch (err: any) {
-      setError('root', {
-        message: err.message || 'Failed to submit login form',
-      });
+      setError('root', { message: err.message || 'Failed to login. Please try again.' });
     } finally {
       setPendingData(null);
       setIsLoggingIn(false);
@@ -91,17 +78,17 @@ export default function LoginForm() {
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div>
-          <InputField<LoginFormValues>
+          <InputField<StudentLoginFormValues>
             name="studentID"
-            id="studentID"
+            id="studentLoginID"
             label="Student ID:"
             registerFn={register}
             errors={errors}
             isDisabled={isFormDisabled}
           />
-          <InputField<LoginFormValues>
+          <InputField<StudentLoginFormValues>
             name="password"
-            id="password"
+            id="studentLoginPassword"
             label="Password:"
             type="password"
             registerFn={register}
@@ -110,9 +97,14 @@ export default function LoginForm() {
           />
         </div>
 
-        {errors.root && errors.root.message && (
-          <ErrorText>{errors.root.message.toString()}</ErrorText>
-        )}
+        {errors.root?.message && <ErrorText>{errors.root.message}</ErrorText>}
+
+        <div className="text-xs text-muted-foreground flex gap-1">
+          <p>Don't have an account?</p>
+          <Link to="/signup" className="underline">
+            Sign up
+          </Link>
+        </div>
 
         <div className="flex justify-end">
           <Button disabled={isFormDisabled}>
@@ -141,17 +133,14 @@ export default function LoginForm() {
                 Logging in...
               </span>
             ) : (
-              'Submit'
+              'Log In'
             )}
           </Button>
         </div>
       </form>
 
       {showCaptcha && (
-        <RecaptchaOverlay
-          onVerify={handleCaptchaVerify}
-          onClose={handleCaptchaClose}
-        />
+        <RecaptchaOverlay onVerify={handleCaptchaVerify} onClose={handleCaptchaClose} />
       )}
     </>
   );

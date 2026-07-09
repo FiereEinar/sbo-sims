@@ -21,6 +21,7 @@ import eventRouter from './routes/event.route';
 import eventSessionRouter from './routes/event-session.route';
 import attendanceRouter from './routes/attendance.route';
 import attendanceReportRouter from './routes/attendance-report.route';
+import studentPortalRouter from './routes/student-portal.route';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -62,6 +63,8 @@ app.use(async (req, res, next) => {
 });
 
 app.use('/auth', authRouter);
+// Student portal public endpoints (no auth required - login & signup)
+app.use('/student-portal', studentPortalRouter);
 app.use(auth);
 app.use('/admin', adminRouter);
 app.use(extractTenantContext);

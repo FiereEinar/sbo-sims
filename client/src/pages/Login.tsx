@@ -1,15 +1,11 @@
 import LoginForm from '@/components/forms/LoginForm';
 import AuthPage from './AuthPage';
-import OrganizationList from '@/components/organization/OrganizationList';
-import { useParams } from 'react-router-dom';
 
+/**
+ * Officer login page — only accessible via /:orgSlug/login.
+ * The org context is injected automatically via the x-organization-slug header
+ * based on the URL path.
+ */
 export default function Login() {
-  const { orgSlug } = useParams<{ orgSlug: string }>();
-
-  return (
-    <AuthPage
-      title={orgSlug ? 'Login' : 'Select Organization'}
-      form={orgSlug ? <LoginForm /> : <OrganizationList type="login" />}
-    />
-  );
+  return <AuthPage title="Officer Login" form={<LoginForm />} />;
 }

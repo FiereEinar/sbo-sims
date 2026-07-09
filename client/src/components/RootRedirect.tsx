@@ -23,6 +23,12 @@ export default function RootRedirect() {
 					return;
 				}
 
+				// Students go to the student portal
+				if (data.role === 'student') {
+					navigate('/student/dashboard', { replace: true });
+					return;
+				}
+
 				if (data.organization?.slug) {
 					navigate(`/${data.organization.slug}`, { replace: true });
 				} else {

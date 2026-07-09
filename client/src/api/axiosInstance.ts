@@ -62,8 +62,8 @@ axiosInstance.interceptors.request.use((config) => {
 
 	const pathSegments = window.location.pathname.split('/').filter(Boolean);
 	const firstSegment = pathSegments[0];
-	// Only inject org slug for tenant routes (not /admin, /login, /signup)
-	if (firstSegment && !['login', 'signup', 'admin'].includes(firstSegment)) {
+	// Only inject org slug for tenant routes (not /admin, /login, /signup, /student, /officer-login)
+	if (firstSegment && !['login', 'signup', 'admin', 'student', 'officer-login'].includes(firstSegment)) {
 		config.headers['x-organization-slug'] = firstSegment;
 	}
 	return config;

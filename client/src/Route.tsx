@@ -36,12 +36,53 @@ import AdminLogin from './pages/admin/AdminLogin';
 import Events from './pages/Events';
 import AttendanceReports from './pages/AttendanceReports';
 
+// Student portal
+import StudentLoginPage from './pages/student/StudentLoginPage';
+import StudentSignupPage from './pages/student/StudentSignupPage';
+import StudentApp from './pages/student/StudentApp';
+import StudentDashboard from './pages/student/StudentDashboard';
+import StudentProtectedRoute from './components/student-portal/StudentProtectedRoute';
+
 export default function Route() {
   const route = createBrowserRouter([
     {
       path: '/',
       element: <RootRedirect />,
     },
+    // ── Student Portal ───────────────────────────────────────────────────────
+    {
+      // /login: role chooser → student form inline OR officer org-picker
+      path: '/login',
+      element: <StudentLoginPage />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      // /signup: student registration
+      path: '/signup',
+      element: <StudentSignupPage />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      // /student/*: student portal shell (protected, student-role only)
+      path: '/student',
+      element: (
+        <StudentProtectedRoute>
+          <StudentApp />
+        </StudentProtectedRoute>
+      ),
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          index: true,
+          element: <StudentDashboard />,
+        },
+        {
+          path: 'dashboard',
+          element: <StudentDashboard />,
+        },
+      ],
+    },
+    // ── Org Portal (Officers / Admins) ───────────────────────────────────────
     {
       path: '/:orgSlug',
       element: (
@@ -277,27 +318,13 @@ export default function Route() {
         },
       ],
     },
-    {
-      path: '/login',
-      element: <Login />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: '/signup',
-      element: <Signup />,
-      errorElement: <ErrorPage />,
-    },
+    // ── Officer-specific auth ─────────────────────────────────────────────────
     {
       path: '/:orgSlug/login',
       element: <Login />,
       errorElement: <ErrorPage />,
     },
-    {
-      path: '/:orgSlug/signup',
-      element: <Signup />,
-      errorElement: <ErrorPage />,
-    },
-    // ── Global Super Admin Portal ──
+    // ── Global Super Admin Portal ─────────────────────────────────────────────
     {
       path: '/admin/login',
       element: <AdminLogin />,

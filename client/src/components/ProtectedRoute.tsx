@@ -19,6 +19,13 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 				const { data } = await axiosInstance.get<User>('/auth/check-auth');
 				setUser(data);
 
+				// Students should not access org portal routes
+				if (data.role === 'student') {
+					setIsAuthenticated(false);
+					navigate('/student/dashboard', { replace: true });
+					return;
+				}
+
 				if (orgSlug && data.organization?.slug !== orgSlug) {
 					setIsAuthenticated(false);
 					navigate(`/${orgSlug}/login`, { replace: true });

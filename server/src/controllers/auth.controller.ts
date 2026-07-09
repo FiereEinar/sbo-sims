@@ -204,18 +204,20 @@ export const login = asyncHandler(async (req, res) => {
       organization: organization._id,
     }).exec();
     if (role) {
-      // Self-heal: ensure every module permission is present
-      // Collect ALL permission values from the MODULES constant
-      const allPermissions = Object.values(MODULES);
-      const currentPerms = new Set(role.permissions as string[]);
-      const missing = allPermissions.filter((p) => !currentPerms.has(p));
+      // Self-heal: only applies to the seeded "Super Admin" role.
+      // Custom officer roles have their own deliberate permission sets — do not touch them.
+      if (role.name === SUPER_ADMIN) {
+        const allPermissions = Object.values(MODULES);
+        const currentPerms = new Set(role.permissions as string[]);
+        const missing = allPermissions.filter((p) => !currentPerms.has(p));
 
-      if (missing.length > 0) {
-        role.permissions = allPermissions;
-        await role.save();
-        console.log(
-          `[seed] Healed "${role.name}" role — added ${missing.length} new permission(s): ${missing.join(', ')}`,
-        );
+        if (missing.length > 0) {
+          role.permissions = allPermissions;
+          await role.save();
+          console.log(
+            `[seed] Healed "${role.name}" role — added ${missing.length} new permission(s): ${missing.join(', ')}`,
+          );
+        }
       }
     }
   }

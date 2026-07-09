@@ -11,7 +11,6 @@ import NotFound from './pages/NotFound';
 import CategoryInfo from './pages/CategoryInfo';
 import TransactionInfo from './pages/TransactionInfo';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrganizationInfo from './pages/OrganizationInfo';
 import Settings from './pages/Settings';

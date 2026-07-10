@@ -44,6 +44,8 @@ export default function StudentDashboard() {
     queryFn: fetchStudentDashboard,
   });
 
+  console.log(data);
+
   return (
     <div className="p-6 space-y-6">
       {/* Greeting */}

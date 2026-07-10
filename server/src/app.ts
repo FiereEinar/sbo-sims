@@ -63,7 +63,6 @@ app.use(async (req, res, next) => {
 });
 
 app.use('/auth', authRouter);
-// Student portal public endpoints (no auth required - login & signup)
 app.use('/student-portal', studentPortalRouter);
 app.use(auth);
 app.use('/admin', adminRouter);

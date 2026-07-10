@@ -6,10 +6,7 @@ import CustomResponse from '../types/response';
 import { loginUserBody, signupUserBody } from '../types/user';
 import { thirtyDaysFromNow } from '../utils/date';
 import { getUserRequestInfo } from '../utils/utils';
-import {
-  AppErrorCodes,
-  refreshTokenCookieName,
-} from '../constants';
+import { AppErrorCodes, refreshTokenCookieName } from '../constants';
 import {
   BCRYPT_SALT,
   RECAPTCHA_SECRET_KEY,
@@ -24,13 +21,8 @@ import {
   OK,
   UNAUTHORIZED,
 } from '../constants/http';
-import {
-  setAuthCookie,
-} from '../utils/cookie';
-import {
-  refreshTokenSignOptions,
-  signToken,
-} from '../utils/jwt';
+import { setAuthCookie } from '../utils/cookie';
+import { refreshTokenSignOptions, signToken } from '../utils/jwt';
 import UserModel, { IUser } from '../models/user.model';
 import { sendVerificationEmail } from '../services/emailService';
 import SessionModel from '../models/session.model';
@@ -243,7 +235,12 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
               as: 'organization',
             },
           },
-          { $unwind: { path: '$organization', preserveNullAndEmptyArrays: true } },
+          {
+            $unwind: {
+              path: '$organization',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
           {
             $project: {
               amount: 1,
@@ -297,11 +294,16 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
               as: 'organization',
             },
           },
-          { $unwind: { path: '$organization', preserveNullAndEmptyArrays: true } },
+          {
+            $unwind: {
+              path: '$organization',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
           {
             $project: {
               recordedAt: 1,
-              'event.name': 1,
+              'event.name': '$event.title',
               'session.name': 1,
               'organization.name': 1,
               'organization.slug': 1,

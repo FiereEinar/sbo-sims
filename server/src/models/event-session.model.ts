@@ -42,8 +42,14 @@ export const EventSessionSchema = new Schema<IEventSession>(
   { timestamps: true },
 );
 
-const EventSessionModel = mongoose.model(
-  'EventSessionModel',
-  EventSessionSchema,
-);
+EventSessionSchema.pre('findOneAndDelete', async function (next) {
+  const query = this.getQuery();
+  if (query._id) {
+    // Delete all attendance records associated with this session
+    await mongoose.model('AttendanceRecord').deleteMany({ session: query._id });
+  }
+  next();
+});
+
+const EventSessionModel = mongoose.model('EventSession', EventSessionSchema);
 export default EventSessionModel;

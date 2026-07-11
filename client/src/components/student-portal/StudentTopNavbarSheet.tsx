@@ -8,38 +8,30 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '../ui/button';
 import GetIcon from '../icons/get-icon';
-import { Link, useLocation } from 'react-router-dom';
+import { studentNavbarLinks } from '@/constants';
 import HeaderLogo from '../HeaderLogo';
 import DarkModeToggle from '../buttons/DarkModeToggle';
 import LogoutButton from '../buttons/LogoutButton';
-import { LayoutDashboard } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { NavLink } from 'react-router-dom';
+import { SidebarNavLinkType } from '@/constants';
+import { Fragment } from 'react';
 
-function StudentSidebarLink({
-  to,
-  icon: Icon,
-  label,
-}: {
-  to: string;
-  icon: React.ElementType;
-  label: string;
-}) {
-  const location = useLocation();
-  const isActive =
-    location.pathname === to || location.pathname.startsWith(to + '/');
+function StudentSidebarLink({ link }: { link: SidebarNavLinkType }) {
   return (
-    <Link
-      to={to}
-      className={cn(
-        'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-        isActive
-          ? 'bg-primary/10 text-primary'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-      )}
+    <NavLink
+      id={`student-nav-link-sheet-${link.name.toLowerCase().replace(/\s+/g, '-')}`}
+      title={link.name}
+      to={link.path}
+      end={link.path === '/student/dashboard'}
+      className={({ isActive }) =>
+        `hover:opacity-90 select-none flex items-center gap-2 ${
+          isActive ? 'text-primary dark:text-primary' : 'text-muted-foreground'
+        }`
+      }
     >
-      <Icon className="size-4 shrink-0" />
-      <span>{label}</span>
-    </Link>
+      <link.icon className="size-5" />
+      <span className="font-semibold">{link.name}</span>
+    </NavLink>
   );
 }
 
@@ -60,15 +52,18 @@ export default function StudentTopNavbarSheet() {
 
         <div className="flex flex-col justify-between gap-5 mt-5">
           <hr />
-          <div className="flex flex-col gap-2">
-            <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
-              Student Portal
-            </p>
-            <StudentSidebarLink
-              to="/student/dashboard"
-              icon={LayoutDashboard}
-              label="Dashboard"
-            />
+          <div className="flex flex-col justify-between gap-4">
+            {studentNavbarLinks.map((link, i) => (
+              <Fragment key={`${link.name}-${i}`}>
+                {link.isSeparator && <hr />}
+                {link.title && (
+                  <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground/60 px-1">
+                    {link.title}
+                  </p>
+                )}
+                <StudentSidebarLink link={link} />
+              </Fragment>
+            ))}
           </div>
 
           <hr />

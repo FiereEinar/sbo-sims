@@ -22,6 +22,8 @@ import eventSessionRouter from './routes/event-session.route';
 import attendanceRouter from './routes/attendance.route';
 import attendanceReportRouter from './routes/attendance-report.route';
 import studentPortalRouter from './routes/student-portal.route';
+import paymentRequestRouter from './routes/payment-request.route';
+import path from 'path';
 
 import { NODE_ENV, PORT } from './constants/env';
 import { notFoundHandler } from './middlewares/not-found';
@@ -36,7 +38,7 @@ import connectToMongoDB from './database/mongodb';
 connectToMongoDB();
 
 const app = express();
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
@@ -46,6 +48,11 @@ app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
 app.use(globalLimiter);
+
+// Serve uploads folder locally
+if (NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+}
 
 app.get('/', healthcheck);
 
@@ -80,6 +87,7 @@ app.use('/event-session', eventSessionRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/attendance-report', attendanceReportRouter);
 app.use('/setting', settingRouter);
+app.use('/payment-request', paymentRequestRouter);
 
 // Error handlers
 app.use(notFoundHandler);

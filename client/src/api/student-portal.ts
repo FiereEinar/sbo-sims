@@ -23,6 +23,7 @@ export type StudentDashboardData = {
   totalTransactions: number;
   totalAttended: number;
   activeOrgs: number;
+  enrolledOrgs: { _id: string; name: string; slug: string }[];
   recentTransactions: {
     _id: string;
     amount: number;

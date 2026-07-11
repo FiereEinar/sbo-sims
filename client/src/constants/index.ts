@@ -3,6 +3,7 @@ import {
   Calendar,
   ClipboardList,
   FileBarChart2,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   LucideProps,
@@ -138,6 +139,12 @@ export const navbarLinks: SidebarNavLinkType[] = [
     permissions: [MODULES.TRANSACTION_READ],
   },
   {
+    path: '/payment-requests',
+    name: 'Payment Requests',
+    icon: Receipt,
+    permissions: [MODULES.TRANSACTION_READ],
+  },
+  {
     path: '/prelisting',
     name: 'Prelistings',
     icon: ClipboardList,
@@ -189,6 +196,19 @@ export const navbarLinks: SidebarNavLinkType[] = [
     name: 'Roles',
     icon: ShieldCheck,
     permissions: [MODULES.ROLE_READ],
+  },
+];
+
+export const studentNavbarLinks: SidebarNavLinkType[] = [
+  {
+    path: '/student/dashboard',
+    name: 'Dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    path: '/student/payment-requests',
+    name: 'Payment Requests',
+    icon: FileText,
   },
 ];
 

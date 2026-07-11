@@ -206,7 +206,7 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
   const { studentID } = currentUser;
 
   // 1. Find all Student records that share this studentID across any org
-  const studentRecords = await StudentModel.find({ studentID }).lean();
+  const studentRecords = await StudentModel.find({ studentID }).populate('organization', 'name slug').lean();
   const studentObjIds = studentRecords.map((s) => s._id);
 
   // 2. Aggregate transactions across all orgs
@@ -320,6 +320,7 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
   const totalAttended = attAgg?.totalAttended?.[0]?.count ?? 0;
   const recentAttendance = attAgg?.recentAttendance ?? [];
   const activeOrgs = studentRecords.length;
+  const enrolledOrgs = studentRecords.map((s) => s.organization).filter(Boolean);
 
   res.status(OK).json(
     new CustomResponse(
@@ -329,6 +330,7 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
         totalTransactions,
         totalAttended,
         activeOrgs,
+        enrolledOrgs,
         recentTransactions,
         recentAttendance,
       },

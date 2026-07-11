@@ -24,6 +24,7 @@ import Roles from './pages/Roles';
 import RoleInfo from './pages/RoleInfo';
 import ErrorPage from './pages/ErrorPage';
 import Reports from './pages/Reports';
+import AdminPaymentRequests from './pages/PaymentRequests';
 import EventInfo from './pages/EventInfo';
 import EventSessionInfo from './pages/EventSessionInfo';
 
@@ -40,6 +41,7 @@ import StudentLoginPage from './pages/student/StudentLoginPage';
 import StudentSignupPage from './pages/student/StudentSignupPage';
 import StudentApp from './pages/student/StudentApp';
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentPaymentRequests from './pages/student/PaymentRequests';
 import StudentProtectedRoute from './components/student-portal/StudentProtectedRoute';
 
 export default function Route() {
@@ -78,6 +80,10 @@ export default function Route() {
         {
           path: 'dashboard',
           element: <StudentDashboard />,
+        },
+        {
+          path: 'payment-requests',
+          element: <StudentPaymentRequests />,
         },
       ],
     },
@@ -136,6 +142,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Category />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'payment-requests',
+          element: (
+            <HasPermission
+              permissions={[MODULES.TRANSACTION_READ]}
+              fallback={<NoPermission />}
+            >
+              <AdminPaymentRequests />
             </HasPermission>
           ),
         },

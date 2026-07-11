@@ -28,16 +28,20 @@ import { useToast } from '@/hooks/use-toast';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
+import SemInput from '@/components/SemInput';
+import SchoolYearInput from '@/components/SchoolYearInput';
+import { useUserStore } from '@/store/user';
 
 export default function AdminPaymentRequests() {
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useUserStore((state) => state);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectRemarks, setRejectRemarks] = useState('');
 
   const { data: requests, isLoading } = useQuery({
-    queryKey: ['org-payment-requests', orgSlug],
+    queryKey: ['org-payment-requests', orgSlug, user?.activeSemDB, user?.activeSchoolYearDB],
     queryFn: () => fetchOrgPaymentRequests(orgSlug!),
     enabled: !!orgSlug,
   });
@@ -86,6 +90,14 @@ export default function AdminPaymentRequests() {
     <SidebarPageLayout>
       <StickyHeader>
         <Header>Payment Requests</Header>
+        <div className="flex gap-2 items-center">
+          <div className="w-[130px]">
+            <SemInput hideLabel />
+          </div>
+          <div className="w-[150px]">
+            <SchoolYearInput hideLabel />
+          </div>
+        </div>
       </StickyHeader>
 
       <Table>

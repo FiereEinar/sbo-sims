@@ -9,19 +9,23 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
-
+import { useUserStore } from '@/store/user';
 import NewPaymentRequestForm from '@/components/forms/NewPaymentRequestForm';
+import StudentSemInput from '@/components/StudentSemInput';
+import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
 
 export default function StudentPaymentRequests() {
-  // Fetch student payment requests
+  const { user } = useUserStore((state) => state);
+
+  // Fetch student payment requests — scoped to active term
   const { data: requests, isLoading } = useQuery({
-    queryKey: ['student-payment-requests'],
+    queryKey: ['student-payment-requests', user?.activeSemDB, user?.activeSchoolYearDB],
     queryFn: fetchStudentPaymentRequests,
   });
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Payment Requests</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -29,7 +33,15 @@ export default function StudentPaymentRequests() {
           </p>
         </div>
 
-        <NewPaymentRequestForm />
+        <div className="flex items-end gap-2 flex-wrap">
+          <div className="w-[130px]">
+            <StudentSemInput hideLabel />
+          </div>
+          <div className="w-[150px]">
+            <StudentSchoolYearInput hideLabel />
+          </div>
+          <NewPaymentRequestForm />
+        </div>
       </div>
 
       <Table>

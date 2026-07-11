@@ -64,8 +64,8 @@ export const create_payment_request = asyncHandler(async (req, res) => {
     modeOfPayment: modeOfPayment || 'cash',
     referenceNumber,
     receiptImage,
-    semester: studentRecord.semester,
-    schoolYear: studentRecord.schoolYear,
+    semester: req.currentUser!.activeSemDB,
+    schoolYear: req.currentUser!.activeSchoolYearDB,
   });
 
   await newRequest.save();
@@ -74,13 +74,17 @@ export const create_payment_request = asyncHandler(async (req, res) => {
 });
 
 export const get_student_payment_requests = asyncHandler(async (req, res) => {
-  const { studentID } = req.currentUser!;
+  const { studentID, activeSemDB, activeSchoolYearDB } = req.currentUser!;
 
   // Get all student records for this studentID across orgs
   const studentRecords = await StudentModel.find({ studentID }).lean();
   const studentObjIds = studentRecords.map((s) => s._id);
 
-  const requests = await PaymentRequestModel.find({ student: { $in: studentObjIds } })
+  const requests = await PaymentRequestModel.find({
+    student: { $in: studentObjIds },
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  })
     .populate('organization', 'name slug')
     .populate('category', 'name fee')
     .sort({ createdAt: -1 });
@@ -90,8 +94,13 @@ export const get_student_payment_requests = asyncHandler(async (req, res) => {
 
 export const get_org_payment_requests = asyncHandler(async (req, res) => {
   const organizationId = req.tenantContext!.organizationId;
+  const { semester, schoolYear } = req.tenantContext!;
 
-  const requests = await PaymentRequestModel.find({ organization: organizationId })
+  const requests = await PaymentRequestModel.find({
+    organization: organizationId,
+    semester,
+    schoolYear,
+  })
     .populate('student', 'firstname lastname studentID')
     .populate('category', 'name fee')
     .sort({ createdAt: -1 });

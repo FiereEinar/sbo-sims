@@ -338,3 +338,45 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
     ),
   );
 });
+
+/**
+ * PUT /student-portal/term
+ * Protected (auth + studentAuth) — updates the student user's active semester and school year.
+ * Students don't have an org context so they cannot use the regular /user/:id endpoint.
+ */
+export const update_student_term = asyncHandler(async (req, res) => {
+  const currentUser = req.currentUser!;
+  const { activeSemDB, activeSchoolYearDB } = req.body;
+
+  if (activeSemDB !== undefined) {
+    appAssert(
+      activeSemDB === '1' || activeSemDB === '2',
+      BAD_REQUEST,
+      'Semester can only be 1 or 2',
+    );
+  }
+
+  if (activeSchoolYearDB !== undefined) {
+    const year = parseInt(activeSchoolYearDB);
+    appAssert(
+      year >= 2000 && year <= 3000,
+      BAD_REQUEST,
+      'Year must only be between 2000 and 3000',
+    );
+  }
+
+  const updated = await UserModel.findByIdAndUpdate(
+    currentUser._id,
+    {
+      ...(activeSemDB !== undefined && { activeSemDB }),
+      ...(activeSchoolYearDB !== undefined && { activeSchoolYearDB }),
+    },
+    { new: true },
+  );
+
+  appAssert(updated, NOT_FOUND, 'Student user not found');
+
+  res.status(OK).json(
+    new CustomResponse(true, updated.omitPassword(), 'Term settings updated'),
+  );
+});

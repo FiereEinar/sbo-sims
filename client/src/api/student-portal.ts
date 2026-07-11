@@ -61,3 +61,11 @@ export const fetchStudentDashboard = async (): Promise<StudentDashboardData> => 
   const { data } = await axiosInstance.get('/student-portal/dashboard');
   return data.data;
 };
+
+export const updateStudentTerm = async (payload: {
+  activeSemDB?: string;
+  activeSchoolYearDB?: string;
+}): Promise<User> => {
+  const { data } = await axiosInstance.put('/student-portal/term', payload);
+  return data.data;
+};

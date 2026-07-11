@@ -30,8 +30,9 @@ SBO-SIMS is fundamentally a multi-tenant application where data is strictly isol
 Data is not just isolated by organization, but often temporally isolated by the academic term. 
 
 ### Best Practices for Semestral Models:
-- **Models that REQUIRE Term Context:** `Student`, `Transaction`, `Category`, `Prelisting`, and `Event` are all bound to a specific term. You **must** supply `semester` and `schoolYear` (derived from `req.tenantContext`) when creating or querying these records.
+- **Models that REQUIRE Term Context:** `Student`, `Transaction`, `Category`, `Prelisting`, `Event`, and `PaymentRequest` are all bound to a specific term. You **must** supply `semester` and `schoolYear` (derived from `req.tenantContext` or `req.currentUser`) when creating or querying these records.
 - **Models that DO NOT REQUIRE Term Context:** Some models inherently inherit their term context via relationships. For example, `EventSession` or `AttendanceRecord` belong to an `Event`. Since the parent `Event` already has `semester` and `schoolYear` properties, you do not need to duplicate these fields on the child models. You only need to scope by the parent ID.
+- **`PaymentRequest` is scoped by the student's active term:** When a student creates a payment request, the `semester` and `schoolYear` fields are taken from `req.currentUser.activeSemDB` / `activeSchoolYearDB` (the student's currently selected term), **not** from the enrollment `Student` record. This ensures requests belong to the term the student was viewing when they submitted them.
 
 ---
 
@@ -68,3 +69,28 @@ Defined in the `UserModel`, the `role` field dictates the overarching domain of 
 - **Express Async Handler:** Always wrap your controller functions in `asyncHandler(async (req, res) => { ... })`. This automatically catches unhandled promise rejections and forwards them to the global error handler, keeping the app crash-resilient.
 - **App Assertions:** Use the custom `appAssert(condition, HTTP_CODE, message)` utility instead of manually throwing errors or writing nested `if(!resource)` blocks. It keeps controllers flat and readable.
 - **Soft Deletion:** Prefer "archiving" records over hard deletion where relational integrity matters. Models like `Event` use an `archived: boolean` flag so past data isn't unexpectedly wiped from dependent records.
+
+---
+
+## 6. Student Portal
+
+The Student Portal is a separate, restricted zone of the application for users with `role === 'student'`. It operates under a **different context model** than the org-admin routes.
+
+### Key Differences from Org-Admin Routes:
+
+| Concern | Org-Admin Routes | Student Portal Routes |
+|---|---|---|
+| Auth middleware | `auth` | `auth` + `studentAuth` |
+| Org context | `extractTenantContext` (via `x-organization-slug` header) | None — students don't belong to a single org |
+| Term context | `req.tenantContext.semester` / `schoolYear` | `req.currentUser.activeSemDB` / `activeSchoolYearDB` |
+| Update active term | `PUT /user/:id` (requires org context) | `PUT /student-portal/term` (no org context needed) |
+
+### Student Multi-Org Enrollment:
+A student user can appear in the `Student` collection of **multiple organizations** (e.g., enrolled in CS dept org and university-wide org simultaneously). Their `studentID` is the shared key. When fetching student data, always query across all `Student` records that match `{ studentID }` and collect their `_id` ObjectIds to use in queries.
+
+### Payment Requests (Student-Submitted):
+- Stored in `PaymentRequest` model, which includes `semester` and `schoolYear` fields.
+- On creation, `semester`/`schoolYear` come from `req.currentUser.activeSemDB` / `activeSchoolYearDB`.
+- On retrieval (both student and admin), records are filtered by the active term.
+- Approving a request automatically creates a `Transaction` record.
+- File uploads (receipt images) are **disabled in production** (Vercel has a read-only filesystem). The feature is locally available for testing. The `upload` middleware (using `multer`) uses memory storage in production and disk storage locally.

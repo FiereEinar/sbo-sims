@@ -8,6 +8,7 @@ import {
   student_login,
   student_signup,
   get_student_dashboard,
+  update_student_term,
 } from '../controllers/student-portal.controller';
 import {
   create_payment_request,
@@ -22,6 +23,7 @@ const router = express.Router();
 router.post('/signup', authLimiter, signupValidation, student_signup);
 router.post('/login', authLimiter, loginValidation, student_login);
 router.get('/dashboard', auth, studentAuth, get_student_dashboard);
+router.put('/term', auth, studentAuth, update_student_term);
 
 // Payment Requests
 router.post(

@@ -55,8 +55,8 @@ export default function NewPaymentRequestForm() {
     new Map(
       (dashboardData?.enrolledOrgs || [])
         .filter(Boolean)
-        .map((org: any) => [org._id, org])
-    ).values()
+        .map((org: any) => [org._id, org]),
+    ).values(),
   );
 
   // Fetch categories for selected org
@@ -132,8 +132,10 @@ export default function NewPaymentRequestForm() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {isUploadDisabled && (
             <AlertDialog>
-              <AlertCircle className="h-4 w-4 text-blue-800" />
-              <AlertDialogTitle>Notice</AlertDialogTitle>
+              <div className="flex gap-2 items-center">
+                <AlertCircle className="h-4 w-4 text-blue-800" />
+                <AlertDialogTitle>Notice</AlertDialogTitle>
+              </div>
               <AlertDialogDescription>
                 Image uploads are currently disabled due to server constraints.
                 Please provide your Reference Number instead.

@@ -133,10 +133,12 @@ export const approve_payment_request = asyncHandler(async (req, res) => {
     detailsObj[detail] = 'N/A';
   });
 
-  // Check if an existing transaction exists for this student + category
+  // Check if an existing transaction exists for this student + category in the SAME term
   const existingTransaction = await TransactionModel.findOne({
     owner: student._id,
     category: category._id,
+    semester: request.semester,
+    schoolYear: request.schoolYear,
   });
 
   let transactionId;

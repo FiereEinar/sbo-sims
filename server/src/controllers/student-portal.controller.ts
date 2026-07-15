@@ -203,10 +203,14 @@ export const student_login = asyncHandler(async (req, res) => {
  */
 export const get_student_dashboard = asyncHandler(async (req, res) => {
   const currentUser = req.currentUser!;
-  const { studentID } = currentUser;
+  const { studentID, activeSemDB, activeSchoolYearDB } = currentUser;
 
-  // 1. Find all Student records that share this studentID across any org
-  const studentRecords = await StudentModel.find({ studentID }).populate('organization', 'name slug').lean();
+  // 1. Find all Student records that share this studentID across any org for the active term
+  const studentRecords = await StudentModel.find({ 
+    studentID,
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB
+  }).populate('organization', 'name slug').lean();
   const studentObjIds = studentRecords.map((s) => s._id);
 
   // 2. Aggregate transactions across all orgs

@@ -19,9 +19,14 @@ export const create_payment_request = asyncHandler(async (req, res) => {
   appAssert(category, BAD_REQUEST, 'Category is required');
   appAssert(amount, BAD_REQUEST, 'Amount is required');
 
-  // Verify the student exists in this organization
-  const studentRecord = await StudentModel.findOne({ studentID, organization });
-  appAssert(studentRecord, NOT_FOUND, 'You are not enrolled in this organization');
+  // Verify the student exists in this organization for the active term
+  const studentRecord = await StudentModel.findOne({ 
+    studentID, 
+    organization,
+    semester: req.currentUser!.activeSemDB,
+    schoolYear: req.currentUser!.activeSchoolYearDB
+  });
+  appAssert(studentRecord, NOT_FOUND, 'You are not enrolled in this organization for the selected term');
 
   // Verify the category exists
   const categoryRecord = await CategoryModel.findById(category);

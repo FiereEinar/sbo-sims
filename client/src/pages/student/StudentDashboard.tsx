@@ -15,8 +15,6 @@ import {
 import { format } from 'date-fns';
 import _ from 'lodash';
 
-const QUERY_KEY = 'student-dashboard';
-
 function RecentTransactionsSkeleton() {
   return (
     <div className="space-y-2">
@@ -39,7 +37,11 @@ function RecentAttendanceSkeleton() {
 
 export default function StudentDashboard() {
   const { user } = useUserStore((state) => state);
-  const QUERY_KEY = ['student-dashboard', user?.activeSemDB, user?.activeSchoolYearDB];
+  const QUERY_KEY = [
+    'student-dashboard',
+    user?.activeSemDB,
+    user?.activeSchoolYearDB,
+  ];
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEY,

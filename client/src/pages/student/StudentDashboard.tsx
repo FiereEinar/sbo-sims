@@ -38,9 +38,11 @@ function RecentAttendanceSkeleton() {
 }
 
 export default function StudentDashboard() {
-  const { user } = useUserStore();
+  const { user } = useUserStore((state) => state);
+  const QUERY_KEY = ['student-dashboard', user?.activeSemDB, user?.activeSchoolYearDB];
+
   const { data, isLoading } = useQuery({
-    queryKey: [QUERY_KEY],
+    queryKey: QUERY_KEY,
     queryFn: fetchStudentDashboard,
   });
 

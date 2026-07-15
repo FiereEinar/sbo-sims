@@ -30,6 +30,9 @@ import {
   createPaymentRequest,
   fetchCategoriesForOrg,
 } from '@/api/payment-request';
+import { useUserStore } from '@/store/user';
+import StudentSemInput from '../StudentSemInput';
+import StudentSchoolYearInput from '../StudentSchoolYearInput';
 
 export default function NewPaymentRequestForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,12 +45,17 @@ export default function NewPaymentRequestForm() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useUserStore((state) => state);
 
   const isUploadDisabled = import.meta.env.PROD;
 
   // Fetch student dashboard for enrolled orgs
-  const { data: dashboardData } = useQuery({
-    queryKey: ['student-dashboard'],
+  const { data: dashboardData, isFetching: isDashboardFetching } = useQuery({
+    queryKey: [
+      'student-dashboard',
+      user?.activeSemDB,
+      user?.activeSchoolYearDB,
+    ],
     queryFn: fetchStudentDashboard,
   });
 
@@ -143,13 +151,35 @@ export default function NewPaymentRequestForm() {
             </AlertDialog>
           )}
 
+          <div className="flex gap-3 mb-2">
+            <div className="flex-1">
+              <StudentSemInput />
+            </div>
+            <div className="flex-1">
+              <StudentSchoolYearInput />
+            </div>
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <Label className="text-sm">Organization *</Label>
-            <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+            <p className="text-xs text-muted-foreground mb-1">
+              These are the organizations that have your record for the selected
+              term.
+            </p>
+            <Select 
+              value={selectedOrg} 
+              onValueChange={setSelectedOrg}
+              disabled={isDashboardFetching}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select Organization" />
+                <SelectValue placeholder={isDashboardFetching ? "Loading organizations..." : "Select Organization"} />
               </SelectTrigger>
               <SelectContent>
+                {enrolledOrgs.length === 0 && !isDashboardFetching && (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No records found for this term
+                  </div>
+                )}
                 {enrolledOrgs.map((org: any) => (
                   <SelectItem key={org._id} value={org._id}>
                     {org.name}

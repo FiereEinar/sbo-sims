@@ -1,15 +1,7 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { StudentWithTransactions } from '@/types/student';
 import _ from 'lodash';
-import {
-  User,
-  BadgeCheck,
-  Wallet,
-  BookOpen,
-  GraduationCap,
-  Users,
-  Hash,
-} from 'lucide-react';
+import { User, BadgeCheck } from 'lucide-react';
 
 interface StudentCardProps {
   student: StudentWithTransactions;
@@ -45,10 +37,10 @@ export default function StudentCard({ student }: StudentCardProps) {
 
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 text-sm font-medium">
-            <Wallet size={16} className="text-muted-foreground shrink-0" />
+            {/* <Wallet size={16} className="text-muted-foreground shrink-0" /> */}
             <span>₱ {student.totalTransactionsAmount ?? 0}</span>
           </div>
-          <p className="text-xs text-muted-foreground shrink-0">
+          <p className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
             {student.totalTransactions ?? 0} transactions
           </p>
         </div>
@@ -57,7 +49,7 @@ export default function StudentCard({ student }: StudentCardProps) {
       {/* Details */}
       <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <BookOpen size={22} className="text-muted-foreground shrink-0" />
+          {/* <BookOpen size={22} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Course</p>
             <p>{student.course}</p>
@@ -65,7 +57,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <GraduationCap size={22} className="text-muted-foreground shrink-0" />
+          {/* <GraduationCap size={22} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Year</p>
             <p>{student.year}</p>
@@ -73,7 +65,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Users size={22} className="text-muted-foreground shrink-0" />
+          {/* <Users size={22} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Gender</p>
             <p>{student.gender}</p>
@@ -81,7 +73,7 @@ export default function StudentCard({ student }: StudentCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Hash size={22} className="text-muted-foreground shrink-0" />
+          {/* <Hash size={22} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Section</p>
             <p>{student.section}</p>

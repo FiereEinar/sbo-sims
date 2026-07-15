@@ -2,7 +2,7 @@ import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { User } from '@/types/user';
 import _ from 'lodash';
 import { format } from 'date-fns';
-import { User2, Mail, Shield, Calendar } from 'lucide-react';
+import { User2, Calendar } from 'lucide-react';
 
 interface UserCardProps {
   user: User;
@@ -33,7 +33,7 @@ export default function UserCard({ user }: UserCardProps) {
       {/* Details */}
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <Shield size={20} className="text-muted-foreground shrink-0" />
+          {/* <Shield size={20} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Role</p>
             <p>{_.startCase(user.rbacRole?.name ?? user.role ?? '--')}</p>
@@ -46,10 +46,10 @@ export default function UserCard({ user }: UserCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Mail size={20} className="text-muted-foreground shrink-0" />
+          {/* <Mail size={20} className="text-muted-foreground shrink-0" /> */}
           <div>
             <p className="text-muted-foreground text-xs">Email</p>
-            <p>{user.email ?? '--'}</p>
+            <p>{user.email || '--'}</p>
           </div>
         </div>
       </div>

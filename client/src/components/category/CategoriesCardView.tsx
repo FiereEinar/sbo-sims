@@ -1,7 +1,7 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { CategoryWithTransactions } from '@/types/category';
 import { numberWithCommas } from '@/lib/utils';
-import { BookOpen, Users, DollarSign, Tags } from 'lucide-react';
+import { Tags } from 'lucide-react';
 
 interface CategoriesCardViewProps {
   categories?: CategoryWithTransactions[];
@@ -40,7 +40,7 @@ export default function CategoriesCardView({
           className="cursor-pointer rounded-2xl border bg-card/40 p-5 shadow-sm hover:shadow-md transition-all"
         >
           <div className="flex justify-between items-center gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <div className="bg-primary/10 p-2 rounded-full text-primary">
                 <Tags size={22} />
               </div>
@@ -62,7 +62,7 @@ export default function CategoriesCardView({
 
           <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Users size={20} className="text-muted-foreground shrink-0" />
+              {/* <Users size={20} className="text-muted-foreground shrink-0" /> */}
               <div>
                 <p className="text-muted-foreground text-xs">
                   Total Transactions:
@@ -71,10 +71,10 @@ export default function CategoriesCardView({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <DollarSign
+              {/* <DollarSign
                 size={20}
                 className="text-muted-foreground shrink-0"
-              />
+              /> */}
               <div>
                 <p className="text-muted-foreground text-xs">Amount:</p>
                 <p className="font-medium">
@@ -83,7 +83,7 @@ export default function CategoriesCardView({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <BookOpen size={20} className="text-muted-foreground shrink-0" />
+              {/* <BookOpen size={20} className="text-muted-foreground shrink-0" /> */}
               <div>
                 <p className="text-muted-foreground text-xs">Category Fee:</p>
                 <p className="font-medium">

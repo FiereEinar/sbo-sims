@@ -6,6 +6,8 @@ import appAssert from '../errors/appAssert';
 import { BAD_REQUEST, NOT_FOUND, OK } from '../constants/http';
 import CategoryModel from '../models/category.model';
 import StudentModel from '../models/student.model';
+import UserModel from '../models/user.model';
+import { sendPaymentRequestStatusEmail } from '../services/emailService';
 
 export const create_payment_request = asyncHandler(async (req, res) => {
   // Extract info from studentAuth middleware
@@ -214,6 +216,22 @@ export const approve_payment_request = asyncHandler(async (req, res) => {
   request.transaction = transactionId as any;
   await request.save();
 
+  // Send email notification to student (fire-and-forget)
+  try {
+    const studentUser = await UserModel.findOne({ studentID: student.studentID, role: 'student' }).lean();
+    if (studentUser?.email) {
+      const orgName = (request.organization as any)?.name ?? 'your organization';
+      sendPaymentRequestStatusEmail(
+        studentUser.email,
+        `${student.firstname} ${student.lastname}`,
+        category.name,
+        orgName,
+        Number(request.amount),
+        'approved',
+      ).catch(() => {}); // non-blocking
+    }
+  } catch (_) {}
+
   res.status(OK).json(new CustomResponse(true, request, 'Payment request approved successfully'));
 });
 
@@ -222,7 +240,10 @@ export const reject_payment_request = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { remarks } = req.body;
 
-  const request = await PaymentRequestModel.findOne({ _id: id, organization: organizationId });
+  const request = await PaymentRequestModel.findOne({ _id: id, organization: organizationId })
+    .populate('student')
+    .populate('category', 'name')
+    .populate('organization', 'name');
 
   appAssert(request, NOT_FOUND, 'Payment request not found');
   appAssert(request.status === 'pending', BAD_REQUEST, 'Only pending requests can be rejected');
@@ -230,6 +251,25 @@ export const reject_payment_request = asyncHandler(async (req, res) => {
   request.status = 'rejected';
   request.remarks = remarks;
   await request.save();
+
+  // Send email notification to student (fire-and-forget)
+  try {
+    const student = request.student as any;
+    const category = request.category as any;
+    const studentUser = await UserModel.findOne({ studentID: student.studentID, role: 'student' }).lean();
+    if (studentUser?.email) {
+      const orgName = (request.organization as any)?.name ?? 'your organization';
+      sendPaymentRequestStatusEmail(
+        studentUser.email,
+        `${student.firstname} ${student.lastname}`,
+        category.name,
+        orgName,
+        Number(request.amount),
+        'rejected',
+        remarks,
+      ).catch(() => {}); // non-blocking
+    }
+  } catch (_) {}
 
   res.status(OK).json(new CustomResponse(true, request, 'Payment request rejected successfully'));
 });

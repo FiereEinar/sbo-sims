@@ -51,7 +51,7 @@ export default function TopNavbarSheet() {
 						{navbarLinks
 							.filter((item) => canView(item))
 							.map((link) => (
-								<SidebarLink key={link.name} link={link} />
+								<SidebarLink key={link.path} link={link} />
 							))}
 					</div>
 

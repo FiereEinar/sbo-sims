@@ -9,17 +9,17 @@ import { hasRole } from '../middlewares/authentication/role';
 
 const router = express.Router();
 
-router.get('/', hasRole([MODULES.TRANSACTION_READ]), get_org_payment_requests);
+router.get('/', hasRole([MODULES.PAYMENT_REQUEST_READ]), get_org_payment_requests);
 
 router.put(
   '/:id/approve',
-  hasRole([MODULES.TRANSACTION_UPDATE]),
+  hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
   approve_payment_request,
 );
 
 router.put(
   '/:id/reject',
-  hasRole([MODULES.TRANSACTION_UPDATE]),
+  hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
   reject_payment_request,
 );
 

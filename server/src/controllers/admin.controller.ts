@@ -123,6 +123,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
       'Default role for newly registered students. Provides basic read access.',
     permissions: [
       MODULES.TRANSACTION_READ,
+      MODULES.PAYMENT_REQUEST_READ,
       MODULES.PRELISTING_READ,
       MODULES.CATEGORY_READ,
       MODULES.ORGANIZATION_READ,

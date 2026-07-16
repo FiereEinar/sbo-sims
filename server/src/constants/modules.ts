@@ -17,6 +17,9 @@ export const MODULES = {
   TRANSACTION_IMPORT: 'transaction:import',
   TRANSACTION_DOWNLOAD: 'transaction:download',
 
+  PAYMENT_REQUEST_READ: 'payment_request:read',
+  PAYMENT_REQUEST_UPDATE: 'payment_request:update',
+
   PRELISTING_CREATE: 'prelisting:create',
   PRELISTING_READ: 'prelisting:read',
   PRELISTING_UPDATE: 'prelisting:update',

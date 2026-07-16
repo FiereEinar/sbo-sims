@@ -149,7 +149,7 @@ export default function Route() {
           path: 'payment-requests',
           element: (
             <HasPermission
-              permissions={[MODULES.TRANSACTION_READ]}
+              permissions={[MODULES.PAYMENT_REQUEST_READ]}
               fallback={<NoPermission />}
             >
               <AdminPaymentRequests />

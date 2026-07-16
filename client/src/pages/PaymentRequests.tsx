@@ -31,6 +31,8 @@ import Header from '@/components/ui/header';
 import SemInput from '@/components/SemInput';
 import SchoolYearInput from '@/components/SchoolYearInput';
 import { useUserStore } from '@/store/user';
+import HasPermission from '@/components/HasPermission';
+import { MODULES } from '@/constants';
 
 export default function AdminPaymentRequests() {
   const { orgSlug } = useParams<{ orgSlug: string }>();
@@ -237,41 +239,43 @@ export default function AdminPaymentRequests() {
               )}
 
               {selectedRequest.status === 'pending' && (
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="space-y-2">
-                    <Label>Reject Remarks (Optional)</Label>
-                    <Input
-                      placeholder="Reason for rejection"
-                      value={rejectRemarks}
-                      onChange={(e) => setRejectRemarks(e.target.value)}
-                    />
+                <HasPermission permissions={[MODULES.PAYMENT_REQUEST_UPDATE]}>
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-2">
+                      <Label>Reject Remarks (Optional)</Label>
+                      <Input
+                        placeholder="Reason for rejection"
+                        value={rejectRemarks}
+                        onChange={(e) => setRejectRemarks(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="destructive"
+                        onClick={() => rejectMutation.mutate(selectedRequest._id)}
+                        disabled={
+                          rejectMutation.isPending || approveMutation.isPending
+                        }
+                      >
+                        {rejectMutation.isPending
+                          ? 'Rejecting...'
+                          : 'Reject Request'}
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          approveMutation.mutate(selectedRequest._id)
+                        }
+                        disabled={
+                          rejectMutation.isPending || approveMutation.isPending
+                        }
+                      >
+                        {approveMutation.isPending
+                          ? 'Approving...'
+                          : 'Approve Request'}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="destructive"
-                      onClick={() => rejectMutation.mutate(selectedRequest._id)}
-                      disabled={
-                        rejectMutation.isPending || approveMutation.isPending
-                      }
-                    >
-                      {rejectMutation.isPending
-                        ? 'Rejecting...'
-                        : 'Reject Request'}
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        approveMutation.mutate(selectedRequest._id)
-                      }
-                      disabled={
-                        rejectMutation.isPending || approveMutation.isPending
-                      }
-                    >
-                      {approveMutation.isPending
-                        ? 'Approving...'
-                        : 'Approve Request'}
-                    </Button>
-                  </div>
-                </div>
+                </HasPermission>
               )}
 
               {selectedRequest.status !== 'pending' && (

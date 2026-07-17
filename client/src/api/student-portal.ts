@@ -69,3 +69,92 @@ export const updateStudentTerm = async (payload: {
   const { data } = await axiosInstance.put('/student-portal/term', payload);
   return data.data;
 };
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type StudentTransactionItem = {
+  _id: string;
+  amount: number;
+  modeOfPayment: string;
+  createdAt: string;
+  semester: string;
+  schoolYear: string;
+  category: { _id: string; name: string };
+  organization: { _id: string; name: string; slug: string };
+};
+
+export type StudentAttendanceItem = {
+  _id: string;
+  recordedAt: string;
+  event: { _id: string; name: string };
+  session: { _id: string; name: string };
+  organization: { _id: string; name: string; slug: string };
+};
+
+export type StudentPaginatedResponse<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+// ─── Fetchers ─────────────────────────────────────────────────────────────────
+
+export type StudentPortalFilters = {
+  search?: string;
+  startDate?: Date;
+  endDate?: Date;
+  period?: string;
+  modeOfPayment?: string;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
+export const fetchStudentTransactions = async (
+  page = 1,
+  pageSize = 20,
+  filters?: StudentPortalFilters
+): Promise<StudentPaginatedResponse<StudentTransactionItem>> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  if (filters?.search) params.append('search', filters.search);
+  if (filters?.startDate) params.append('startDate', filters.startDate.toISOString());
+  if (filters?.endDate) params.append('endDate', filters.endDate.toISOString());
+  if (filters?.period) params.append('period', filters.period);
+  if (filters?.modeOfPayment) params.append('modeOfPayment', filters.modeOfPayment);
+  if (filters?.sortField) params.append('sortField', filters.sortField);
+  if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+  const { data } = await axiosInstance.get(
+    `/student-portal/transactions?${params.toString()}`
+  );
+  return data.data;
+};
+
+export const fetchStudentAttendance = async (
+  page = 1,
+  pageSize = 20,
+  filters?: StudentPortalFilters
+): Promise<StudentPaginatedResponse<StudentAttendanceItem>> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  if (filters?.search) params.append('search', filters.search);
+  if (filters?.startDate) params.append('startDate', filters.startDate.toISOString());
+  if (filters?.endDate) params.append('endDate', filters.endDate.toISOString());
+  if (filters?.period) params.append('period', filters.period);
+  if (filters?.sortField) params.append('sortField', filters.sortField);
+  if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+  const { data } = await axiosInstance.get(
+    `/student-portal/attendance?${params.toString()}`
+  );
+  return data.data;
+};
+

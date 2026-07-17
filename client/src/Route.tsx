@@ -42,6 +42,8 @@ import StudentSignupPage from './pages/student/StudentSignupPage';
 import StudentApp from './pages/student/StudentApp';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentPaymentRequests from './pages/student/PaymentRequests';
+import StudentMyTransactions from './pages/student/MyTransactions';
+import StudentMyAttendance from './pages/student/MyAttendance';
 import StudentProtectedRoute from './components/student-portal/StudentProtectedRoute';
 
 export default function Route() {
@@ -84,6 +86,14 @@ export default function Route() {
         {
           path: 'payment-requests',
           element: <StudentPaymentRequests />,
+        },
+        {
+          path: 'transactions',
+          element: <StudentMyTransactions />,
+        },
+        {
+          path: 'attendance',
+          element: <StudentMyAttendance />,
         },
       ],
     },

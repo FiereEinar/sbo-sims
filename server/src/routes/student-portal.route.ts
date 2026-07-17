@@ -9,6 +9,8 @@ import {
   student_signup,
   get_student_dashboard,
   update_student_term,
+  get_student_transactions,
+  get_student_attendance,
 } from '../controllers/student-portal.controller';
 import {
   create_payment_request,
@@ -40,4 +42,9 @@ router.get(
   get_student_payment_requests,
 );
 
+// Transactions & Attendance
+router.get('/transactions', auth, studentAuth, get_student_transactions);
+router.get('/attendance', auth, studentAuth, get_student_attendance);
+
 export default router;
+

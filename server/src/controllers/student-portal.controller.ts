@@ -5,7 +5,7 @@ import appAssert from '../errors/appAssert';
 import CustomResponse from '../types/response';
 import { loginUserBody, signupUserBody } from '../types/user';
 import { thirtyDaysFromNow } from '../utils/date';
-import { getUserRequestInfo } from '../utils/utils';
+import { getUserRequestInfo, getDateFilterByPeriod } from '../utils/utils';
 import { AppErrorCodes, refreshTokenCookieName } from '../constants';
 import {
   BCRYPT_SALT,
@@ -384,3 +384,255 @@ export const update_student_term = asyncHandler(async (req, res) => {
     new CustomResponse(true, updated.omitPassword(), 'Term settings updated'),
   );
 });
+
+/**
+ * GET /student-portal/transactions?page=1&pageSize=20
+ * Protected (auth + studentAuth) — returns paginated transactions for the student
+ * across ALL organizations they appear in for the active term.
+ */
+export const get_student_transactions = asyncHandler(async (req, res) => {
+  const { studentID, activeSemDB, activeSchoolYearDB } = req.currentUser!;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const pageSize = Math.min(100, parseInt(req.query.pageSize as string) || 20);
+  const skip = (page - 1) * pageSize;
+
+  const search = req.query.search as string;
+  const startDate = req.query.startDate as string;
+  const endDate = req.query.endDate as string;
+  const period = req.query.period as string;
+  const modeOfPayment = req.query.modeOfPayment as string;
+
+  // Resolve all student ObjectIds for this studentID in the active term
+  const studentRecords = await StudentModel.find({
+    studentID,
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  }).lean();
+  const studentObjIds = studentRecords.map((s) => s._id);
+
+  const matchFilters: any = { owner: { $in: studentObjIds } };
+
+  if (startDate && endDate) {
+    matchFilters.createdAt = {
+      $gte: new Date(startDate).toISOString(),
+      $lte: new Date(endDate).toISOString(),
+    };
+  } else if (period && period !== 'all') {
+    const periodFilter = getDateFilterByPeriod(period);
+    if (periodFilter && periodFilter.date) {
+      matchFilters.createdAt = periodFilter.date;
+    }
+  }
+
+  if (modeOfPayment && modeOfPayment !== 'all') {
+    matchFilters.modeOfPayment = modeOfPayment;
+  }
+
+  const aggregationPipeline: any[] = [
+    { $match: matchFilters },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'category',
+        foreignField: '_id',
+        as: 'category',
+      },
+    },
+    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'organizations',
+        localField: 'organization',
+        foreignField: '_id',
+        as: 'organization',
+      },
+    },
+    {
+      $unwind: {
+        path: '$organization',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ];
+
+  if (search) {
+    const s = search.toLowerCase();
+    aggregationPipeline.push({
+      $match: {
+        $or: [
+          { 'category.name': { $regex: s, $options: 'i' } },
+          { 'organization.name': { $regex: s, $options: 'i' } },
+        ],
+      },
+    });
+  }
+
+  const sortField = req.query.sortField as string || 'createdAt';
+  const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+  aggregationPipeline.push({
+    $facet: {
+      total: [{ $count: 'count' }],
+      data: [
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: skip },
+        { $limit: pageSize },
+        {
+          $project: {
+            amount: 1,
+            modeOfPayment: 1,
+            createdAt: 1,
+            semester: 1,
+            schoolYear: 1,
+            'category._id': 1,
+            'category.name': 1,
+            'organization._id': 1,
+            'organization.name': 1,
+            'organization.slug': 1,
+          },
+        },
+      ],
+    },
+  });
+
+  const [result] = await TransactionModel.aggregate(aggregationPipeline);
+
+  const total = result?.total?.[0]?.count ?? 0;
+  const data = result?.data ?? [];
+
+  res.status(OK).json(
+    new CustomResponse(
+      true,
+      { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+      'Student transactions retrieved',
+    ),
+  );
+});
+
+/**
+ * GET /student-portal/attendance?page=1&pageSize=20
+ * Protected (auth + studentAuth) — returns paginated attendance records for the student
+ * across ALL organizations they appear in for the active term.
+ */
+export const get_student_attendance = asyncHandler(async (req, res) => {
+  const { studentID, activeSemDB, activeSchoolYearDB } = req.currentUser!;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const pageSize = Math.min(100, parseInt(req.query.pageSize as string) || 20);
+  const skip = (page - 1) * pageSize;
+
+  const search = req.query.search as string;
+  const startDate = req.query.startDate as string;
+  const endDate = req.query.endDate as string;
+  const period = req.query.period as string;
+
+  // Resolve all student ObjectIds for this studentID in the active term
+  const studentRecords = await StudentModel.find({
+    studentID,
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  }).lean();
+  const studentObjIds = studentRecords.map((s) => s._id);
+
+  const matchFilters: any = { student: { $in: studentObjIds } };
+
+  if (startDate && endDate) {
+    matchFilters.recordedAt = {
+      $gte: new Date(startDate).toISOString(),
+      $lte: new Date(endDate).toISOString(),
+    };
+  } else if (period && period !== 'all') {
+    const periodFilter = getDateFilterByPeriod(period);
+    if (periodFilter && periodFilter.date) {
+      matchFilters.recordedAt = periodFilter.date;
+    }
+  }
+
+  const aggregationPipeline: any[] = [
+    { $match: matchFilters },
+    {
+      $lookup: {
+        from: 'events',
+        localField: 'event',
+        foreignField: '_id',
+        as: 'event',
+      },
+    },
+    { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'eventsessions',
+        localField: 'session',
+        foreignField: '_id',
+        as: 'session',
+      },
+    },
+    { $unwind: { path: '$session', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'organizations',
+        localField: 'organization',
+        foreignField: '_id',
+        as: 'organization',
+      },
+    },
+    {
+      $unwind: {
+        path: '$organization',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ];
+
+  if (search) {
+    const s = search.toLowerCase();
+    aggregationPipeline.push({
+      $match: {
+        $or: [
+          { 'event.title': { $regex: s, $options: 'i' } },
+          { 'session.name': { $regex: s, $options: 'i' } },
+          { 'organization.name': { $regex: s, $options: 'i' } },
+        ],
+      },
+    });
+  }
+
+  const sortField = req.query.sortField as string || 'recordedAt';
+  const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+  aggregationPipeline.push({
+    $facet: {
+      total: [{ $count: 'count' }],
+      data: [
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: skip },
+        { $limit: pageSize },
+        {
+          $project: {
+            recordedAt: 1,
+            'event._id': 1,
+            'event.name': '$event.title',
+            'session._id': 1,
+            'session.name': 1,
+            'organization._id': 1,
+            'organization.name': 1,
+            'organization.slug': 1,
+          },
+        },
+      ],
+    },
+  });
+
+  const [result] = await AttendanceRecordModel.aggregate(aggregationPipeline);
+
+  const total = result?.total?.[0]?.count ?? 0;
+  const data = result?.data ?? [];
+
+  res.status(OK).json(
+    new CustomResponse(
+      true,
+      { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+      'Student attendance retrieved',
+    ),
+  );
+});
+

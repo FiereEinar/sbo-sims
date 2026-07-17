@@ -1,6 +1,7 @@
 import {
   Building2,
   Calendar,
+  CalendarCheck,
   ClipboardList,
   FileBarChart2,
   FileText,
@@ -212,6 +213,16 @@ export const studentNavbarLinks: SidebarNavLinkType[] = [
     path: '/student/payment-requests',
     name: 'Payment Requests',
     icon: FileText,
+  },
+  {
+    path: '/student/transactions',
+    name: 'My Transactions',
+    icon: Receipt,
+  },
+  {
+    path: '/student/attendance',
+    name: 'My Attendance',
+    icon: CalendarCheck,
   },
 ];
 

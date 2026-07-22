@@ -6,6 +6,12 @@ import {
   admin_delete_organization,
   admin_reset_onboarding,
 } from '../controllers/admin.controller';
+import {
+  get_admin_tickets,
+  update_ticket_status,
+  get_admin_ticket,
+  reply_ticket_admin,
+} from '../controllers/support-ticket.controller';
 import { isSuperAdmin } from '../middlewares/authentication/isSuperAdmin';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import {
@@ -44,5 +50,10 @@ router.put(
   isValidMongooseId('organizationID', { from: 'params' }),
   admin_reset_onboarding,
 );
+
+router.get('/support-tickets', get_admin_tickets);
+router.get('/support-tickets/:id', get_admin_ticket);
+router.patch('/support-tickets/:id', update_ticket_status);
+router.post('/support-tickets/:id/reply', reply_ticket_admin);
 
 export default router;

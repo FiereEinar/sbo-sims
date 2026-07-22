@@ -27,12 +27,16 @@ import Reports from './pages/Reports';
 import AdminPaymentRequests from './pages/PaymentRequests';
 import EventInfo from './pages/EventInfo';
 import EventSessionInfo from './pages/EventSessionInfo';
+import Support from './pages/Support';
+import SupportThread from './pages/SupportThread';
 
 import RootRedirect from './components/RootRedirect';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import AdminApp from './pages/admin/AdminApp';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminSupport from './pages/admin/AdminSupport';
+import AdminSupportThread from './pages/admin/AdminSupportThread';
 import Events from './pages/Events';
 import AttendanceReports from './pages/AttendanceReports';
 
@@ -342,6 +346,16 @@ export default function Route() {
             </HasPermission>
           ),
         },
+        {
+          path: 'support',
+          element: <Support />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: 'support/:ticketID',
+          element: <SupportThread />,
+          errorElement: <ErrorPage />,
+        },
       ],
     },
     // ── Officer-specific auth ─────────────────────────────────────────────────
@@ -368,6 +382,16 @@ export default function Route() {
         {
           index: true,
           element: <AdminDashboard />,
+        },
+        {
+          path: 'support',
+          element: <AdminSupport />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: 'support/:ticketID',
+          element: <AdminSupportThread />,
+          errorElement: <ErrorPage />,
         },
       ],
     },

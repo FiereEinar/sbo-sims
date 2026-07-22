@@ -1,6 +1,6 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { setNavigate } from '@/lib/navigate';
-import { Shield, Building2, LogOut } from 'lucide-react';
+import { Shield, Building2, LogOut, LifeBuoy } from 'lucide-react';
 import adminAxiosInstance from '@/api/adminAxiosInstance';
 import { useUserStore } from '@/store/user';
 import DarkModeToggle from '@/components/buttons/DarkModeToggle';
@@ -11,6 +11,10 @@ export default function AdminApp() {
 	setNavigate(navigate);
 	const { user } = useUserStore();
 	const { toast } = useToast();
+	const location = useLocation();
+
+	const isOrgActive = location.pathname === '/admin' || location.pathname === '/admin/';
+	const isSupportActive = location.pathname.startsWith('/admin/support');
 
 	const handleLogout = async () => {
 		try {
@@ -44,11 +48,20 @@ export default function AdminApp() {
 						<button
 							id='adminNavOrganizations'
 							onClick={() => navigate('/admin')}
-							className='w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white'
-							style={{ background: 'rgba(124, 58, 237, 0.2)', border: '1px solid rgba(124, 58, 237, 0.3)' }}
+							className='w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white hover:bg-white/5'
+							style={isOrgActive ? { background: 'rgba(124, 58, 237, 0.2)', border: '1px solid rgba(124, 58, 237, 0.3)' } : { border: '1px solid transparent' }}
 						>
 							<Building2 className='w-4 h-4' style={{ color: '#a78bfa' }} />
 							Organizations
+						</button>
+						<button
+							id='adminNavSupport'
+							onClick={() => navigate('/admin/support')}
+							className='w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white mt-2 hover:bg-white/5'
+							style={isSupportActive ? { background: 'rgba(124, 58, 237, 0.2)', border: '1px solid rgba(124, 58, 237, 0.3)' } : { border: '1px solid transparent' }}
+						>
+							<LifeBuoy className='w-4 h-4' style={{ color: '#a78bfa' }} />
+							Support Tickets
 						</button>
 					</nav>
 				</div>

@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Tags,
   Users,
+  LifeBuoy,
 } from 'lucide-react';
 import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -35,6 +36,7 @@ export const QUERY_KEYS = {
   EVENT_SESSION: 'event_sessions',
   ATTENDANCE_RECORD: 'attendance_records',
   ATTENDANCE_REPORT_SUMMARY: 'attendance_report_summary',
+  SUPPORT_TICKETS: 'support_tickets',
 };
 
 export const MODULES = {
@@ -200,6 +202,14 @@ export const navbarLinks: SidebarNavLinkType[] = [
     name: 'Roles',
     icon: ShieldCheck,
     permissions: [MODULES.ROLE_READ],
+  },
+  {
+    path: '/support',
+    name: 'Support',
+    icon: LifeBuoy,
+    permissions: [], // Accessible to all org-admins
+    isSeparator: true,
+    title: 'Help',
   },
 ];
 

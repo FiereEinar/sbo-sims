@@ -4,6 +4,7 @@ import { AddUserForm } from '@/components/forms/AddUserForm';
 import HasPermission from '@/components/HasPermission';
 import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import SettingsTabs from '@/components/SettingsTabs';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import UsersTable from '@/components/user/UsersTable';
@@ -51,6 +52,7 @@ export default function Users() {
 
   return (
     <SidebarPageLayout>
+      <SettingsTabs />
       <StickyHeader>
         <Header>Users</Header>
 

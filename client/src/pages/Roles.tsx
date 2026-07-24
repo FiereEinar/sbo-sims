@@ -5,6 +5,7 @@ import { AddRoleForm } from '@/components/forms/AddRoleForm';
 import HasPermission from '@/components/HasPermission';
 import BouncyLoading from '@/components/loading/BouncyLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import SettingsTabs from '@/components/SettingsTabs';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
@@ -53,6 +54,7 @@ export default function Roles() {
 
   return (
     <SidebarPageLayout>
+      <SettingsTabs />
       <StickyHeader>
         <Header>Roles</Header>
 

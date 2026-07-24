@@ -1,18 +1,16 @@
 import {
-  Building2,
   Calendar,
   CalendarCheck,
   ClipboardList,
   FileBarChart2,
   FileText,
   GraduationCap,
+  Headset,
   LayoutDashboard,
   LucideProps,
   Receipt,
-  ShieldCheck,
+  ReceiptTextIcon,
   Tags,
-  Users,
-  LifeBuoy,
 } from 'lucide-react';
 import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -116,6 +114,7 @@ export type SidebarNavLinkType = {
   permissions?: Modules[];
   isSeparator?: boolean;
   title?: string;
+  children?: SidebarNavLinkType[];
 };
 
 export const navbarLinks: SidebarNavLinkType[] = [
@@ -131,30 +130,50 @@ export const navbarLinks: SidebarNavLinkType[] = [
     permissions: [MODULES.STUDENT_READ],
   },
   {
-    path: '/category',
-    name: 'Categories',
-    icon: Tags,
-    permissions: [MODULES.CATEGORY_READ],
-    isSeparator: true,
-    title: 'Collection',
-  },
-  {
-    path: '/transaction',
-    name: 'Transactions',
+    path: '',
+    name: 'Finances',
     icon: Receipt,
-    permissions: [MODULES.TRANSACTION_READ],
+    permissions: [MODULES.TRANSACTION_READ, MODULES.PAYMENT_REQUEST_READ],
+    children: [
+      {
+        path: '/category',
+        name: 'Categories',
+        icon: Tags,
+        permissions: [MODULES.CATEGORY_READ],
+      },
+      {
+        path: '/transaction',
+        name: 'Transactions',
+        icon: Receipt,
+        permissions: [MODULES.TRANSACTION_READ],
+      },
+      {
+        path: '/payment-requests',
+        name: 'Requests',
+        icon: ReceiptTextIcon,
+        permissions: [MODULES.PAYMENT_REQUEST_READ],
+      },
+      {
+        path: '/prelisting',
+        name: 'Prelistings',
+        icon: ClipboardList,
+        permissions: [MODULES.PRELISTING_READ],
+      },
+    ],
   },
   {
-    path: '/payment-requests',
-    name: 'Payment Requests',
-    icon: Receipt,
-    permissions: [MODULES.PAYMENT_REQUEST_READ],
-  },
-  {
-    path: '/prelisting',
-    name: 'Prelistings',
-    icon: ClipboardList,
-    permissions: [MODULES.PRELISTING_READ],
+    path: '',
+    name: 'Attendance',
+    icon: Calendar,
+    permissions: [MODULES.EVENT_READ],
+    children: [
+      {
+        path: '/events',
+        name: 'Events',
+        icon: Calendar,
+        permissions: [MODULES.EVENT_READ],
+      },
+    ],
   },
   {
     path: '/reports',
@@ -162,54 +181,11 @@ export const navbarLinks: SidebarNavLinkType[] = [
     icon: FileBarChart2,
     permissions: [MODULES.REPORT_READ],
   },
-  // {
-  //   path: '/attendances',
-  //   name: 'Records',
-  //   icon: UserCheck,
-  //   permissions: [],
-  //   isSeparator: true,
-  //   title: 'Attendance',
-  // },
-  {
-    path: '/events',
-    name: 'Events',
-    icon: Calendar,
-    permissions: [MODULES.EVENT_READ],
-    isSeparator: true,
-    title: 'Attendance',
-  },
-  {
-    path: '/attendance-reports',
-    name: 'Reports',
-    icon: FileBarChart2,
-    permissions: [MODULES.REPORT_READ],
-  },
-  {
-    path: '/organization',
-    name: 'Organization',
-    icon: Building2,
-    permissions: [MODULES.ORGANIZATION_READ],
-    isSeparator: true,
-  },
-  {
-    path: '/user',
-    name: 'Users',
-    icon: Users,
-    permissions: [MODULES.USER_READ],
-  },
-  {
-    path: '/role',
-    name: 'Roles',
-    icon: ShieldCheck,
-    permissions: [MODULES.ROLE_READ],
-  },
   {
     path: '/support',
     name: 'Support',
-    icon: LifeBuoy,
-    permissions: [], // Accessible to all org-admins
-    isSeparator: true,
-    title: 'Help',
+    icon: Headset,
+    permissions: [],
   },
 ];
 

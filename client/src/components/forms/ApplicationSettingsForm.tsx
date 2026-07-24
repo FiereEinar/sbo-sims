@@ -68,7 +68,7 @@ export default function ApplicationSettingsForm() {
   }
 
   return (
-    <Card className="bg-card/40">
+    <Card className="bg-card/40 shadow-none">
       <CardHeader>
         <CardTitle>Application Settings</CardTitle>
         <CardDescription>

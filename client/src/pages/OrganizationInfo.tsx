@@ -7,6 +7,7 @@ import OrganizationDetailsLoading from '@/components/loading/OrganizationDetails
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import OrganizationDetails from '@/components/organization/OrganizationDetails';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
+import SettingsTabs from '@/components/SettingsTabs';
 import StickyHeader from '@/components/StickyHeader';
 import Header from '@/components/ui/header';
 import { QUERY_KEYS } from '@/constants';
@@ -48,6 +49,7 @@ export default function OrganizationInfo() {
 
   return (
     <SidebarPageLayout>
+      <SettingsTabs />
       {isLoading && <StickyHeaderLoading />}
 
       {organization && (

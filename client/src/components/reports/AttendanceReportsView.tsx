@@ -1,10 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchAttendanceReportSummary } from '@/api/attendance-report';
-import SidebarPageLayout from '@/components/SidebarPageLayout';
-import StickyHeader from '@/components/StickyHeader';
-import Header from '@/components/ui/header';
-import SchoolYearInput from '@/components/SchoolYearInput';
-import SemInput from '@/components/SemInput';
 import { Skeleton } from '@/components/ui/skeleton';
 import { numberWithCommas } from '@/lib/utils';
 import { CalendarDays, ScanLine, Users, AlertCircle, Award } from 'lucide-react';
@@ -14,7 +9,7 @@ import { format } from 'date-fns';
 
 function ReportSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border bg-card/50 p-5 shadow-sm">
+    <div className="rounded-2xl border bg-card/50 p-5 shadow-sm mt-6">
       <h2 className="font-semibold text-sm mb-4 flex items-center gap-2">
         <span className="inline-block w-1 h-4 bg-primary rounded-full" />
         {title}
@@ -24,28 +19,16 @@ function ReportSection({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export default function AttendanceReports() {
+export default function AttendanceReportsView() {
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: [QUERY_KEYS.ATTENDANCE_REPORT_SUMMARY],
     queryFn: fetchAttendanceReportSummary,
   });
 
   return (
-    <SidebarPageLayout>
-      <StickyHeader>
-        <Header>Attendance Reports</Header>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="w-[130px]">
-            <SemInput hideLabel />
-          </div>
-          <div className="w-[150px]">
-            <SchoolYearInput hideLabel />
-          </div>
-        </div>
-      </StickyHeader>
-
+    <div className="w-full animate-in fade-in duration-300">
       {summary && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 mb-4 w-fit">
           <AlertCircle className="w-3.5 h-3.5" />
           Showing attendance data for{' '}
           <strong>
@@ -169,6 +152,6 @@ export default function AttendanceReports() {
           )}
         </ReportSection>
       </div>
-    </SidebarPageLayout>
+    </div>
   );
 }

@@ -38,7 +38,6 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminSupportThread from './pages/admin/AdminSupportThread';
 import Events from './pages/Events';
-import AttendanceReports from './pages/AttendanceReports';
 
 // Student portal
 import StudentLoginPage from './pages/student/StudentLoginPage';
@@ -299,17 +298,6 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Reports />
-            </HasPermission>
-          ),
-        },
-        {
-          path: 'attendance-reports',
-          element: (
-            <HasPermission
-              permissions={[MODULES.REPORT_READ]}
-              fallback={<NoPermission />}
-            >
-              <AttendanceReports />
             </HasPermission>
           ),
         },

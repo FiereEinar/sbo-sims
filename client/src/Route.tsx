@@ -37,6 +37,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminSupportThread from './pages/admin/AdminSupportThread';
+import AdminSettings from './pages/admin/AdminSettings';
 import Events from './pages/Events';
 
 // Student portal
@@ -370,6 +371,11 @@ export default function Route() {
         {
           index: true,
           element: <AdminDashboard />,
+        },
+        {
+          path: 'settings',
+          element: <AdminSettings />,
+          errorElement: <ErrorPage />,
         },
         {
           path: 'support',

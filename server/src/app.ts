@@ -74,6 +74,7 @@ app.use('/auth', authRouter);
 app.use('/student-portal', studentPortalRouter);
 app.use(auth);
 app.use('/admin', adminRouter);
+app.use('/setting', settingRouter);
 app.use(extractTenantContext);
 app.use('/student', studentRouter);
 app.use('/user', userRouter);
@@ -87,7 +88,6 @@ app.use('/event', eventRouter);
 app.use('/event-session', eventSessionRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/attendance-report', attendanceReportRouter);
-app.use('/setting', settingRouter);
 app.use('/payment-request', paymentRequestRouter);
 app.use('/support-ticket', supportTicketRouter);
 

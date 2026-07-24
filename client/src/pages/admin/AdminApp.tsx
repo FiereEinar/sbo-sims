@@ -63,6 +63,15 @@ export default function AdminApp() {
 							<LifeBuoy className='w-4 h-4' style={{ color: '#a78bfa' }} />
 							Support Tickets
 						</button>
+						<button
+							id='adminNavSettings'
+							onClick={() => navigate('/admin/settings')}
+							className='w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white mt-2 hover:bg-white/5'
+							style={location.pathname === '/admin/settings' ? { background: 'rgba(124, 58, 237, 0.2)', border: '1px solid rgba(124, 58, 237, 0.3)' } : { border: '1px solid transparent' }}
+						>
+							<Shield className='w-4 h-4' style={{ color: '#a78bfa' }} />
+							Global Settings
+						</button>
 					</nav>
 				</div>
 

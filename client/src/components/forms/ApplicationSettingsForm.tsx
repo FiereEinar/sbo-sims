@@ -1,22 +1,11 @@
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
 import { getYear } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { Button } from '../ui/button';
 import { fetchSettings, updateSettings } from '@/api/setting';
 import { AppSetting } from '@/types/appSetting';
 import { Loader2 } from 'lucide-react';
 import { useUserStore } from '@/store/user';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
-import SchoolYearInput from '../SchoolYearInput';
-import SemInput from '../SemInput';
+import { AVAILABLE_SCHOOL_YEARS } from '@/constants';
 
 export default function ApplicationSettingsForm() {
   const { toast } = useToast();
@@ -61,31 +50,95 @@ export default function ApplicationSettingsForm() {
 
   if (isLoading) {
     return (
-      <section className="bg-card/40 border rounded-lg p-4 space-y-4 flex justify-center items-center h-40">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </section>
+      <div
+        className="rounded-2xl p-8 flex justify-center items-center h-40"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+      </div>
     );
   }
 
   return (
-    <Card className="bg-card/40 shadow-none">
-      <CardHeader>
-        <CardTitle>Application Settings</CardTitle>
-        <CardDescription>
-          Configure the default global active school year and semester for the
-          system.
-        </CardDescription>
-      </CardHeader>
+    <div
+      className="rounded-2xl p-6"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-white mb-1">
+          System Settings
+        </h2>
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          Configure the default global active school year and semester for the system.
+        </p>
+      </div>
 
-      <CardContent className="space-y-6">
-        <SchoolYearInput />
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-white/80 ml-1">
+            Default School Year
+          </label>
+          <select
+            value={settings?.activeSchoolYear || ''}
+            onChange={(e) =>
+              setSettings((prev) =>
+                prev ? { ...prev, activeSchoolYear: e.target.value } : null,
+              )
+            }
+            className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none appearance-none"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <option value="" disabled style={{ color: 'black' }}>Select Year</option>
+            {AVAILABLE_SCHOOL_YEARS.map((year) => (
+              <option key={year} value={year.toString()} style={{ color: 'black' }}>
+                {year} - {year + 1}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <SemInput />
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-white/80 ml-1">
+            Default Semester
+          </label>
+          <select
+            value={settings?.activeSemester || ''}
+            onChange={(e) =>
+              setSettings((prev) =>
+                prev ? { ...prev, activeSemester: e.target.value } : null,
+              )
+            }
+            className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none appearance-none"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <option value="" disabled style={{ color: 'black' }}>Select Semester</option>
+            <option value="1" style={{ color: 'black' }}>1st Semester</option>
+            <option value="2" style={{ color: 'black' }}>2nd Semester</option>
+            <option value="Summer" style={{ color: 'black' }}>Summer</option>
+          </select>
+        </div>
 
         {currentUser?.studentID === '2301106533' && (
-          <div className="space-y-1 pt-4 border-t">
-            <Label>Healthcheck Message (Admin Only)</Label>
-            <Input
+          <div
+            className="space-y-1.5 pt-5 mt-5"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <label className="text-sm font-medium text-white/80 ml-1">
+              Healthcheck Message (Super Admin Only)
+            </label>
+            <input
               type="text"
               placeholder="Leave empty for no message"
               value={settings?.healthcheckMessage ?? ''}
@@ -101,30 +154,37 @@ export default function ApplicationSettingsForm() {
                       },
                 )
               }
+              className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none placeholder:opacity-30"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
               This message is displayed on the server's root healthcheck route.
             </p>
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
-          <Button
-            className="rounded-full"
-            size="sm"
+        <div className="flex justify-end pt-4">
+          <button
             onClick={onSave}
             disabled={isSaving || !settings}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 hover:scale-[1.02] active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+            }}
           >
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 size-4 animate-spin" /> Saving...
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving...
               </>
             ) : (
-              'Save Application Settings'
+              'Save Settings'
             )}
-          </Button>
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

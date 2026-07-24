@@ -22,9 +22,9 @@ const steps: Step[] = [
     skipBeacon: true,
   },
   {
-    target: '#nav-link-settings',
+    target: '#term-selector',
     content:
-      'Select the correct semester and school year in Settings. This dropdown is also available in every module page.',
+      'Select the correct semester and school year for your current context. This dropdown is available at the top right of every module page.',
     skipBeacon: true,
   },
   {
@@ -59,7 +59,7 @@ export default function OnboardingProvider({
   const { orgSlug } = useParams<{ orgSlug: string }>();
 
   // Map step index to the target route path
-  const stepRoutes = ['', 'settings', 'student', 'transaction', 'events'];
+  const stepRoutes = ['', '', 'student', 'transaction', 'events'];
 
   useEffect(() => {
     if (user && user.role === 'org-admin' && !user.isOnboardingCompleted) {

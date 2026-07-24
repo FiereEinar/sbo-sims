@@ -95,7 +95,7 @@ export default function Dashboard() {
     <SidebarPageLayout>
       <StickyHeader>
         <Header>Dashboard Overview</Header>
-        <div className="flex gap-4 items-center">
+        <div id="term-selector" className="flex gap-4 items-center">
           <div className="w-[130px]">
             <SemInput hideLabel />
           </div>

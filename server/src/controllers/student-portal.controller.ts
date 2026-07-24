@@ -30,6 +30,11 @@ import StudentModel from '../models/student.model';
 import TransactionModel from '../models/transaction.model';
 import AttendanceRecordModel from '../models/attendance-record.model';
 import AppSettingModel from '../models/app-setting.model';
+import {
+  loginService,
+  signupService,
+  verifyRecaptcha,
+} from '../services/auth.service';
 
 /**
  * POST /student-portal/signup
@@ -37,13 +42,7 @@ import AppSettingModel from '../models/app-setting.model';
  * Sends a verification email before the account can be used.
  */
 export const student_signup = asyncHandler(async (req, res) => {
-  const {
-    confirmPassword,
-    password,
-    studentID,
-    firstname,
-    lastname,
-  }: signupUserBody = req.body;
+  const { confirmPassword, password, studentID }: signupUserBody = req.body;
 
   const email = studentID + STUDENT_EMAIL_DOMAIN;
 
@@ -69,39 +68,12 @@ export const student_signup = asyncHandler(async (req, res) => {
     `A student account with ID '${studentID}' already exists. Please log in instead.`,
   );
 
-  const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
-
-  const verificationToken = crypto.randomBytes(32).toString('hex');
-  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-  const defaultProfile = {
-    url: 'https://res.cloudinary.com/diirvhsym/image/upload/v1728426644/user/zl85ljimxkrs1uqnqrvu.webp',
-    publicID: 'user/al85leemxkrs2qwnqrvU',
-  };
-
-  const user = new UserModel({
-    firstname,
-    lastname,
-    studentID,
-    password: hashedPassword,
-    email,
-    role: 'student',
-    roleManuallyAssigned: false,
-    profile: defaultProfile,
-    verified: false,
-    // organization is intentionally left undefined — students span multiple orgs
-    verificationToken,
-    verificationTokenExpiresAt,
-  });
-  await user.save();
-
-  const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${verificationToken}&id=${user._id}`;
-  await sendVerificationEmail(email, verificationUrl);
+  const { newUser } = await signupService(req.body, email, password);
 
   res.json(
     new CustomResponse(
       true,
-      user.omitPassword(),
+      newUser.omitPassword(),
       'Account created! Please check your email to verify your account before logging in.',
     ),
   );
@@ -120,22 +92,14 @@ export const student_login = asyncHandler(async (req, res) => {
   }: loginUserBody & { recaptchaToken: string } = req.body;
 
   // verify reCAPTCHA
-  const recaptchaResponse = await fetch(
-    'https://www.google.com/recaptcha/api/siteverify',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
-    },
-  );
-  const recaptchaData = await recaptchaResponse.json();
+  const recaptchaData = await verifyRecaptcha(recaptchaToken);
   appAssert(
     recaptchaData.success,
     BAD_REQUEST,
     'reCAPTCHA verification failed. Please try again.',
   );
 
-  // Find the student user — no org filter, role must be 'student'
+  // Find the student user, no org filter, role must be 'student'
   const user = await UserModel.findOne<IUser>({
     studentID,
     role: 'student',
@@ -152,45 +116,16 @@ export const student_login = asyncHandler(async (req, res) => {
     'Please verify your email before logging in. Check your inbox for the verification link.',
   );
 
-  const { ip, userAgent } = getUserRequestInfo(req);
-
-  const session = new SessionModel({
-    userID: user._id,
-    expiresAt: thirtyDaysFromNow(),
-    ip,
-    userAgent,
-  });
-  await session.save();
-
-  const sessionID = session._id.toString();
-  const userID = user._id.toString();
-
-  const accessToken = signToken({ sessionID, userID });
-  const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
-  setAuthCookie({ res, accessToken, refreshToken });
-
-  const useragent = req.useragent;
-  const device = useragent?.isMobile
-    ? 'mobile'
-    : useragent?.isTablet
-      ? 'tablet'
-      : 'desktop';
-
-  // Sync active term from global settings if available
-  const globalSettings = await AppSettingModel.findOne();
-  if (globalSettings) {
-    user.activeSemDB = globalSettings.activeSemester as any;
-    user.activeSchoolYearDB = globalSettings.activeSchoolYear;
-  } else {
-    user.activeSemDB = '1';
-    user.activeSchoolYearDB = new Date().getFullYear().toString();
-  }
-  await user.save();
+  const { updatedUser, accessToken, device } = await loginService(
+    req,
+    res,
+    user,
+  );
 
   res.json(
     new CustomResponse(
       true,
-      { user: user.omitPassword(), accessToken, device },
+      { user: updatedUser.omitPassword(), accessToken, device },
       'Login successful',
     ),
   );
@@ -206,11 +141,13 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
   const { studentID, activeSemDB, activeSchoolYearDB } = currentUser;
 
   // 1. Find all Student records that share this studentID across any org for the active term
-  const studentRecords = await StudentModel.find({ 
+  const studentRecords = await StudentModel.find({
     studentID,
     semester: activeSemDB,
-    schoolYear: activeSchoolYearDB
-  }).populate('organization', 'name slug').lean();
+    schoolYear: activeSchoolYearDB,
+  })
+    .populate('organization', 'name slug')
+    .lean();
   const studentObjIds = studentRecords.map((s) => s._id);
 
   // 2. Aggregate transactions across all orgs
@@ -324,7 +261,9 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
   const totalAttended = attAgg?.totalAttended?.[0]?.count ?? 0;
   const recentAttendance = attAgg?.recentAttendance ?? [];
   const activeOrgs = studentRecords.length;
-  const enrolledOrgs = studentRecords.map((s) => s.organization).filter(Boolean);
+  const enrolledOrgs = studentRecords
+    .map((s) => s.organization)
+    .filter(Boolean);
 
   res.status(OK).json(
     new CustomResponse(
@@ -380,9 +319,11 @@ export const update_student_term = asyncHandler(async (req, res) => {
 
   appAssert(updated, NOT_FOUND, 'Student user not found');
 
-  res.status(OK).json(
-    new CustomResponse(true, updated.omitPassword(), 'Term settings updated'),
-  );
+  res
+    .status(OK)
+    .json(
+      new CustomResponse(true, updated.omitPassword(), 'Term settings updated'),
+    );
 });
 
 /**
@@ -467,7 +408,7 @@ export const get_student_transactions = asyncHandler(async (req, res) => {
     });
   }
 
-  const sortField = req.query.sortField as string || 'createdAt';
+  const sortField = (req.query.sortField as string) || 'createdAt';
   const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
   aggregationPipeline.push({
@@ -503,7 +444,13 @@ export const get_student_transactions = asyncHandler(async (req, res) => {
   res.status(OK).json(
     new CustomResponse(
       true,
-      { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+      {
+        data,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
       'Student transactions retrieved',
     ),
   );
@@ -596,7 +543,7 @@ export const get_student_attendance = asyncHandler(async (req, res) => {
     });
   }
 
-  const sortField = req.query.sortField as string || 'recordedAt';
+  const sortField = (req.query.sortField as string) || 'recordedAt';
   const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
   aggregationPipeline.push({
@@ -630,9 +577,14 @@ export const get_student_attendance = asyncHandler(async (req, res) => {
   res.status(OK).json(
     new CustomResponse(
       true,
-      { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+      {
+        data,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
       'Student attendance retrieved',
     ),
   );
 });
-

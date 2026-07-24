@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
+import { Check, X } from 'lucide-react';
 import InputField from '../InputField';
 import { Button } from '../ui/button';
 import ErrorText from '../ui/error-text';
@@ -19,8 +20,11 @@ export default function StudentSignupForm() {
     handleSubmit,
     setError,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<StudentSignupFormValues>({ resolver: zodResolver(signupSchema) });
+
+  const passwordValue = watch('password') || '';
 
   const onSubmit = async (data: StudentSignupFormValues) => {
     try {
@@ -71,6 +75,78 @@ export default function StudentSignupForm() {
           registerFn={register}
           errors={errors}
         />
+
+        <div className="flex justify-between gap-1 text-xs py-2 px-1">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {passwordValue.length >= 8 ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              )}
+              <span
+                className={
+                  passwordValue.length >= 8
+                    ? 'text-emerald-500'
+                    : 'text-muted-foreground'
+                }
+              >
+                At least 8 characters
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/[A-Z]/.test(passwordValue) ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              )}
+              <span
+                className={
+                  /[A-Z]/.test(passwordValue)
+                    ? 'text-emerald-500'
+                    : 'text-muted-foreground'
+                }
+              >
+                One uppercase letter
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {/[a-z]/.test(passwordValue) ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              )}
+              <span
+                className={
+                  /[a-z]/.test(passwordValue)
+                    ? 'text-emerald-500'
+                    : 'text-muted-foreground'
+                }
+              >
+                One lowercase letter
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/[0-9]/.test(passwordValue) ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              )}
+              <span
+                className={
+                  /[0-9]/.test(passwordValue)
+                    ? 'text-emerald-500'
+                    : 'text-muted-foreground'
+                }
+              >
+                One number
+              </span>
+            </div>
+          </div>
+        </div>
         <InputField<StudentSignupFormValues>
           name="confirmPassword"
           id="signupConfirmPassword"
@@ -100,7 +176,14 @@ export default function StudentSignupForm() {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"

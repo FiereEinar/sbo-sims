@@ -193,6 +193,7 @@ export const createUser = asyncHandler(async (req, res) => {
     email: email,
     rbacRole: role._id,
     roleManuallyAssigned: true,
+    role: 'org-admin',
     bio: bio,
     verified: true,
     organization: req.tenantContext!.organizationId,

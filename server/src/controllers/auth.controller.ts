@@ -51,6 +51,12 @@ import OrganizationModel from '../models/organization.model';
 import RoleModel from '../models/role.model';
 import AppSettingModel from '../models/app-setting.model';
 import { MODULES } from '../constants/modules';
+import {
+  loginService,
+  selfHealRBAC,
+  signupService,
+  verifyRecaptcha,
+} from '../services/auth.service';
 
 /**
  * GET - public organizations
@@ -64,14 +70,7 @@ export const get_public_organizations = asyncHandler(async (req, res) => {
  * POST - user signup
  */
 export const signup = asyncHandler(async (req, res) => {
-  const {
-    confirmPassword,
-    password,
-    studentID,
-    firstname,
-    lastname,
-    bio,
-  }: signupUserBody = req.body;
+  const { confirmPassword, password, studentID }: signupUserBody = req.body;
 
   const email = studentID + STUDENT_EMAIL_DOMAIN;
 
@@ -105,51 +104,12 @@ export const signup = asyncHandler(async (req, res) => {
     `A user with ID '${studentID}' already exist in this organization`,
   );
 
-  // set default profile picture
-  let profileURL =
-    'https://res.cloudinary.com/diirvhsym/image/upload/v1728426644/user/zl85ljimxkrs1uqnqrvu.webp';
-  let profilePublicID = 'user/al85leemxkrs2qwnqrvU';
-
-  // hash the password
-  const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
-
-  // Note: we no longer automatically assign an rbacRole to new student signups.
-  // They will default to role: 'student' and only have access to their own data via specific endpoints.
-
-  const verificationToken = crypto.randomBytes(32).toString('hex');
-  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-  // create and save the user
-  const user = new UserModel({
-    firstname: firstname,
-    lastname: lastname,
-    studentID: studentID,
-    password: hashedPassword,
-    email: email,
-    bio: bio,
-    role: 'student',
-    roleManuallyAssigned: false,
-    profile: {
-      url: profileURL,
-      publicID: profilePublicID,
-    },
-    verified: false,
-    organization: organization._id,
-    verificationToken,
-    verificationTokenExpiresAt,
-  });
-  await user.save();
-
-  const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${verificationToken}&id=${user._id}`;
-  await sendVerificationEmail(email, verificationUrl);
-
-  // hide the password
-  let userCopy = user.omitPassword();
+  const { newUser } = await signupService(req.body, email, password);
 
   res.json(
     new CustomResponse(
       true,
-      userCopy,
+      newUser.omitPassword(),
       'User signed up successfully. Please check your email to verify your account.',
     ),
   );
@@ -166,15 +126,7 @@ export const login = asyncHandler(async (req, res) => {
   }: loginUserBody & { recaptchaToken: string } = req.body;
 
   // verify reCAPTCHA token with Google
-  const recaptchaResponse = await fetch(
-    'https://www.google.com/recaptcha/api/siteverify',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
-    },
-  );
-  const recaptchaData = await recaptchaResponse.json();
+  const recaptchaData = await verifyRecaptcha(recaptchaToken);
   appAssert(
     recaptchaData.success,
     BAD_REQUEST,
@@ -196,59 +148,11 @@ export const login = asyncHandler(async (req, res) => {
   })
     .populate('organization')
     .exec();
-  appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
-
-  if (user.rbacRole) {
-    const role = await RoleModel.findOne({
-      _id: user.rbacRole,
-      organization: organization._id,
-    }).exec();
-    if (role) {
-      // Self-heal: only applies to the seeded "Super Admin" role.
-      // Custom officer roles have their own deliberate permission sets — do not touch them.
-      if (role.name === SUPER_ADMIN) {
-        const allPermissions = Object.values(MODULES);
-        const currentPerms = new Set(role.permissions as string[]);
-        const missing = allPermissions.filter((p) => !currentPerms.has(p));
-
-        if (missing.length > 0) {
-          role.permissions = allPermissions;
-          await role.save();
-          console.log(
-            `[seed] Healed "${role.name}" role — added ${missing.length} new permission(s): ${missing.join(', ')}`,
-          );
-        }
-      }
-    }
-  }
-
-  // Self-heal rbacRole if it belongs to a different organization (due to seeding issues)
-  // if (
-  //   user.rbacRole &&
-  //   (user.rbacRole as any).organization.toString() !==
-  //     organization._id.toString()
-  // ) {
-  //   const roleName = (user.rbacRole as any).name;
-  //   const correctRole = await RoleModel.findOne({
-  //     name: roleName,
-  //     organization: organization._id,
-  //   });
-
-  //   if (correctRole) {
-  //     user.rbacRole = correctRole._id as any;
-  //     // We must save this correction to the database
-  //     await UserModel.updateOne(
-  //       { _id: user._id },
-  //       { $set: { rbacRole: correctRole._id } },
-  //     );
-  //     // Mutate the object for the rest of the login flow
-  //     (user as any).rbacRole = correctRole;
-  //   }
-  // }
+  appAssert(user, UNAUTHORIZED, `Incorrect Student ID or password`);
 
   // check if password is correct
   const match = await bcrypt.compare(password, user.password);
-  appAssert(match, UNAUTHORIZED, 'Incorrect password');
+  appAssert(match, UNAUTHORIZED, 'Incorrect Student ID or password');
 
   appAssert(
     user.verified,
@@ -256,46 +160,18 @@ export const login = asyncHandler(async (req, res) => {
     'Please verify your email before logging in',
   );
 
-  const { ip, userAgent } = getUserRequestInfo(req);
+  await selfHealRBAC(user, organization);
 
-  // create and save the session
-  const session = new SessionModel({
-    userID: user._id,
-    expiresAt: thirtyDaysFromNow(),
-    ip,
-    userAgent,
-  });
-  await session.save();
-
-  const sessionID = session._id.toString();
-  const userID = user._id.toString();
-
-  // create and set the access token and refresh token
-  const accessToken = signToken({ sessionID, userID });
-  const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
-  setAuthCookie({ res, accessToken, refreshToken });
-
-  const useragent = req.useragent;
-  const device = useragent?.isMobile
-    ? 'mobile'
-    : useragent?.isTablet
-      ? 'tablet'
-      : 'desktop';
-
-  const globalSettings = await AppSettingModel.findOne();
-  if (globalSettings) {
-    user.activeSemDB = globalSettings.activeSemester as any;
-    user.activeSchoolYearDB = globalSettings.activeSchoolYear;
-  } else {
-    user.activeSemDB = '1';
-    user.activeSchoolYearDB = '2025';
-  }
-  await user.save();
+  const { updatedUser, accessToken, device } = await loginService(
+    req,
+    res,
+    user,
+  );
 
   res.json(
     new CustomResponse(
       true,
-      { user: user.omitPassword(), accessToken, device },
+      { user: updatedUser.omitPassword(), accessToken, device },
       'Login successfull',
     ),
   );

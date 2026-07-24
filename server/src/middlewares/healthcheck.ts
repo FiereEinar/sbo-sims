@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { OK } from '../constants/http';
 import { getDatabaseConnection } from '../database/databaseManager';
-import { originalDbName, DB_MODEL } from '../constants';
+import { DB_MODEL } from '../constants';
 import { AppSettingSchema } from '../models/app-setting.model';
+import { DATABASE_NAME } from '../constants/env';
 
 export const healthcheck = async (req: Request, res: Response) => {
   try {
     const originalConnection = await getDatabaseConnection(
-      originalDbName,
+      DATABASE_NAME,
       process.env.ME_CONFIG_MONGODB_URL as string,
     );
     const AppSettingModel = originalConnection.model(

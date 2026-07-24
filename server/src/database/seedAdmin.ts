@@ -1,10 +1,14 @@
 import bcrypt from 'bcryptjs';
 import { getDatabaseConnection } from './databaseManager';
-import { originalDbName, SUPER_ADMIN } from '../constants';
 import UserModel from '../models/user.model';
 import RoleModel from '../models/role.model';
 import { MODULES } from '../constants/modules';
-import { ADMIN_ID, ADMIN_PASS, BCRYPT_SALT } from '../constants/env';
+import {
+  ADMIN_ID,
+  ADMIN_PASS,
+  BCRYPT_SALT,
+  DATABASE_NAME,
+} from '../constants/env';
 
 /**
  * Seeds the central admin account.
@@ -14,7 +18,7 @@ import { ADMIN_ID, ADMIN_PASS, BCRYPT_SALT } from '../constants/env';
 export async function seedAdmin(): Promise<void> {
   try {
     const connection = await getDatabaseConnection(
-      originalDbName,
+      DATABASE_NAME,
       process.env.ME_CONFIG_MONGODB_URL as string,
     );
 

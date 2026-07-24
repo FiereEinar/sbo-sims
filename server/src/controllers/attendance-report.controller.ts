@@ -11,6 +11,8 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
   // 1. Fetch all events
   const events = await EventModel.find({
     organization: organizationId,
+    semester,
+    schoolYear,
     archived: false,
   }).lean();
 

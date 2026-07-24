@@ -1,7 +1,7 @@
-// export const appCookieName = 'transaction_app_token';
-export const accessTokenCookieName = 'transaction_access_token';
-export const refreshTokenCookieName = 'transaction_refresh_token';
-export const originalDbName = 'transactionsdb_v2';
+import { ACCESS_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_NAME } from './env';
+
+export const accessTokenCookieName = ACCESS_TOKEN_COOKIE_NAME;
+export const refreshTokenCookieName = REFRESH_TOKEN_COOKIE_NAME;
 
 export const DB_MODEL = {
   USER: 'User',

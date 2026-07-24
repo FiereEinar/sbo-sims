@@ -1,11 +1,11 @@
 const getEnv = (key: string, defaultValue?: string): string => {
-	const value = process.env[key] || defaultValue;
+  const value = process.env[key] || defaultValue;
 
-	if (value === undefined) {
-		throw new Error(`Environment variable ${key} is required`);
-	}
+  if (value === undefined) {
+    throw new Error(`Environment variable ${key} is required`);
+  }
 
-	return value;
+  return value;
 };
 
 export const PORT = getEnv('PORT', '3000');
@@ -25,3 +25,6 @@ export const APP_ORIGIN = getEnv('APP_ORIGIN');
 export const EMAIL_USER = getEnv('EMAIL_USER');
 export const EMAIL_PASS = getEnv('EMAIL_PASS');
 export const STUDENT_EMAIL_DOMAIN = getEnv('STUDENT_EMAIL_DOMAIN');
+export const DATABASE_NAME = getEnv('DATABASE_NAME');
+export const ACCESS_TOKEN_COOKIE_NAME = getEnv('ACCESS_TOKEN_COOKIE_NAME');
+export const REFRESH_TOKEN_COOKIE_NAME = getEnv('REFRESH_TOKEN_COOKIE_NAME');

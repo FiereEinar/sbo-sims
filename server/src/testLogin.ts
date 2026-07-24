@@ -1,12 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
-import mongoose from 'mongoose';
 import UserModel from './models/user.model';
-import { getDatabaseConnection } from './database/databaseManager';
-import { originalDbName } from './constants';
 import { ADMIN_ID } from './constants/env';
 import connectToMongoDB from './database/mongodb';
+dotenv.config();
 
 async function testAdminLogin() {
   try {
@@ -21,7 +17,7 @@ async function testAdminLogin() {
     } else {
       console.log('Admin user NOT FOUND by studentID:', ADMIN_ID);
     }
-    
+
     process.exit(0);
   } catch (err) {
     console.error(err);

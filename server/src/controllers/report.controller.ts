@@ -209,7 +209,7 @@ export const get_summary_report = asyncHandler(async (req, res) => {
  * 12 separate aggregate calls.
  */
 export const get_monthly_report = asyncHandler(async (req, res) => {
-  const { organizationId } = req.tenantContext!;
+  const { organizationId, semester, schoolYear } = req.tenantContext!;
 
   const now = new Date();
   // 12-month rolling window
@@ -219,6 +219,8 @@ export const get_monthly_report = asyncHandler(async (req, res) => {
     {
       $match: {
         organization: organizationId,
+        semester,
+        schoolYear,
         date: { $gte: cutoff },
       },
     },

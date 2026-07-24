@@ -2,8 +2,10 @@ import { navigate } from '@/lib/navigate';
 import { queryClient } from '@/main';
 import axios, { CreateAxiosDefaults } from 'axios';
 import { useUserStore } from '@/store/user';
+import { toast } from '@/hooks/use-toast';
 
 const UNAUTHORIZED = 401;
+const TOO_MANY_REQUESTS = 429;
 
 const options: CreateAxiosDefaults = {
 	baseURL: import.meta.env.VITE_API_URL,
@@ -37,6 +39,16 @@ axiosInstance.interceptors.response.use(
 					},
 				});
 			}
+		}
+
+		// Show a user-friendly toast when the rate limit is hit
+		if (status === TOO_MANY_REQUESTS) {
+			toast({
+				variant: 'destructive',
+				title: 'Too many requests',
+				description:
+					"You're sending requests too quickly. Please wait a moment before trying again.",
+			});
 		}
 
 		return Promise.reject({ status, ...data });

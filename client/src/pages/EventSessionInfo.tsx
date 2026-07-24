@@ -19,7 +19,13 @@ import AttendanceStatsPanel from '@/components/event/AttendanceStatsPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, FileText, FileSpreadsheet, Search } from 'lucide-react';
+import {
+  Download,
+  FileText,
+  FileSpreadsheet,
+  Search,
+  Expand,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import PaginationController from '@/components/PaginationController';
 import HasPermission from '@/components/HasPermission';
@@ -164,7 +170,17 @@ export default function EventSessionInfo() {
 
   return (
     <SidebarPageLayout>
-      <BackButton />
+      <div className="flex items-center justify-between">
+        <BackButton />
+        <Button
+          className="flex items-center gap-2 rounded-full"
+          size="sm"
+          variant="outline"
+        >
+          <Expand className="size-4" />
+          Full Screen
+        </Button>
+      </div>
 
       <StickyHeader>
         <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -204,11 +220,13 @@ export default function EventSessionInfo() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
+        {/* <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
           <div className="flex items-center gap-4">
             <h3 className="text-xl font-bold">Attendance Records</h3>
           </div>
-        </div>
+        </div> */}
+
+        <AttendanceStatsPanel stats={statsResult} isLoading={isStatsLoading} />
 
         <div className="flex justify-between gap-2 items-center mb-4">
           {/* Search Bar */}
@@ -237,7 +255,7 @@ export default function EventSessionInfo() {
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button className="rounded-full">
                   <Download className="mr-2 h-4 w-4" /> Download
                 </Button>
               </DropdownMenuTrigger>
@@ -263,10 +281,6 @@ export default function EventSessionInfo() {
           <p className="text-muted-foreground">Loading records...</p>
         ) : (
           <div className="space-y-4">
-            <AttendanceStatsPanel
-              stats={statsResult}
-              isLoading={isStatsLoading}
-            />
             <AttendanceRecordTable
               records={attendanceResult?.data || []}
               filters={filters}

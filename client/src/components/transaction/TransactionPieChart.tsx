@@ -100,7 +100,7 @@ export default function TransactionPieChart({
   }, [dashboardData, colors]);
 
   return (
-    <Card className="flex flex-col bg-card/40">
+    <Card className="flex flex-col bg-card/40 shadow-none">
       <CardHeader className="items-center pb-0">
         <CardTitle>Collections by Category</CardTitle>
         {/* <CardDescription>January - June 2024</CardDescription> */}

@@ -259,14 +259,14 @@ export default function AddTransactionForm({
       });
 
       // Reset entries
-      setCategoryEntries([
-        {
-          id: crypto.randomUUID(),
-          category: undefined,
-          amount: '',
-          details: {},
-        },
-      ]);
+      // setCategoryEntries([
+      //   {
+      //     id: crypto.randomUUID(),
+      //     category: undefined,
+      //     amount: '',
+      //     details: {},
+      //   },
+      // ]);
     } catch (err: any) {
       setError('root', {
         message: err.message || 'Failed to submit transactions',

@@ -158,3 +158,24 @@ export const fetchStudentAttendance = async (
   return data.data;
 };
 
+// ─── GPOA ─────────────────────────────────────────────────────────────────────
+
+export type StudentGpoaItem = {
+  _id: string;
+  name: string;
+  description?: string;
+  targetDate: string;
+  venue: string;
+  budget: number;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  organization: { _id: string; name: string; slug: string };
+  semester: string;
+  schoolYear: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const fetchStudentGpoa = async (): Promise<StudentGpoaItem[]> => {
+  const { data } = await axiosInstance.get('/student-portal/gpoa');
+  return data.data;
+};

@@ -49,6 +49,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import StudentPaymentRequests from './pages/student/PaymentRequests';
 import StudentMyTransactions from './pages/student/MyTransactions';
 import StudentMyAttendance from './pages/student/MyAttendance';
+import StudentGpoa from './pages/student/StudentGpoa';
 import StudentProtectedRoute from './components/student-portal/StudentProtectedRoute';
 
 export default function Route() {
@@ -99,6 +100,10 @@ export default function Route() {
         {
           path: 'attendance',
           element: <StudentMyAttendance />,
+        },
+        {
+          path: 'gpoa',
+          element: <StudentGpoa />,
         },
       ],
     },

@@ -222,6 +222,11 @@ export const studentNavbarLinks: SidebarNavLinkType[] = [
     name: 'My Attendance',
     icon: CalendarCheck,
   },
+  {
+    path: '/student/gpoa',
+    name: 'GPOA',
+    icon: ClipboardList,
+  },
 ];
 
 export const AVAILABLE_SCHOOL_YEARS = [

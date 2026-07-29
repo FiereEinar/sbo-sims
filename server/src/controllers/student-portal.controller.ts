@@ -29,6 +29,7 @@ import SessionModel from '../models/session.model';
 import StudentModel from '../models/student.model';
 import TransactionModel from '../models/transaction.model';
 import AttendanceRecordModel from '../models/attendance-record.model';
+import GpoaModel from '../models/gpoa.model';
 import AppSettingModel from '../models/app-setting.model';
 import {
   loginService,
@@ -586,5 +587,44 @@ export const get_student_attendance = asyncHandler(async (req, res) => {
       },
       'Student attendance retrieved',
     ),
+  );
+});
+
+/**
+ * GET /student-portal/gpoa
+ * Protected (auth + studentAuth) — returns GPOA plans for all organizations
+ * the student is enrolled in, for the active term. Since a student's records
+ * are scoped by studentID + semester + schoolYear, we resolve their org IDs
+ * from Student records and query GPOA for each of those orgs.
+ */
+export const get_student_gpoa = asyncHandler(async (req, res) => {
+  const { studentID, activeSemDB, activeSchoolYearDB } = req.currentUser!;
+
+  // Find all Student records for this student in the active term across all orgs
+  const studentRecords = await StudentModel.find({
+    studentID,
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  })
+    .populate('organization', 'name slug')
+    .lean();
+
+  // Collect unique organization IDs from enrollment records
+  const orgIds = studentRecords
+    .map((s) => (s.organization as any)?._id || s.organization)
+    .filter(Boolean);
+
+  // Fetch all GPOA plans from those orgs for the active term
+  const gpoas = await GpoaModel.find({
+    organization: { $in: orgIds },
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  })
+    .populate('organization', 'name slug')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.status(OK).json(
+    new CustomResponse(true, gpoas, 'Student GPOA plans retrieved'),
   );
 });

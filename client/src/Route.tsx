@@ -39,6 +39,7 @@ import AdminSupport from './pages/admin/AdminSupport';
 import AdminSupportThread from './pages/admin/AdminSupportThread';
 import AdminSettings from './pages/admin/AdminSettings';
 import Events from './pages/Events';
+import Gpoa from './pages/Gpoa';
 
 // Student portal
 import StudentLoginPage from './pages/student/StudentLoginPage';
@@ -310,6 +311,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Events />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'gpoa',
+          element: (
+            <HasPermission
+              permissions={[MODULES.GPOA_READ]}
+              fallback={<NoPermission />}
+            >
+              <Gpoa />
             </HasPermission>
           ),
         },

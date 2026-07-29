@@ -24,6 +24,7 @@ import attendanceReportRouter from './routes/attendance-report.route';
 import studentPortalRouter from './routes/student-portal.route';
 import paymentRequestRouter from './routes/payment-request.route';
 import supportTicketRouter from './routes/support-ticket.route';
+import gpoaRouter from './routes/gpoa.route';
 import path from 'path';
 
 import { NODE_ENV, PORT } from './constants/env';
@@ -90,6 +91,7 @@ app.use('/attendance', attendanceRouter);
 app.use('/attendance-report', attendanceReportRouter);
 app.use('/payment-request', paymentRequestRouter);
 app.use('/support-ticket', supportTicketRouter);
+app.use('/gpoa', gpoaRouter);
 
 // Error handlers
 app.use(notFoundHandler);

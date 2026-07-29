@@ -35,6 +35,7 @@ export const QUERY_KEYS = {
   ATTENDANCE_RECORD: 'attendance_records',
   ATTENDANCE_REPORT_SUMMARY: 'attendance_report_summary',
   SUPPORT_TICKETS: 'support_tickets',
+  GPOA: 'gpoa',
 };
 
 export const MODULES = {
@@ -101,6 +102,11 @@ export const MODULES = {
   ATTENDANCE_RECORD_UPDATE: 'attendance_record:update',
   ATTENDANCE_RECORD_DELETE: 'attendance_record:delete',
   ATTENDANCE_RECORD_DOWNLOAD: 'attendance_record:download',
+
+  GPOA_CREATE: 'gpoa:create',
+  GPOA_READ: 'gpoa:read',
+  GPOA_UPDATE: 'gpoa:update',
+  GPOA_DELETE: 'gpoa:delete',
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];
@@ -180,6 +186,12 @@ export const navbarLinks: SidebarNavLinkType[] = [
     name: 'Reports',
     icon: FileBarChart2,
     permissions: [MODULES.REPORT_READ],
+  },
+  {
+    path: '/gpoa',
+    name: 'GPOA',
+    icon: CalendarCheck,
+    permissions: [MODULES.GPOA_READ],
   },
   {
     path: '/support',

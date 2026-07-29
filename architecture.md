@@ -30,7 +30,7 @@ SBO-SIMS is fundamentally a multi-tenant application where data is strictly isol
 Data is not just isolated by organization, but often temporally isolated by the academic term. 
 
 ### Best Practices for Semestral Models:
-- **Models that REQUIRE Term Context:** `Student`, `Transaction`, `Category`, `Prelisting`, `Event`, and `PaymentRequest` are all bound to a specific term. You **must** supply `semester` and `schoolYear` (derived from `req.tenantContext` or `req.currentUser`) when creating or querying these records.
+- **Models that REQUIRE Term Context:** `Student`, `Transaction`, `Category`, `Prelisting`, `Event`, `PaymentRequest`, and `GPOA` are all bound to a specific term. You **must** supply `semester` and `schoolYear` (derived from `req.tenantContext` or `req.currentUser`) when creating or querying these records.
 - **Models that DO NOT REQUIRE Term Context:** Some models inherently inherit their term context via relationships. For example, `EventSession` or `AttendanceRecord` belong to an `Event`. Since the parent `Event` already has `semester` and `schoolYear` properties, you do not need to duplicate these fields on the child models. You only need to scope by the parent ID.
 - **`PaymentRequest` is scoped by the student's active term:** When a student creates a payment request, the `semester` and `schoolYear` fields are taken from `req.currentUser.activeSemDB` / `activeSchoolYearDB` (the student's currently selected term), **not** from the enrollment `Student` record. This ensures requests belong to the term the student was viewing when they submitted them.
 

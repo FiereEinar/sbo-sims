@@ -19,13 +19,7 @@ import AttendanceStatsPanel from '@/components/event/AttendanceStatsPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Download,
-  FileText,
-  FileSpreadsheet,
-  Search,
-  Expand,
-} from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import PaginationController from '@/components/PaginationController';
 import HasPermission from '@/components/HasPermission';
@@ -172,14 +166,6 @@ export default function EventSessionInfo() {
     <SidebarPageLayout>
       <div className="flex items-center justify-between">
         <BackButton />
-        <Button
-          className="flex items-center gap-2 rounded-full"
-          size="sm"
-          variant="outline"
-        >
-          <Expand className="size-4" />
-          Full Screen
-        </Button>
       </div>
 
       <StickyHeader>

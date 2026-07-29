@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { getDatabaseConnection } from './databaseManager';
 import UserModel from '../models/user.model';
 import RoleModel from '../models/role.model';
 import { MODULES } from '../constants/modules';
@@ -7,7 +6,6 @@ import {
   ADMIN_ID,
   ADMIN_PASS,
   BCRYPT_SALT,
-  DATABASE_NAME,
 } from '../constants/env';
 
 /**
@@ -17,11 +15,6 @@ import {
  */
 export async function seedAdmin(): Promise<void> {
   try {
-    const connection = await getDatabaseConnection(
-      DATABASE_NAME,
-      process.env.ME_CONFIG_MONGODB_URL as string,
-    );
-
     // ── Central Admin User ────────────────────────────────────────────
     let adminUser = await UserModel.findOne({ studentID: ADMIN_ID });
 

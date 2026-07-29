@@ -47,6 +47,13 @@ export const AttendanceRecordSchema = new Schema<IAttendanceRecord>(
   { timestamps: true },
 );
 
+// Prevents duplicate attendance for the same student in the same session,
+// even under concurrent scan requests (race condition safety net).
+AttendanceRecordSchema.index({ session: 1, student: 1 }, { unique: true });
+
+// Speeds up the most common query pattern: fetch all records for a session in an org.
+AttendanceRecordSchema.index({ organization: 1, session: 1 });
+
 const AttendanceRecordModel = mongoose.model(
   'AttendanceRecord',
   AttendanceRecordSchema,

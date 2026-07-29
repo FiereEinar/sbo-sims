@@ -177,7 +177,15 @@ export const record_attendance = asyncHandler(async (req, res) => {
     recordedAt: new Date(),
   });
 
-  await record.save();
+  try {
+    await record.save();
+  } catch (err: any) {
+    // Unique index violation — duplicate scan from another laptop at the same time
+    if (err.code === 11000) {
+      appAssert(false, CONFLICT, 'Attendance already recorded for this student in this session');
+    }
+    throw err;
+  }
 
   // Populate student info for immediate UI feedback
   await record.populate('student', 'firstname lastname course year studentID');

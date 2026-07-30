@@ -21,7 +21,11 @@ const addOrgSchema = organizationSchema.extend({
     .regex(/[0-9]/, 'Must contain at least one number'),
   adminFirstname: z.string().min(1, 'First name is required').max(50),
   adminLastname: z.string().min(1, 'Last name is required').max(50),
-  adminEmail: z.string().email('Must be a valid email').optional().or(z.literal('')),
+  adminEmail: z
+    .string()
+    .email('Must be a valid email')
+    .optional()
+    .or(z.literal('')),
 });
 
 type AddOrgFormValues = z.infer<typeof addOrgSchema>;
@@ -53,11 +57,13 @@ function generateRandomPassword(): string {
 export default function OrgFormModal({
   mode,
   org,
+  allOrgs,
   onClose,
   onSuccess,
 }: {
   mode: 'add' | 'edit';
   org?: AdminOrgWithStats;
+  allOrgs: AdminOrgWithStats[];
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -71,6 +77,7 @@ export default function OrgFormModal({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<AddOrgFormValues>({
     resolver: zodResolver(schema),
@@ -81,13 +88,19 @@ export default function OrgFormModal({
       viceGovernor: _.startCase(org?.viceGovernor ?? ''),
       treasurer: _.startCase(org?.treasurer ?? ''),
       auditor: _.startCase(org?.auditor ?? ''),
+      syncSources: org?.syncSources ?? [],
     },
   });
+
+  const selectedSyncSources = watch('syncSources') || [];
 
   const onSubmit = async (data: AddOrgFormValues) => {
     setRootError('');
     try {
-      const payload = { ...data, sendEmail: mode === 'add' ? sendEmail : undefined };
+      const payload = {
+        ...data,
+        sendEmail: mode === 'add' ? sendEmail : undefined,
+      };
       if (mode === 'add') {
         await adminCreateOrg(payload);
       } else {
@@ -174,6 +187,70 @@ export default function OrgFormModal({
               )}
             </div>
           ))}
+
+          {/* ── Sync Sources ────────────────────────────────────────── */}
+          <div className="space-y-2">
+            <label
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={labelStyle}
+            >
+              Sync Sources (Allowed Orgs)
+            </label>
+            <div
+              className="w-full px-4 py-3 rounded-xl text-sm"
+              style={inputStyle}
+            >
+              <div className="max-h-32 overflow-y-auto space-y-2">
+                {allOrgs
+                  .filter((o) => mode === 'add' || o._id !== org?._id)
+                  .map((sourceOrg) => {
+                    const isSelected = selectedSyncSources.includes(
+                      sourceOrg._id,
+                    );
+                    return (
+                      <label
+                        key={sourceOrg._id}
+                        className="flex items-center gap-3 cursor-pointer p-1 rounded hover:bg-white/5 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setValue('syncSources', [
+                                ...selectedSyncSources,
+                                sourceOrg._id,
+                              ]);
+                            } else {
+                              setValue(
+                                'syncSources',
+                                selectedSyncSources.filter(
+                                  (id) => id !== sourceOrg._id,
+                                ),
+                              );
+                            }
+                          }}
+                        />
+                        <span className="text-white text-sm">
+                          {sourceOrg.name} ({sourceOrg.slug})
+                        </span>
+                      </label>
+                    );
+                  })}
+                {allOrgs.length === (mode === 'add' ? 0 : 1) && (
+                  <p className="text-white/50 text-xs italic">
+                    No other organizations available to sync from.
+                  </p>
+                )}
+              </div>
+            </div>
+            {errOf('syncSources') && (
+              <p className="text-xs text-red-400">
+                {errOf('syncSources')?.message}
+              </p>
+            )}
+          </div>
 
           {/* ── Admin seed account (add mode only) ──────────────────── */}
           {mode === 'add' && (
@@ -384,8 +461,12 @@ export default function OrgFormModal({
               <div
                 className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer select-none"
                 style={{
-                  background: sendEmail ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)',
-                  border: sendEmail ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  background: sendEmail
+                    ? 'rgba(124,58,237,0.12)'
+                    : 'rgba(255,255,255,0.04)',
+                  border: sendEmail
+                    ? '1px solid rgba(124,58,237,0.4)'
+                    : '1px solid rgba(255,255,255,0.08)',
                   transition: 'all 0.2s',
                 }}
                 onClick={() => setSendEmail((v) => !v)}
@@ -398,8 +479,18 @@ export default function OrgFormModal({
                   onClick={(e) => e.stopPropagation()}
                   className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
                 />
-                <Mail className="w-4 h-4" style={{ color: sendEmail ? '#a78bfa' : 'rgba(255,255,255,0.35)' }} />
-                <span className="text-sm" style={{ color: sendEmail ? '#c4b5fd' : 'rgba(255,255,255,0.5)' }}>
+                <Mail
+                  className="w-4 h-4"
+                  style={{
+                    color: sendEmail ? '#a78bfa' : 'rgba(255,255,255,0.35)',
+                  }}
+                />
+                <span
+                  className="text-sm"
+                  style={{
+                    color: sendEmail ? '#c4b5fd' : 'rgba(255,255,255,0.5)',
+                  }}
+                >
                   Send welcome email with credentials
                 </span>
               </div>

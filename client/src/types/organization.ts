@@ -9,6 +9,7 @@ export type Organization = MongoEntity & {
   treasurer: string;
   auditor: string;
   departments?: string[];
+  syncSources?: string[];
   createdAt: Date;
   updatedAt: Date;
 };

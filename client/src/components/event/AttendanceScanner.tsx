@@ -7,6 +7,7 @@ import { recordAttendance } from '@/api/attendance';
 import { queryClient } from '@/main';
 import { QUERY_KEYS, MODULES } from '@/constants';
 import HasPermission from '../HasPermission';
+import _ from 'lodash';
 
 type AttendanceScannerProps = {
   session: EventSession;
@@ -107,7 +108,10 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
   );
 
   return (
-    <HasPermission permissions={[MODULES.ATTENDANCE_RECORD_CREATE]} fallback={FallbackScanner}>
+    <HasPermission
+      permissions={[MODULES.ATTENDANCE_RECORD_CREATE]}
+      fallback={FallbackScanner}
+    >
       <div className="space-y-4 max-w-2xl mx-auto w-full">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex items-center">
@@ -151,7 +155,9 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
           <div
             className={
               `space-y-1 rounded-lg border p-3 shadow-sm transition-all duration-300 ease-out transform ${
-                isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'
+                isVisible
+                  ? 'opacity-100 translate-y-0 scale-100'
+                  : 'opacity-0 -translate-y-2 scale-95'
               } ` +
               (lastScanResult.success
                 ? 'bg-green-50 text-green-900 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900'
@@ -165,7 +171,9 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
                 <AlertCircle className="h-4 w-4" />
               )}
               <h4 className="font-semibold">
-                {lastScanResult.success ? lastScanResult.studentName : 'Error'}
+                {lastScanResult.success
+                  ? _.startCase(lastScanResult.studentName)
+                  : 'Error'}
               </h4>
             </div>
 

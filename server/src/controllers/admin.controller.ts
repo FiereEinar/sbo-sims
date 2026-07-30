@@ -60,6 +60,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     adminLastname,
     adminEmail,
     sendEmail,
+    syncSources,
   } = req.body as Omit<IOrganization, '_id'> & {
     adminStudentID: string;
     adminPassword: string;
@@ -67,6 +68,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     adminLastname: string;
     adminEmail?: string;
     sendEmail?: boolean;
+    syncSources?: string[];
   };
 
   const existingSlug = await OrganizationModel.findOne({ slug }).exec();
@@ -80,6 +82,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
+    syncSources: syncSources || [],
   });
   await organization.save();
 
@@ -182,6 +185,7 @@ export const admin_update_organization = asyncHandler(async (req, res) => {
     treasurer,
     viceGovernor,
     auditor,
+    syncSources,
   }: Omit<IOrganization, '_id'> = req.body;
 
   const existingSlug = await OrganizationModel.findOne({
@@ -197,6 +201,7 @@ export const admin_update_organization = asyncHandler(async (req, res) => {
     viceGovernor,
     treasurer,
     auditor,
+    syncSources: syncSources || [],
   };
 
   const result = await OrganizationModel.findByIdAndUpdate(

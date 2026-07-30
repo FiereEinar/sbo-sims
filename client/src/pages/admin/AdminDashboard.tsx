@@ -224,6 +224,7 @@ export default function AdminDashboard() {
         <OrgFormModal
           mode={modal}
           org={selectedOrg ?? undefined}
+          allOrgs={orgs}
           onClose={closeModal}
           onSuccess={handleFormSuccess}
         />

@@ -473,3 +473,124 @@ export const delete_student = asyncHandler(async (req, res) => {
 
   res.json(new CustomResponse(true, result, 'Student deleted successfully'));
 });
+
+/**
+ * GET - fetch available courses and student counts from allowed sync sources
+ */
+export const get_sync_sources = asyncHandler(async (req, res) => {
+  const currentOrg = await OrganizationModel.findById(
+    req.tenantContext!.organizationId,
+  ).lean();
+  appAssert(currentOrg, NOT_FOUND, 'Organization not found');
+
+  if (!currentOrg.syncSources || currentOrg.syncSources.length === 0) {
+    res.json(new CustomResponse(true, [], 'No sync sources configured'));
+    return;
+  }
+
+  const pipeline: PipelineStage[] = [
+    {
+      $match: {
+        organization: { $in: currentOrg.syncSources },
+        semester: req.tenantContext!.semester,
+        schoolYear: req.tenantContext!.schoolYear,
+      },
+    },
+    {
+      $group: {
+        _id: '$course',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        course: '$_id',
+        count: 1,
+      },
+    },
+    { $sort: { course: 1 } },
+  ];
+
+  const results = await StudentModel.aggregate(pipeline);
+  res.json(new CustomResponse(true, results, 'Available sync sources fetched'));
+});
+
+/**
+ * POST - sync students from allowed sync sources for selected courses
+ */
+export const sync_students = asyncHandler(async (req, res) => {
+  const { courses } = req.body as { courses: string[] };
+  appAssert(
+    courses && Array.isArray(courses) && courses.length > 0,
+    BAD_REQUEST,
+    'Courses array must be provided',
+  );
+
+  const currentOrg = await OrganizationModel.findById(
+    req.tenantContext!.organizationId,
+  ).lean();
+  appAssert(currentOrg, NOT_FOUND, 'Organization not found');
+
+  appAssert(
+    currentOrg.syncSources && currentOrg.syncSources.length > 0,
+    BAD_REQUEST,
+    'No sync sources configured for this organization',
+  );
+
+  const sourceStudents = await StudentModel.find({
+    organization: { $in: currentOrg.syncSources },
+    semester: req.tenantContext!.semester,
+    schoolYear: req.tenantContext!.schoolYear,
+    course: { $in: courses },
+  }).lean();
+
+  if (sourceStudents.length === 0) {
+    res.json(
+      new CustomResponse(
+        true,
+        { matched: 0, upserted: 0, modified: 0 },
+        'No students found to sync',
+      ),
+    );
+    return;
+  }
+
+  const bulkOps = sourceStudents.map((student) => ({
+    updateOne: {
+      filter: {
+        studentID: student.studentID,
+        organization: req.tenantContext!.organizationId,
+        semester: req.tenantContext!.semester,
+        schoolYear: req.tenantContext!.schoolYear,
+      },
+      update: {
+        $set: {
+          firstname: student.firstname,
+          lastname: student.lastname,
+          middlename: student.middlename,
+          email: student.email,
+          gender: student.gender,
+          course: student.course,
+          year: student.year,
+          section: student.section,
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const result = await StudentModel.bulkWrite(bulkOps);
+
+  res.json(
+    new CustomResponse(
+      true,
+      {
+        matched: sourceStudents.length,
+        upserted: result.upsertedCount,
+        modified: result.modifiedCount,
+      },
+      'Students synced successfully',
+    ),
+  );
+});

@@ -7,7 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
-import ImportStudentsButtonSmart from '@/components/buttons/ImportStudentsButtonSmart';
+import { Link, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Import } from 'lucide-react';
 import { queryClient } from '@/main';
 import HasPermission from '@/components/HasPermission';
 import StudentsCardView from '@/components/student/StudentsCardView';
@@ -17,7 +19,7 @@ import StudentFilter from '@/components/student/StudentFilter';
 
 export default function Student() {
   const { viewMode } = useViewModeStore();
-
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const { page, pageSize, setPage, getFilterValues } = useStudentFilterStore(
     (state) => state,
   );
@@ -57,7 +59,17 @@ export default function Student() {
 
         <div className="flex gap-2  items-center">
           <HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
-            <ImportStudentsButtonSmart />
+            <Button
+              asChild
+              className="rounded-full flex items-center gap-2"
+              variant="ghost"
+              size="sm"
+            >
+              <Link to={`/${orgSlug}/student/import`}>
+                <Import className="size-4" />
+                Import
+              </Link>
+            </Button>
           </HasPermission>
 
           <HasPermission permissions={[MODULES.STUDENT_CREATE]}>

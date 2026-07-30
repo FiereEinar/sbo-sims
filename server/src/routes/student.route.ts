@@ -11,6 +11,8 @@ import {
   preview_students_import,
   import_students_smart,
   update_student,
+  get_sync_sources,
+  sync_students,
 } from '../controllers/student.controller';
 import {
   createStudentValidation,
@@ -27,6 +29,13 @@ router.get('/', get_all_students);
 router.get('/courses', get_available_course);
 
 router.get('/sections', get_available_section);
+
+router.get(
+  '/sync-sources',
+  hasRole([MODULES.STUDENT_IMPORT]),
+  get_sync_sources,
+);
+router.post('/sync', hasRole([MODULES.STUDENT_IMPORT]), sync_students);
 
 router.get('/:studentID', get_student);
 

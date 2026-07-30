@@ -4,6 +4,7 @@ import { MODULES } from './constants';
 import App from './App';
 import Dashboard from './pages/Dashboard';
 import Student from './pages/Student';
+import ImportStudents from './pages/ImportStudents';
 import Transaction from './pages/Transaction';
 import Category from './pages/Category';
 import StudentInfo from './pages/StudentInfo';
@@ -134,6 +135,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Student />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'student/import',
+          element: (
+            <HasPermission
+              permissions={[MODULES.STUDENT_IMPORT]}
+              fallback={<NoPermission />}
+            >
+              <ImportStudents />
             </HasPermission>
           ),
         },

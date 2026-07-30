@@ -10,6 +10,7 @@ export interface IOrganization extends mongoose.Document {
   viceGovernor: string;
   treasurer: string;
   auditor: string;
+  syncSources: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,7 @@ export const OrganizationSchema = new Schema<IOrganization>(
     viceGovernor: { type: String, required: true },
     treasurer: { type: String, required: true },
     auditor: { type: String, required: true },
+    syncSources: [{ type: Schema.Types.ObjectId, ref: 'Organization' }],
   },
   { timestamps: true },
 );

@@ -21,6 +21,7 @@ import TableLoading from '../loading/TableLoading';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAvailableCourses } from '@/api/student';
 import { QUERY_KEYS } from '@/constants';
+import { format } from 'date-fns';
 
 interface CategoryStudentStatusTableProps {
   students: CategoryStudentStatus[] | undefined;
@@ -177,7 +178,7 @@ export default function CategoryStudentStatusTable({
               <TableCell>{student.section ?? '—'}</TableCell>
               <TableCell>P{amountPaid}</TableCell>
               <TableCell>
-                {datePayed ? new Date(datePayed).toLocaleDateString() : 'N/A'}
+                {datePayed ? format(new Date(datePayed), 'MM/dd/yyyy') : 'N/A'}
               </TableCell>
               <TableCell>
                 <Badge variant={statusBadgeVariant} className="uppercase">

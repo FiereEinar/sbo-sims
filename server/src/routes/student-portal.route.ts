@@ -12,6 +12,7 @@ import {
   get_student_transactions,
   get_student_attendance,
   get_student_gpoa,
+  get_student_collections,
 } from '../controllers/student-portal.controller';
 import {
   create_payment_request,
@@ -49,6 +50,9 @@ router.get('/attendance', auth, studentAuth, get_student_attendance);
 
 // GPOA Plans
 router.get('/gpoa', auth, studentAuth, get_student_gpoa);
+
+// Collections / Categories
+router.get('/collections', auth, studentAuth, get_student_collections);
 
 export default router;
 

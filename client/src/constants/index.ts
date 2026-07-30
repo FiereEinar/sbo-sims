@@ -11,6 +11,7 @@ import {
   Receipt,
   ReceiptTextIcon,
   Tags,
+  FolderKanban,
 } from 'lucide-react';
 import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -211,6 +212,11 @@ export const studentNavbarLinks: SidebarNavLinkType[] = [
     path: '/student/payment-requests',
     name: 'Payment Requests',
     icon: FileText,
+  },
+  {
+    path: '/student/collections',
+    name: 'My Collections',
+    icon: FolderKanban,
   },
   {
     path: '/student/transactions',

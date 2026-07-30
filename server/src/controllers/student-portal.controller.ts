@@ -29,6 +29,7 @@ import SessionModel from '../models/session.model';
 import StudentModel from '../models/student.model';
 import TransactionModel from '../models/transaction.model';
 import AttendanceRecordModel from '../models/attendance-record.model';
+import CategoryModel from '../models/category.model';
 import GpoaModel from '../models/gpoa.model';
 import AppSettingModel from '../models/app-setting.model';
 import {
@@ -626,5 +627,73 @@ export const get_student_gpoa = asyncHandler(async (req, res) => {
 
   res.status(OK).json(
     new CustomResponse(true, gpoas, 'Student GPOA plans retrieved'),
+  );
+});
+
+/**
+ * GET /student-portal/collections
+ * Protected (auth + studentAuth) — returns fee categories for all organizations
+ * the student is enrolled in, for the active term, along with payment status.
+ */
+export const get_student_collections = asyncHandler(async (req, res) => {
+  const { studentID, activeSemDB, activeSchoolYearDB } = req.currentUser!;
+
+  // 1. Find all Student records for this student in the active term
+  const studentRecords = await StudentModel.find({
+    studentID,
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  })
+    .populate('organization', 'name slug')
+    .lean();
+
+  const orgIds = studentRecords
+    .map((s) => (s.organization as any)?._id || s.organization)
+    .filter(Boolean);
+
+  // 2. Fetch all Categories for those orgs matching the term
+  const categories = await CategoryModel.find({
+    organization: { $in: orgIds },
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  })
+    .populate('organization', 'name slug')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // 3. Fetch all Transactions for the student matching those orgs and term
+  const studentObjIds = studentRecords.map((s) => s._id);
+  const transactions = await TransactionModel.find({
+    owner: { $in: studentObjIds },
+    organization: { $in: orgIds },
+    semester: activeSemDB,
+    schoolYear: activeSchoolYearDB,
+  }).lean();
+
+  // 4. Map each category to its payment status
+  const collections = categories.map((cat) => {
+    // Find transaction for this category (if any)
+    const tx = transactions.find(
+      (t) => String(t.category) === String(cat._id),
+    );
+
+    const amountPaid = tx ? tx.amount : 0;
+    
+    let status = 'unpaid';
+    if (amountPaid >= cat.fee) {
+      status = 'paid';
+    } else if (amountPaid > 0) {
+      status = 'partial';
+    }
+
+    return {
+      ...cat,
+      amountPaid,
+      status,
+    };
+  });
+
+  res.status(OK).json(
+    new CustomResponse(true, collections, 'Student collections retrieved'),
   );
 });

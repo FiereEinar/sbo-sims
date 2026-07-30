@@ -8,8 +8,8 @@ type AuthPageProps = {
 
 export default function AuthPage({ form, title }: AuthPageProps) {
   return (
-    <main className="transition-all overflow-hidden bg-background relative h-dvh flex gap-16 justify-center items-center p-3 sm:p-5">
-      <div className="absolute bg-card w-[35rem] sm:w-[50rem] md:w-[55rem] h-[150rem] rotate-[135deg] shadow-2xl shadow-card" />
+    <main className="transition-all overflow-hidden bg-background relative h-svh flex gap-16 justify-center items-center p-3 sm:p-5">
+      <div className="absolute bg-card w-[35rem] sm:w-[50rem] md:w-[55rem] h-[150rem] rotate-[135deg] shadow-2xl shadow-card z-10" />
 
       <div className="relative flex flex-col gap-8 w-[95%] sm:w-[400px] z-50">
         <div className="absolute top-[-5rem] flex items-center gap-2">

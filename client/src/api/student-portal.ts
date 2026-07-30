@@ -179,3 +179,25 @@ export const fetchStudentGpoa = async (): Promise<StudentGpoaItem[]> => {
   const { data } = await axiosInstance.get('/student-portal/gpoa');
   return data.data;
 };
+
+// ─── COLLECTIONS ──────────────────────────────────────────────────────────────
+
+export type StudentCollectionItem = {
+  _id: string;
+  name: string;
+  fee: number;
+  details: string[];
+  organization: { _id: string; name: string; slug: string };
+  semester: string;
+  schoolYear: string;
+  createdAt: string;
+  updatedAt: string;
+  amountPaid: number;
+  status: 'paid' | 'partial' | 'unpaid';
+};
+
+export const fetchStudentCollections = async (): Promise<StudentCollectionItem[]> => {
+  const { data } = await axiosInstance.get('/student-portal/collections');
+  return data.data;
+};
+

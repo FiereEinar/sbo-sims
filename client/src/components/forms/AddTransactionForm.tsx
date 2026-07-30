@@ -153,7 +153,6 @@ export default function AddTransactionForm({
   useEffect(() => {
     if (autoselect) {
       const cat = categories?.[0];
-      console.log(cat);
       setCategoryEntries([
         {
           id: crypto.randomUUID(),

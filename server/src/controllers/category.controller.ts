@@ -182,7 +182,17 @@ export const get_category_transactions = asyncHandler(async (req, res) => {
  */
 export const get_category_student_status = asyncHandler(async (req, res) => {
   const { categoryID } = req.params;
-  const { page, pageSize, search, course, status, year, section } = req.query;
+  const {
+    page,
+    pageSize,
+    search,
+    course,
+    status,
+    year,
+    section,
+    startDate,
+    endDate,
+  } = req.query;
 
   const category = await CategoryModel.findOne({
     _id: categoryID,
@@ -221,13 +231,24 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 
   const students = await StudentModel.find(studentQuery).lean();
 
-  // 2. Get all transactions for this category
-  const transactions = await TransactionModel.find({
+  // transactions filter
+  let transactionsQuery: any = {
     category: categoryID,
     organization: req.tenantContext!.organizationId,
     semester: req.tenantContext!.semester,
     schoolYear: req.tenantContext!.schoolYear,
-  }).lean();
+  };
+
+  if (startDate && endDate) {
+    transactionsQuery.date = {
+      $gte: new Date(startDate as string),
+      $lte: new Date(endDate as string),
+    };
+  }
+
+  // 2. Get all transactions for this category
+  const transactions = await TransactionModel.find(transactionsQuery).lean();
+
   const transactionMap = new Map(
     transactions.map((t) => [t.owner.toString(), t]),
   );
@@ -282,7 +303,7 @@ export const get_category_student_status = asyncHandler(async (req, res) => {
 export const download_category_student_status_pdf = asyncHandler(
   async (req, res) => {
     const { categoryID } = req.params;
-    const { search, course, status } = req.query;
+    const { search, course, status, startDate, endDate } = req.query;
 
     const category = await CategoryModel.findOne({
       _id: categoryID,
@@ -311,12 +332,23 @@ export const download_category_student_status_pdf = asyncHandler(
     }
 
     const students = await StudentModel.find(studentQuery).lean();
-    const transactions = await TransactionModel.find({
+
+    let transactionsQuery: any = {
       category: categoryID,
       organization: req.tenantContext!.organizationId,
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,
-    }).lean();
+    };
+
+    if (startDate && endDate) {
+      transactionsQuery.date = {
+        $gte: new Date(startDate as string),
+        $lte: new Date(endDate as string),
+      };
+    }
+
+    const transactions = await TransactionModel.find(transactionsQuery).lean();
+
     const transactionMap = new Map(
       transactions.map((t) => [t.owner.toString(), t]),
     );
@@ -404,7 +436,7 @@ export const download_category_student_status_pdf = asyncHandler(
 export const download_category_student_status_csv = asyncHandler(
   async (req, res) => {
     const { categoryID } = req.params;
-    const { search, course, status } = req.query;
+    const { search, course, status, startDate, endDate } = req.query;
 
     const category = await CategoryModel.findOne({
       _id: categoryID,
@@ -422,6 +454,7 @@ export const download_category_student_status_csv = asyncHandler(
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,
     };
+
     if (course) studentQuery.course = course;
     if (search && typeof search === 'string') {
       const s = search.toLowerCase();
@@ -433,12 +466,23 @@ export const download_category_student_status_csv = asyncHandler(
     }
 
     const students = await StudentModel.find(studentQuery).lean();
-    const transactions = await TransactionModel.find({
+
+    let transactionsQuery: any = {
       category: categoryID,
       organization: req.tenantContext!.organizationId,
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,
-    }).lean();
+    };
+
+    if (startDate && endDate) {
+      transactionsQuery.date = {
+        $gte: new Date(startDate as string),
+        $lte: new Date(endDate as string),
+      };
+    }
+
+    const transactions = await TransactionModel.find(transactionsQuery).lean();
+
     const transactionMap = new Map(
       transactions.map((t) => [t.owner.toString(), t]),
     );

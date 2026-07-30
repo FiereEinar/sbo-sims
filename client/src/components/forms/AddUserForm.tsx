@@ -1,5 +1,5 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
-import { Edit, PlusIcon } from 'lucide-react';
+import { Edit, PlusIcon, RefreshCw, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -44,6 +44,7 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
   const [role, setRole] = useState<string | undefined>(
     user?.rbacRole?._id ?? undefined,
   );
+  const [sendEmail, setSendEmail] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -79,8 +80,15 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
     if (role === undefined)
       return setError('rbacRole', { message: 'Role is required' });
 
+    // Validate email is filled when send-email is checked (add mode only)
+    if (mode === 'add' && sendEmail && !data.email?.length) {
+      return setError('email', {
+        message: 'Email is required to send welcome credentials',
+      });
+    }
+
     try {
-      const formData = { ...user, ...data, rbacRole: role };
+      const formData = { ...user, ...data, rbacRole: role, sendEmail: mode === 'add' ? sendEmail : undefined };
       if (mode === 'add') await submitUserForm(formData);
       if (mode === 'edit')
         await submitAdminUpdateUserForm(user?._id ?? '', formData);
@@ -162,14 +170,74 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
           />
 
           {mode === 'add' && (
-            <InputField<UserFormValues>
-              name="password"
-              type="password"
-              registerFn={register}
-              errors={errors}
-              label="Password:"
-              id="password"
-            />
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <span>Password:</span>
+                <button
+                  type="button"
+                  id="randomizeUserPassword"
+                  onClick={() => {
+                    const chars =
+                      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+                    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    const lower = 'abcdefghijklmnopqrstuvwxyz';
+                    const digits = '0123456789';
+                    const rand = (s: string) =>
+                      s[Math.floor(Math.random() * s.length)];
+                    const base = [
+                      rand(upper),
+                      rand(lower),
+                      rand(digits),
+                      ...Array.from({ length: 9 }, () => rand(chars)),
+                    ];
+                    for (let i = base.length - 1; i > 0; i--) {
+                      const j = Math.floor(Math.random() * (i + 1));
+                      [base[i], base[j]] = [base[j], base[i]];
+                    }
+                    setValue('password', base.join(''), {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                  className="flex items-center gap-1 text-xs text-violet-500 hover:text-violet-400 transition-colors"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Randomize
+                </button>
+              </label>
+              <InputField<UserFormValues>
+                name="password"
+                type="password"
+                registerFn={register}
+                errors={errors}
+                label=""
+                id="password"
+              />
+            </div>
+          )}
+
+          {mode === 'add' && (
+            <div
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer select-none border transition-all"
+              style={{
+                background: sendEmail ? 'hsl(263 70% 10%)' : undefined,
+                borderColor: sendEmail ? 'hsl(263 70% 40%)' : undefined,
+              }}
+              onClick={() => setSendEmail((v) => !v)}
+            >
+              <input
+                id="sendEmailUserCheckbox"
+                type="checkbox"
+                checked={sendEmail}
+                onChange={() => setSendEmail((v) => !v)}
+                onClick={(e) => e.stopPropagation()}
+                className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+              />
+              <Mail className="w-4 h-4 shrink-0" style={{ color: sendEmail ? '#a78bfa' : undefined }} />
+              <span className="text-sm" style={{ color: sendEmail ? '#c4b5fd' : undefined }}>
+                Send welcome email with credentials
+              </span>
+            </div>
           )}
 
           {/* <InputField<UserFormValues>

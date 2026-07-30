@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
+import { X, RefreshCw, Mail } from 'lucide-react';
 import { AdminOrgWithStats, adminCreateOrg, adminUpdateOrg } from '@/api/admin';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
 import _ from 'lodash';
@@ -21,9 +21,34 @@ const addOrgSchema = organizationSchema.extend({
     .regex(/[0-9]/, 'Must contain at least one number'),
   adminFirstname: z.string().min(1, 'First name is required').max(50),
   adminLastname: z.string().min(1, 'Last name is required').max(50),
+  adminEmail: z.string().email('Must be a valid email').optional().or(z.literal('')),
 });
 
 type AddOrgFormValues = z.infer<typeof addOrgSchema>;
+
+/** Generates a secure random 12-char password satisfying strength requirements */
+function generateRandomPassword(): string {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const all = upper + lower + digits + '!@#$%&*';
+  const rand = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const base = [
+    rand(upper),
+    rand(upper),
+    rand(lower),
+    rand(lower),
+    rand(digits),
+    rand(digits),
+    ...Array.from({ length: 6 }, () => rand(all)),
+  ];
+  // Fisher-Yates shuffle
+  for (let i = base.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [base[i], base[j]] = [base[j], base[i]];
+  }
+  return base.join('');
+}
 
 export default function OrgFormModal({
   mode,
@@ -38,12 +63,14 @@ export default function OrgFormModal({
 }) {
   const [rootError, setRootError] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
   const schema = mode === 'add' ? addOrgSchema : editOrgSchema;
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<AddOrgFormValues>({
     resolver: zodResolver(schema),
@@ -60,7 +87,7 @@ export default function OrgFormModal({
   const onSubmit = async (data: AddOrgFormValues) => {
     setRootError('');
     try {
-      const payload = { ...data };
+      const payload = { ...data, sendEmail: mode === 'add' ? sendEmail : undefined };
       if (mode === 'add') {
         await adminCreateOrg(payload);
       } else {
@@ -177,7 +204,7 @@ export default function OrgFormModal({
                 </p>
               </div>
 
-              {/* Admin Student ID + Firstname */}
+              {/* Admin Student ID + Password */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label
@@ -218,7 +245,7 @@ export default function OrgFormModal({
                       type={showAdminPassword ? 'text' : 'password'}
                       {...register('adminPassword')}
                       placeholder="Min 8 chars"
-                      className="w-full px-4 py-2.5 pr-10 rounded-xl text-sm outline-none placeholder:opacity-30"
+                      className="w-full px-4 py-2.5 pr-20 rounded-xl text-sm outline-none placeholder:opacity-30"
                       style={{
                         ...inputStyle,
                         borderColor: errors.adminPassword
@@ -226,6 +253,25 @@ export default function OrgFormModal({
                           : 'rgba(255,255,255,0.12)',
                       }}
                     />
+                    {/* Randomize button */}
+                    <button
+                      type="button"
+                      id="randomizeAdminPassword"
+                      onClick={() => {
+                        const pwd = generateRandomPassword();
+                        setValue('adminPassword', pwd, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        setShowAdminPassword(true);
+                      }}
+                      title="Randomize password"
+                      className="absolute right-8 top-1/2 -translate-y-1/2 transition-colors hover:opacity-80"
+                      style={{ color: 'rgba(124,58,237,0.8)' }}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                    {/* Show/hide toggle */}
                     <button
                       type="button"
                       id="toggleAdminPassword"
@@ -333,6 +379,60 @@ export default function OrgFormModal({
                   )}
                 </div>
               </div>
+
+              {/* Send welcome email toggle */}
+              <div
+                className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer select-none"
+                style={{
+                  background: sendEmail ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.04)',
+                  border: sendEmail ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  transition: 'all 0.2s',
+                }}
+                onClick={() => setSendEmail((v) => !v)}
+              >
+                <input
+                  id="sendEmailCheckbox"
+                  type="checkbox"
+                  checked={sendEmail}
+                  onChange={() => setSendEmail((v) => !v)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+                />
+                <Mail className="w-4 h-4" style={{ color: sendEmail ? '#a78bfa' : 'rgba(255,255,255,0.35)' }} />
+                <span className="text-sm" style={{ color: sendEmail ? '#c4b5fd' : 'rgba(255,255,255,0.5)' }}>
+                  Send welcome email with credentials
+                </span>
+              </div>
+
+              {/* Admin email (shown only when checkbox is ticked) */}
+              {sendEmail && (
+                <div className="space-y-1">
+                  <label
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={labelStyle}
+                  >
+                    Admin Email Address
+                  </label>
+                  <input
+                    id="adminEmail"
+                    type="email"
+                    {...register('adminEmail')}
+                    placeholder="admin@example.com"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-30"
+                    style={{
+                      ...inputStyle,
+                      borderColor: errors.adminEmail
+                        ? '#f87171'
+                        : 'rgba(255,255,255,0.12)',
+                    }}
+                  />
+                  {errors.adminEmail && (
+                    <p className="text-xs text-red-400">
+                      {errors.adminEmail.message}
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )}
 

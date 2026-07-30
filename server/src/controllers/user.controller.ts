@@ -6,9 +6,11 @@ import { UpdateQuery } from 'mongoose';
 import UserModel, { IUser } from '../models/user.model';
 import { escapeRegex, validateEmail } from '../utils/utils';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
-import { BCRYPT_SALT } from '../constants/env';
+import { BCRYPT_SALT, FRONTEND_URL } from '../constants/env';
 import bcrypt from 'bcryptjs';
 import RoleModel from '../models/role.model';
+import OrganizationModel from '../models/organization.model';
+import { sendWelcomeCredentialsEmail } from '../services/emailService';
 
 export const update_user = asyncHandler(async (req, res) => {
   const { userID } = req.params;
@@ -136,7 +138,7 @@ export const getUsers = asyncHandler(async (req, res) => {
  * @route POST /api/v1/user
  */
 export const createUser = asyncHandler(async (req, res) => {
-  const { firstname, lastname, studentID, password, bio, email, rbacRole } =
+  const { firstname, lastname, studentID, password, bio, email, rbacRole, sendEmail } =
     req.body;
 
   appAssert(
@@ -202,6 +204,29 @@ export const createUser = asyncHandler(async (req, res) => {
       publicID: profilePublicID,
     },
   });
+
+  // Optionally send welcome credentials email
+  if (sendEmail === true && email?.length) {
+    const org = await OrganizationModel.findById(
+      req.tenantContext!.organizationId,
+    ).lean();
+    if (org) {
+      const orgLoginUrl = `${FRONTEND_URL}/${org.slug}`;
+      const fullName = `${firstname} ${lastname}`.replace(/\b\w/g, (c) =>
+        c.toUpperCase(),
+      );
+      sendWelcomeCredentialsEmail(
+        email,
+        fullName,
+        studentID,
+        password,
+        org.name,
+        orgLoginUrl,
+      ).catch((err) =>
+        console.error('[email] Failed to send welcome email:', err),
+      );
+    }
+  }
 
   res.json(new CustomResponse(true, user, 'User created successfully!'));
 });

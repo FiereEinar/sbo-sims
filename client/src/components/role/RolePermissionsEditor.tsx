@@ -69,9 +69,12 @@ export function RolePermissionsEditor({ role }: Props) {
       });
 
       toast({ title: 'Permissions updated successfully!' });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      toast({ title: 'Failed to update permissions', variant: 'destructive' });
+      toast({
+        title: error.message || 'Failed to update permissions',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }

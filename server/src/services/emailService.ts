@@ -215,3 +215,117 @@ export const sendPaymentRequestStatusEmail = async (
 
   await transporter.sendMail(mailOptions);
 };
+
+/**
+ * Sends a welcome email containing login credentials to a newly created
+ * org admin or org user account.
+ *
+ * @param to          - Recipient email address
+ * @param name        - Full name of the recipient (e.g. "Juan Dela Cruz")
+ * @param studentID   - The account's Student ID
+ * @param password    - The plain-text password set during account creation
+ * @param orgName     - Display name of the organization
+ * @param orgLoginUrl - Direct URL to the organization's login page
+ */
+export const sendWelcomeCredentialsEmail = async (
+  to: string,
+  name: string,
+  studentID: string,
+  password: string,
+  orgName: string,
+  orgLoginUrl: string,
+) => {
+  const mailOptions = {
+    from: `"SBO-SIMS" <${EMAIL_USER}>`,
+    replyTo: EMAIL_USER,
+    to,
+    subject: `Welcome to ${orgName} — Your SBO-SIMS Credentials`,
+    headers: {
+      'X-Mailer': 'SBO-SIMS Mailer',
+      'X-Priority': '3',
+      Precedence: 'bulk',
+      'List-Unsubscribe': `<mailto:${EMAIL_USER}?subject=unsubscribe>`,
+    },
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+      <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+        <!-- Preheader -->
+        <span style="display:none;font-size:1px;color:#f4f4f4;max-height:0;max-width:0;opacity:0;overflow:hidden;">Your ${orgName} SBO-SIMS account is ready. Here are your login credentials.</span>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;">
+                <!-- Header -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#7c3aed,#2563eb);padding:30px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:bold;">SBO-SIMS</h1>
+                    <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Student Organization Management System</p>
+                  </td>
+                </tr>
+                <!-- Body -->
+                <tr>
+                  <td style="padding:40px 30px;">
+                    <h2 style="color:#202124;font-size:20px;margin:0 0 8px;">Welcome, ${name}!</h2>
+                    <p style="color:#5f6368;font-size:15px;line-height:1.6;margin:0 0 28px;">
+                      Your administrator account for <strong>${orgName}</strong> has been created on SBO-SIMS.
+                      Below are your login credentials — please keep them safe and change your password after your first login.
+                    </p>
+
+                    <!-- Credentials box -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:6px;border:1px solid #e0e0e0;margin:0 0 28px;">
+                      <tr>
+                        <td style="padding:16px 20px;border-bottom:1px solid #e0e0e0;">
+                          <span style="color:#9aa0a6;font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Organization</span>
+                          <span style="color:#202124;font-size:15px;font-weight:bold;">${orgName}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:16px 20px;border-bottom:1px solid #e0e0e0;">
+                          <span style="color:#9aa0a6;font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Student ID</span>
+                          <span style="color:#202124;font-size:15px;font-weight:bold;font-family:monospace;">${studentID}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:16px 20px;">
+                          <span style="color:#9aa0a6;font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Temporary Password</span>
+                          <span style="color:#202124;font-size:15px;font-weight:bold;font-family:monospace;">${password}</span>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- CTA button -->
+                    <div style="text-align:center;margin:32px 0;">
+                      <a href="${orgLoginUrl}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#ffffff;padding:14px 36px;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;">
+                        Go to ${orgName} Dashboard
+                      </a>
+                    </div>
+
+                    <p style="color:#5f6368;font-size:13px;line-height:1.6;margin:0;">
+                      If the button above doesn't work, copy and paste this link into your browser:<br>
+                      <a href="${orgLoginUrl}" style="color:#7c3aed;word-break:break-all;">${orgLoginUrl}</a>
+                    </p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color:#f8f9fa;padding:20px 30px;border-top:1px solid #e0e0e0;text-align:center;">
+                    <p style="color:#9aa0a6;font-size:12px;margin:0;">
+                      This is an automated message from SBO-SIMS. Please do not reply directly to this email.<br>
+                      If you did not expect this message, please contact your system administrator.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

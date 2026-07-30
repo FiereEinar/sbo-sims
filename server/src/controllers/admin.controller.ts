@@ -10,12 +10,13 @@ import {
   UNPROCESSABLE_ENTITY,
 } from '../constants/http';
 import { MODULES } from '../constants/modules';
-import { BCRYPT_SALT } from '../constants/env';
+import { BCRYPT_SALT, FRONTEND_URL } from '../constants/env';
 import { SUPER_ADMIN } from '../constants';
 import UserModel from '../models/user.model';
 import RoleModel from '../models/role.model';
 import CategoryModel from '../models/category.model';
 import StudentModel from '../models/student.model';
+import { sendWelcomeCredentialsEmail } from '../services/emailService';
 
 /**
  * GET /admin/organizations
@@ -57,11 +58,15 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     adminPassword,
     adminFirstname,
     adminLastname,
+    adminEmail,
+    sendEmail,
   } = req.body as Omit<IOrganization, '_id'> & {
     adminStudentID: string;
     adminPassword: string;
     adminFirstname: string;
     adminLastname: string;
+    adminEmail?: string;
+    sendEmail?: boolean;
   };
 
   const existingSlug = await OrganizationModel.findOne({ slug }).exec();
@@ -99,7 +104,7 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     studentID: adminStudentID,
     firstname: adminFirstname.toLowerCase(),
     lastname: adminLastname.toLowerCase(),
-    email: '',
+    email: adminEmail ?? '',
     password: hashedPassword,
     role: 'org-admin',
     rbacRole: superAdminRole._id,
@@ -132,6 +137,24 @@ export const admin_create_organization = asyncHandler(async (req, res) => {
     organization: organization._id,
     createdBy: adminUser._id,
   });
+
+  // ── 5. Send welcome credentials email (optional) ───────────────────────
+  if (sendEmail === true && adminEmail) {
+    const orgLoginUrl = `${FRONTEND_URL}/${slug}`;
+    const fullName =
+      `${adminFirstname} ${adminLastname}`.replace(/\b\w/g, (c) =>
+        c.toUpperCase(),
+      );
+    // Fire-and-forget — don't block the response on email delivery
+    sendWelcomeCredentialsEmail(
+      adminEmail,
+      fullName,
+      adminStudentID,
+      adminPassword,
+      name,
+      orgLoginUrl,
+    ).catch((err) => console.error('[email] Failed to send welcome email:', err));
+  }
 
   res.json(
     new CustomResponse(

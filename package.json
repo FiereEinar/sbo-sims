@@ -1,27 +1,63 @@
 {
-	"name": "transactions-tracker",
-	"version": "1.0.0",
-	"description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
-	"main": "index.js",
-	"scripts": {
-		"dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\" --names \"server,client,mongodb\"",
-		"install-all": "npm install --prefix server && npm install --prefix client && npm install",
-		"check-build": "npm run check:ts --prefix server && npm run build --prefix client",
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/FiereEinar/transactions-tracker.git"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"type": "commonjs",
-	"bugs": {
-		"url": "https://github.com/FiereEinar/transactions-tracker/issues"
-	},
-	"homepage": "https://github.com/FiereEinar/transactions-tracker#readme",
-	"devDependencies": {
-		"concurrently": "^9.2.1"
-	}
+  "name": "sims",
+  "version": "1.0.0",
+  "description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
+  "main": "main.js",
+  "scripts": {
+    "dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\" --names \"server,client,mongodb\"",
+    "install-all": "npm install --prefix server && npm install --prefix client && npm install",
+    "check-build": "npm run check:ts --prefix server && npm run build --prefix client",
+    "electron:dev": "concurrently \"npm run dev-all\" \"wait-on http://localhost:3000 && electron .\"",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "dist": "npm run build:client && npm run build:server && electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FiereEinar/transactions-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/FiereEinar/transactions-tracker/issues"
+  },
+  "homepage": "https://github.com/FiereEinar/transactions-tracker#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "wait-on": "^9.1.0"
+  },
+  "build": {
+    "appId": "com.sims",
+    "productName": "Student Information Management System",
+    "files": [
+      "main.js",
+      "client/dist/**/*",
+      "client/public/**/*",
+      "server/dist/**/*",
+      "server/node_modules/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
 }

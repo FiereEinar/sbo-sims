@@ -14,7 +14,6 @@ import {
 } from '../controllers/category.controller';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
-import { authorizeRoles } from '../middlewares/authentication/authorizedRoles';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
 

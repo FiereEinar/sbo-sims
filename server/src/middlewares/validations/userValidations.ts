@@ -1,5 +1,6 @@
 import { body } from 'express-validator';
 import { isFormBodyValidated } from './validation';
+import { CHECK_RECPATCHA } from '../../constants/env';
 
 export const signupValidation = [
 	body('studentID')
@@ -62,10 +63,14 @@ export const loginValidation = [
 		.isLength({ min: 1, max: 30 })
 		.withMessage('Password must be 1-30 characters'),
 
-	body('recaptchaToken')
-		.trim()
-		.isLength({ min: 1 })
-		.withMessage('reCAPTCHA token is required'),
+	...(CHECK_RECPATCHA !== 'false'
+		? [
+				body('recaptchaToken')
+					.trim()
+					.isLength({ min: 1 })
+					.withMessage('reCAPTCHA token is required'),
+		  ]
+		: []),
 
 	isFormBodyValidated,
 ];

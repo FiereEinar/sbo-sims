@@ -14,7 +14,7 @@ export default function AuthPage({ form, title }: AuthPageProps) {
       <div className="relative flex flex-col gap-8 w-[95%] sm:w-[400px] z-50">
         <div className="absolute top-[-5rem] flex items-center gap-2">
           <img
-            src="/images/SBO_LOGO.jpg"
+            src="./images/SBO_LOGO.jpg"
             className="size-10 rounded-full"
             alt=""
           />
@@ -24,12 +24,12 @@ export default function AuthPage({ form, title }: AuthPageProps) {
         {form}
       </div>
       <img
-        src="/images/BUKSU_LOGO_WHITE.png"
+        src="./images/BUKSU_LOGO_WHITE.png"
         className="hidden dark:sm:flex size-[15rem] md:size-[20rem] z-10"
         alt="BUKSU LOGO"
       />
       <img
-        src="/images/BUKSU_NEW_LOGO.png"
+        src="./images/BUKSU_NEW_LOGO.png"
         className="hidden sm:flex dark:hidden size-[15rem] md:size-[20rem] z-10"
         alt="BUKSU LOGO"
       />

@@ -66,7 +66,7 @@ export default function TransactionReceipt({ transaction, transactions }: Transa
 			<div className="flex justify-between items-start border-b-2 border-black pb-6">
 				<div className="flex items-center gap-4">
 					<img 
-						src="/images/SBO_LOGO.jpg" 
+						src="./images/SBO_LOGO.jpg" 
 						alt="SBO Logo" 
 						className="w-16 h-16 object-contain rounded-full"
 						crossOrigin="anonymous" 

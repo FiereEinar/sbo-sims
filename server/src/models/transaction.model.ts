@@ -70,5 +70,11 @@ export const TransactionSchema = new Schema<ITransaction>(
   { timestamps: true },
 );
 
+// Multi-tenant core index
+TransactionSchema.index({ organization: 1, schoolYear: 1, semester: 1 });
+
+// Fast lookup for a student's transactions
+TransactionSchema.index({ owner: 1, organization: 1 });
+
 const TransactionModel = mongoose.model('Transaction', TransactionSchema);
 export default TransactionModel;

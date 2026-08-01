@@ -42,7 +42,17 @@ export const StudentSchema = new Schema<IStudent>(
   { timestamps: true },
 );
 
-StudentSchema.index({ '$**': 'text' });
+// Multi-tenant core index for dashboard loading
+StudentSchema.index({ organization: 1, schoolYear: 1, semester: 1 });
+
+// Fast lookup for searching students
+StudentSchema.index({ studentID: 'text', firstname: 'text', lastname: 'text' });
+
+// Ensure a student isn't duplicated in the same term for the same organization
+StudentSchema.index(
+  { studentID: 1, organization: 1, schoolYear: 1, semester: 1 },
+  { unique: true }
+);
 
 StudentSchema.virtual('fullname').get(function () {
   return `${this.firstname} ${this.middlename} ${this.lastname}`;

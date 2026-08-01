@@ -7,16 +7,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import ErrorText from '../ui/error-text';
 import { submitLoginForm } from '@/api/user';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loginSchema } from '@/lib/validations/loginSchema';
 import { useUserStore } from '@/store/user';
 import RecaptchaOverlay from '../RecaptchaOverlay';
 import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const navigate = useTenantNavigate();
+  const normalNavigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const setUser = useUserStore((state) => state.setUser);
@@ -48,21 +50,21 @@ export default function LoginForm() {
   const isFormDisabled = isSubmitting || isLoggingIn;
 
   // Step 1: form validation passes → show reCAPTCHA overlay
-  const onSubmit = (data: LoginFormValues) => {
-    setPendingData(data);
-    setShowCaptcha(true);
+  const onSubmit = async (data: LoginFormValues) => {
+    if (import.meta.env.VITE_CHECK_RECPATCHA === 'false') {
+      await performLogin(data, '');
+    } else {
+      setPendingData(data);
+      setShowCaptcha(true);
+    }
   };
 
-  // Step 2: reCAPTCHA passed → submit login with token
-  const handleCaptchaVerify = async (token: string) => {
-    setShowCaptcha(false);
-    if (!pendingData) return;
-
+  const performLogin = async (data: LoginFormValues, token: string) => {
     setIsLoggingIn(true);
 
     try {
       const result = await submitLoginForm({
-        ...pendingData,
+        ...data,
         recaptchaToken: token,
       });
 
@@ -77,9 +79,17 @@ export default function LoginForm() {
         message: err.message || 'Failed to submit login form',
       });
     } finally {
-      setPendingData(null);
       setIsLoggingIn(false);
     }
+  };
+
+  // Step 2: reCAPTCHA passed → submit login with token
+  const handleCaptchaVerify = async (token: string) => {
+    setShowCaptcha(false);
+    if (!pendingData) return;
+
+    await performLogin(pendingData, token);
+    setPendingData(null);
   };
 
   const handleCaptchaClose = () => {
@@ -90,6 +100,14 @@ export default function LoginForm() {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <button
+          type="button"
+          onClick={() => normalNavigate('/login')}
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="size-3" />
+          Back
+        </button>
         <div>
           <InputField<LoginFormValues>
             name="studentID"

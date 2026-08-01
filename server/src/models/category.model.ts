@@ -37,5 +37,8 @@ export const CategorySchema = new Schema<ICategory>(
   { timestamps: true },
 );
 
+// Multi-tenant core index
+CategorySchema.index({ organization: 1, schoolYear: 1, semester: 1 });
+
 const CategoryModel = mongoose.model('Category', CategorySchema);
 export default CategoryModel;

@@ -14,6 +14,7 @@ import {
   APP_ORIGIN,
   BCRYPT_SALT,
   RECAPTCHA_SECRET_KEY,
+  CHECK_RECPATCHA,
 } from '../constants/env';
 import bcrypt from 'bcryptjs';
 import { signupUserBody } from '../types/user';
@@ -150,6 +151,10 @@ export const selfHealRBAC = async (
 
 export const verifyRecaptcha = async (recaptchaToken: string) => {
   try {
+    if (CHECK_RECPATCHA === 'false') {
+      return { success: true };
+    }
+
     const recaptchaResponse = await fetch(
       'https://www.google.com/recaptcha/api/siteverify',
       {

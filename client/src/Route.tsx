@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { MODULES } from './constants';
 
 import App from './App';
@@ -55,7 +55,7 @@ import StudentCollections from './pages/student/StudentCollections';
 import StudentProtectedRoute from './components/student-portal/StudentProtectedRoute';
 
 export default function Route() {
-  const route = createBrowserRouter([
+  const route = createHashRouter([
     {
       path: '/',
       element: <RootRedirect />,

@@ -33,9 +33,13 @@ axiosInstance.interceptors.response.use(
 			} catch (error) {
 				// handle refresh errors by clearing the query cache & redirecting to login
 				queryClient.clear();
+				let currentPath = window.location.pathname;
+				if (window.location.hash) {
+					currentPath = window.location.hash.replace(/^#/, '');
+				}
 				navigate('/login', {
 					state: {
-						redirectUrl: window.location.pathname,
+						redirectUrl: currentPath,
 					},
 				});
 			}
@@ -72,7 +76,13 @@ axiosInstance.interceptors.request.use((config) => {
 		}
 	}
 
-	const pathSegments = window.location.pathname.split('/').filter(Boolean);
+	// Since the app uses createHashRouter, the actual route is in window.location.hash
+	let currentPath = window.location.pathname;
+	if (window.location.hash) {
+		currentPath = window.location.hash.replace(/^#/, '').split('?')[0];
+	}
+
+	const pathSegments = currentPath.split('/').filter(Boolean);
 	const firstSegment = pathSegments[0];
 	// Only inject org slug for tenant routes (not /admin, /login, /signup, /student, /officer-login)
 	if (firstSegment && !['login', 'signup', 'admin', 'student', 'officer-login'].includes(firstSegment)) {

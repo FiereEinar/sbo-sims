@@ -31,8 +31,12 @@ adminAxiosInstance.interceptors.response.use(
 				return AdminTokenRefreshClient(config);
 			} catch {
 				queryClient.clear();
+				let currentPath = window.location.pathname;
+				if (window.location.hash) {
+					currentPath = window.location.hash.replace(/^#/, '');
+				}
 				navigate('/admin/login', {
-					state: { redirectUrl: window.location.pathname },
+					state: { redirectUrl: currentPath },
 				});
 			}
 		}

@@ -45,17 +45,19 @@ export default function StudentLoginForm() {
 
   const isFormDisabled = isSubmitting || isLoggingIn;
 
-  const onSubmit = (data: StudentLoginFormValues) => {
-    setPendingData(data);
-    setShowCaptcha(true);
+  const onSubmit = async (data: StudentLoginFormValues) => {
+    if (import.meta.env.VITE_CHECK_RECPATCHA === 'false') {
+      await performLogin(data, '');
+    } else {
+      setPendingData(data);
+      setShowCaptcha(true);
+    }
   };
 
-  const handleCaptchaVerify = async (token: string) => {
-    setShowCaptcha(false);
-    if (!pendingData) return;
+  const performLogin = async (data: StudentLoginFormValues, token: string) => {
     setIsLoggingIn(true);
     try {
-      const result = await studentLogin({ ...pendingData, recaptchaToken: token });
+      const result = await studentLogin({ ...data, recaptchaToken: token });
       if (result) {
         localStorage.setItem('accessToken', result.data.accessToken);
         setUser(result.data.user);
@@ -64,9 +66,16 @@ export default function StudentLoginForm() {
     } catch (err: any) {
       setError('root', { message: err.message || 'Failed to login. Please try again.' });
     } finally {
-      setPendingData(null);
       setIsLoggingIn(false);
     }
+  };
+
+  const handleCaptchaVerify = async (token: string) => {
+    setShowCaptcha(false);
+    if (!pendingData) return;
+    
+    await performLogin(pendingData, token);
+    setPendingData(null);
   };
 
   const handleCaptchaClose = () => {

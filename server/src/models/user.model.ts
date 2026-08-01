@@ -74,5 +74,11 @@ UserSchema.methods.omitPassword = function () {
   return user;
 };
 
+// Index for fast login lookups (studentID is primarily used for login)
+UserSchema.index({ studentID: 1 });
+
+// Index for Central Admin/Org Admin listing users by organization
+UserSchema.index({ organization: 1 });
+
 const UserModel = mongoose.model('User', UserSchema);
 export default UserModel;

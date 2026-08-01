@@ -38,5 +38,8 @@ export const EventSchema = new Schema<IEvent>(
   { timestamps: true },
 );
 
+// Multi-tenant core index
+EventSchema.index({ organization: 1, schoolYear: 1, semester: 1 });
+
 const EventModel = mongoose.model('Event', EventSchema);
 export default EventModel;

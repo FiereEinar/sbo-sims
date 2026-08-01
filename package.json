@@ -1,6 +1,6 @@
 {
   "name": "sims",
-  "version": "1.0.0",
+  "version": "4.0.1",
   "description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
   "main": "main.js",
   "scripts": {

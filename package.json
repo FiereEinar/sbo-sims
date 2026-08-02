@@ -35,7 +35,6 @@
   "build": {
     "appId": "com.sims",
     "productName": "SIMS",
-    "description": "Student Information Management System",
     "icon": "./assets/img/icons/sbo.ico",
     "files": [
       "main.js",

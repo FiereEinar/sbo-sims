@@ -32,7 +32,7 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
     }
   }, [session.status]);
 
-  // Clear the scan result message after 3 seconds
+  // Clear the scan result message after 4 seconds
   useEffect(() => {
     if (lastScanResult) {
       // Small delay to ensure the component is mounted before starting the transition
@@ -112,7 +112,7 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
       permissions={[MODULES.ATTENDANCE_RECORD_CREATE]}
       fallback={FallbackScanner}
     >
-      <div className="space-y-4 max-w-2xl mx-auto w-full">
+      <div className="relative space-y-4 max-w-2xl mx-auto w-full">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex items-center">
             <div className="relative flex-1">
@@ -154,7 +154,7 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
         {lastScanResult && (
           <div
             className={
-              `space-y-1 rounded-lg border p-3 shadow-sm transition-all duration-300 ease-out transform ${
+              `absolute top-50 left-1/2 -translate-x-1/2 z-50 space-y-1 w-[500px] rounded-lg border p-3 shadow-sm transition-all duration-300 ease-out transform ${
                 isVisible
                   ? 'opacity-100 translate-y-0 scale-100'
                   : 'opacity-0 -translate-y-2 scale-95'

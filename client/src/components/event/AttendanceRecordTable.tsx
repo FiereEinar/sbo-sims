@@ -153,14 +153,14 @@ export default function AttendanceRecordTable({
             records.map((record) => (
               <TableRow key={record._id}>
                 <TableCell className="font-medium">
-                  {record.student.studentID}
+                  {record.student ? record.student.studentID : record.studentIdInput}
                 </TableCell>
                 <TableCell>
-                  {startCase(`${record.student.firstname} ${record.student.lastname}`)}
+                  {record.student ? startCase(`${record.student.firstname} ${record.student.lastname}`) : <span className="text-muted-foreground italic">Unmapped</span>}
                 </TableCell>
-                <TableCell>{record.student.gender}</TableCell>
-                <TableCell>{record.student.course}</TableCell>
-                <TableCell>{record.student.year}</TableCell>
+                <TableCell>{record.student ? record.student.gender : '-'}</TableCell>
+                <TableCell>{record.student ? record.student.course : '-'}</TableCell>
+                <TableCell>{record.student ? record.student.year : '-'}</TableCell>
                 <TableCell>
                   {format(new Date(record.recordedAt), 'MMM d, yyyy h:mm a')}
                 </TableCell>

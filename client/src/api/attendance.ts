@@ -20,13 +20,18 @@ export const fetchSessionAttendance = async (
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('pageSize', String(pageSize));
-    if (filters.course && filters.course !== 'All') params.set('course', filters.course);
-    if (filters.year && filters.year !== 'All') params.set('year', filters.year);
-    if (filters.gender && filters.gender !== 'All') params.set('gender', filters.gender);
+    if (filters.course && filters.course !== 'All')
+      params.set('course', filters.course);
+    if (filters.year && filters.year !== 'All')
+      params.set('year', filters.year);
+    if (filters.gender && filters.gender !== 'All')
+      params.set('gender', filters.gender);
     if (filters.search) params.set('search', filters.search);
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
 
-    const { data } = await axiosInstance.get(`/attendance/session/${sessionId}?${params.toString()}`);
+    const { data } = await axiosInstance.get(
+      `/attendance/session/${sessionId}?${params.toString()}`,
+    );
     return data;
   } catch (err: any) {
     throw err;
@@ -39,9 +44,11 @@ export const getAttendanceDownloadURL = (
   filters: AttendanceFilterValues = {},
 ) => {
   const params = new URLSearchParams();
-  if (filters.course && filters.course !== 'All') params.set('course', filters.course);
+  if (filters.course && filters.course !== 'All')
+    params.set('course', filters.course);
   if (filters.year && filters.year !== 'All') params.set('year', filters.year);
-  if (filters.gender && filters.gender !== 'All') params.set('gender', filters.gender);
+  if (filters.gender && filters.gender !== 'All')
+    params.set('gender', filters.gender);
   if (filters.search) params.set('search', filters.search);
   if (filters.sortBy) params.set('sortBy', filters.sortBy);
 
@@ -52,11 +59,13 @@ export const getAttendanceDownloadURL = (
 export const recordAttendance = async (
   sessionId: string,
   studentIdInput: string,
+  allowUnmapped?: boolean,
 ) => {
   try {
     const res = await axiosInstance.post('/attendance/record', {
       sessionId,
       studentIdInput,
+      allowUnmapped,
     });
     return res.data;
   } catch (err: any) {

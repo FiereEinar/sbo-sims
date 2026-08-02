@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { EventSession } from '@/types/event';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
 import { ScanBarcode, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { recordAttendance } from '@/api/attendance';
 import { queryClient } from '@/main';
@@ -15,6 +17,7 @@ type AttendanceScannerProps = {
 
 export default function AttendanceScanner({ session }: AttendanceScannerProps) {
   const [studentId, setStudentId] = useState('');
+  const [allowUnmapped, setAllowUnmapped] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [lastScanResult, setLastScanResult] = useState<{
     success: boolean;
@@ -59,11 +62,13 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
     setStudentId('');
 
     try {
-      const res = await recordAttendance(session._id, currentId);
+      const res = await recordAttendance(session._id, currentId, allowUnmapped);
       setLastScanResult({
         success: true,
         message: 'Attendance recorded successfully',
-        studentName: `${res.data.student.firstname} ${res.data.student.lastname}`,
+        studentName: res.data.student
+          ? `${res.data.student.firstname} ${res.data.student.lastname}`
+          : 'Unmapped Student',
       });
 
       // Invalidate attendance query
@@ -135,6 +140,22 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
             >
               Submit
             </Button>
+          </div>
+          <div className="flex items-center justify-center space-x-2 mt-3">
+            <Checkbox
+              id="allowUnmapped"
+              checked={allowUnmapped}
+              onCheckedChange={(checked) =>
+                setAllowUnmapped(checked as boolean)
+              }
+              disabled={!isActive || isLoading}
+            />
+            <Label
+              htmlFor="allowUnmapped"
+              className="text-sm font-normal text-muted-foreground cursor-pointer"
+            >
+              Allow recording of unmapped student IDs
+            </Label>
           </div>
         </form>
 

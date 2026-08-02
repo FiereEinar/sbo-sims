@@ -18,6 +18,7 @@ interface AttendanceStatsPanelProps {
 const GENDER_COLORS: Record<string, string> = {
   M: '#3b82f6', // blue-500
   F: '#ec4899', // pink-500
+  Unmapped: '#94a3b8', // slate-400
 };
 
 const COURSE_COLORS = [
@@ -47,13 +48,18 @@ export default function AttendanceStatsPanel({
   const total = stats?.total ?? 0;
 
   const genderData = (stats?.byGender ?? []).map((g) => ({
-    name: g._id === 'M' ? 'Male' : 'Female',
+    name: g._id === 'M' ? 'Male' : g._id === 'F' ? 'Female' : 'Unmapped',
     value: g.count,
-    id: g._id,
+    id: g._id ?? 'Unmapped',
   }));
 
   const maxCourse = Math.max(...(stats?.byCourse ?? []).map((c) => c.count), 1);
   const maxYear = Math.max(...(stats?.byYear ?? []).map((y) => y.count), 1);
+
+  const yearOptions: (number | null)[] = [1, 2, 3, 4];
+  if (stats?.byYear.some((y) => y._id == null)) {
+    yearOptions.push(null);
+  }
 
   return (
     <div className="border rounded-lg overflow-hidden mb-4">
@@ -136,14 +142,16 @@ export default function AttendanceStatsPanel({
                   By Year Level
                 </p>
                 <div className="space-y-3">
-                  {[1, 2, 3, 4].map((yr) => {
+                  {yearOptions.map((yr) => {
                     const entry = stats?.byYear.find((y) => y._id === yr);
                     const count = entry?.count ?? 0;
+                    if (count === 0 && yr === null) return null; // Defensive check
                     const pct = total ? Math.round((count / total) * 100) : 0;
+                    const label = yr === null ? 'Unmapped' : YEAR_LABELS[yr];
                     return (
-                      <div key={yr}>
+                      <div key={yr ?? 'unmapped'}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium">{YEAR_LABELS[yr]}</span>
+                          <span className="font-medium">{label}</span>
                           <span className="text-muted-foreground">
                             {count} ({pct}%)
                           </span>
@@ -170,11 +178,12 @@ export default function AttendanceStatsPanel({
                 <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1">
                   {(stats?.byCourse ?? []).map((c, i) => {
                     const pct = total ? Math.round((c.count / total) * 100) : 0;
+                    const isUnmapped = c._id == null;
                     return (
-                      <div key={c._id}>
+                      <div key={c._id ?? 'unmapped'}>
                         <div className="flex justify-between text-xs mb-1">
                           <span className="font-medium truncate max-w-[110px]">
-                            {c._id}
+                            {isUnmapped ? 'Unmapped' : c._id}
                           </span>
                           <span className="text-muted-foreground shrink-0 ml-2">
                             {c.count} ({pct}%)

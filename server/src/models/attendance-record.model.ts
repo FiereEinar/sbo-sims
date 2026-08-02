@@ -34,7 +34,7 @@ export const AttendanceRecordSchema = new Schema<IAttendanceRecord>(
     student: {
       type: Schema.Types.ObjectId,
       ref: 'Student',
-      required: true,
+      required: false,
     },
     studentIdInput: { type: String, required: true },
     recordedBy: {
@@ -47,9 +47,15 @@ export const AttendanceRecordSchema = new Schema<IAttendanceRecord>(
   { timestamps: true },
 );
 
-// Prevents duplicate attendance for the same student in the same session,
-// even under concurrent scan requests (race condition safety net).
-AttendanceRecordSchema.index({ session: 1, student: 1 }, { unique: true });
+// Prevents duplicate attendance for the same student in the same session.
+// We use a partial filter so that unmapped records (missing student) don't collide.
+AttendanceRecordSchema.index(
+  { session: 1, student: 1 },
+  { unique: true, partialFilterExpression: { student: { $exists: true } } }
+);
+
+// Prevents duplicate attendance for the same scanned ID in the same session.
+AttendanceRecordSchema.index({ session: 1, studentIdInput: 1 }, { unique: true });
 
 // Speeds up the most common query pattern: fetch all records for a session in an org.
 AttendanceRecordSchema.index({ organization: 1, session: 1 });
@@ -58,4 +64,11 @@ const AttendanceRecordModel = mongoose.model(
   'AttendanceRecord',
   AttendanceRecordSchema,
 );
+
+// Force sync indexes to apply the partialFilterExpression change
+// This will drop the old index and build the new one.
+AttendanceRecordModel.syncIndexes().then(() => {
+  console.log('AttendanceRecord indexes synced successfully.');
+}).catch(console.error);
+
 export default AttendanceRecordModel;

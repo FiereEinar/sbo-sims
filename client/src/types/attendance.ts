@@ -7,7 +7,7 @@ export type AttendanceRecord = MongoEntity & {
   organization: Organization;
   event: Event;
   session: EventSession;
-  student: Student;
+  student?: Student;
   studentIdInput: string;
   recordedAt: Date;
   createdAt: Date;

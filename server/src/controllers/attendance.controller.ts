@@ -68,15 +68,18 @@ async function buildAttendanceAggregation(
         as: 'student',
       },
     },
-    // 3. Unwind (student is always one)
-    { $unwind: '$student' },
+    // 3. Unwind (preserve records without mapped students)
+    { $unwind: { path: '$student', preserveNullAndEmptyArrays: true } },
   ];
 
   // 4. Build student-field filters
   const studentFilters: Record<string, any>[] = [];
-  if (course && course !== 'All') studentFilters.push({ 'student.course': course });
-  if (year && year !== 'All') studentFilters.push({ 'student.year': parseInt(year) });
-  if (gender && gender !== 'All') studentFilters.push({ 'student.gender': gender });
+  if (course && course !== 'All')
+    studentFilters.push({ 'student.course': course });
+  if (year && year !== 'All')
+    studentFilters.push({ 'student.year': parseInt(year) });
+  if (gender && gender !== 'All')
+    studentFilters.push({ 'student.gender': gender });
   if (search) {
     const re = new RegExp(escapeRegex(search), 'i');
     studentFilters.push({
@@ -103,7 +106,9 @@ async function buildAttendanceAggregation(
   } else if (sortBy === 'name_asc') {
     pipeline.push({ $sort: { 'student.firstname': 1, 'student.lastname': 1 } });
   } else if (sortBy === 'name_desc') {
-    pipeline.push({ $sort: { 'student.firstname': -1, 'student.lastname': -1 } });
+    pipeline.push({
+      $sort: { 'student.firstname': -1, 'student.lastname': -1 },
+    });
   } else {
     pipeline.push({ $sort: { recordedAt: -1 } });
   }
@@ -128,7 +133,8 @@ export const record_attendance = asyncHandler(async (req, res) => {
     parseResult.error?.message || 'Invalid input data',
   );
 
-  const { sessionId, studentIdInput }: RecordAttendanceBody = parseResult.data;
+  const { sessionId, studentIdInput, allowUnmapped }: RecordAttendanceBody =
+    parseResult.data;
 
   // 1. Verify session is active
   const session = await EventSessionModel.findOne({
@@ -147,23 +153,21 @@ export const record_attendance = asyncHandler(async (req, res) => {
     schoolYear: req.tenantContext!.schoolYear,
   }).exec();
 
-  appAssert(
-    student !== null,
-    NOT_FOUND,
-    'Student not found in this organization',
-  );
+  if (!student && !allowUnmapped) {
+    appAssert(false, NOT_FOUND, 'Student not found in this organization');
+  }
 
-  // 3. Check for duplicate attendance record for this session and student
+  // 3. Check for duplicate attendance record for this session by studentIdInput
   const existingRecord = await AttendanceRecordModel.findOne({
     session: sessionId,
-    student: student._id,
+    studentIdInput: studentIdInput,
     organization: req.tenantContext!.organizationId,
   }).exec();
 
   appAssert(
     existingRecord === null,
     CONFLICT,
-    'Attendance already recorded for this student in this session',
+    'Attendance already recorded for this student ID in this session',
   );
 
   // 4. Create attendance record
@@ -171,7 +175,7 @@ export const record_attendance = asyncHandler(async (req, res) => {
     organization: req.tenantContext!.organizationId,
     event: session.event,
     session: session._id,
-    student: student._id,
+    student: student ? student._id : undefined,
     studentIdInput,
     recordedBy: (req as any).userId ?? undefined,
     recordedAt: new Date(),
@@ -181,14 +185,24 @@ export const record_attendance = asyncHandler(async (req, res) => {
     await record.save();
   } catch (err: any) {
     // Unique index violation — duplicate scan from another laptop at the same time
+    console.log(err);
     if (err.code === 11000) {
-      appAssert(false, CONFLICT, 'Attendance already recorded for this student in this session');
+      appAssert(
+        false,
+        CONFLICT,
+        'Attendance already recorded for this student in this session',
+      );
     }
     throw err;
   }
 
-  // Populate student info for immediate UI feedback
-  await record.populate('student', 'firstname lastname course year studentID');
+  // Populate student info for immediate UI feedback if mapped
+  if (record.student) {
+    await record.populate(
+      'student',
+      'firstname lastname course year studentID',
+    );
+  }
 
   res.json(
     new CustomResponse(true, record, 'Attendance recorded successfully'),
@@ -305,11 +319,11 @@ export const download_session_attendance_pdf = asyncHandler(
             .map(
               (r: any) => `
             <tr>
-              <td>${r.student.studentID}</td>
-              <td>${r.student.firstname} ${r.student.lastname}</td>
-              <td>${r.student.course}</td>
-              <td>${r.student.year}</td>
-              <td>${r.student.gender}</td>
+              <td>${r.student ? r.student.studentID : r.studentIdInput}</td>
+              <td>${r.student ? `${r.student.firstname} ${r.student.lastname}` : 'Unmapped'}</td>
+              <td>${r.student ? r.student.course : '-'}</td>
+              <td>${r.student ? r.student.year : '-'}</td>
+              <td>${r.student ? r.student.gender : '-'}</td>
               <td>${new Date(r.recordedAt).toLocaleString()}</td>
             </tr>
           `,
@@ -359,12 +373,15 @@ export const download_session_attendance_csv = asyncHandler(
     });
 
     const csvLines = records.map((r: any) => {
-      const name = `${r.student.firstname} ${r.student.lastname}`.replace(
-        /,/g,
-        '',
-      );
+      const name = r.student
+        ? `${r.student.firstname} ${r.student.lastname}`.replace(/,/g, '')
+        : 'Unmapped';
       const time = new Date(r.recordedAt).toLocaleString().replace(/,/g, '');
-      return `${r.student.studentID},${name},${r.student.course},${r.student.year},${r.student.gender},${time}`;
+      const sID = r.student ? r.student.studentID : r.studentIdInput;
+      const course = r.student ? r.student.course : '-';
+      const year = r.student ? r.student.year : '-';
+      const gender = r.student ? r.student.gender : '-';
+      return `${sID},${name},${course},${year},${gender},${time}`;
     });
 
     csvLines.unshift('Student ID,Name,Course,Year,Gender,Time Recorded');
@@ -409,7 +426,8 @@ export const get_session_attendance_stats = asyncHandler(async (req, res) => {
         as: 'student',
       },
     },
-    { $unwind: '$student' },
+    // { $unwind: '$student' }, // Not unwinding strictly here so unmapped are included? Or just leave it for stats
+    { $unwind: { path: '$student', preserveNullAndEmptyArrays: true } },
     {
       $facet: {
         total: [{ $count: 'count' }],

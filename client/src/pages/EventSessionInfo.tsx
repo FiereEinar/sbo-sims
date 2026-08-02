@@ -93,8 +93,6 @@ export default function EventSessionInfo() {
   const { data: statsResult, isLoading: isStatsLoading } = useQuery({
     queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance-stats'],
     queryFn: () => fetchSessionAttendanceStats(sessionID as string),
-    enabled: !!sessionID,
-    refetchInterval: session?.status === 'active' ? 3000 : false,
   });
 
   const prefetchPageFn = (prefetchPage: number) => {
@@ -206,12 +204,6 @@ export default function EventSessionInfo() {
       </div>
 
       <div className="mt-8">
-        {/* <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
-          <div className="flex items-center gap-4">
-            <h3 className="text-xl font-bold">Attendance Records</h3>
-          </div>
-        </div> */}
-
         <AttendanceStatsPanel stats={statsResult} isLoading={isStatsLoading} />
 
         <div className="flex justify-between gap-2 items-center mb-4">

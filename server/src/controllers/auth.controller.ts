@@ -10,16 +10,13 @@ import {
   accessTokenCookieName,
   AppErrorCodes,
   refreshTokenCookieName,
-  SUPER_ADMIN,
 } from '../constants';
 import {
   BCRYPT_SALT,
   JWT_REFRESH_SECRET_KEY,
   NODE_ENV,
-  RECAPTCHA_SECRET_KEY,
   SECRET_ADMIN_KEY,
   STUDENT_EMAIL_DOMAIN,
-  APP_ORIGIN,
   FRONTEND_URL,
   WEB_APP_ORIGIN,
 } from '../constants/env';
@@ -46,15 +43,10 @@ import {
   verifyToken,
 } from '../utils/jwt';
 import UserModel, { IUser } from '../models/user.model';
-import {
-  sendVerificationEmail,
-  sendForgotPasswordEmail,
-} from '../services/emailService';
+import { sendForgotPasswordEmail } from '../services/emailService';
 import SessionModel from '../models/session.model';
 import OrganizationModel from '../models/organization.model';
-import RoleModel from '../models/role.model';
 import AppSettingModel from '../models/app-setting.model';
-import { MODULES } from '../constants/modules';
 import {
   loginService,
   selfHealRBAC,

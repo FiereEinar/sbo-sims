@@ -26,6 +26,8 @@ export interface IUser extends mongoose.Document {
   isOnboardingCompleted: boolean;
   verificationToken?: string;
   verificationTokenExpiresAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpiresAt?: Date;
   activeSchoolYearDB: string;
   activeSemDB: '1' | '2';
   organization?: mongoose.Types.ObjectId;
@@ -58,6 +60,8 @@ export const UserSchema = new Schema<IUser>(
     isOnboardingCompleted: { type: Boolean, default: false },
     verificationToken: { type: String },
     verificationTokenExpiresAt: { type: Date },
+    resetPasswordToken: { type: String },
+    resetPasswordExpiresAt: { type: Date },
     activeSchoolYearDB: {
       type: String,
       default: getYear(new Date()).toString(),

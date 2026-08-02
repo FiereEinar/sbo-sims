@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs';
 import RoleModel from '../models/role.model';
 import OrganizationModel from '../models/organization.model';
 import { sendWelcomeCredentialsEmail } from '../services/emailService';
+import { STUDENT_EMAIL_DOMAIN } from '../constants/env';
 
 export const update_user = asyncHandler(async (req, res) => {
   const { userID } = req.params;
@@ -165,9 +166,12 @@ export const createUser = asyncHandler(async (req, res) => {
     `User with student ID ${studentID} already exist`,
   );
 
+  // provide default email if missing
+  const finalEmail = email?.length ? email : studentID + STUDENT_EMAIL_DOMAIN;
+
   // check for errors in form validation
-  if (email?.length) {
-    appAssert(validateEmail(email), BAD_REQUEST, 'Email must be valid');
+  if (finalEmail?.length) {
+    appAssert(validateEmail(finalEmail), BAD_REQUEST, 'Email must be valid');
   }
 
   // check if role exists
@@ -192,7 +196,7 @@ export const createUser = asyncHandler(async (req, res) => {
     lastname: lastname,
     studentID: studentID,
     password: hashedPassword,
-    email: email,
+    email: finalEmail,
     rbacRole: role._id,
     roleManuallyAssigned: true,
     role: 'org-admin',
@@ -216,7 +220,7 @@ export const createUser = asyncHandler(async (req, res) => {
         c.toUpperCase(),
       );
       sendWelcomeCredentialsEmail(
-        email,
+        finalEmail,
         fullName,
         studentID,
         password,

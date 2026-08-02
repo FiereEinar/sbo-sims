@@ -169,3 +169,29 @@ export const updateUserPasswordValidation = [
 
 	isFormBodyValidated,
 ];
+
+export const forgotPasswordValidation = [
+	body('email')
+		.trim()
+		.escape()
+		.isEmail()
+		.withMessage('Must be a valid email address'),
+
+	isFormBodyValidated,
+];
+
+export const resetPasswordValidation = [
+	body('token')
+		.trim()
+		.isLength({ min: 1 })
+		.withMessage('Token is required'),
+
+	body('newPassword')
+		.trim()
+		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
+		.withMessage('New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
+		.isLength({ max: 30 })
+		.withMessage('New password must be max 30 characters'),
+
+	isFormBodyValidated,
+];

@@ -218,11 +218,11 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
 
           {mode === 'add' && (
             <div
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer select-none border transition-all"
-              style={{
-                background: sendEmail ? 'hsl(263 70% 10%)' : undefined,
-                borderColor: sendEmail ? 'hsl(263 70% 40%)' : undefined,
-              }}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer select-none border transition-all ${
+                sendEmail
+                  ? 'bg-primary/10 border-primary text-primary'
+                  : 'bg-transparent border-border text-muted-foreground'
+              }`}
               onClick={() => setSendEmail((v) => !v)}
             >
               <input
@@ -231,10 +231,18 @@ export function AddUserForm({ mode = 'add', user }: AddUserFormProps) {
                 checked={sendEmail}
                 onChange={() => setSendEmail((v) => !v)}
                 onClick={(e) => e.stopPropagation()}
-                className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+                className="w-4 h-4 rounded accent-primary cursor-pointer"
               />
-              <Mail className="w-4 h-4 shrink-0" style={{ color: sendEmail ? '#a78bfa' : undefined }} />
-              <span className="text-sm" style={{ color: sendEmail ? '#c4b5fd' : undefined }}>
+              <Mail
+                className={`w-4 h-4 shrink-0 ${
+                  sendEmail ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              />
+              <span
+                className={`text-sm ${
+                  sendEmail ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
                 Send welcome email with credentials
               </span>
             </div>

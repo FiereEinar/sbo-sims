@@ -329,3 +329,88 @@ export const sendWelcomeCredentialsEmail = async (
 
   await transporter.sendMail(mailOptions);
 };
+
+/**
+ * Sends a forgot password email containing a reset link.
+ *
+ * @param to       - Recipient email address
+ * @param resetUrl - URL to redirect the user to the reset password page
+ */
+export const sendForgotPasswordEmail = async (
+  to: string,
+  resetUrl: string,
+) => {
+  const mailOptions = {
+    from: `"SBO-SIMS" <${EMAIL_USER}>`,
+    replyTo: EMAIL_USER,
+    to,
+    subject: `Password Reset Request — SBO-SIMS`,
+    headers: {
+      'X-Mailer': 'SBO-SIMS Mailer',
+      'X-Priority': '3',
+      Precedence: 'bulk',
+      'List-Unsubscribe': `<mailto:${EMAIL_USER}?subject=unsubscribe>`,
+    },
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+      <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+        <!-- Preheader -->
+        <span style="display:none;font-size:1px;color:#f4f4f4;max-height:0;max-width:0;opacity:0;overflow:hidden;">Reset your SBO-SIMS account password.</span>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;">
+                <!-- Header -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#7c3aed,#2563eb);padding:30px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:bold;">SBO-SIMS</h1>
+                    <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Student Organization Management System</p>
+                  </td>
+                </tr>
+                <!-- Body -->
+                <tr>
+                  <td style="padding:40px 30px;">
+                    <h2 style="color:#202124;font-size:20px;margin:0 0 8px;">Reset Your Password</h2>
+                    <p style="color:#5f6368;font-size:15px;line-height:1.6;margin:0 0 28px;">
+                      We received a request to reset the password for your SBO-SIMS account.
+                      Click the button below to set a new password. This link will expire in 1 hour.
+                    </p>
+
+                    <!-- CTA button -->
+                    <div style="text-align:center;margin:32px 0;">
+                      <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#ffffff;padding:14px 36px;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;">
+                        Reset Password
+                      </a>
+                    </div>
+
+                    <p style="color:#5f6368;font-size:13px;line-height:1.6;margin:0;">
+                      If the button above doesn't work, copy and paste this link into your browser:<br>
+                      <a href="${resetUrl}" style="color:#7c3aed;word-break:break-all;">${resetUrl}</a>
+                    </p>
+                    <p style="color:#5f6368;font-size:13px;line-height:1.6;margin-top:20px;">
+                      If you did not request a password reset, you can safely ignore this email.
+                    </p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color:#f8f9fa;padding:20px 30px;border-top:1px solid #e0e0e0;text-align:center;">
+                    <p style="color:#9aa0a6;font-size:12px;margin:0;">
+                      This is an automated message from SBO-SIMS. Please do not reply directly to this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

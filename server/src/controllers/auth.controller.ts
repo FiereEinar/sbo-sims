@@ -21,6 +21,7 @@ import {
   STUDENT_EMAIL_DOMAIN,
   APP_ORIGIN,
   FRONTEND_URL,
+  WEB_APP_ORIGIN,
 } from '../constants/env';
 import {
   BAD_REQUEST,
@@ -45,7 +46,7 @@ import {
   verifyToken,
 } from '../utils/jwt';
 import UserModel, { IUser } from '../models/user.model';
-import { sendVerificationEmail } from '../services/emailService';
+import { sendVerificationEmail, sendForgotPasswordEmail } from '../services/emailService';
 import SessionModel from '../models/session.model';
 import OrganizationModel from '../models/organization.model';
 import RoleModel from '../models/role.model';
@@ -412,4 +413,40 @@ export const verify_email = asyncHandler(async (req, res) => {
   await user.save();
 
   res.redirect(`${FRONTEND_URL}/login?verified=true`);
+});
+
+export const forgot_password = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await UserModel.findOne({ email });
+  appAssert(user, NOT_FOUND, 'User with this email not found');
+
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetPasswordToken = token;
+  user.resetPasswordExpiresAt = new Date(Date.now() + 3600000); // 1 hour
+  await user.save();
+
+  const resetUrl = `${WEB_APP_ORIGIN}/reset-password?token=${token}`;
+  await sendForgotPasswordEmail(user.email, resetUrl);
+
+  res.json(new CustomResponse(true, null, 'Password reset link sent to your email'));
+});
+
+export const reset_password = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  const user = await UserModel.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpiresAt: { $gt: Date.now() },
+  });
+
+  appAssert(user, BAD_REQUEST, 'Invalid or expired password reset token');
+
+  const salt = await bcrypt.genSalt(Number(BCRYPT_SALT));
+  user.password = await bcrypt.hash(newPassword, salt);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpiresAt = undefined;
+  await user.save();
+
+  res.json(new CustomResponse(true, null, 'Password has been reset successfully'));
 });

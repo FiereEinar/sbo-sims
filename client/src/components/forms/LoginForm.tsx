@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import ErrorText from '../ui/error-text';
 import { submitLoginForm } from '@/api/user';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { loginSchema } from '@/lib/validations/loginSchema';
 import { useUserStore } from '@/store/user';
 import RecaptchaOverlay from '../RecaptchaOverlay';
@@ -132,7 +132,13 @@ export default function LoginForm() {
           <ErrorText>{errors.root.message.toString()}</ErrorText>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Forgot Password?
+          </Link>
           <Button disabled={isFormDisabled}>
             {isLoggingIn ? (
               <span className="flex items-center gap-2">

@@ -45,6 +45,8 @@ import Gpoa from './pages/Gpoa';
 // Student portal
 import StudentLoginPage from './pages/student/StudentLoginPage';
 import StudentSignupPage from './pages/student/StudentSignupPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import StudentApp from './pages/student/StudentApp';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentPaymentRequests from './pages/student/PaymentRequests';
@@ -71,6 +73,16 @@ export default function Route() {
       // /signup: student registration
       path: '/signup',
       element: <StudentSignupPage />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: '/reset-password',
+      element: <ResetPassword />,
       errorElement: <ErrorPage />,
     },
     {

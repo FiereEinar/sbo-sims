@@ -29,11 +29,15 @@ function createWindow() {
     width: 1280,
     height: 800,
     title: 'Student Information Management System',
+    show: false, // Hide initially to prevent visual flickering on launch
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
+
+  mainWindow.maximize();
+  mainWindow.show();
 
   const isDev = !app.isPackaged;
 

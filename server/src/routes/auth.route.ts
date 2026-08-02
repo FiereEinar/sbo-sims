@@ -3,6 +3,8 @@ import {
   loginValidation,
   adminLoginValidation,
   signupValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 } from '../middlewares/validations/userValidations';
 import {
   admin,
@@ -14,6 +16,8 @@ import {
   signup,
   verify_email,
   get_public_organizations,
+  forgot_password,
+  reset_password,
 } from '../controllers/auth.controller';
 import { authLimiter } from '../middlewares/rateLimiter';
 
@@ -36,5 +40,9 @@ router.get('/logout', logout);
 router.get('/check-auth', check_auth);
 
 router.put('/admin', admin);
+
+router.post('/forgot-password', authLimiter, forgotPasswordValidation, forgot_password);
+
+router.post('/reset-password', authLimiter, resetPasswordValidation, reset_password);
 
 export default router;

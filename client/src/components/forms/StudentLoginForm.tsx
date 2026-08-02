@@ -115,7 +115,13 @@ export default function StudentLoginForm() {
           </Link>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center mt-4">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Forgot Password?
+          </Link>
           <Button disabled={isFormDisabled}>
             {isLoggingIn ? (
               <span className="flex items-center gap-2">

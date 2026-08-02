@@ -35,11 +35,10 @@
   "build": {
     "appId": "com.sims",
     "productName": "SIMS",
-    "icon": "./assets/img/icons/sbo.ico",
+    "icon": "./client/dist/images/SBO_LOGO.png",
     "files": [
       "main.js",
       "client/dist/**/*",
-      "client/public/**/*",
       "server/dist/**/*",
       "server/node_modules/**/*",
       "node_modules/**/*"

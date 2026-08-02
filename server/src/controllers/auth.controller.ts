@@ -46,7 +46,10 @@ import {
   verifyToken,
 } from '../utils/jwt';
 import UserModel, { IUser } from '../models/user.model';
-import { sendVerificationEmail, sendForgotPasswordEmail } from '../services/emailService';
+import {
+  sendVerificationEmail,
+  sendForgotPasswordEmail,
+} from '../services/emailService';
 import SessionModel from '../models/session.model';
 import OrganizationModel from '../models/organization.model';
 import RoleModel from '../models/role.model';
@@ -246,6 +249,22 @@ export const refresh = asyncHandler(async (req, res) => {
     userID: session.userID as unknown as string,
   });
 
+  const user = await UserModel.findById(session.userID);
+  if (!user) {
+    appAssert(false, UNAUTHORIZED, 'User not found');
+  }
+
+  // auto set active semester and school year
+  const globalSettings = await AppSettingModel.findOne();
+  if (globalSettings) {
+    user.activeSemDB = globalSettings.activeSemester as any;
+    user.activeSchoolYearDB = globalSettings.activeSchoolYear;
+  } else {
+    user.activeSemDB = '1';
+    user.activeSchoolYearDB = new Date().getFullYear().toString();
+  }
+  await user.save();
+
   if (newRefreshToken) {
     res.cookie(
       refreshTokenCookieName,
@@ -429,7 +448,9 @@ export const forgot_password = asyncHandler(async (req, res) => {
   const resetUrl = `${WEB_APP_ORIGIN}/reset-password?token=${token}`;
   await sendForgotPasswordEmail(user.email, resetUrl);
 
-  res.json(new CustomResponse(true, null, 'Password reset link sent to your email'));
+  res.json(
+    new CustomResponse(true, null, 'Password reset link sent to your email'),
+  );
 });
 
 export const reset_password = asyncHandler(async (req, res) => {
@@ -448,5 +469,7 @@ export const reset_password = asyncHandler(async (req, res) => {
   user.resetPasswordExpiresAt = undefined;
   await user.save();
 
-  res.json(new CustomResponse(true, null, 'Password has been reset successfully'));
+  res.json(
+    new CustomResponse(true, null, 'Password has been reset successfully'),
+  );
 });

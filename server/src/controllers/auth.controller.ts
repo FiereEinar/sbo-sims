@@ -324,6 +324,17 @@ export const check_auth = asyncHandler(async (req, res) => {
     );
   }
 
+  // auto set active semester and school year
+  const globalSettings = await AppSettingModel.findOne();
+  if (globalSettings) {
+    user.activeSemDB = globalSettings.activeSemester as any;
+    user.activeSchoolYearDB = globalSettings.activeSchoolYear;
+  } else {
+    user.activeSemDB = '1';
+    user.activeSchoolYearDB = new Date().getFullYear().toString();
+  }
+  await user.save();
+
   res.status(OK).json(user.omitPassword());
 });
 

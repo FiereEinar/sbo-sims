@@ -1,6 +1,7 @@
 node_modules
 package-lock.json
 /data/db/*
+/data-copy
 !/data/db/.gitkeep
 /backup-full
 handoff.md

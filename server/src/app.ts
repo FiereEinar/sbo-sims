@@ -4,7 +4,13 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import userAgent from 'express-useragent';
+
+// Load server/.env first (Vercel + local shared vars)
 dotenv.config();
+// Fallback: also load root .env for desktop-only vars (IS_ELECTRON, SYNC_ENABLED, etc.)
+// override:false means server/.env values always win if there's a conflict.
+// On Vercel this is a harmless no-op (no root .env exists).
+// dotenv.config({ path: require('path').resolve(process.cwd(), '..', '.env'), override: false });
 
 import authRouter from './routes/auth.route';
 import studentRouter from './routes/student.route';
@@ -26,7 +32,12 @@ import paymentRequestRouter from './routes/payment-request.route';
 import supportTicketRouter from './routes/support-ticket.route';
 import gpoaRouter from './routes/gpoa.route';
 import syncRouter from './routes/sync.route';
-import { sync_health, sync_bootstrap, sync_user_bootstrap, sync_apply_bootstrap_batch } from './controllers/sync.controller';
+import {
+  sync_health,
+  sync_bootstrap,
+  sync_user_bootstrap,
+  sync_apply_bootstrap_batch,
+} from './controllers/sync.controller';
 import path from 'path';
 
 import { NODE_ENV, PORT } from './constants/env';

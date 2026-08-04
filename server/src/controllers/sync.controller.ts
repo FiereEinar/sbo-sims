@@ -7,11 +7,19 @@ import {
   AtlasCounterModel,
   IAtlasChangeLog,
 } from '../models/atlas-change-log.model';
-import { IOperationLog, SyncableEntityType } from '../models/operation-log.model';
+import {
+  IOperationLog,
+  SyncableEntityType,
+} from '../models/operation-log.model';
 import CustomResponse from '../types/response';
 import appAssert from '../errors/appAssert';
 import { SECRET_ADMIN_KEY } from '../constants/env';
-import { UNAUTHORIZED, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } from '../constants/http';
+import {
+  UNAUTHORIZED,
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+} from '../constants/http';
 
 // ─── Model name → Mongoose collection name map ───────────────────────────────
 // Used by the push handler to know which Atlas collection to upsert into.
@@ -37,9 +45,11 @@ const MAX_PULL_BATCH = 200;
  * Simple liveness check for the Electron sync engine.
  * Returns 200 with the server's current UTC time (used for clock-skew detection).
  */
-export const sync_health = asyncHandler(async (_req: Request, res: Response) => {
-  res.json({ ok: true, serverTime: new Date().toISOString() });
-});
+export const sync_health = asyncHandler(
+  async (_req: Request, res: Response) => {
+    res.json({ ok: true, serverTime: new Date().toISOString() });
+  },
+);
 
 // ─── POST /sync/push ──────────────────────────────────────────────────────────
 /**
@@ -65,9 +75,14 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
   const atlasConn = await getAtlasConnection();
 
   // Lazy-register models on the Atlas connection (not the default mongoose connection)
-  const ChangeLog = atlasConn.models['AtlasChangeLog'] ||
-    atlasConn.model<IAtlasChangeLog>('AtlasChangeLog', AtlasChangeLogModel.schema);
-  const Counter = atlasConn.models['AtlasCounter'] ||
+  const ChangeLog =
+    atlasConn.models['AtlasChangeLog'] ||
+    atlasConn.model<IAtlasChangeLog>(
+      'AtlasChangeLog',
+      AtlasChangeLogModel.schema,
+    );
+  const Counter =
+    atlasConn.models['AtlasCounter'] ||
     atlasConn.model('AtlasCounter', AtlasCounterModel.schema);
 
   let accepted = 0;
@@ -82,7 +97,8 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       continue;
     }
 
-    const collectionName = ENTITY_COLLECTION_MAP[op.entityType as SyncableEntityType];
+    const collectionName =
+      ENTITY_COLLECTION_MAP[op.entityType as SyncableEntityType];
     if (!collectionName) {
       skipped++;
       continue;
@@ -165,9 +181,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
     accepted++;
   }
 
-  res.json(
-    new CustomResponse(true, { accepted, skipped }, 'Push complete'),
-  );
+  res.json(new CustomResponse(true, { accepted, skipped }, 'Push complete'));
 });
 
 // ─── GET /sync/pull ───────────────────────────────────────────────────────────
@@ -191,8 +205,12 @@ export const sync_pull = asyncHandler(async (req: Request, res: Response) => {
   );
 
   const atlasConn = await getAtlasConnection();
-  const ChangeLog = atlasConn.models['AtlasChangeLog'] ||
-    atlasConn.model<IAtlasChangeLog>('AtlasChangeLog', AtlasChangeLogModel.schema);
+  const ChangeLog =
+    atlasConn.models['AtlasChangeLog'] ||
+    atlasConn.model<IAtlasChangeLog>(
+      'AtlasChangeLog',
+      AtlasChangeLogModel.schema,
+    );
 
   const filter: Record<string, any> = {
     seq: { $gt: since },
@@ -203,8 +221,7 @@ export const sync_pull = asyncHandler(async (req: Request, res: Response) => {
     filter.clientId = { $ne: excludeClient };
   }
 
-  const changes = await ChangeLog
-    .find(filter)
+  const changes = await ChangeLog.find(filter)
     .sort({ seq: 1 })
     .limit(MAX_PULL_BATCH)
     .lean();
@@ -231,82 +248,105 @@ import SyncCheckpointModel from '../models/sync-checkpoint.model';
  * Returns a batch of pending or in_flight OperationLog entries.
  * The sync engine fetches these, marks them in_flight, then pushes to Atlas.
  */
-export const sync_get_pending_ops = asyncHandler(async (req: Request, res: Response) => {
-  const limit = Math.min(Number(req.query.limit ?? 50), 100);
+export const sync_get_pending_ops = asyncHandler(
+  async (req: Request, res: Response) => {
+    const limit = Math.min(Number(req.query.limit ?? 50), 100);
 
-  const ops = await OperationLogModel
-    .find({ status: { $in: ['pending', 'in_flight'] } })
-    .sort({ clientTimestamp: 1 })
-    .limit(limit)
-    .lean();
+    const ops = await OperationLogModel.find({
+      status: { $in: ['pending', 'in_flight'] },
+    })
+      .sort({ clientTimestamp: 1 })
+      .limit(limit)
+      .lean();
 
-  res.json(new CustomResponse(true, { ops }, `${ops.length} pending ops`));
-});
+    res.json(new CustomResponse(true, { ops }, `${ops.length} pending ops`));
+  },
+);
 
 // ─── PATCH /sync/mark-in-flight ───────────────────────────────────────────────
 /**
  * Marks a batch of OperationLog entries as in_flight before the push attempt.
  */
-export const sync_mark_in_flight = asyncHandler(async (req: Request, res: Response) => {
-  const { opIds } = req.body as { opIds: string[] };
-  appAssert(Array.isArray(opIds), BAD_REQUEST, 'opIds must be an array');
+export const sync_mark_in_flight = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { opIds } = req.body as { opIds: string[] };
+    appAssert(Array.isArray(opIds), BAD_REQUEST, 'opIds must be an array');
 
-  await OperationLogModel.updateMany(
-    { _id: { $in: opIds } },
-    { $set: { status: 'in_flight' } },
-  );
+    await OperationLogModel.updateMany(
+      { _id: { $in: opIds } },
+      { $set: { status: 'in_flight' } },
+    );
 
-  res.json(new CustomResponse(true, null, 'Marked in_flight'));
-});
+    res.json(new CustomResponse(true, null, 'Marked in_flight'));
+  },
+);
 
 // ─── PATCH /sync/mark-synced ──────────────────────────────────────────────────
 /**
  * Marks a batch of OperationLog entries as synced after Atlas confirms receipt.
  */
-export const sync_mark_synced = asyncHandler(async (req: Request, res: Response) => {
-  const { opIds } = req.body as { opIds: string[] };
-  appAssert(Array.isArray(opIds), BAD_REQUEST, 'opIds must be an array');
+export const sync_mark_synced = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { opIds } = req.body as { opIds: string[] };
+    appAssert(Array.isArray(opIds), BAD_REQUEST, 'opIds must be an array');
 
-  await OperationLogModel.updateMany(
-    { _id: { $in: opIds } },
-    { $set: { status: 'synced' } },
-  );
+    await OperationLogModel.updateMany(
+      { _id: { $in: opIds } },
+      { $set: { status: 'synced' } },
+    );
 
-  res.json(new CustomResponse(true, null, 'Marked synced'));
-});
+    res.json(new CustomResponse(true, null, 'Marked synced'));
+  },
+);
 
 // ─── GET /sync/checkpoint ─────────────────────────────────────────────────────
 /**
  * Returns the local SyncCheckpoint document (singleton).
  */
-export const sync_get_checkpoint = asyncHandler(async (_req: Request, res: Response) => {
-  const checkpoint = await SyncCheckpointModel.findById('main').lean();
-  res.json(new CustomResponse(true, checkpoint ?? { lastPulledSeq: 0 }, 'Checkpoint'));
-});
+export const sync_get_checkpoint = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const checkpoint = await SyncCheckpointModel.findById('main').lean();
+    res.json(
+      new CustomResponse(
+        true,
+        checkpoint ?? { lastPulledSeq: 0 },
+        'Checkpoint',
+      ),
+    );
+  },
+);
 
 // ─── PATCH /sync/checkpoint ───────────────────────────────────────────────────
 /**
  * Updates fields on the SyncCheckpoint singleton.
  * The sync engine calls this to advance lastPulledSeq after each applied change.
  */
-export const sync_update_checkpoint = asyncHandler(async (req: Request, res: Response) => {
-  const allowed = ['lastPulledSeq', 'lastPushedAt', 'lastSyncAttemptAt', 'lastSyncSuccessAt', 'clockSkewMs'];
-  const update: Record<string, any> = {};
+export const sync_update_checkpoint = asyncHandler(
+  async (req: Request, res: Response) => {
+    const allowed = [
+      'lastPulledSeq',
+      'lastPushedAt',
+      'lastSyncAttemptAt',
+      'lastSyncSuccessAt',
+      'clockSkewMs',
+    ];
+    const update: Record<string, any> = {};
 
-  for (const field of allowed) {
-    if (req.body[field] !== undefined) {
-      update[field] = req.body[field];
+    for (const field of allowed) {
+      if (req.body[field] !== undefined) {
+        update[field] = req.body[field];
+      }
     }
-  }
 
-  const checkpoint = await SyncCheckpointModel.findByIdAndUpdate(
-    'main',
-    { $set: update },
-    { upsert: true, new: true },
-  ).lean();
+    const checkpoint = await SyncCheckpointModel.findByIdAndUpdate(
+      'main',
+      { $set: update },
+      { upsert: true, new: true },
+    ).lean();
 
-  res.json(new CustomResponse(true, checkpoint, 'Checkpoint updated'));
-});
+    res.json(new CustomResponse(true, checkpoint, 'Checkpoint updated'));
+  },
+);
 
 // ─── POST /sync/apply-change ──────────────────────────────────────────────────
 /**
@@ -314,60 +354,73 @@ export const sync_update_checkpoint = asyncHandler(async (req: Request, res: Res
  * Called during the pull phase for each received change.
  * Uses the same LWW logic as the Atlas push handler, but in reverse.
  */
-export const sync_apply_change = asyncHandler(async (req: Request, res: Response) => {
-  const change = req.body.change as IAtlasChangeLog;
-  appAssert(change && change.entityType && change.entityId, BAD_REQUEST, 'change is required');
-
-  const collectionName = ENTITY_COLLECTION_MAP[change.entityType as SyncableEntityType];
-  appAssert(collectionName, BAD_REQUEST, `Unknown entityType: ${change.entityType}`);
-
-  // Use the default mongoose connection (local MongoDB)
-  const db = mongoose.connection.db!;
-  const collection = db.collection(collectionName);
-  const entityId = new mongoose.Types.ObjectId(change.entityId);
-
-  if (change.operation === 'create') {
-    await collection.updateOne(
-      { _id: entityId },
-      { $setOnInsert: { _id: entityId, ...change.patch } },
-      { upsert: true },
+export const sync_apply_change = asyncHandler(
+  async (req: Request, res: Response) => {
+    const change = req.body.change as IAtlasChangeLog;
+    appAssert(
+      change && change.entityType && change.entityId,
+      BAD_REQUEST,
+      'change is required',
     );
-  } else if (change.operation === 'update') {
-    const existing = await collection.findOne(
-      { _id: entityId },
-      { projection: { updatedAt: 1 } },
-    );
-    const existingUpdatedAt = existing?.updatedAt ? new Date(existing.updatedAt) : new Date(0);
-    const incomingTs = new Date(change.clientTimestamp);
 
-    if (incomingTs > existingUpdatedAt) {
-      const updatePatch: Record<string, any> = {};
-      for (const [key, value] of Object.entries(change.patch)) {
-        if (key === '_id') continue;
-        updatePatch[key] = value;
+    const collectionName =
+      ENTITY_COLLECTION_MAP[change.entityType as SyncableEntityType];
+    appAssert(
+      collectionName,
+      BAD_REQUEST,
+      `Unknown entityType: ${change.entityType}`,
+    );
+
+    // Use the default mongoose connection (local MongoDB)
+    const db = mongoose.connection.db!;
+    const collection = db.collection(collectionName);
+    const entityId = new mongoose.Types.ObjectId(change.entityId);
+
+    if (change.operation === 'create') {
+      await collection.updateOne(
+        { _id: entityId },
+        { $setOnInsert: { _id: entityId, ...change.patch } },
+        { upsert: true },
+      );
+    } else if (change.operation === 'update') {
+      const existing = await collection.findOne(
+        { _id: entityId },
+        { projection: { updatedAt: 1 } },
+      );
+      const existingUpdatedAt = existing?.updatedAt
+        ? new Date(existing.updatedAt)
+        : new Date(0);
+      const incomingTs = new Date(change.clientTimestamp);
+
+      if (incomingTs > existingUpdatedAt) {
+        const updatePatch: Record<string, any> = {};
+        for (const [key, value] of Object.entries(change.patch)) {
+          if (key === '_id') continue;
+          updatePatch[key] = value;
+        }
+        updatePatch.updatedAt = new Date();
+        await collection.updateOne({ _id: entityId }, { $set: updatePatch });
       }
-      updatePatch.updatedAt = new Date();
-      await collection.updateOne({ _id: entityId }, { $set: updatePatch });
-    }
-  } else if (change.operation === 'delete') {
-    const existing = await collection.findOne(
-      { _id: entityId },
-      { projection: { archived: 1 } },
-    );
-    if (existing !== null) {
-      if ('archived' in existing) {
-        await collection.updateOne(
-          { _id: entityId },
-          { $set: { archived: true, updatedAt: new Date() } },
-        );
-      } else {
-        await collection.deleteOne({ _id: entityId });
+    } else if (change.operation === 'delete') {
+      const existing = await collection.findOne(
+        { _id: entityId },
+        { projection: { archived: 1 } },
+      );
+      if (existing !== null) {
+        if ('archived' in existing) {
+          await collection.updateOne(
+            { _id: entityId },
+            { $set: { archived: true, updatedAt: new Date() } },
+          );
+        } else {
+          await collection.deleteOne({ _id: entityId });
+        }
       }
     }
-  }
 
-  res.json(new CustomResponse(true, null, 'Change applied'));
-});
+    res.json(new CustomResponse(true, null, 'Change applied'));
+  },
+);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BOOTSTRAP endpoints — first-run full data seeding from Atlas → local DB
@@ -379,7 +432,7 @@ export const sync_apply_change = asyncHandler(async (req: Request, res: Response
  * filter is uniform. We define the page size here too.
  */
 const BOOTSTRAP_COLLECTIONS = [
-  'organizations',   // fetched without org filter (small, global)
+  'organizations', // fetched without org filter (small, global)
   'users',
   'roles',
   'categories',
@@ -393,7 +446,7 @@ const BOOTSTRAP_COLLECTIONS = [
   'gpoas',
 ] as const;
 
-type BootstrapCollection = typeof BOOTSTRAP_COLLECTIONS[number];
+type BootstrapCollection = (typeof BOOTSTRAP_COLLECTIONS)[number];
 
 const BOOTSTRAP_PAGE_SIZE = 300;
 
@@ -411,63 +464,72 @@ const GLOBAL_COLLECTIONS = new Set(['organizations']);
  *   page         - 1-indexed page number (default: 1)
  *   limit        - docs per page (capped at BOOTSTRAP_PAGE_SIZE)
  */
-export const sync_bootstrap = asyncHandler(async (req: Request, res: Response) => {
-  const syncSecret = req.headers['x-sync-secret'];
-  appAssert(syncSecret === SECRET_ADMIN_KEY, UNAUTHORIZED, 'Invalid sync secret');
-
-  const collection = req.query.collection as BootstrapCollection;
-  const orgId = req.query.orgId as string;
-  const page = Math.max(1, Number(req.query.page ?? 1));
-  const limit = Math.min(Number(req.query.limit ?? BOOTSTRAP_PAGE_SIZE), BOOTSTRAP_PAGE_SIZE);
-
-  appAssert(
-    BOOTSTRAP_COLLECTIONS.includes(collection as any),
-    BAD_REQUEST,
-    `Unknown collection: ${collection}. Allowed: ${BOOTSTRAP_COLLECTIONS.join(', ')}`,
-  );
-
-  const isGlobal = GLOBAL_COLLECTIONS.has(collection);
-
-  if (!isGlobal) {
+export const sync_bootstrap = asyncHandler(
+  async (req: Request, res: Response) => {
+    const syncSecret = req.headers['x-sync-secret'];
     appAssert(
-      orgId && mongoose.Types.ObjectId.isValid(orgId),
-      BAD_REQUEST,
-      'orgId is required for org-scoped collections',
+      syncSecret === SECRET_ADMIN_KEY,
+      UNAUTHORIZED,
+      'Invalid sync secret',
     );
-  }
 
-  const atlasConn = await getAtlasConnection();
-  const col = atlasConn.db!.collection(collection);
+    const collection = req.query.collection as BootstrapCollection;
+    const orgId = req.query.orgId as string;
+    const page = Math.max(1, Number(req.query.page ?? 1));
+    const limit = Math.min(
+      Number(req.query.limit ?? BOOTSTRAP_PAGE_SIZE),
+      BOOTSTRAP_PAGE_SIZE,
+    );
 
-  const filter = isGlobal
-    ? {}
-    : { organization: new mongoose.Types.ObjectId(orgId) };
+    appAssert(
+      BOOTSTRAP_COLLECTIONS.includes(collection as any),
+      BAD_REQUEST,
+      `Unknown collection: ${collection}. Allowed: ${BOOTSTRAP_COLLECTIONS.join(', ')}`,
+    );
 
-  const skip = (page - 1) * limit;
+    const isGlobal = GLOBAL_COLLECTIONS.has(collection);
 
-  const [docs, total] = await Promise.all([
-    col.find(filter).skip(skip).limit(limit).toArray(),
-    col.countDocuments(filter),
-  ]);
+    if (!isGlobal) {
+      appAssert(
+        orgId && mongoose.Types.ObjectId.isValid(orgId),
+        BAD_REQUEST,
+        'orgId is required for org-scoped collections',
+      );
+    }
 
-  const totalPages = Math.ceil(total / limit);
+    const atlasConn = await getAtlasConnection();
+    const col = atlasConn.db!.collection(collection);
 
-  res.json(
-    new CustomResponse(
-      true,
-      {
-        docs,
-        collection,
-        page,
-        limit,
-        total,
-        totalPages,
-        hasMore: page < totalPages,
-      },
-      `${docs.length} docs from ${collection} (page ${page}/${totalPages})`,
-    ),
-  );
-});
+    const filter = isGlobal
+      ? {}
+      : { organization: new mongoose.Types.ObjectId(orgId) };
+
+    const skip = (page - 1) * limit;
+
+    const [docs, total] = await Promise.all([
+      col.find(filter).skip(skip).limit(limit).toArray(),
+      col.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json(
+      new CustomResponse(
+        true,
+        {
+          docs,
+          collection,
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore: page < totalPages,
+        },
+        `${docs.length} docs from ${collection} (page ${page}/${totalPages})`,
+      ),
+    );
+  },
+);
 
 // ─── GET /sync/user-bootstrap ─────────────────────────────────────────────────
 /**
@@ -475,35 +537,62 @@ export const sync_bootstrap = asyncHandler(async (req: Request, res: Response) =
  * Used during the Cloud Proxy Login flow to bootstrap the offline session.
  * Query params: studentID
  */
-export const sync_user_bootstrap = asyncHandler(async (req: Request, res: Response) => {
-  const syncSecret = req.headers['x-sync-secret'];
-  appAssert(syncSecret === SECRET_ADMIN_KEY, UNAUTHORIZED, 'Invalid sync secret');
+export const sync_user_bootstrap = asyncHandler(
+  async (req: Request, res: Response) => {
+    const syncSecret = req.headers['x-sync-secret'];
+    appAssert(
+      syncSecret === SECRET_ADMIN_KEY,
+      UNAUTHORIZED,
+      'Invalid sync secret',
+    );
 
-  const studentID = req.query.studentID as string;
-  appAssert(studentID, BAD_REQUEST, 'studentID is required');
+    const studentID = req.query.studentID as string;
+    const userRole = req.query.userRole as string;
+    appAssert(studentID, BAD_REQUEST, 'studentID is required');
 
-  const atlasConn = await getAtlasConnection();
-  
-  const User = atlasConn.models['User'] || atlasConn.model('User', (await import('../models/user.model')).default.schema);
-  const Organization = atlasConn.models['Organization'] || atlasConn.model('Organization', (await import('../models/organization.model')).default.schema);
-  const Role = atlasConn.models['Role'] || atlasConn.model('Role', (await import('../models/role.model')).default.schema);
+    const atlasConn = await getAtlasConnection();
 
-  const user = (await User.findOne({ studentID }).lean()) as any;
-  appAssert(user, NOT_FOUND, 'User not found in Atlas');
+    const User =
+      atlasConn.models['User'] ||
+      atlasConn.model(
+        'User',
+        (await import('../models/user.model')).default.schema,
+      );
+    const Organization =
+      atlasConn.models['Organization'] ||
+      atlasConn.model(
+        'Organization',
+        (await import('../models/organization.model')).default.schema,
+      );
+    const Role =
+      atlasConn.models['Role'] ||
+      atlasConn.model(
+        'Role',
+        (await import('../models/role.model')).default.schema,
+      );
 
-  const [organization, role] = await Promise.all([
-    user.organization ? Organization.findById(user.organization).lean() : null,
-    user.rbacRole ? Role.findById(user.rbacRole).lean() : null
-  ]);
+    const user = (await User.findOne({
+      studentID,
+      role: userRole,
+    }).lean()) as any;
+    appAssert(user, NOT_FOUND, 'User not found in Atlas');
 
-  res.json(
-    new CustomResponse(
-      true,
-      { user, organization, role },
-      'User bootstrap data',
-    ),
-  );
-});
+    const [organization, role] = await Promise.all([
+      user.organization
+        ? Organization.findById(user.organization).lean()
+        : null,
+      user.rbacRole ? Role.findById(user.rbacRole).lean() : null,
+    ]);
+
+    res.json(
+      new CustomResponse(
+        true,
+        { user, organization, role },
+        'User bootstrap data',
+      ),
+    );
+  },
+);
 
 // ─── GET /sync/current-seq ────────────────────────────────────────────────────
 /**
@@ -511,16 +600,19 @@ export const sync_user_bootstrap = asyncHandler(async (req: Request, res: Respon
  * The sync engine calls this at the end of bootstrap to set lastPulledSeq
  * to "now", so the first incremental pull only gets changes AFTER the dump.
  */
-export const sync_current_seq = asyncHandler(async (_req: Request, res: Response) => {
-  const atlasConn = await getAtlasConnection();
-  const Counter = atlasConn.models['AtlasCounter'] ||
-    atlasConn.model('AtlasCounter', AtlasCounterModel.schema);
+export const sync_current_seq = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const atlasConn = await getAtlasConnection();
+    const Counter =
+      atlasConn.models['AtlasCounter'] ||
+      atlasConn.model('AtlasCounter', AtlasCounterModel.schema);
 
-  const counter = await Counter.findById('changeLogSeq').lean();
-  const seq = (counter as any)?.value ?? 0;
+    const counter = await Counter.findById('changeLogSeq').lean();
+    const seq = (counter as any)?.value ?? 0;
 
-  res.json(new CustomResponse(true, { seq }, `Current Atlas seq: ${seq}`));
-});
+    res.json(new CustomResponse(true, { seq }, `Current Atlas seq: ${seq}`));
+  },
+);
 
 // ─── POST /sync/apply-bootstrap-batch ─────────────────────────────────────────
 /**
@@ -530,39 +622,51 @@ export const sync_current_seq = asyncHandler(async (_req: Request, res: Response
  *
  * Body: { collection: string, docs: object[] }
  */
-export const sync_apply_bootstrap_batch = asyncHandler(async (req: Request, res: Response) => {
-  const syncSecret = req.headers['x-sync-secret'];
-  appAssert(syncSecret === SECRET_ADMIN_KEY, UNAUTHORIZED, 'Invalid sync secret');
+export const sync_apply_bootstrap_batch = asyncHandler(
+  async (req: Request, res: Response) => {
+    const syncSecret = req.headers['x-sync-secret'];
+    appAssert(
+      syncSecret === SECRET_ADMIN_KEY,
+      UNAUTHORIZED,
+      'Invalid sync secret',
+    );
 
-  const { collection, docs } = req.body as {
-    collection: string;
-    docs: Record<string, any>[];
-  };
+    const { collection, docs } = req.body as {
+      collection: string;
+      docs: Record<string, any>[];
+    };
 
-  appAssert(collection && typeof collection === 'string', BAD_REQUEST, 'collection is required');
-  appAssert(Array.isArray(docs) && docs.length > 0, BAD_REQUEST, 'docs must be a non-empty array');
+    appAssert(
+      collection && typeof collection === 'string',
+      BAD_REQUEST,
+      'collection is required',
+    );
+    appAssert(
+      Array.isArray(docs) && docs.length > 0,
+      BAD_REQUEST,
+      'docs must be a non-empty array',
+    );
 
-  const db = mongoose.connection.db!;
-  const col = db.collection(collection);
+    const db = mongoose.connection.db!;
+    const col = db.collection(collection);
 
-  // Build a bulk upsert operation for each doc
-  const bulkOps = docs.map((doc) => ({
-    updateOne: {
-      filter: { _id: doc._id },
-      update: { $setOnInsert: doc },
-      upsert: true,
-    },
-  }));
+    // Build a bulk upsert operation for each doc
+    const bulkOps = docs.map((doc) => ({
+      updateOne: {
+        filter: { _id: doc._id },
+        update: { $setOnInsert: doc },
+        upsert: true,
+      },
+    }));
 
-  const result = await col.bulkWrite(bulkOps, { ordered: false });
+    const result = await col.bulkWrite(bulkOps, { ordered: false });
 
-  res.json(
-    new CustomResponse(
-      true,
-      { upserted: result.upsertedCount, matched: result.matchedCount },
-      `Bootstrap batch applied to ${collection}`,
-    ),
-  );
-});
-
-
+    res.json(
+      new CustomResponse(
+        true,
+        { upserted: result.upsertedCount, matched: result.matchedCount },
+        `Bootstrap batch applied to ${collection}`,
+      ),
+    );
+  },
+);

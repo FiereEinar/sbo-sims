@@ -47,6 +47,10 @@
       {
         "from": ".env",
         "to": ".env"
+      },
+      {
+        "from": "bin/mongod.exe",
+        "to": "bin/mongod.exe"
       }
     ],
     "win": {

@@ -538,9 +538,7 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
   // Start periodic health pings (sync only fires when auth context is available)
   let publicBootstrapped = false;
   
-  setInterval(() => {
-    // Auth context is provided by the renderer via sync:set-context IPC event.
-    // Until then, we just ping health to track connectivity state.
+  const performHealthPing = () => {
     pingHealth().then((ok) => {
       if (ok !== isOnline) {
         isOnline = ok;
@@ -556,7 +554,13 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
         });
       }
     });
-  }, HEALTH_PING_INTERVAL_MS);
+  };
+
+  // Run immediately on startup
+  performHealthPing();
+
+  // Then start periodic interval
+  setInterval(performHealthPing, HEALTH_PING_INTERVAL_MS);
 }
 
 function stop() {

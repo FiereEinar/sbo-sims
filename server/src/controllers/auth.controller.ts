@@ -58,7 +58,34 @@ import {
  * GET - public organizations
  */
 export const get_public_organizations = asyncHandler(async (req, res) => {
-  const organizations = await OrganizationModel.find({}, 'name slug').exec();
+  let organizations = await OrganizationModel.find({}, 'name slug').exec();
+
+  if (organizations.length === 0 && process.env.IS_ELECTRON === 'true') {
+    const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
+    try {
+      const fetchRes = await fetch(`${cloudUrl}/api/v1/sync/bootstrap?collection=organizations&page=1`, {
+        headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! }
+      });
+      if (fetchRes.ok) {
+        const responseData = await fetchRes.json();
+        const docs = responseData.data?.docs ?? [];
+        if (docs.length > 0) {
+          const bulkOps = docs.map((doc: any) => ({
+            updateOne: {
+              filter: { _id: doc._id },
+              update: { $setOnInsert: doc },
+              upsert: true,
+            },
+          }));
+          await OrganizationModel.bulkWrite(bulkOps, { ordered: false });
+          organizations = await OrganizationModel.find({}, 'name slug').exec();
+        }
+      }
+    } catch (err) {
+      console.error('[Public Org Proxy] Error fetching orgs from Atlas:', err);
+    }
+  }
+
   res.json(new CustomResponse(true, organizations, 'Public organizations'));
 });
 

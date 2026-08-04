@@ -16,6 +16,7 @@ import { isValidMongooseId } from '../middlewares/validations/validation';
 import { transactionQueryFilter } from '../middlewares/transactions-filter';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -61,6 +62,7 @@ router.post(
   hasRole([MODULES.CATEGORY_CREATE]),
   createCategoryValidation,
   create_category,
+  logOperation('Category'),
 );
 
 router.put(
@@ -69,6 +71,7 @@ router.put(
   isValidMongooseId('categoryID', { from: 'params' }),
   createCategoryValidation,
   update_category,
+  logOperation('Category'),
 );
 
 router.delete(
@@ -76,6 +79,7 @@ router.delete(
   hasRole([MODULES.CATEGORY_DELETE]),
   isValidMongooseId('categoryID', { from: 'params' }),
   delete_category,
+  logOperation('Category'),
 );
 
 export default router;

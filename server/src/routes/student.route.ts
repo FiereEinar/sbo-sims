@@ -21,6 +21,7 @@ import {
 import upload from '../utils/multer';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.post(
   hasRole([MODULES.STUDENT_CREATE]),
   createStudentValidation,
   create_student,
+  logOperation('Student'),
 );
 
 // Legacy import (exact CSV headers required)
@@ -76,8 +78,9 @@ router.put(
   hasRole([MODULES.STUDENT_UPDATE]),
   updateStudentValidation,
   update_student,
+  logOperation('Student'),
 );
 
-router.delete('/:studentID', hasRole([MODULES.STUDENT_DELETE]), delete_student);
+router.delete('/:studentID', hasRole([MODULES.STUDENT_DELETE]), delete_student, logOperation('Student'));
 
 export default router;

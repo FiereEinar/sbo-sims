@@ -16,6 +16,7 @@ import {
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get('/:userID', getSingleUser);
 
 router.put('/complete-onboarding', completeOnboarding);
 
-router.post('/', hasRole([MODULES.USER_CREATE]), createUser);
+router.post('/', hasRole([MODULES.USER_CREATE]), createUser, logOperation('User'));
 
 router.put(
   '/:userID/admin',
@@ -33,6 +34,7 @@ router.put(
   isValidMongooseId('userID', { from: 'params' }),
   updateUserValidation,
   adminUpdateUser,
+  logOperation('User'),
 );
 
 router.put(
@@ -40,6 +42,7 @@ router.put(
   isValidMongooseId('userID', { from: 'params' }),
   updateUserValidation,
   update_user,
+  logOperation('User'),
 );
 
 router.delete(
@@ -47,6 +50,7 @@ router.delete(
   hasRole([MODULES.USER_DELETE]),
   isValidMongooseId('userID', { from: 'params' }),
   deleteUser,
+  logOperation('User'),
 );
 
 router.patch(

@@ -25,6 +25,8 @@ import studentPortalRouter from './routes/student-portal.route';
 import paymentRequestRouter from './routes/payment-request.route';
 import supportTicketRouter from './routes/support-ticket.route';
 import gpoaRouter from './routes/gpoa.route';
+import syncRouter from './routes/sync.route';
+import { sync_health, sync_bootstrap, sync_user_bootstrap, sync_apply_bootstrap_batch } from './controllers/sync.controller';
 import path from 'path';
 
 import { NODE_ENV, PORT } from './constants/env';
@@ -73,6 +75,11 @@ app.use(async (req, res, next) => {
 
 app.use('/auth', authRouter);
 app.use('/student-portal', studentPortalRouter);
+// /sync/health and /sync/bootstrap are pre-auth for SyncEngine startup
+app.get('/sync/health', sync_health);
+app.get('/sync/bootstrap', sync_bootstrap);
+app.get('/sync/user-bootstrap', sync_user_bootstrap);
+app.post('/sync/apply-bootstrap-batch', sync_apply_bootstrap_batch);
 app.use(auth);
 app.use('/admin', adminRouter);
 app.use('/setting', settingRouter);
@@ -92,6 +99,7 @@ app.use('/attendance-report', attendanceReportRouter);
 app.use('/payment-request', paymentRequestRouter);
 app.use('/support-ticket', supportTicketRouter);
 app.use('/gpoa', gpoaRouter);
+app.use('/sync', syncRouter);
 
 // Error handlers
 app.use(notFoundHandler);

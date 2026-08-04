@@ -7,6 +7,7 @@ import HeaderLogo from './HeaderLogo';
 import { useUserStore } from '@/store/user';
 import { Settings } from 'lucide-react';
 import { Fragment } from 'react';
+import SyncStatusBadge from './SyncStatusBadge';
 
 export default function LeftSidebar() {
   const { user } = useUserStore((state) => state);
@@ -59,6 +60,7 @@ export default function LeftSidebar() {
             />
           )}
           <DarkModeToggle text="Toggle Theme" />
+          <SyncStatusBadge />
           <LogoutButton />
         </div>
       </div>

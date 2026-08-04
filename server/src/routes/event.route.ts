@@ -8,6 +8,7 @@ import {
 } from '../controllers/event.controller';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -25,16 +26,10 @@ router.get('/:id', hasRole([MODULES.EVENT_READ]), get_single_event);
  * POST - Create a new event
  * Note: Zod schema parsing is handled directly inside the controller based on the previous step
  */
-router.post('/', hasRole([MODULES.EVENT_CREATE]), create_event);
+router.post('/', hasRole([MODULES.EVENT_CREATE]), create_event, logOperation('Event'));
 
-/**
- * PUT/PATCH - Update an event by its ID
- */
-router.put('/:id', hasRole([MODULES.EVENT_UPDATE]), update_event);
+router.put('/:id', hasRole([MODULES.EVENT_UPDATE]), update_event, logOperation('Event'));
 
-/**
- * DELETE - Soft delete / archive an event by its ID
- */
-router.delete('/:id', hasRole([MODULES.EVENT_DELETE]), delete_event);
+router.delete('/:id', hasRole([MODULES.EVENT_DELETE]), delete_event, logOperation('Event'));
 
 export default router;

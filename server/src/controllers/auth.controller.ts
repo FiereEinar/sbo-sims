@@ -137,13 +137,43 @@ export const login = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(organization, NOT_FOUND, 'Organization not found');
 
-  // check if studentID is valid
-  const user = await UserModel.findOne<IUser>({
+  let user = await UserModel.findOne<IUser>({
     studentID: studentID,
     organization: organization._id,
   })
     .populate('organization')
     .exec();
+
+  if (!user && process.env.IS_ELECTRON === 'true') {
+    const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
+    try {
+      const fetchRes = await fetch(`${cloudUrl}/api/v1/sync/user-bootstrap?studentID=${studentID}`, {
+        headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! }
+      });
+      if (fetchRes.ok) {
+        const responseData = await fetchRes.json();
+        const data = responseData.data;
+        if (data && data.user) {
+          // Dynamically import Role model to avoid circular deps if any
+          const RoleModel = (await import('../models/role.model')).default;
+          
+          await Promise.all([
+            OrganizationModel.findByIdAndUpdate(data.organization._id, data.organization, { upsert: true }),
+            RoleModel.findByIdAndUpdate(data.role._id, data.role, { upsert: true }),
+            UserModel.findByIdAndUpdate(data.user._id, data.user, { upsert: true })
+          ]);
+          
+          user = await UserModel.findOne<IUser>({
+            studentID: studentID,
+            organization: organization._id,
+          }).populate('organization').exec();
+        }
+      }
+    } catch (err) {
+      console.error('[Login Proxy] Error fetching user from Atlas:', err);
+    }
+  }
+
   appAssert(user, UNAUTHORIZED, `Incorrect Student ID or password`);
 
   // check if password is correct
@@ -364,12 +394,43 @@ export const admin_login = asyncHandler(async (req, res) => {
   const { studentID, password }: loginUserBody = req.body;
 
   // Find the admin user — no organization filter
-  const user = await UserModel.findOne<IUser>({
+  let user = await UserModel.findOne<IUser>({
     studentID,
     role: 'central-admin',
   })
     .populate('rbacRole')
     .exec();
+
+  if (!user && process.env.IS_ELECTRON === 'true') {
+    const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
+    try {
+      const fetchRes = await fetch(`${cloudUrl}/api/v1/sync/user-bootstrap?studentID=${studentID}`, {
+        headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! }
+      });
+      if (fetchRes.ok) {
+        const responseData = await fetchRes.json();
+        const data = responseData.data;
+        if (data && data.user) {
+          const RoleModel = (await import('../models/role.model')).default;
+          const ops = [UserModel.findByIdAndUpdate(data.user._id, data.user, { upsert: true })];
+          if (data.role) ops.push(RoleModel.findByIdAndUpdate(data.role._id, data.role, { upsert: true }) as any);
+          if (data.organization) {
+            const OrganizationModel = (await import('../models/organization.model')).default;
+            ops.push(OrganizationModel.findByIdAndUpdate(data.organization._id, data.organization, { upsert: true }) as any);
+          }
+          await Promise.all(ops);
+          
+          user = await UserModel.findOne<IUser>({
+            studentID,
+            role: 'central-admin',
+          }).populate('rbacRole').exec();
+        }
+      }
+    } catch (err) {
+      console.error('[Admin Login Proxy] Error fetching user from Atlas:', err);
+    }
+  }
+
   appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
 
   const match = await bcrypt.compare(password, user.password);

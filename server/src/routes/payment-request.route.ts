@@ -6,6 +6,7 @@ import {
 } from '../controllers/payment-request.controller';
 import { MODULES } from '../constants/modules';
 import { hasRole } from '../middlewares/authentication/role';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -15,12 +16,14 @@ router.put(
   '/:id/approve',
   hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
   approve_payment_request,
+  logOperation('PaymentRequest'),
 );
 
 router.put(
   '/:id/reject',
   hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
   reject_payment_request,
+  logOperation('PaymentRequest'),
 );
 
 export default router;

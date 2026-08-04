@@ -12,6 +12,16 @@ export const PORT = getEnv('PORT', '3000');
 export const ME_CONFIG_MONGODB_URL = getEnv('ME_CONFIG_MONGODB_URL');
 export const MONGODB_PARAMS = getEnv('MONGODB_PARAMS', '');
 export const BCRYPT_SALT = getEnv('BCRYPT_SALT');
+
+// Atlas / Cloud sync connection
+export const CLOUD_CONFIG_MONGODB_URL = getEnv('CLOUD_CONFIG_MONGODB_URL', '');
+export const CLOUD_MONGODB_PARAMS = getEnv('CLOUD_MONGODB_PARAMS', '');
+
+// Sync feature flags
+/** 'true' when running inside the Electron desktop app */
+export const IS_ELECTRON = getEnv('IS_ELECTRON', 'false');
+/** 'true' to enable the Atlas bidirectional sync engine */
+export const SYNC_ENABLED = getEnv('SYNC_ENABLED', 'false');
 export const JWT_SECRET_KEY = getEnv('JWT_SECRET_KEY');
 export const JWT_REFRESH_SECRET_KEY = getEnv('JWT_REFRESH_SECRET_KEY');
 export const NODE_ENV = getEnv('NODE_ENV', 'development');

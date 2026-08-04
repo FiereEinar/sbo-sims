@@ -1,8 +1,9 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
+const syncEngine = require('./sync-engine');
 
 // File logger to catch crashes in packaged EXE
 const logPath = path.join(app.getPath('userData'), 'server-debug.log');
@@ -139,6 +140,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -166,8 +168,19 @@ app.whenReady().then(async () => {
     // 2. Start Express Backend next so it connects cleanly to Mongo
     await startExpressBackend();
 
-    // 3. Render Electron Window last
+    // 3. Render Electron Window
     createWindow();
+
+    // 4. Start SyncEngine (after window is created so IPC is available)
+    const atlasBaseUrl = process.env.CLOUD_API_URL || '';
+    syncEngine.start({
+      window: mainWindow,
+      userDataDir: app.getPath('userData'),
+      localApiBaseUrl: `http://localhost:${process.env.PORT || 3000}`,
+      atlasBaseUrl,
+      logFn: logToFile,
+    });
+    logToFile('SyncEngine started.');
   } catch (err) {
     logToFile(`Application startup failed: ${err.message}`);
   }
@@ -178,6 +191,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  syncEngine.stop();
   if (mongodProcess) {
     mongodProcess.kill();
   }

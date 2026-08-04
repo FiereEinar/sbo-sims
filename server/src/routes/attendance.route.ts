@@ -8,6 +8,7 @@ import {
   download_session_attendance_csv,
 } from '../controllers/attendance.controller';
 import { hasRole } from '../middlewares/authentication/role';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get('/session/:sessionId', hasRole([MODULES.ATTENDANCE_RECORD_READ]), get
 
 router.get('/session/:sessionId/stats', hasRole([MODULES.ATTENDANCE_RECORD_READ]), get_session_attendance_stats);
 
-router.post('/record', hasRole([MODULES.ATTENDANCE_RECORD_CREATE]), record_attendance);
+router.post('/record', hasRole([MODULES.ATTENDANCE_RECORD_CREATE]), record_attendance, logOperation('AttendanceRecord'));
 
 router.get('/session/:sessionId/download/pdf', hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]), download_session_attendance_pdf);
 

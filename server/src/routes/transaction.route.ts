@@ -22,6 +22,7 @@ import { isValidMongooseId } from '../middlewares/validations/validation';
 import upload from '../utils/multer';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -54,6 +55,7 @@ router.post(
   hasRole([MODULES.TRANSACTION_CREATE]),
   createTransactionValidation,
   create_transaction,
+  logOperation('Transaction'),
 );
 
 router.post(
@@ -82,6 +84,7 @@ router.put(
   isValidMongooseId('transactionID', { from: 'params' }),
   createTransactionValidation,
   update_transaction,
+  logOperation('Transaction'),
 );
 
 router.put(
@@ -97,6 +100,7 @@ router.delete(
   hasRole([MODULES.TRANSACTION_DELETE]),
   isValidMongooseId('transactionID', { from: 'params' }),
   delete_transaction,
+  logOperation('Transaction'),
 );
 
 export default router;

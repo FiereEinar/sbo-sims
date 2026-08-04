@@ -38,6 +38,8 @@
     "icon": "./client/dist/images/SBO_LOGO.png",
     "files": [
       "main.js",
+      "preload.js",
+      "sync-engine.js",
       "client/dist/**/*",
       "server/dist/**/*",
       "server/node_modules/**/*",

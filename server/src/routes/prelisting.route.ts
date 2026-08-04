@@ -11,6 +11,7 @@ import { isValidMongooseId } from '../middlewares/validations/validation';
 import { createPrelistingValidation } from '../middlewares/validations/prelistingValidation';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.post(
   hasRole([MODULES.PRELISTING_CREATE]),
   createPrelistingValidation,
   create_prelisting,
+  logOperation('Prelisting'),
 );
 
 router.put(
@@ -35,6 +37,7 @@ router.put(
   isValidMongooseId('prelistingID', { from: 'params' }),
   createPrelistingValidation,
   update_prelisting,
+  logOperation('Prelisting'),
 );
 
 router.delete(
@@ -42,6 +45,7 @@ router.delete(
   hasRole([MODULES.PRELISTING_DELETE]),
   isValidMongooseId('prelistingID', { from: 'params' }),
   delete_prelisting,
+  logOperation('Prelisting'),
 );
 
 export default router;

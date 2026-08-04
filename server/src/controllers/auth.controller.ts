@@ -203,6 +203,11 @@ export const login = asyncHandler(async (req, res) => {
             UserModel.findByIdAndUpdate(data.user._id, data.user, {
               upsert: true,
             }),
+            AppSettingModel.findByIdAndUpdate(
+              data.appSetting._id,
+              data.appSetting,
+              { upsert: true },
+            ),
           ]);
 
           user = await UserModel.findOne<IUser>({

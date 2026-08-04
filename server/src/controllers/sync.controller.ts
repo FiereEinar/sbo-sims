@@ -571,23 +571,31 @@ export const sync_user_bootstrap = asyncHandler(
         (await import('../models/role.model')).default.schema,
       );
 
+    const AppSetting =
+      atlasConn.models['AppSetting'] ||
+      atlasConn.model(
+        'AppSetting',
+        (await import('../models/app-setting.model')).default.schema,
+      );
+
     const user = (await User.findOne({
       studentID,
       role: userRole,
     }).lean()) as any;
     appAssert(user, NOT_FOUND, 'User not found in Atlas');
 
-    const [organization, role] = await Promise.all([
+    const [organization, role, appSetting] = await Promise.all([
       user.organization
         ? Organization.findById(user.organization).lean()
         : null,
       user.rbacRole ? Role.findById(user.rbacRole).lean() : null,
+      AppSetting.findOne().lean(),
     ]);
 
     res.json(
       new CustomResponse(
         true,
-        { user, organization, role },
+        { user, organization, role, appSetting },
         'User bootstrap data',
       ),
     );

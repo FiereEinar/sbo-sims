@@ -49,6 +49,7 @@ export default function LeftSidebar() {
         </div>
 
         <div className="flex flex-col gap-5 pt-5 border-t border-border/50">
+          <SyncStatusBadge />
           {canView({
             name: 'Settings',
             path: '/settings',
@@ -60,7 +61,6 @@ export default function LeftSidebar() {
             />
           )}
           <DarkModeToggle text="Toggle Theme" />
-          <SyncStatusBadge />
           <LogoutButton />
         </div>
       </div>

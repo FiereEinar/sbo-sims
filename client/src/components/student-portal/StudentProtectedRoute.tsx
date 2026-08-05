@@ -20,10 +20,14 @@ export default function StudentProtectedRoute({ children }: PropsWithChildren) {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await axiosInstance.get<User>('/auth/check-auth');
-        setUser(data);
+        const { data } = await axiosInstance.get<{
+          user: User;
+          accessToken: string;
+        }>('/auth/check-auth');
+        const user = data.user;
+        setUser(user);
 
-        if (data.role !== 'student') {
+        if (user.role !== 'student') {
           // Non-students should not access the student portal
           setIsAuthenticated(false);
           navigate('/login', { replace: true });

@@ -1,6 +1,6 @@
 /**
  * sync-engine.js
- * 
+ *
  * Runs in the Electron main process. Manages bidirectional sync between the
  * local mongod.exe database and MongoDB Atlas.
  *
@@ -11,16 +11,16 @@
  *   4. Emit IPC events so the renderer can show a sync status badge
  */
 
-const { net, ipcMain } = require('electron');
+const { net, ipcMain, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { randomUUID } = require('crypto');
 
 // ─── Configuration ────────────────────────────────────────────────────────────
-const HEALTH_PING_INTERVAL_MS = 30_000;   // check connectivity every 30s
-const POLL_INTERVAL_MS = 30_000;          // pull new changes every 30s while online
-const PUSH_BATCH_SIZE = 50;               // ops per push batch
-const CLOCK_SKEW_WARN_MS = 5 * 60_000;   // warn if clocks differ by > 5 minutes
+const HEALTH_PING_INTERVAL_MS = 30_000; // check connectivity every 30s
+const POLL_INTERVAL_MS = 5_000; // pull new changes every 30s while online
+const PUSH_BATCH_SIZE = 50; // ops per push batch
+const CLOCK_SKEW_WARN_MS = 5 * 60_000; // warn if clocks differ by > 5 minutes
 
 const BOOTSTRAP_COLLECTIONS = [
   'users',
@@ -61,11 +61,7 @@ function initClientId(userDataDir) {
   }
 
   // Also write to a well-known path so the local Express server can read it
-  fs.writeFileSync(
-    path.join(userDataDir, 'client-id.txt'),
-    clientId,
-    'utf-8',
-  );
+  fs.writeFileSync(path.join(userDataDir, 'client-id.txt'), clientId, 'utf-8');
 
   // Expose via env var so the operation-log middleware can read it
   process.env.ELECTRON_USER_DATA_PATH = userDataDir;
@@ -88,7 +84,9 @@ function netRequest(url, options = {}) {
     let responseData = '';
 
     req.on('response', (res) => {
-      res.on('data', (chunk) => { responseData += chunk.toString(); });
+      res.on('data', (chunk) => {
+        responseData += chunk.toString();
+      });
       res.on('end', () => {
         try {
           resolve({ status: res.statusCode, body: JSON.parse(responseData) });
@@ -123,9 +121,14 @@ function emitStatus(status, extra = {}) {
 }
 
 // ─── Health ping + clock skew ─────────────────────────────────────────────────
-async function pingHealth() {
+async function pingHealth(authCookie) {
+  logToFile(`[SyncEngine] Health ping: ${authCookie}`);
   try {
-    const { status, body } = await netRequest(`${atlasHealthUrl}/sync/health`);
+    const { status, body } = await netRequest(`${atlasHealthUrl}/sync/health`, {
+      headers: {
+        Authorization: `Bearer ${authCookie}`,
+      },
+    });
     if (status === 200 && body.ok) {
       // Check clock skew
       const serverTime = new Date(body.serverTime).getTime();
@@ -141,18 +144,31 @@ async function pingHealth() {
       await netRequest(`${localApiUrl}/sync/checkpoint`, {
         method: 'PATCH',
         body: { clockSkewMs: skewMs },
+        headers: {
+          Authorization: `Bearer ${authCookie}`,
+        },
       }).catch(() => {}); // best-effort
 
       return true;
     }
     return false;
-  } catch {
+  } catch (error) {
+    logToFile(
+      `[SyncEngine] Health ping failed: ${JSON.stringify(error.message)}`,
+    );
     return false;
   }
 }
 
 // ─── PUSH phase (local → Atlas) ───────────────────────────────────────────────
 async function runPush(authCookie) {
+  if (!authCookie) {
+    logToFile(
+      '[SyncEngine] Warning: Context received without valid authCookie',
+    );
+    return;
+  }
+
   let pushed = 0;
   let hasMore = true;
 
@@ -162,7 +178,11 @@ async function runPush(authCookie) {
     try {
       batchRes = await netRequest(
         `${localApiUrl}/sync/pending-ops?limit=${PUSH_BATCH_SIZE}`,
-        { headers: { Cookie: authCookie } },
+        {
+          headers: {
+            Authorization: `Bearer ${authCookie}`,
+          },
+        },
       );
     } catch (err) {
       logToFile(`[SyncEngine] Push fetch failed: ${err.message}`);
@@ -199,7 +219,9 @@ async function runPush(authCookie) {
     }
 
     if (pushRes.status !== 200) {
-      logToFile(`[SyncEngine] Atlas push rejected: ${JSON.stringify(pushRes.body)}`);
+      logToFile(
+        `[SyncEngine] Atlas push rejected: ${JSON.stringify(pushRes.body)}`,
+      );
       return false;
     }
 
@@ -220,11 +242,20 @@ async function runPush(authCookie) {
 
 // ─── PULL phase (Atlas → local) ───────────────────────────────────────────────
 async function runPull(authCookie, organizationId) {
+  if (!authCookie) {
+    logToFile(
+      '[SyncEngine] Warning: Context received without valid authCookie',
+    );
+    return;
+  }
+
   // Read current checkpoint
   let checkpoint;
   try {
     const res = await netRequest(`${localApiUrl}/sync/checkpoint`, {
-      headers: { Cookie: authCookie },
+      headers: {
+        Authorization: `Bearer ${authCookie}`,
+      },
     });
     checkpoint = res.body?.data ?? { lastPulledSeq: 0 };
   } catch (err) {
@@ -241,7 +272,11 @@ async function runPull(authCookie, organizationId) {
     try {
       pullRes = await netRequest(
         `${atlasHealthUrl}/sync/pull?since=${lastSeq}&excludeClient=${clientId}&organizationId=${organizationId}`,
-        { headers: { Cookie: authCookie } },
+        {
+          headers: {
+            Authorization: `Bearer ${authCookie}`,
+          },
+        },
       );
     } catch (err) {
       logToFile(`[SyncEngine] Pull from Atlas failed: ${err.message}`);
@@ -249,7 +284,9 @@ async function runPull(authCookie, organizationId) {
     }
 
     if (pullRes.status !== 200) {
-      logToFile(`[SyncEngine] Atlas pull failed: ${JSON.stringify(pullRes.body)}`);
+      logToFile(
+        `[SyncEngine] Atlas pull failed: ${JSON.stringify(pullRes.body)}`,
+      );
       return false;
     }
 
@@ -263,14 +300,18 @@ async function runPull(authCookie, organizationId) {
         body: { change },
         headers: { Cookie: authCookie },
       }).catch((err) => {
-        logToFile(`[SyncEngine] Apply change failed for seq ${change.seq}: ${err.message}`);
+        logToFile(
+          `[SyncEngine] Apply change failed for seq ${change.seq}: ${err.message}`,
+        );
       });
 
       // Advance checkpoint after EACH successful apply — ensures resumability
       await netRequest(`${localApiUrl}/sync/checkpoint`, {
         method: 'PATCH',
         body: { lastPulledSeq: change.seq },
-        headers: { Cookie: authCookie },
+        headers: {
+          Authorization: `Bearer ${authCookie}`,
+        },
       }).catch(() => {});
 
       lastSeq = change.seq;
@@ -289,7 +330,9 @@ async function bootstrapPublicData() {
   logToFile('[SyncEngine] Bootstrapping public data (organizations)...');
   const secretKey = process.env.SECRET_ADMIN_KEY;
   if (!secretKey) {
-    logToFile('[SyncEngine] SECRET_ADMIN_KEY missing, skipping public bootstrap.');
+    logToFile(
+      '[SyncEngine] SECRET_ADMIN_KEY missing, skipping public bootstrap.',
+    );
     return;
   }
 
@@ -302,7 +345,7 @@ async function bootstrapPublicData() {
     try {
       res = await netRequest(
         `${atlasHealthUrl}/sync/bootstrap?collection=organizations&page=${page}`,
-        { headers: { 'x-sync-secret': secretKey } }
+        { headers: { 'x-sync-secret': secretKey } },
       );
     } catch (err) {
       logToFile(`[SyncEngine] Public bootstrap fetch failed: ${err.message}`);
@@ -310,7 +353,9 @@ async function bootstrapPublicData() {
     }
 
     if (res.status !== 200) {
-      logToFile(`[SyncEngine] Atlas public bootstrap rejected: ${JSON.stringify(res.body)}`);
+      logToFile(
+        `[SyncEngine] Atlas public bootstrap rejected: ${JSON.stringify(res.body)}`,
+      );
       return;
     }
 
@@ -318,18 +363,23 @@ async function bootstrapPublicData() {
     if (docs && docs.length > 0) {
       let applyRes;
       try {
-        applyRes = await netRequest(`${localApiUrl}/sync/apply-bootstrap-batch`, {
-          method: 'POST',
-          body: { collection: 'organizations', docs },
-          headers: { 'x-sync-secret': secretKey },
-        });
+        applyRes = await netRequest(
+          `${localApiUrl}/sync/apply-bootstrap-batch`,
+          {
+            method: 'POST',
+            body: { collection: 'organizations', docs },
+            headers: { 'x-sync-secret': secretKey },
+          },
+        );
       } catch (err) {
         logToFile(`[SyncEngine] Public bootstrap apply failed: ${err.message}`);
         return;
       }
 
       if (applyRes.status !== 200) {
-        logToFile(`[SyncEngine] Local apply rejected: ${JSON.stringify(applyRes.body)}`);
+        logToFile(
+          `[SyncEngine] Local apply rejected: ${JSON.stringify(applyRes.body)}`,
+        );
         return;
       }
     }
@@ -342,6 +392,13 @@ async function bootstrapPublicData() {
 
 // ─── BOOTSTRAP phase (Atlas → local full dump) ────────────────────────────────
 async function runBootstrap(authCookie, organizationId) {
+  if (!authCookie) {
+    logToFile(
+      '[SyncEngine] Warning: Context received without valid authCookie',
+    );
+    return;
+  }
+
   logToFile('[SyncEngine] Starting first-run bootstrap...');
   emitStatus('syncing', { label: 'Bootstrapping initial data...' });
 
@@ -355,15 +412,23 @@ async function runBootstrap(authCookie, organizationId) {
       try {
         res = await netRequest(
           `${atlasHealthUrl}/sync/bootstrap?collection=${collection}&orgId=${organizationId}&page=${page}`,
-          { headers: { Cookie: authCookie } }
+          {
+            headers: {
+              Authorization: `Bearer ${authCookie}`,
+            },
+          },
         );
       } catch (err) {
-        logToFile(`[SyncEngine] Bootstrap fetch failed for ${collection}: ${err.message}`);
+        logToFile(
+          `[SyncEngine] Bootstrap fetch failed for ${collection}: ${err.message}`,
+        );
         return false;
       }
 
       if (res.status !== 200) {
-        logToFile(`[SyncEngine] Atlas bootstrap rejected: ${JSON.stringify(res.body)}`);
+        logToFile(
+          `[SyncEngine] Atlas bootstrap rejected: ${JSON.stringify(res.body)}`,
+        );
         return false;
       }
 
@@ -372,18 +437,25 @@ async function runBootstrap(authCookie, organizationId) {
         // Apply batch locally
         let applyRes;
         try {
-          applyRes = await netRequest(`${localApiUrl}/sync/apply-bootstrap-batch`, {
-            method: 'POST',
-            body: { collection, docs },
-            headers: { Cookie: authCookie },
-          });
+          applyRes = await netRequest(
+            `${localApiUrl}/sync/apply-bootstrap-batch`,
+            {
+              method: 'POST',
+              body: { collection, docs },
+              headers: { Cookie: authCookie },
+            },
+          );
         } catch (err) {
-          logToFile(`[SyncEngine] Bootstrap apply failed for ${collection}: ${err.message}`);
+          logToFile(
+            `[SyncEngine] Bootstrap apply failed for ${collection}: ${err.message}`,
+          );
           return false;
         }
 
         if (applyRes.status !== 200) {
-          logToFile(`[SyncEngine] Local apply rejected: ${JSON.stringify(applyRes.body)}`);
+          logToFile(
+            `[SyncEngine] Local apply rejected: ${JSON.stringify(applyRes.body)}`,
+          );
           return false;
         }
       }
@@ -397,7 +469,7 @@ async function runBootstrap(authCookie, organizationId) {
   let seqRes;
   try {
     seqRes = await netRequest(`${atlasHealthUrl}/sync/current-seq`, {
-      headers: { Cookie: authCookie }
+      headers: { Cookie: authCookie },
     });
   } catch (err) {
     logToFile(`[SyncEngine] Failed to get current seq: ${err.message}`);
@@ -410,7 +482,9 @@ async function runBootstrap(authCookie, organizationId) {
   await netRequest(`${localApiUrl}/sync/checkpoint`, {
     method: 'PATCH',
     body: { bootstrappedAt: new Date().toISOString(), lastPulledSeq: seq },
-    headers: { Cookie: authCookie },
+    headers: {
+      Authorization: `Bearer ${authCookie}`,
+    },
   }).catch(() => {});
 
   logToFile('[SyncEngine] Bootstrap complete!');
@@ -419,6 +493,13 @@ async function runBootstrap(authCookie, organizationId) {
 
 // ─── Full sync cycle ──────────────────────────────────────────────────────────
 async function runSync(authCookie, organizationId) {
+  if (!authCookie) {
+    logToFile(
+      '[SyncEngine] Warning: Context received without valid authCookie',
+    );
+    return;
+  }
+
   if (isSyncing) return;
   isSyncing = true;
   lastError = null;
@@ -429,7 +510,9 @@ async function runSync(authCookie, organizationId) {
     let checkpoint;
     try {
       const res = await netRequest(`${localApiUrl}/sync/checkpoint`, {
-        headers: { Cookie: authCookie },
+        headers: {
+          Authorization: `Bearer ${authCookie}`,
+        },
       });
       checkpoint = res.body?.data ?? { lastPulledSeq: 0 };
     } catch (err) {
@@ -461,7 +544,14 @@ async function runSync(authCookie, organizationId) {
 
 // ─── Connectivity monitoring ──────────────────────────────────────────────────
 async function checkConnectivity(authCookie, organizationId) {
-  const confirmed = await pingHealth();
+  if (!authCookie) {
+    logToFile(
+      '[SyncEngine] Skipping connectivity check: No authCookie provided',
+    );
+    return;
+  }
+
+  const confirmed = await pingHealth(authCookie);
 
   if (confirmed && !isOnline) {
     isOnline = true;
@@ -502,6 +592,7 @@ function logToFile(msg) {
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 function setupIpc() {
+  let cookie = null;
   ipcMain.on('sync:get-status', (event) => {
     event.reply('sync:status', {
       status: syncStatus,
@@ -514,10 +605,14 @@ function setupIpc() {
   // The renderer sends auth context after login so the sync engine can
   // call authenticated local Express endpoints
   ipcMain.on('sync:set-context', (_event, { authCookie, organizationId }) => {
-    logToFile(`[SyncEngine] Context set — org: ${organizationId}`);
+    // logToFile('[SyncEngine] Current Auth Cookie: ' + authCookie);
+    // logToFile(`[SyncEngine] Context set — org: ${organizationId}`);
     // Trigger immediate sync with new context
+    cookie = authCookie;
     checkConnectivity(authCookie, organizationId);
   });
+
+  return cookie;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -529,7 +624,7 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
   if (logFn) setLogger(logFn);
 
   initClientId(userDataDir);
-  setupIpc();
+  const authCookie = setupIpc();
 
   logToFile(`[SyncEngine] Started. ClientId: ${clientId}`);
   logToFile(`[SyncEngine] Local API: ${localApiUrl}`);
@@ -537,18 +632,18 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
 
   // Start periodic health pings (sync only fires when auth context is available)
   let publicBootstrapped = false;
-  
+
   const performHealthPing = () => {
-    pingHealth().then((ok) => {
+    pingHealth(authCookie).then((ok) => {
       if (ok !== isOnline) {
         isOnline = ok;
         emitStatus(ok ? 'synced' : 'offline');
       }
-      
+
       // Run public data dump once on first successful connection
       if (ok && !publicBootstrapped) {
         publicBootstrapped = true;
-        bootstrapPublicData().catch(err => {
+        bootstrapPublicData().catch((err) => {
           logToFile(`[SyncEngine] Public bootstrap error: ${err.message}`);
           publicBootstrapped = false; // retry next ping
         });

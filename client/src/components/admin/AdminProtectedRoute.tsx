@@ -13,46 +13,50 @@ trefoil.register();
  * Redirects to /admin/login otherwise.
  */
 export default function AdminProtectedRoute({ children }: PropsWithChildren) {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const setUser = useUserStore((state) => state.setUser);
-	const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const setUser = useUserStore((state) => state.setUser);
+  const navigate = useNavigate();
 
-	useEffect(() => {
-		(async () => {
-			try {
-				const { data } = await adminAxiosInstance.get<User>('/auth/check-auth');
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await adminAxiosInstance.get<{
+          user: User;
+          accessToken: string;
+        }>('/auth/check-auth');
+        const user = data.user;
 
-				if (data.role !== 'central-admin') {
-					setIsAuthenticated(false);
-					navigate('/admin/login', { replace: true });
-					return;
-				}
+        if (user.role !== 'central-admin') {
+          setIsAuthenticated(false);
+          navigate('/admin/login', { replace: true });
+          return;
+        }
 
-				setUser(data);
-				setIsAuthenticated(true);
-			} catch {
-				setIsAuthenticated(false);
-				navigate('/admin/login', { replace: true });
-			}
-		})();
-	}, [navigate, setUser]);
+        setUser(user);
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+        navigate('/admin/login', { replace: true });
+      }
+    })();
+  }, [navigate, setUser]);
 
-	if (!isAuthenticated) {
-		const isDark = document.documentElement.classList.contains('dark');
-		return (
-			<section className='w-dvw h-dvh flex flex-col justify-center items-center'>
-				<l-trefoil
-					size='80'
-					stroke='4'
-					stroke-length='0.15'
-					bg-opacity='0.1'
-					speed='1.4'
-					color={isDark ? 'white' : 'black'}
-				/>
-				<p className='text-xl font-bold mt-5'>Authenticating</p>
-			</section>
-		);
-	}
+  if (!isAuthenticated) {
+    const isDark = document.documentElement.classList.contains('dark');
+    return (
+      <section className="w-dvw h-dvh flex flex-col justify-center items-center">
+        <l-trefoil
+          size="80"
+          stroke="4"
+          stroke-length="0.15"
+          bg-opacity="0.1"
+          speed="1.4"
+          color={isDark ? 'white' : 'black'}
+        />
+        <p className="text-xl font-bold mt-5">Authenticating</p>
+      </section>
+    );
+  }
 
-	return children;
+  return children;
 }

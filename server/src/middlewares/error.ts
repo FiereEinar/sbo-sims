@@ -72,7 +72,7 @@ export const errorHandler: ErrorRequestHandler = (
   res,
   next,
 ) => {
-  console.log(`PATH ${req.path}`, error);
+  console.log(`METHOD: ${req.method} PATH ${req.path}`, error);
 
   if (error instanceof z.ZodError) {
     handleZodError(res, error);

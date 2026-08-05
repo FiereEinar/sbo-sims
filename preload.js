@@ -1,9 +1,9 @@
 /**
  * preload.js
- * 
+ *
  * Electron preload script — runs in a privileged context and safely exposes
  * a minimal IPC API to the renderer (React app) via contextBridge.
- * 
+ *
  * Exposes window.electronAPI for sync status events.
  */
 const { contextBridge, ipcRenderer } = require('electron');
@@ -35,6 +35,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * @param {string} organizationId - Active organization ObjectId
    */
   setSyncContext: (authCookie, organizationId) => {
+    console.log('[Preload] setSyncContext called with:', {
+      authCookie,
+      organizationId,
+    });
     ipcRenderer.send('sync:set-context', { authCookie, organizationId });
   },
 

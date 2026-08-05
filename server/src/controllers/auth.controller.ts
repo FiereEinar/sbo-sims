@@ -53,6 +53,7 @@ import {
   signupService,
   verifyRecaptcha,
 } from '../services/auth.service';
+import mongoose, { Types } from 'mongoose';
 
 /**
  * GET - public organizations
@@ -72,16 +73,25 @@ export const get_public_organizations = asyncHandler(async (req, res) => {
       );
       if (fetchRes.ok) {
         const responseData = await fetchRes.json();
-        const docs = responseData.data?.docs ?? [];
-        if (docs.length > 0) {
-          const bulkOps = docs.map((doc: any) => ({
-            updateOne: {
-              filter: { _id: doc._id },
-              update: { $setOnInsert: doc },
-              upsert: true,
-            },
-          }));
-          await OrganizationModel.bulkWrite(bulkOps, { ordered: false });
+        const rawDocs = responseData.data?.docs ?? [];
+
+        if (rawDocs.length > 0) {
+          for (const doc of rawDocs) {
+            const cleanDoc = {
+              ...doc,
+              _id: new mongoose.Types.ObjectId(doc._id),
+              createdAt: new Date(doc.createdAt),
+              updatedAt: new Date(doc.updatedAt),
+            };
+
+            // 2. Upsert into your local database using the BSON ObjectId in the filter
+            await OrganizationModel.findOneAndUpdate(
+              { _id: cleanDoc._id },
+              { $set: cleanDoc },
+              { upsert: true, new: true },
+            );
+          }
+
           organizations = await OrganizationModel.find({}, 'name slug').exec();
         }
       }
@@ -175,7 +185,8 @@ export const login = asyncHandler(async (req, res) => {
     .populate('organization')
     .exec();
 
-  if (!user && process.env.IS_ELECTRON === 'true') {
+  if (!user) {
+    // if (!user && process.env.IS_ELECTRON === 'true') {
     const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
     try {
       const fetchRes = await fetch(
@@ -184,12 +195,20 @@ export const login = asyncHandler(async (req, res) => {
           headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! },
         },
       );
+
       if (fetchRes.ok) {
         const responseData = await fetchRes.json();
         const data = responseData.data;
+
         if (data && data.user) {
           // Dynamically import Role model to avoid circular deps if any
           const RoleModel = (await import('../models/role.model')).default;
+          const OrganizationModel = (
+            await import('../models/organization.model')
+          ).default;
+          const AppSettingModel = (await import('../models/app-setting.model'))
+            .default;
+          const UserModel = (await import('../models/user.model')).default;
 
           await Promise.all([
             OrganizationModel.findByIdAndUpdate(
@@ -223,11 +242,11 @@ export const login = asyncHandler(async (req, res) => {
     }
   }
 
-  appAssert(user, UNAUTHORIZED, `Incorrect Student ID or password`);
+  appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
 
   // check if password is correct
   const match = await bcrypt.compare(password, user.password);
-  appAssert(match, UNAUTHORIZED, 'Incorrect Student ID or password');
+  appAssert(match, UNAUTHORIZED, 'Incorrect password');
 
   appAssert(
     user.verified,
@@ -406,7 +425,7 @@ export const check_auth = asyncHandler(async (req, res) => {
   }
   await user.save();
 
-  res.status(OK).json(user.omitPassword());
+  res.status(OK).json({ user: user.omitPassword(), accessToken: token });
 });
 
 export const admin = asyncHandler(async (req, res) => {

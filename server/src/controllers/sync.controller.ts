@@ -622,6 +622,58 @@ export const sync_current_seq = asyncHandler(
   },
 );
 
+// Helper function to recursively cast strings into BSON ObjectIds and Dates
+const castDocumentTypes = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') {
+    // If it's a string, check if it's an ISO Date format
+    if (typeof obj === 'string') {
+      const isoDateRegex =
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/;
+      if (isoDateRegex.test(obj)) {
+        const parsedDate = new Date(obj);
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+    }
+    return obj;
+  }
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map((item) => castDocumentTypes(item));
+  }
+
+  // Handle Objects
+  const transformed: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    // 1. Convert _id or any field ending in 'Id' / 'organization' / 'user' to ObjectId if valid
+    if (
+      (key === '_id' ||
+        key.endsWith('Id') ||
+        key === 'organization' ||
+        key === 'user') &&
+      typeof value === 'string' &&
+      mongoose.Types.ObjectId.isValid(value)
+    ) {
+      transformed[key] = new mongoose.Types.ObjectId(value);
+    }
+    // 2. Convert date keys explicitly or recursively parse
+    else if (
+      (key.includes('At') || key.includes('Date')) &&
+      typeof value === 'string' &&
+      !isNaN(Date.parse(value))
+    ) {
+      transformed[key] = new Date(value);
+    }
+    // 3. Fallback to recursive transformation for nested fields
+    else {
+      transformed[key] = castDocumentTypes(value);
+    }
+  }
+
+  return transformed;
+};
+
 // ─── POST /sync/apply-bootstrap-batch ─────────────────────────────────────────
 /**
  * LOCAL-ONLY — called by the sync engine during bootstrap.
@@ -659,13 +711,18 @@ export const sync_apply_bootstrap_batch = asyncHandler(
     const col = db.collection(collection);
 
     // Build a bulk upsert operation for each doc
-    const bulkOps = docs.map((doc) => ({
-      updateOne: {
-        filter: { _id: doc._id },
-        update: { $setOnInsert: doc },
-        upsert: true,
-      },
-    }));
+    const bulkOps = docs.map((doc) => {
+      // Clean and cast all string IDs / Dates to proper BSON objects
+      const cleanDoc = castDocumentTypes(doc);
+
+      return {
+        updateOne: {
+          filter: { _id: cleanDoc._id }, // Ensure filter checks for BSON ObjectId
+          update: { $setOnInsert: cleanDoc },
+          upsert: true,
+        },
+      };
+    });
 
     const result = await col.bulkWrite(bulkOps, { ordered: false });
 

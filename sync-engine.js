@@ -18,7 +18,7 @@ const { randomUUID } = require('crypto');
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const HEALTH_PING_INTERVAL_MS = 30_000; // check connectivity every 30s
-const POLL_INTERVAL_MS = 5_000; // pull new changes every 30s while online
+const POLL_INTERVAL_MS = 10_000; // pull new changes every 30s while online
 const PUSH_BATCH_SIZE = 50; // ops per push batch
 const CLOCK_SKEW_WARN_MS = 5 * 60_000; // warn if clocks differ by > 5 minutes
 
@@ -47,6 +47,7 @@ let mainWindow = null;
 let localApiUrl = 'http://localhost:3000';
 let atlasHealthUrl = '';
 let userDataPath = '';
+let cookie = null;
 
 // ─── Client ID ────────────────────────────────────────────────────────────────
 function initClientId(userDataDir) {
@@ -520,6 +521,8 @@ async function runSync(authCookie, organizationId) {
       throw new Error('Could not read checkpoint');
     }
 
+    logToFile(`[SyncEngine] Checkpoint data: ${JSON.stringify(checkpoint)}`);
+
     if (!checkpoint.bootstrappedAt) {
       const bootOk = await runBootstrap(authCookie, organizationId);
       if (!bootOk) throw new Error('Bootstrap phase failed');
@@ -553,7 +556,7 @@ async function checkConnectivity(authCookie, organizationId) {
 
   const confirmed = await pingHealth(authCookie);
 
-  if (confirmed && !isOnline) {
+  if (confirmed) {
     isOnline = true;
     logToFile('[SyncEngine] Internet connection confirmed. Starting sync...');
     emitStatus('syncing');
@@ -568,7 +571,7 @@ async function checkConnectivity(authCookie, organizationId) {
         runSync(authCookie, organizationId);
       }, POLL_INTERVAL_MS);
     }
-  } else if (!confirmed && isOnline) {
+  } else if (!confirmed) {
     isOnline = false;
     emitStatus('offline');
     logToFile('[SyncEngine] Lost connectivity. Switching to offline mode.');
@@ -592,7 +595,6 @@ function logToFile(msg) {
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 function setupIpc() {
-  let cookie = null;
   ipcMain.on('sync:get-status', (event) => {
     event.reply('sync:status', {
       status: syncStatus,
@@ -609,10 +611,8 @@ function setupIpc() {
     // logToFile(`[SyncEngine] Context set — org: ${organizationId}`);
     // Trigger immediate sync with new context
     cookie = authCookie;
-    checkConnectivity(authCookie, organizationId);
+    checkConnectivity(cookie, organizationId);
   });
-
-  return cookie;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -624,7 +624,7 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
   if (logFn) setLogger(logFn);
 
   initClientId(userDataDir);
-  const authCookie = setupIpc();
+  setupIpc();
 
   logToFile(`[SyncEngine] Started. ClientId: ${clientId}`);
   logToFile(`[SyncEngine] Local API: ${localApiUrl}`);
@@ -634,7 +634,7 @@ function start({ window, userDataDir, localApiBaseUrl, atlasBaseUrl, logFn }) {
   let publicBootstrapped = false;
 
   const performHealthPing = () => {
-    pingHealth(authCookie).then((ok) => {
+    pingHealth(cookie).then((ok) => {
       if (ok !== isOnline) {
         isOnline = ok;
         emitStatus(ok ? 'synced' : 'offline');

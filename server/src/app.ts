@@ -10,7 +10,10 @@ dotenv.config();
 // Fallback: also load root .env for desktop-only vars (IS_ELECTRON, SYNC_ENABLED, etc.)
 // override:false means server/.env values always win if there's a conflict.
 // On Vercel this is a harmless no-op (no root .env exists).
-// dotenv.config({ path: require('path').resolve(process.cwd(), '..', '.env'), override: false });
+dotenv.config({
+  path: require('path').resolve(process.cwd(), '..', '.env'),
+  override: false,
+});
 
 import authRouter from './routes/auth.route';
 import studentRouter from './routes/student.route';

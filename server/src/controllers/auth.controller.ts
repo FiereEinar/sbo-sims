@@ -185,8 +185,7 @@ export const login = asyncHandler(async (req, res) => {
     .populate('organization')
     .exec();
 
-  if (!user) {
-    // if (!user && process.env.IS_ELECTRON === 'true') {
+  if (!user && !process.env.VERCEL) {
     const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
     try {
       const fetchRes = await fetch(

@@ -36,11 +36,16 @@ function getClientId(): string {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function methodToOperation(method: string): SyncOperation | null {
   switch (method.toUpperCase()) {
-    case 'POST':   return 'create';
-    case 'PUT':    return 'update';
-    case 'PATCH':  return 'update';
-    case 'DELETE': return 'delete';
-    default:       return null;
+    case 'POST':
+      return 'create';
+    case 'PUT':
+      return 'update';
+    case 'PATCH':
+      return 'update';
+    case 'DELETE':
+      return 'delete';
+    default:
+      return null;
   }
 }
 
@@ -73,8 +78,11 @@ export const logOperation =
   (req: Request, res: Response, next: NextFunction) => {
     // Skip entirely if sync is disabled
     if (SYNC_ENABLED !== 'true') {
+      console.log('[Sync] Sync not enabled');
       return next();
     }
+
+    console.log('[Sync] Sync enabled');
 
     const operation = methodToOperation(req.method);
     if (!operation) return next();
@@ -95,8 +103,7 @@ export const logOperation =
           // Build a field-level patch:
           // - For creates/updates: req.body is the payload
           // - For deletes: store empty patch (deletion is tracked by operation type)
-          const patch =
-            operation === 'delete' ? {} : { ...(req.body ?? {}) };
+          const patch = operation === 'delete' ? {} : { ...(req.body ?? {}) };
 
           // For creates, also include the assigned _id so the remote can upsert correctly
           if (operation === 'create') {
@@ -113,7 +120,10 @@ export const logOperation =
             clientTimestamp: new Date(),
             status: 'pending',
           }).catch((err: Error) => {
-            console.error('[OperationLog] Failed to write log entry:', err.message);
+            console.error(
+              '[OperationLog] Failed to write log entry:',
+              err.message,
+            );
           });
         }
       }

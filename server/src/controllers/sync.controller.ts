@@ -468,10 +468,8 @@ export const sync_bootstrap = asyncHandler(
   async (req: Request, res: Response) => {
     const syncSecret = req.headers['x-sync-secret'];
 
-    const expectedSecret = process.env.SYNC_SECRET;
-
     console.log('[DEBUG] Incoming:', JSON.stringify(syncSecret));
-    console.log('[DEBUG] Expected:', JSON.stringify(expectedSecret));
+    console.log('[DEBUG] Expected:', JSON.stringify(SECRET_ADMIN_KEY));
 
     appAssert(
       syncSecret === SECRET_ADMIN_KEY,

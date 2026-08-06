@@ -400,6 +400,14 @@ async function runBootstrap(authCookie, organizationId) {
     return;
   }
 
+  const secretKey = process.env.SECRET_ADMIN_KEY;
+  if (!secretKey) {
+    logToFile(
+      '[SyncEngine] SECRET_ADMIN_KEY missing, skipping public bootstrap.',
+    );
+    return;
+  }
+
   logToFile('[SyncEngine] Starting first-run bootstrap...');
   emitStatus('syncing', { label: 'Bootstrapping initial data...' });
 
@@ -416,6 +424,7 @@ async function runBootstrap(authCookie, organizationId) {
           {
             headers: {
               Authorization: `Bearer ${authCookie}`,
+              'x-sync-secret': secretKey,
             },
           },
         );

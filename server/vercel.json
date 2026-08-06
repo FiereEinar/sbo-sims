@@ -20,14 +20,6 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-active-sem, x-active-school-year"
-        },
-        {
-          "key": "x-sync-secret",
-          "value": "process.env.ADMIN_SECRET_KEY"
-        },
-        {
-          "key": "x-organization-slug",
-          "value": ""
         }
       ]
     }

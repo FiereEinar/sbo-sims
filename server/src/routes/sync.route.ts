@@ -66,4 +66,3 @@ router.post('/apply-change', sync_apply_change);
 router.get('/current-seq', sync_current_seq);
 
 export default router;
-

@@ -467,6 +467,12 @@ const GLOBAL_COLLECTIONS = new Set(['organizations']);
 export const sync_bootstrap = asyncHandler(
   async (req: Request, res: Response) => {
     const syncSecret = req.headers['x-sync-secret'];
+
+    const expectedSecret = process.env.SYNC_SECRET;
+
+    console.log('[DEBUG] Incoming:', JSON.stringify(syncSecret));
+    console.log('[DEBUG] Expected:', JSON.stringify(expectedSecret));
+
     appAssert(
       syncSecret === SECRET_ADMIN_KEY,
       UNAUTHORIZED,

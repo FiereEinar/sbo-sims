@@ -5,14 +5,15 @@ import { FRONTEND_URL } from '../constants/env';
 const normalizedOrigin = FRONTEND_URL.replace(/\/$/, '');
 
 export const corsOptions: CorsOptions = {
-	origin: normalizedOrigin,
-	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-	allowedHeaders: [
-		'Content-Type',
-		'Authorization',
-		'x-active-sem',
-		'x-active-school-year',
-		'x-organization-slug',
-	],
+  origin: normalizedOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-active-sem',
+    'x-active-school-year',
+    'x-organization-slug',
+    'x-sync-secret',
+  ],
 };

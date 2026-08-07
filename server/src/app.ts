@@ -40,6 +40,8 @@ import {
   sync_bootstrap,
   sync_user_bootstrap,
   sync_apply_bootstrap_batch,
+  sync_push,
+  sync_pull,
 } from './controllers/sync.controller';
 import path from 'path';
 
@@ -60,8 +62,8 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
@@ -94,6 +96,8 @@ app.get('/sync/health', sync_health);
 app.get('/sync/bootstrap', sync_bootstrap);
 app.get('/sync/user-bootstrap', sync_user_bootstrap);
 app.post('/sync/apply-bootstrap-batch', sync_apply_bootstrap_batch);
+app.post('/sync/push', sync_push);
+app.get('/sync/pull', sync_pull);
 app.use(auth);
 app.use('/admin', adminRouter);
 app.use('/setting', settingRouter);

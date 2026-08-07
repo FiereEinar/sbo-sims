@@ -59,6 +59,13 @@ export const sync_health = asyncHandler(
  * Idempotent: if an operation _id already exists in AtlasChangeLog, it is skipped.
  */
 export const sync_push = asyncHandler(async (req: Request, res: Response) => {
+  const syncSecret = req.headers['x-sync-secret'];
+  appAssert(
+    syncSecret === SECRET_ADMIN_KEY,
+    UNAUTHORIZED,
+    'Invalid sync secret',
+  );
+
   const ops: IOperationLog[] = req.body.ops;
 
   appAssert(
@@ -194,6 +201,13 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
  *   organizationId - org scoping
  */
 export const sync_pull = asyncHandler(async (req: Request, res: Response) => {
+  const syncSecret = req.headers['x-sync-secret'];
+  appAssert(
+    syncSecret === SECRET_ADMIN_KEY,
+    UNAUTHORIZED,
+    'Invalid sync secret',
+  );
+
   const since = Number(req.query.since ?? 0);
   const excludeClient = req.query.excludeClient as string;
   const organizationId = req.query.organizationId as string;
@@ -329,6 +343,7 @@ export const sync_update_checkpoint = asyncHandler(
       'lastSyncAttemptAt',
       'lastSyncSuccessAt',
       'clockSkewMs',
+      'bootstrappedAt',
     ];
     const update: Record<string, any> = {};
 

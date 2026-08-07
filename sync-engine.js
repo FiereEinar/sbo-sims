@@ -18,7 +18,7 @@ const { randomUUID } = require('crypto');
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const HEALTH_PING_INTERVAL_MS = 30_000; // check connectivity every 30s
-const POLL_INTERVAL_MS = 10_000; // pull new changes every 30s while online
+const POLL_INTERVAL_MS = 30_000; // pull new changes every 30s while online
 const PUSH_BATCH_SIZE = 50; // ops per push batch
 const CLOCK_SKEW_WARN_MS = 5 * 60_000; // warn if clocks differ by > 5 minutes
 
@@ -123,7 +123,7 @@ function emitStatus(status, extra = {}) {
 
 // ─── Health ping + clock skew ─────────────────────────────────────────────────
 async function pingHealth(authCookie) {
-  logToFile(`[SyncEngine] Health ping: ${authCookie}`);
+  // logToFile(`[SyncEngine] Health ping: ${authCookie}`);
   try {
     const { status, body } = await netRequest(`${atlasHealthUrl}/sync/health`, {
       headers: {
@@ -211,7 +211,10 @@ async function runPush(authCookie) {
       pushRes = await netRequest(`${atlasHealthUrl}/sync/push`, {
         method: 'POST',
         body: { ops },
-        headers: { Cookie: authCookie },
+        headers: { 
+          Cookie: authCookie,
+          'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key'
+        },
       });
     } catch (err) {
       // Network died mid-push — leave ops as in_flight so next sync retries them
@@ -276,6 +279,7 @@ async function runPull(authCookie, organizationId) {
         {
           headers: {
             Authorization: `Bearer ${authCookie}`,
+            'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key'
           },
         },
       );
@@ -444,6 +448,9 @@ async function runBootstrap(authCookie, organizationId) {
 
       const { docs, hasMore: more } = res.body?.data ?? {};
       if (docs && docs.length > 0) {
+        logToFile(
+          `[SyncEngine] Applying ${collection} page ${page} - ${docs.length} docs`,
+        );
         // Apply batch locally
         let applyRes;
         try {
@@ -452,7 +459,10 @@ async function runBootstrap(authCookie, organizationId) {
             {
               method: 'POST',
               body: { collection, docs },
-              headers: { Cookie: authCookie },
+              headers: {
+                Authorization: `Bearer ${authCookie}`,
+                'x-sync-secret': secretKey,
+              },
             },
           );
         } catch (err) {
@@ -479,7 +489,7 @@ async function runBootstrap(authCookie, organizationId) {
   let seqRes;
   try {
     seqRes = await netRequest(`${atlasHealthUrl}/sync/current-seq`, {
-      headers: { Cookie: authCookie },
+      headers: { Authorization: `Bearer ${authCookie}` },
     });
   } catch (err) {
     logToFile(`[SyncEngine] Failed to get current seq: ${err.message}`);

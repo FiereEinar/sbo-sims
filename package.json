@@ -4,7 +4,7 @@
   "description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
   "main": "main.js",
   "scripts": {
-    "dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\" --names \"server,client,mongodb\"",
+    "dev-all": "concurrently --hide mongodb \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\" --names \"server,client,mongodb\"",
     "install-all": "npm install --prefix server && npm install --prefix client && npm install",
     "check-build": "npm run check:ts --prefix server && npm run build --prefix client",
     "electron:dev": "concurrently \"npm run dev-all\" \"wait-on http://localhost:3000 && electron .\"",

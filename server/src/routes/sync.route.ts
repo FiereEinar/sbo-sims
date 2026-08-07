@@ -1,8 +1,6 @@
 import express from 'express';
 import {
   sync_health,
-  sync_pull,
-  sync_push,
   sync_get_pending_ops,
   sync_mark_in_flight,
   sync_mark_synced,
@@ -20,20 +18,6 @@ const router = express.Router();
  * No authentication required — the sync engine needs to call this before login.
  */
 router.get('/health', sync_health);
-
-/**
- * POST /sync/push
- * Receives a batch of OperationLog entries from an Electron client.
- * Body: { ops: IOperationLog[] }
- */
-router.post('/push', sync_push);
-
-/**
- * GET /sync/pull
- * Returns AtlasChangeLog entries the client hasn't received yet.
- * Query params: since, excludeClient, organizationId
- */
-router.get('/pull', sync_pull);
 
 // ─── Local-only endpoints (Electron sync engine ↔ local Express) ─────────────
 // These are called by sync-engine.js on localhost. They read/write local MongoDB.

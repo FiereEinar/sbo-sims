@@ -56,7 +56,7 @@ function startMongoDB() {
 
     mongodProcess.stdout.on('data', (data) => {
       const msg = data.toString();
-      logToFile(`[Mongo]: ${msg}`);
+      // logToFile(`[Mongo]: ${msg}`);
 
       // Look for MongoDB readiness indicator
       if (

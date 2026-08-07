@@ -77,14 +77,9 @@ export const logOperation =
   (entityType: SyncableEntityType) =>
   (req: Request, res: Response, next: NextFunction) => {
     // Skip entirely if sync is disabled
-    console.log('[Sync] Sync value: ', SYNC_ENABLED);
-
     if (SYNC_ENABLED !== 'true') {
-      console.log('[Sync] Sync not enabled');
       return next();
     }
-
-    console.log('[Sync] Sync enabled');
 
     const operation = methodToOperation(req.method);
     if (!operation) return next();

@@ -503,13 +503,20 @@ async function runBootstrap(authCookie, organizationId) {
   const seq = seqRes.body?.data?.seq ?? 0;
 
   // Mark bootstrap complete in checkpoint
-  await netRequest(`${localApiUrl}/sync/checkpoint`, {
+  const res = await netRequest(`${localApiUrl}/sync/checkpoint`, {
     method: 'PATCH',
     body: { bootstrappedAt: new Date().toISOString(), lastPulledSeq: seq },
     headers: {
       Authorization: `Bearer ${authCookie}`,
     },
-  }).catch(() => {});
+  });
+
+  if (res.status !== 200) {
+    logToFile(
+      `[SyncEngine] Atlas bootstrap rejected: ${JSON.stringify(res.body)}`,
+    );
+    return false;
+  }
 
   logToFile('[SyncEngine] Bootstrap complete!');
   return true;

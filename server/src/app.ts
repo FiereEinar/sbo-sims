@@ -91,13 +91,7 @@ app.use(async (req, res, next) => {
 
 app.use('/auth', authRouter);
 app.use('/student-portal', studentPortalRouter);
-// /sync/health and /sync/bootstrap are pre-auth for SyncEngine startup
-app.get('/sync/health', sync_health);
-app.get('/sync/bootstrap', sync_bootstrap);
-app.get('/sync/user-bootstrap', sync_user_bootstrap);
-app.post('/sync/apply-bootstrap-batch', sync_apply_bootstrap_batch);
-app.post('/sync/push', sync_push);
-app.get('/sync/pull', sync_pull);
+app.use('/sync', syncRouter);
 app.use(auth);
 app.use('/admin', adminRouter);
 app.use('/setting', settingRouter);
@@ -117,7 +111,6 @@ app.use('/attendance-report', attendanceReportRouter);
 app.use('/payment-request', paymentRequestRouter);
 app.use('/support-ticket', supportTicketRouter);
 app.use('/gpoa', gpoaRouter);
-app.use('/sync', syncRouter);
 
 // Error handlers
 app.use(notFoundHandler);

@@ -14,7 +14,7 @@ import os from 'os';
 // Falls back to hostname so server-only mode still works without a file.
 let _clientId: string | null = null;
 
-function getClientId(): string {
+export function getClientId(): string {
   if (_clientId) return _clientId;
 
   // The Electron sync engine writes the UUID to this well-known path
@@ -77,6 +77,8 @@ export const logOperation =
   (entityType: SyncableEntityType) =>
   (req: Request, res: Response, next: NextFunction) => {
     // Skip entirely if sync is disabled
+    console.log('[Sync] Sync value: ', SYNC_ENABLED);
+
     if (SYNC_ENABLED !== 'true') {
       console.log('[Sync] Sync not enabled');
       return next();

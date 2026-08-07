@@ -9,6 +9,8 @@
  *   2. Ping the Atlas health endpoint periodically to detect connectivity
  *   3. On confirmed online: run PUSH (local → Atlas) then PULL (Atlas → local)
  *   4. Emit IPC events so the renderer can show a sync status badge
+ *
+ * Entry point: start()
  */
 
 const { net, ipcMain, session } = require('electron');
@@ -211,9 +213,10 @@ async function runPush(authCookie) {
       pushRes = await netRequest(`${atlasHealthUrl}/sync/push`, {
         method: 'POST',
         body: { ops },
-        headers: { 
+        headers: {
           Cookie: authCookie,
-          'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key'
+          'x-sync-secret':
+            process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
         },
       });
     } catch (err) {
@@ -279,7 +282,8 @@ async function runPull(authCookie, organizationId) {
         {
           headers: {
             Authorization: `Bearer ${authCookie}`,
-            'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key'
+            'x-sync-secret':
+              process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
           },
         },
       );

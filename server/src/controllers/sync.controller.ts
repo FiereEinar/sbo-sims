@@ -256,6 +256,7 @@ export const sync_pull = asyncHandler(async (req: Request, res: Response) => {
 
 import OperationLogModel from '../models/operation-log.model';
 import SyncCheckpointModel from '../models/sync-checkpoint.model';
+import { getClientId } from '../middlewares/operation-log.middleware';
 
 // ─── GET /sync/pending-ops ────────────────────────────────────────────────────
 /**
@@ -355,7 +356,7 @@ export const sync_update_checkpoint = asyncHandler(
 
     const checkpoint = await SyncCheckpointModel.findByIdAndUpdate(
       'main',
-      { $set: update },
+      { $set: update, $setOnInsert: { clientId: getClientId() } },
       { upsert: true, new: true },
     ).lean();
 

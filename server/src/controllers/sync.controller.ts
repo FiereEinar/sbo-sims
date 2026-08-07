@@ -115,10 +115,16 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
     const entityObjectId = new mongoose.Types.ObjectId(op.entityId);
 
     if (op.operation === 'create') {
+      const insertPatch = { ...op.patch };
+      delete insertPatch._id;
+
+      console.log(`[DEBUG]: Insert patch: ${JSON.stringify(insertPatch)}`);
+      console.log(`[DEBUG]: Entity ID: ${entityObjectId}`);
+
       // For creates: upsert the full patch as the document (idempotent on _id)
       await collection.updateOne(
         { _id: entityObjectId },
-        { $setOnInsert: { _id: entityObjectId, ...op.patch } },
+        { $setOnInsert: insertPatch },
         { upsert: true },
       );
     } else if (op.operation === 'update') {

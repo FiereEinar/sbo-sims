@@ -12,14 +12,35 @@ import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
-router.get('/session/:sessionId', hasRole([MODULES.ATTENDANCE_RECORD_READ]), get_session_attendance);
+router.get(
+  '/session/:sessionId',
+  hasRole([MODULES.ATTENDANCE_RECORD_READ]),
+  get_session_attendance,
+);
 
-router.get('/session/:sessionId/stats', hasRole([MODULES.ATTENDANCE_RECORD_READ]), get_session_attendance_stats);
+router.get(
+  '/session/:sessionId/stats',
+  hasRole([MODULES.ATTENDANCE_RECORD_READ]),
+  get_session_attendance_stats,
+);
 
-router.post('/record', hasRole([MODULES.ATTENDANCE_RECORD_CREATE]), record_attendance, logOperation('AttendanceRecord'));
+router.post(
+  '/record',
+  hasRole([MODULES.ATTENDANCE_RECORD_CREATE]),
+  logOperation('AttendanceRecord'),
+  record_attendance,
+);
 
-router.get('/session/:sessionId/download/pdf', hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]), download_session_attendance_pdf);
+router.get(
+  '/session/:sessionId/download/pdf',
+  hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]),
+  download_session_attendance_pdf,
+);
 
-router.get('/session/:sessionId/download/csv', hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]), download_session_attendance_csv);
+router.get(
+  '/session/:sessionId/download/csv',
+  hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]),
+  download_session_attendance_csv,
+);
 
 export default router;

@@ -17,11 +17,31 @@ const router = express.Router();
 router.use(auth);
 router.use(extractTenantContext);
 
-router.post('/', hasRole([MODULES.GPOA_CREATE]), create_gpoa, logOperation('Gpoa'));
+router.post(
+  '/',
+  hasRole([MODULES.GPOA_CREATE]),
+  logOperation('Gpoa'),
+  create_gpoa,
+);
 router.get('/', hasRole([MODULES.GPOA_READ]), get_all_gpoa);
 router.get('/:id', hasRole([MODULES.GPOA_READ]), get_single_gpoa);
-router.put('/:id', hasRole([MODULES.GPOA_UPDATE]), update_gpoa, logOperation('Gpoa'));
-router.patch('/:id', hasRole([MODULES.GPOA_UPDATE]), update_gpoa, logOperation('Gpoa'));
-router.delete('/:id', hasRole([MODULES.GPOA_DELETE]), delete_gpoa, logOperation('Gpoa'));
+router.put(
+  '/:id',
+  hasRole([MODULES.GPOA_UPDATE]),
+  logOperation('Gpoa'),
+  update_gpoa,
+);
+router.patch(
+  '/:id',
+  hasRole([MODULES.GPOA_UPDATE]),
+  logOperation('Gpoa'),
+  update_gpoa,
+);
+router.delete(
+  '/:id',
+  hasRole([MODULES.GPOA_DELETE]),
+  logOperation('Gpoa'),
+  delete_gpoa,
+);
 
 export default router;

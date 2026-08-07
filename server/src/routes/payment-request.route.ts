@@ -10,20 +10,24 @@ import { logOperation } from '../middlewares/operation-log.middleware';
 
 const router = express.Router();
 
-router.get('/', hasRole([MODULES.PAYMENT_REQUEST_READ]), get_org_payment_requests);
+router.get(
+  '/',
+  hasRole([MODULES.PAYMENT_REQUEST_READ]),
+  get_org_payment_requests,
+);
 
 router.put(
   '/:id/approve',
   hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
-  approve_payment_request,
   logOperation('PaymentRequest'),
+  approve_payment_request,
 );
 
 router.put(
   '/:id/reject',
   hasRole([MODULES.PAYMENT_REQUEST_UPDATE]),
-  reject_payment_request,
   logOperation('PaymentRequest'),
+  reject_payment_request,
 );
 
 export default router;

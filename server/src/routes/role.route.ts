@@ -16,10 +16,25 @@ router.get('/', getRoles);
 
 router.get('/:roleID', hasRole([MODULES.ROLE_READ]), getSingleRole);
 
-router.post('/', hasRole([MODULES.ROLE_CREATE]), createRole, logOperation('Role'));
+router.post(
+  '/',
+  hasRole([MODULES.ROLE_CREATE]),
+  logOperation('Role'),
+  createRole,
+);
 
-router.patch('/:roleID', hasRole([MODULES.ROLE_UPDATE]), updateRole, logOperation('Role'));
+router.patch(
+  '/:roleID',
+  hasRole([MODULES.ROLE_UPDATE]),
+  logOperation('Role'),
+  updateRole,
+);
 
-router.delete('/:roleID', hasRole([MODULES.ROLE_DELETE]), deleteRole, logOperation('Role'));
+router.delete(
+  '/:roleID',
+  hasRole([MODULES.ROLE_DELETE]),
+  logOperation('Role'),
+  deleteRole,
+);
 
 export default router;

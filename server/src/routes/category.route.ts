@@ -61,8 +61,8 @@ router.post(
   '/',
   hasRole([MODULES.CATEGORY_CREATE]),
   createCategoryValidation,
-  create_category,
   logOperation('Category'),
+  create_category,
 );
 
 router.put(
@@ -70,16 +70,16 @@ router.put(
   hasRole([MODULES.CATEGORY_UPDATE]),
   isValidMongooseId('categoryID', { from: 'params' }),
   createCategoryValidation,
-  update_category,
   logOperation('Category'),
+  update_category,
 );
 
 router.delete(
   '/:categoryID',
   hasRole([MODULES.CATEGORY_DELETE]),
   isValidMongooseId('categoryID', { from: 'params' }),
-  delete_category,
   logOperation('Category'),
+  delete_category,
 );
 
 export default router;

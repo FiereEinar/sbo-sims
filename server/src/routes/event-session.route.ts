@@ -14,12 +14,32 @@ const router = express.Router();
 
 router.get('/', hasRole([MODULES.EVENT_READ]), get_event_sessions);
 
-router.post('/', hasRole([MODULES.EVENT_CREATE]), create_event_session, logOperation('EventSession'));
+router.post(
+  '/',
+  hasRole([MODULES.EVENT_CREATE]),
+  logOperation('EventSession'),
+  create_event_session,
+);
 
-router.put('/:id', hasRole([MODULES.EVENT_UPDATE]), update_event_session, logOperation('EventSession'));
+router.put(
+  '/:id',
+  hasRole([MODULES.EVENT_UPDATE]),
+  logOperation('EventSession'),
+  update_event_session,
+);
 
-router.patch('/:id/status', hasRole([MODULES.EVENT_UPDATE]), update_event_session_status, logOperation('EventSession'));
+router.patch(
+  '/:id/status',
+  hasRole([MODULES.EVENT_UPDATE]),
+  logOperation('EventSession'),
+  update_event_session_status,
+);
 
-router.delete('/:id', hasRole([MODULES.EVENT_DELETE]), delete_event_session, logOperation('EventSession'));
+router.delete(
+  '/:id',
+  hasRole([MODULES.EVENT_DELETE]),
+  logOperation('EventSession'),
+  delete_event_session,
+);
 
 export default router;

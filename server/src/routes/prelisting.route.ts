@@ -27,8 +27,8 @@ router.post(
   '/',
   hasRole([MODULES.PRELISTING_CREATE]),
   createPrelistingValidation,
-  create_prelisting,
   logOperation('Prelisting'),
+  create_prelisting,
 );
 
 router.put(
@@ -36,16 +36,16 @@ router.put(
   hasRole([MODULES.PRELISTING_UPDATE]),
   isValidMongooseId('prelistingID', { from: 'params' }),
   createPrelistingValidation,
-  update_prelisting,
   logOperation('Prelisting'),
+  update_prelisting,
 );
 
 router.delete(
   '/:prelistingID',
   hasRole([MODULES.PRELISTING_DELETE]),
   isValidMongooseId('prelistingID', { from: 'params' }),
-  delete_prelisting,
   logOperation('Prelisting'),
+  delete_prelisting,
 );
 
 export default router;

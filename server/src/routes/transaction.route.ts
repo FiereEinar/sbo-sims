@@ -54,8 +54,8 @@ router.post(
   '/',
   hasRole([MODULES.TRANSACTION_CREATE]),
   createTransactionValidation,
-  create_transaction,
   logOperation('Transaction'),
+  create_transaction,
 );
 
 router.post(
@@ -83,8 +83,8 @@ router.put(
   hasRole([MODULES.TRANSACTION_UPDATE]),
   isValidMongooseId('transactionID', { from: 'params' }),
   createTransactionValidation,
-  update_transaction,
   logOperation('Transaction'),
+  update_transaction,
 );
 
 router.put(
@@ -99,8 +99,8 @@ router.delete(
   '/:transactionID',
   hasRole([MODULES.TRANSACTION_DELETE]),
   isValidMongooseId('transactionID', { from: 'params' }),
-  delete_transaction,
   logOperation('Transaction'),
+  delete_transaction,
 );
 
 export default router;

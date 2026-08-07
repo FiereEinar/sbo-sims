@@ -26,31 +26,31 @@ router.get('/:userID', getSingleUser);
 
 router.put('/complete-onboarding', completeOnboarding);
 
-router.post('/', hasRole([MODULES.USER_CREATE]), createUser, logOperation('User'));
+router.post('/', hasRole([MODULES.USER_CREATE]), logOperation('User'), createUser);
 
 router.put(
   '/:userID/admin',
   hasRole([MODULES.USER_UPDATE]),
   isValidMongooseId('userID', { from: 'params' }),
   updateUserValidation,
-  adminUpdateUser,
   logOperation('User'),
+  adminUpdateUser,
 );
 
 router.put(
   '/:userID',
   isValidMongooseId('userID', { from: 'params' }),
   updateUserValidation,
-  update_user,
   logOperation('User'),
+  update_user,
 );
 
 router.delete(
   '/:userID',
   hasRole([MODULES.USER_DELETE]),
   isValidMongooseId('userID', { from: 'params' }),
-  deleteUser,
   logOperation('User'),
+  deleteUser,
 );
 
 router.patch(

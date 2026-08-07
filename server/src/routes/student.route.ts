@@ -46,8 +46,8 @@ router.post(
   '/',
   hasRole([MODULES.STUDENT_CREATE]),
   createStudentValidation,
-  create_student,
   logOperation('Student'),
+  create_student,
 );
 
 // Legacy import (exact CSV headers required)
@@ -77,10 +77,10 @@ router.put(
   '/:studentID',
   hasRole([MODULES.STUDENT_UPDATE]),
   updateStudentValidation,
-  update_student,
   logOperation('Student'),
+  update_student,
 );
 
-router.delete('/:studentID', hasRole([MODULES.STUDENT_DELETE]), delete_student, logOperation('Student'));
+router.delete('/:studentID', hasRole([MODULES.STUDENT_DELETE]), logOperation('Student'), delete_student);
 
 export default router;

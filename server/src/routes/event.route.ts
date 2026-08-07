@@ -26,10 +26,25 @@ router.get('/:id', hasRole([MODULES.EVENT_READ]), get_single_event);
  * POST - Create a new event
  * Note: Zod schema parsing is handled directly inside the controller based on the previous step
  */
-router.post('/', hasRole([MODULES.EVENT_CREATE]), create_event, logOperation('Event'));
+router.post(
+  '/',
+  hasRole([MODULES.EVENT_CREATE]),
+  logOperation('Event'),
+  create_event,
+);
 
-router.put('/:id', hasRole([MODULES.EVENT_UPDATE]), update_event, logOperation('Event'));
+router.put(
+  '/:id',
+  hasRole([MODULES.EVENT_UPDATE]),
+  logOperation('Event'),
+  update_event,
+);
 
-router.delete('/:id', hasRole([MODULES.EVENT_DELETE]), delete_event, logOperation('Event'));
+router.delete(
+  '/:id',
+  hasRole([MODULES.EVENT_DELETE]),
+  logOperation('Event'),
+  delete_event,
+);
 
 export default router;

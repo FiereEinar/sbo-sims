@@ -5,6 +5,7 @@ import OperationLogModel, {
   SyncOperation,
 } from '../models/operation-log.model';
 import { SYNC_ENABLED } from '../constants/env';
+import { AtlasChangeLogModel, AtlasCounterModel } from '../models/atlas-change-log.model';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -76,8 +77,10 @@ function extractEntityId(body: any): mongoose.Types.ObjectId | null {
 export const logOperation =
   (entityType: SyncableEntityType) =>
   (req: Request, res: Response, next: NextFunction) => {
-    // Skip entirely if sync is disabled
-    if (SYNC_ENABLED !== 'true') {
+    const isCloudAPI = process.env.VERCEL === '1';
+
+    // Skip entirely if sync is disabled and we are not in cloud mode
+    if (SYNC_ENABLED !== 'true' && !isCloudAPI) {
       return next();
     }
 
@@ -112,21 +115,51 @@ export const logOperation =
             patch = { ...(req.body ?? {}) };
           }
 
-          OperationLogModel.create({
-            clientId: getClientId(),
-            entityType,
-            entityId,
-            operation,
-            patch,
-            organizationId: req.tenantContext.organizationId,
-            clientTimestamp: new Date(),
-            status: 'pending',
-          }).catch((err: Error) => {
-            console.error(
-              '[OperationLog] Failed to write log entry:',
-              err.message,
-            );
-          });
+          if (isCloudAPI) {
+            // Write directly to AtlasChangeLogModel for other clients to pull
+            AtlasCounterModel.findOneAndUpdate(
+              { _id: 'changeLogSeq' },
+              { $inc: { value: 1 } },
+              { upsert: true, new: true },
+            )
+              .then((counter) => {
+                return AtlasChangeLogModel.create({
+                  _id: new mongoose.Types.ObjectId(),
+                  seq: counter!.value,
+                  clientId: 'web-client',
+                  entityType,
+                  entityId,
+                  operation,
+                  patch,
+                  organizationId: req.tenantContext!.organizationId,
+                  clientTimestamp: new Date(),
+                  serverTimestamp: new Date(),
+                });
+              })
+              .catch((err: any) => {
+                console.error(
+                  '[OperationLog] Failed to write AtlasChangeLog entry:',
+                  err.message,
+                );
+              });
+          } else {
+            // Write to OperationLog for the local sync engine to push later
+            OperationLogModel.create({
+              clientId: getClientId(),
+              entityType,
+              entityId,
+              operation,
+              patch,
+              organizationId: req.tenantContext!.organizationId,
+              clientTimestamp: new Date(),
+              status: 'pending',
+            }).catch((err: Error) => {
+              console.error(
+                '[OperationLog] Failed to write log entry:',
+                err.message,
+              );
+            });
+          }
         }
       }
 

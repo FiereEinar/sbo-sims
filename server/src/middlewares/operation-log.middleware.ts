@@ -113,6 +113,8 @@ export const logOperation =
             patch._id = entityId; // Ensure _id is correctly assigned
           } else if (operation === 'update') {
             patch = { ...(req.body ?? {}) };
+          } else if (operation === 'delete') {
+            patch = { _id: entityId }; // Provide a non-empty patch for Mongoose Mixed validation
           }
 
           if (isCloudAPI) {

@@ -137,7 +137,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       await AtlasModel.updateOne(
         { _id: entityObjectId },
         { $setOnInsert: insertPatch },
-        { upsert: true },
+        { upsert: true, timestamps: false },
       );
     } else if (op.operation === 'update') {
       // LWW: only apply the patch if clientTimestamp is newer than the existing doc
@@ -164,6 +164,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
         await AtlasModel.updateOne(
           { _id: entityObjectId },
           { $set: updatePatch },
+          { timestamps: false }
         );
       }
     } else if (op.operation === 'delete') {
@@ -178,6 +179,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
           await AtlasModel.updateOne(
             { _id: entityObjectId },
             { $set: { archived: true, updatedAt: serverTimestamp } },
+            { timestamps: false }
           );
         } else {
           await AtlasModel.deleteOne({ _id: entityObjectId });
@@ -413,7 +415,7 @@ export const sync_apply_change = asyncHandler(
       await LocalModel.updateOne(
         { _id: entityId },
         { $setOnInsert: { _id: entityId, ...change.patch } },
-        { upsert: true },
+        { upsert: true, timestamps: false },
       );
     } else if (change.operation === 'update') {
       const existing = await LocalModel.findOne(
@@ -433,7 +435,7 @@ export const sync_apply_change = asyncHandler(
           updatePatch[key] = value;
         }
         updatePatch.updatedAt = new Date();
-        await LocalModel.updateOne({ _id: entityId }, { $set: updatePatch });
+        await LocalModel.updateOne({ _id: entityId }, { $set: updatePatch }, { timestamps: false });
       }
     } else if (change.operation === 'delete') {
       const existing = await LocalModel.findOne(
@@ -446,6 +448,7 @@ export const sync_apply_change = asyncHandler(
           await LocalModel.updateOne(
             { _id: entityId },
             { $set: { archived: true } },
+            { timestamps: false }
           );
         } else {
           await LocalModel.deleteOne({ _id: entityId });
@@ -658,6 +661,53 @@ export const sync_current_seq = asyncHandler(
   },
 );
 
+// Helper function to recursively cast strings into BSON ObjectIds and Dates
+const castDocumentTypes = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') {
+    if (typeof obj === 'string') {
+      const isoDateRegex =
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/;
+      if (isoDateRegex.test(obj)) {
+        const parsedDate = new Date(obj);
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+    }
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => castDocumentTypes(item));
+  }
+
+  const transformed: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (
+      (key === '_id' ||
+        key.endsWith('Id') ||
+        key === 'organization' ||
+        key === 'user' ||
+        key === 'session' ||
+        key === 'transaction' ||
+        key === 'student') &&
+      typeof value === 'string' &&
+      mongoose.Types.ObjectId.isValid(value)
+    ) {
+      transformed[key] = new mongoose.Types.ObjectId(value);
+    } else if (
+      (key.includes('At') || key.includes('Date')) &&
+      typeof value === 'string' &&
+      !isNaN(Date.parse(value))
+    ) {
+      transformed[key] = new Date(value);
+    } else {
+      transformed[key] = castDocumentTypes(value);
+    }
+  }
+
+  return transformed;
+};
+
 // ─── POST /sync/apply-bootstrap-batch ─────────────────────────────────────────
 /**
  * LOCAL-ONLY — called by the sync engine during bootstrap.
@@ -696,10 +746,12 @@ export const sync_apply_bootstrap_batch = asyncHandler(
 
     // Build a bulk upsert operation for each doc
     const bulkOps = docs.map((doc) => {
+      const cleanDoc = castDocumentTypes(doc);
+
       return {
         updateOne: {
-          filter: { _id: doc._id }, // Ensure filter checks for BSON ObjectId
-          update: { $setOnInsert: doc },
+          filter: { _id: cleanDoc._id }, // Ensure filter checks for BSON ObjectId
+          update: { $setOnInsert: cleanDoc },
           upsert: true,
         },
       };

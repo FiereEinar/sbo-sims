@@ -98,13 +98,18 @@ export const logOperation =
 
         if (entityId && req.tenantContext?.organizationId) {
           // Build a field-level patch:
-          // - For creates/updates: req.body is the payload
-          // - For deletes: store empty patch (deletion is tracked by operation type)
-          const patch = operation === 'delete' ? {} : { ...(req.body ?? {}) };
-
-          // For creates, also include the assigned _id so the remote can upsert correctly
+          // - For creates: Use the full returned document (body.data) to capture server-injected fields like organization, semester, etc.
+          // - For updates: Use req.body to preserve true field-level merging (only pushing modified fields)
+          // - For deletes: store empty patch
+          
+          let patch: Record<string, any> = {};
+          
           if (operation === 'create') {
-            patch._id = entityId;
+            // body.data may be a Mongoose Document. JSON stringify/parse strips out Mongoose internals.
+            patch = body?.data ? JSON.parse(JSON.stringify(body.data)) : { ...(req.body ?? {}) };
+            patch._id = entityId; // Ensure _id is correctly assigned
+          } else if (operation === 'update') {
+            patch = { ...(req.body ?? {}) };
           }
 
           OperationLogModel.create({

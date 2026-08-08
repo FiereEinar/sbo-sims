@@ -204,7 +204,7 @@ async function runPush(authCookie) {
     await netRequest(`${localApiUrl}/sync/mark-in-flight`, {
       method: 'PATCH',
       body: { opIds },
-      headers: { Cookie: authCookie },
+      headers: { Authorization: `Bearer ${authCookie}` },
     }).catch(() => {});
 
     // 3. POST batch to Atlas
@@ -214,7 +214,7 @@ async function runPush(authCookie) {
         method: 'POST',
         body: { ops },
         headers: {
-          Cookie: authCookie,
+          Authorization: `Bearer ${authCookie}`,
           'x-sync-secret':
             process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
         },
@@ -236,7 +236,7 @@ async function runPush(authCookie) {
     await netRequest(`${localApiUrl}/sync/mark-synced`, {
       method: 'PATCH',
       body: { opIds },
-      headers: { Cookie: authCookie },
+      headers: { Authorization: `Bearer ${authCookie}` },
     }).catch(() => {});
 
     pushed += pushRes.body?.data?.accepted ?? 0;
@@ -307,7 +307,7 @@ async function runPull(authCookie, organizationId) {
       await netRequest(`${localApiUrl}/sync/apply-change`, {
         method: 'POST',
         body: { change },
-        headers: { Cookie: authCookie },
+        headers: { Authorization: `Bearer ${authCookie}` },
       }).catch((err) => {
         logToFile(
           `[SyncEngine] Apply change failed for seq ${change.seq}: ${err.message}`,

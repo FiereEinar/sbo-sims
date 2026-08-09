@@ -5,7 +5,10 @@ import OperationLogModel, {
   SyncOperation,
 } from '../models/operation-log.model';
 import { SYNC_ENABLED } from '../constants/env';
-import { AtlasChangeLogModel, AtlasCounterModel } from '../models/atlas-change-log.model';
+import {
+  AtlasChangeLogModel,
+  AtlasCounterModel,
+} from '../models/atlas-change-log.model';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -48,6 +51,29 @@ function methodToOperation(method: string): SyncOperation | null {
     default:
       return null;
   }
+}
+
+/**
+ * Flattens populated Mongoose ref objects in a patch to just their _id.
+ * e.g. { rbacRole: { _id: "abc", name: "Admin" } } → { rbacRole: "abc" }
+ */
+function sanitizePatchValues(patch: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      !(value instanceof Date) &&
+      '_id' in value &&
+      Object.keys(value).length > 1
+    ) {
+      clean[key] = value._id;
+    } else {
+      clean[key] = value;
+    }
+  }
+  return clean;
 }
 
 /**
@@ -104,15 +130,20 @@ export const logOperation =
           // - For creates: Use the full returned document (body.data) to capture server-injected fields like organization, semester, etc.
           // - For updates: Use req.body to preserve true field-level merging (only pushing modified fields)
           // - For deletes: store empty patch
-          
+
           let patch: Record<string, any> = {};
-          
+
           if (operation === 'create') {
             // body.data may be a Mongoose Document. JSON stringify/parse strips out Mongoose internals.
-            patch = body?.data ? JSON.parse(JSON.stringify(body.data)) : { ...(req.body ?? {}) };
+            patch = body?.data
+              ? JSON.parse(JSON.stringify(body.data))
+              : { ...(req.body ?? {}) };
             patch._id = entityId; // Ensure _id is correctly assigned
           } else if (operation === 'update') {
-            patch = { ...(req.body ?? {}) };
+            // patch = { ...(req.body.data ?? req.body ?? {}) };
+            patch = body?.data
+              ? JSON.parse(JSON.stringify(body.data))
+              : { ...(req.body ?? {}) };
           } else if (operation === 'delete') {
             patch = { _id: entityId }; // Provide a non-empty patch for Mongoose Mixed validation
           }

@@ -67,7 +67,7 @@ export const update_user = asyncHandler(async (req, res) => {
     activeSemDB: activeSemDB || user.activeSemDB,
   };
 
-  const result = await UserModel?.findByIdAndUpdate(user._id, update, {
+  const result = await UserModel.findByIdAndUpdate(user._id, update, {
     new: true,
   }).exec();
 
@@ -139,8 +139,16 @@ export const getUsers = asyncHandler(async (req, res) => {
  * @route POST /api/v1/user
  */
 export const createUser = asyncHandler(async (req, res) => {
-  const { firstname, lastname, studentID, password, bio, email, rbacRole, sendEmail } =
-    req.body;
+  const {
+    firstname,
+    lastname,
+    studentID,
+    password,
+    bio,
+    email,
+    rbacRole,
+    sendEmail,
+  } = req.body;
 
   appAssert(
     firstname?.length && lastname?.length,

@@ -40,6 +40,36 @@ const ENTITY_COLLECTION_MAP: Record<SyncableEntityType, string> = {
 const MAX_PUSH_BATCH = 100;
 const MAX_PULL_BATCH = 200;
 
+// ─── Patch sanitizer ─────────────────────────────────────────────────────────
+/**
+ * Flattens populated Mongoose ref objects in a patch to just their _id.
+ * e.g. { rbacRole: { _id: "abc", name: "Admin" } } → { rbacRole: "abc" }
+ *
+ * This is needed because the logOperation middleware may capture req.body
+ * or body.data with populated refs, and Mongoose will reject an object
+ * when it expects an ObjectId ref.
+ */
+function sanitizePatch(patch: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      !(value instanceof Date) &&
+      !(value instanceof mongoose.Types.ObjectId) &&
+      '_id' in value &&
+      // Only flatten if it looks like a populated ref (has fields beyond just _id)
+      Object.keys(value).length > 1
+    ) {
+      clean[key] = value._id;
+    } else {
+      clean[key] = value;
+    }
+  }
+  return clean;
+}
+
 // ─── GET /sync/health ─────────────────────────────────────────────────────────
 /**
  * Simple liveness check for the Electron sync engine.
@@ -127,7 +157,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
     const entityObjectId = new mongoose.Types.ObjectId(op.entityId);
 
     if (op.operation === 'create') {
-      const insertPatch = { ...op.patch };
+      const insertPatch = sanitizePatch({ ...op.patch });
       delete insertPatch._id;
 
       console.log(`[DEBUG]: Insert patch: ${JSON.stringify(insertPatch)}`);
@@ -154,8 +184,9 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
 
       if (incomingTs > existingUpdatedAt) {
         // Apply only changed fields, preserve everything else
+        const sanitized = sanitizePatch(op.patch);
         const updatePatch: Record<string, any> = {};
-        for (const [key, value] of Object.entries(op.patch)) {
+        for (const [key, value] of Object.entries(sanitized)) {
           // Never allow overwriting _id, organization scoping fields
           if (key === '_id') continue;
           updatePatch[key] = value;
@@ -412,9 +443,11 @@ export const sync_apply_change = asyncHandler(
     const entityId = new mongoose.Types.ObjectId(change.entityId);
 
     if (change.operation === 'create') {
+      const cleanPatch = sanitizePatch(change.patch);
+      delete cleanPatch._id;
       await LocalModel.updateOne(
         { _id: entityId },
-        { $setOnInsert: { _id: entityId, ...change.patch } },
+        { $setOnInsert: { _id: entityId, ...cleanPatch } },
         { upsert: true, timestamps: false },
       );
     } else if (change.operation === 'update') {
@@ -429,8 +462,9 @@ export const sync_apply_change = asyncHandler(
       const incomingTs = new Date(change.clientTimestamp);
 
       if (incomingTs > existingUpdatedAt) {
+        const sanitized = sanitizePatch(change.patch);
         const updatePatch: Record<string, any> = {};
-        for (const [key, value] of Object.entries(change.patch)) {
+        for (const [key, value] of Object.entries(sanitized)) {
           if (key === '_id') continue;
           updatePatch[key] = value;
         }

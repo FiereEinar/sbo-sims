@@ -123,75 +123,80 @@ export const logOperation =
 
       // Only log successful mutations
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        const entityId = extractEntityId(body);
+        let entities: any[] = [];
+        if (Array.isArray(body?.data)) {
+          entities = body.data;
+        } else if (body?.data) {
+          entities = [body.data];
+        }
 
-        if (entityId && req.tenantContext?.organizationId) {
-          // Build a field-level patch:
-          // - For creates: Use the full returned document (body.data) to capture server-injected fields like organization, semester, etc.
-          // - For updates: Use req.body to preserve true field-level merging (only pushing modified fields)
-          // - For deletes: store empty patch
+        for (const entity of entities) {
+          const entityId = extractEntityId({ data: entity });
 
-          let patch: Record<string, any> = {};
+          if (entityId && req.tenantContext?.organizationId) {
+            // Build a field-level patch
+            let patch: Record<string, any> = {};
 
-          if (operation === 'create') {
-            // body.data may be a Mongoose Document. JSON stringify/parse strips out Mongoose internals.
-            patch = body?.data
-              ? JSON.parse(JSON.stringify(body.data))
-              : { ...(req.body ?? {}) };
-            patch._id = entityId; // Ensure _id is correctly assigned
-          } else if (operation === 'update') {
-            // patch = { ...(req.body.data ?? req.body ?? {}) };
-            patch = body?.data
-              ? JSON.parse(JSON.stringify(body.data))
-              : { ...(req.body ?? {}) };
-          } else if (operation === 'delete') {
-            patch = { _id: entityId }; // Provide a non-empty patch for Mongoose Mixed validation
-          }
+            if (operation === 'create') {
+              patch = entity
+                ? JSON.parse(JSON.stringify(entity))
+                : { ...(req.body ?? {}) };
+              patch._id = entityId; // Ensure _id is correctly assigned
+            } else if (operation === 'update') {
+              patch = entity
+                ? JSON.parse(JSON.stringify(entity))
+                : { ...(req.body ?? {}) };
+            } else if (operation === 'delete') {
+              patch = { _id: entityId }; // Provide a non-empty patch for Mongoose Mixed validation
+            }
 
-          if (isCloudAPI) {
-            // Write directly to AtlasChangeLogModel for other clients to pull
-            AtlasCounterModel.findOneAndUpdate(
-              { _id: 'changeLogSeq' },
-              { $inc: { value: 1 } },
-              { upsert: true, new: true },
-            )
-              .then((counter) => {
-                return AtlasChangeLogModel.create({
-                  _id: new mongoose.Types.ObjectId(),
-                  seq: counter!.value,
-                  clientId: 'web-client',
-                  entityType,
-                  entityId,
-                  operation,
-                  patch,
-                  organizationId: req.tenantContext!.organizationId,
-                  clientTimestamp: new Date(),
-                  serverTimestamp: new Date(),
+            patch = sanitizePatchValues(patch);
+
+            if (isCloudAPI) {
+              // Write directly to AtlasChangeLogModel for other clients to pull
+              AtlasCounterModel.findOneAndUpdate(
+                { _id: 'changeLogSeq' },
+                { $inc: { value: 1 } },
+                { upsert: true, new: true },
+              )
+                .then((counter) => {
+                  return AtlasChangeLogModel.create({
+                    _id: new mongoose.Types.ObjectId(),
+                    seq: counter!.value,
+                    clientId: 'web-client',
+                    entityType,
+                    entityId,
+                    operation,
+                    patch,
+                    organizationId: req.tenantContext!.organizationId,
+                    clientTimestamp: new Date(),
+                    serverTimestamp: new Date(),
+                  });
+                })
+                .catch((err: any) => {
+                  console.error(
+                    '[OperationLog] Failed to write AtlasChangeLog entry:',
+                    err.message,
+                  );
                 });
-              })
-              .catch((err: any) => {
+            } else {
+              // Write to OperationLog for the local sync engine to push later
+              OperationLogModel.create({
+                clientId: getClientId(),
+                entityType,
+                entityId,
+                operation,
+                patch,
+                organizationId: req.tenantContext!.organizationId,
+                clientTimestamp: new Date(),
+                status: 'pending',
+              }).catch((err: Error) => {
                 console.error(
-                  '[OperationLog] Failed to write AtlasChangeLog entry:',
+                  '[OperationLog] Failed to write log entry:',
                   err.message,
                 );
               });
-          } else {
-            // Write to OperationLog for the local sync engine to push later
-            OperationLogModel.create({
-              clientId: getClientId(),
-              entityType,
-              entityId,
-              operation,
-              patch,
-              organizationId: req.tenantContext!.organizationId,
-              clientTimestamp: new Date(),
-              status: 'pending',
-            }).catch((err: Error) => {
-              console.error(
-                '[OperationLog] Failed to write log entry:',
-                err.message,
-              );
-            });
+            }
           }
         }
       }

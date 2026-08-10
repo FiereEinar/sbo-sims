@@ -61,6 +61,7 @@ router.post(
 router.post(
   '/batch',
   hasRole([MODULES.TRANSACTION_CREATE]),
+  logOperation('Transaction'),
   create_batch_transactions,
 );
 

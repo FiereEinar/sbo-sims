@@ -3,76 +3,92 @@ import { isFormBodyValidated } from './validation';
 import { CHECK_RECPATCHA } from '../../constants/env';
 
 export const signupValidation = [
-	body('studentID')
-		.trim()
-		.escape()
-		.isLength({ min: 10, max: 10 })
-		.withMessage('Student IDs are only 10 numbers in length'),
+  body('studentID')
+    .trim()
+    .escape()
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Student IDs are only 10 numbers in length'),
 
-	body('firstname')
-		.trim()
-		.escape()
-		.toLowerCase()
-		.isLength({ min: 1, max: 50 })
-		.withMessage('First name must be 1-50 characters')
-		.toLowerCase(),
+  body('firstname')
+    .trim()
+    .escape()
+    .toLowerCase()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name must be 1-50 characters')
+    .toLowerCase(),
 
-	body('lastname')
-		.trim()
-		.escape()
-		.toLowerCase()
-		.isLength({ min: 1, max: 50 })
-		.withMessage('Last name must be 1-50 characters')
-		.toLowerCase(),
+  body('lastname')
+    .trim()
+    .escape()
+    .toLowerCase()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name must be 1-50 characters')
+    .toLowerCase(),
 
-	body('password')
-		.trim()
-		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
-		.withMessage('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
-		.isLength({ max: 30 })
-		.withMessage('Password must be max 30 characters'),
+  body('password')
+    .trim()
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 0,
+    })
+    .withMessage(
+      'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',
+    )
+    .isLength({ max: 30 })
+    .withMessage('Password must be max 30 characters'),
 
-	body('confirmPassword')
-		.trim()
-		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
-		.withMessage('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
-		.isLength({ max: 30 })
-		.withMessage('Password must be max 30 characters'),
+  body('confirmPassword')
+    .trim()
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 0,
+    })
+    .withMessage(
+      'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',
+    )
+    .isLength({ max: 30 })
+    .withMessage('Password must be max 30 characters'),
 
-	body('bio')
-		.trim()
-		.escape()
-		.isLength({ max: 255 })
-		.withMessage('Bio is only 255 characters max')
-		.optional(),
+  body('bio')
+    .trim()
+    .escape()
+    .isLength({ max: 255 })
+    .withMessage('Bio is only 255 characters max')
+    .optional(),
 
-	body('email').trim().escape().optional(),
+  body('email').trim().escape().optional(),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 export const loginValidation = [
-	body('studentID')
-		.trim()
-		.escape()
-		.isLength({ min: 10, max: 10 })
-		.withMessage('Student IDs are only 10 numbers in length'),
+  body('studentID')
+    .trim()
+    .escape()
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Student IDs are only 10 numbers in length'),
 
-	body('password')
-		.trim()
-		.isLength({ min: 1, max: 30 })
-		.withMessage('Password must be 1-30 characters'),
+  body('password')
+    .trim()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Password must be 1-30 characters'),
 
-	...(CHECK_RECPATCHA !== 'false'
-		? [
-				body('recaptchaToken')
-					.trim()
-					.isLength({ min: 1 })
-					.withMessage('reCAPTCHA token is required'),
-		  ]
-		: []),
+  ...(CHECK_RECPATCHA !== 'false'
+    ? [
+        body('recaptchaToken')
+          .trim()
+          .isLength({ min: 1 })
+          .withMessage('reCAPTCHA token is required'),
+      ]
+    : []),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 /**
@@ -81,117 +97,128 @@ export const loginValidation = [
  * No strict 10-digit length check — admin ID comes from env.
  */
 export const adminLoginValidation = [
-	body('studentID')
-		.trim()
-		.escape()
-		.isLength({ min: 1 })
-		.withMessage('Admin ID is required'),
+  body('studentID')
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage('Admin ID is required'),
 
-	body('password')
-		.trim()
-		.isLength({ min: 1, max: 100 })
-		.withMessage('Password is required'),
+  body('password')
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Password is required'),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 export const updateUserValidation = [
-	body('studentID')
-		.trim()
-		.escape()
-		.isLength({ min: 10, max: 10 })
-		.withMessage('Student IDs are only 10 numbers in length'),
+  body('studentID')
+    .trim()
+    .escape()
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Student IDs are only 10 numbers in length'),
 
-	body('firstname')
-		.trim()
-		.escape()
-		.toLowerCase()
-		.isLength({ min: 1, max: 50 })
-		.withMessage('First name must be 1-50 characters')
-		.toLowerCase(),
+  body('firstname')
+    .trim()
+    .escape()
+    .toLowerCase()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name must be 1-50 characters')
+    .toLowerCase(),
 
-	body('lastname')
-		.trim()
-		.escape()
-		.toLowerCase()
-		.isLength({ min: 1, max: 50 })
-		.withMessage('Last name must be 1-50 characters')
-		.toLowerCase(),
+  body('lastname')
+    .trim()
+    .escape()
+    .toLowerCase()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name must be 1-50 characters')
+    .toLowerCase(),
 
-	body('bio')
-		.trim()
-		.escape()
-		.isLength({ max: 255 })
-		.withMessage('Bio is only 255 characters max')
-		.optional(),
+  body('bio')
+    .trim()
+    .escape()
+    .isLength({ max: 255 })
+    .withMessage('Bio is only 255 characters max')
+    .optional(),
 
-	body('rbacRole')
-		.trim()
-		.escape()
-		.isLength({ max: 255 })
-		.withMessage('RBAC Role ID is only 255 characters max')
-		.optional(),
+  body('rbacRole')
+    .trim()
+    .escape()
+    .isLength({ max: 255 })
+    .withMessage('RBAC Role ID is only 255 characters max')
+    .optional(),
 
-	body('email').trim().escape().optional(),
+  body('email').trim().escape().optional(),
 
-	body('activeSchoolYearDB')
-		.trim()
-		.escape()
-		.isLength({ min: 1 })
-		.withMessage('School year must not be empty'),
+  body('activeSchoolYearDB')
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage('School year must not be empty'),
 
-	body('activeSemDB')
-		.trim()
-		.escape()
-		.isLength({ min: 1 })
-		.withMessage('School semester must not be empty'),
+  body('activeSemDB')
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage('School semester must not be empty'),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 export const updateUserPasswordValidation = [
-	body('currentPassword')
-		.trim()
-		.isLength({ min: 1 })
-		.withMessage('Current password is required'),
+  body('currentPassword')
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('Current password is required'),
 
-	body('newPassword')
-		.trim()
-		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
-		.withMessage('New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
-		.isLength({ max: 30 })
-		.withMessage('New password must be max 30 characters'),
+  body('newPassword')
+    .trim()
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+    })
+    .withMessage(
+      'New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',
+    )
+    .isLength({ max: 30 })
+    .withMessage('New password must be max 30 characters'),
 
-	body('confirmNewPassword')
-		.trim()
-		.isLength({ min: 1 })
-		.withMessage('Confirm new password is required'),
+  body('confirmNewPassword')
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('Confirm new password is required'),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 export const forgotPasswordValidation = [
-	body('email')
-		.trim()
-		.escape()
-		.isEmail()
-		.withMessage('Must be a valid email address'),
+  body('email')
+    .trim()
+    .escape()
+    .isEmail()
+    .withMessage('Must be a valid email address'),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];
 
 export const resetPasswordValidation = [
-	body('token')
-		.trim()
-		.isLength({ min: 1 })
-		.withMessage('Token is required'),
+  body('token').trim().isLength({ min: 1 }).withMessage('Token is required'),
 
-	body('newPassword')
-		.trim()
-		.isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1 })
-		.withMessage('New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number')
-		.isLength({ max: 30 })
-		.withMessage('New password must be max 30 characters'),
+  body('newPassword')
+    .trim()
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+    })
+    .withMessage(
+      'New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',
+    )
+    .isLength({ max: 30 })
+    .withMessage('New password must be max 30 characters'),
 
-	isFormBodyValidated,
+  isFormBodyValidated,
 ];

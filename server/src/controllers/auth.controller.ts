@@ -567,7 +567,7 @@ export const verify_email = asyncHandler(async (req, res) => {
   appAssert(user, NOT_FOUND, 'User not found');
 
   if (user.verified) {
-    res.redirect(`${FRONTEND_URL}/login?verified=true`);
+    res.redirect(`${WEB_APP_ORIGIN}/#/login?verified=true`);
     return;
   }
 
@@ -584,7 +584,7 @@ export const verify_email = asyncHandler(async (req, res) => {
   user.verificationTokenExpiresAt = undefined;
   await user.save();
 
-  res.redirect(`${FRONTEND_URL}/login?verified=true`);
+  res.redirect(`${WEB_APP_ORIGIN}/#/login?verified=true`);
 });
 
 export const forgot_password = asyncHandler(async (req, res) => {

@@ -44,6 +44,22 @@ import {
  * Sends a verification email before the account can be used.
  */
 export const student_signup = asyncHandler(async (req, res) => {
+  if (!process.env.VERCEL) {
+    const cloudUrl =
+      process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
+    const fetchRes = await fetch(`${cloudUrl}/student-portal/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-organization-slug': (req.headers['x-organization-slug'] as string) || '',
+      },
+      body: JSON.stringify(req.body),
+    });
+    const data = await fetchRes.json();
+    res.status(fetchRes.status).json(data);
+    return;
+  }
+
   const { confirmPassword, password, studentID }: signupUserBody = req.body;
 
   const email = studentID + STUDENT_EMAIL_DOMAIN;
@@ -102,10 +118,41 @@ export const student_login = asyncHandler(async (req, res) => {
   );
 
   // Find the student user, no org filter, role must be 'student'
-  const user = await UserModel.findOne<IUser>({
+  let user = await UserModel.findOne<IUser>({
     studentID,
     role: 'student',
   }).exec();
+
+  if (!user && !process.env.VERCEL) {
+    const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
+    try {
+      const fetchRes = await fetch(
+        `${cloudUrl}/sync/user-bootstrap?studentID=${studentID}&userRole=student`,
+        {
+          headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! },
+        },
+      );
+
+      if (fetchRes.ok) {
+        const responseData = await fetchRes.json();
+        const data = responseData.data;
+
+        if (data && data.user) {
+          const UserModel = (await import('../models/user.model')).default;
+          await UserModel.findByIdAndUpdate(data.user._id, data.user, {
+            upsert: true,
+          });
+
+          user = await UserModel.findOne<IUser>({
+            studentID,
+            role: 'student',
+          }).exec();
+        }
+      }
+    } catch (err) {
+      console.error('[Student Login Proxy] Error fetching user from Atlas:', err);
+    }
+  }
 
   appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
 
@@ -625,9 +672,9 @@ export const get_student_gpoa = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .lean();
 
-  res.status(OK).json(
-    new CustomResponse(true, gpoas, 'Student GPOA plans retrieved'),
-  );
+  res
+    .status(OK)
+    .json(new CustomResponse(true, gpoas, 'Student GPOA plans retrieved'));
 });
 
 /**
@@ -673,12 +720,10 @@ export const get_student_collections = asyncHandler(async (req, res) => {
   // 4. Map each category to its payment status
   const collections = categories.map((cat) => {
     // Find transaction for this category (if any)
-    const tx = transactions.find(
-      (t) => String(t.category) === String(cat._id),
-    );
+    const tx = transactions.find((t) => String(t.category) === String(cat._id));
 
     const amountPaid = tx ? tx.amount : 0;
-    
+
     let status = 'unpaid';
     if (amountPaid >= cat.fee) {
       status = 'paid';
@@ -693,7 +738,9 @@ export const get_student_collections = asyncHandler(async (req, res) => {
     };
   });
 
-  res.status(OK).json(
-    new CustomResponse(true, collections, 'Student collections retrieved'),
-  );
+  res
+    .status(OK)
+    .json(
+      new CustomResponse(true, collections, 'Student collections retrieved'),
+    );
 });

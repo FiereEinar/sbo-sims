@@ -590,18 +590,41 @@ export const verify_email = asyncHandler(async (req, res) => {
 export const forgot_password = asyncHandler(async (req, res) => {
   const { identifier } = req.body;
 
-  const user = await UserModel.findOne({
-    $or: [{ email: identifier }, { studentID: identifier }]
+  if (!process.env.VERCEL) {
+    const cloudUrl =
+      process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
+    const fetchRes = await fetch(`${cloudUrl}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    const data = await fetchRes.json();
+    res.status(fetchRes.status).json(data);
+    return;
+  }
+
+  const users = await UserModel.find({
+    $or: [{ email: identifier }, { studentID: identifier }],
   });
-  appAssert(user, NOT_FOUND, 'User with this information not found');
+  appAssert(
+    users.length > 0,
+    NOT_FOUND,
+    'User with this information not found',
+  );
 
   const token = crypto.randomBytes(32).toString('hex');
-  user.resetPasswordToken = token;
-  user.resetPasswordExpiresAt = new Date(Date.now() + 3600000); // 1 hour
-  await user.save();
+  const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+
+  for (const user of users) {
+    user.resetPasswordToken = token;
+    user.resetPasswordExpiresAt = expiresAt;
+    await user.save();
+  }
 
   const resetUrl = `${WEB_APP_ORIGIN}/#/reset-password?token=${token}`;
-  const targetEmail = user.email || `${user.studentID}${process.env.STUDENT_EMAIL_DOMAIN || '@student.buksu.edu.ph'}`;
+  const targetEmail =
+    users[0].email ||
+    `${users[0].studentID}${process.env.STUDENT_EMAIL_DOMAIN || '@student.buksu.edu.ph'}`;
   await sendForgotPasswordEmail(targetEmail, resetUrl);
 
   res.json(
@@ -612,18 +635,39 @@ export const forgot_password = asyncHandler(async (req, res) => {
 export const reset_password = asyncHandler(async (req, res) => {
   const { token, newPassword } = req.body;
 
-  const user = await UserModel.findOne({
+  if (!process.env.VERCEL) {
+    const cloudUrl =
+      process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
+    const fetchRes = await fetch(`${cloudUrl}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    const data = await fetchRes.json();
+    res.status(fetchRes.status).json(data);
+    return;
+  }
+
+  const users = await UserModel.find({
     resetPasswordToken: token,
     resetPasswordExpiresAt: { $gt: Date.now() },
   });
 
-  appAssert(user, BAD_REQUEST, 'Invalid or expired password reset token');
+  appAssert(
+    users.length > 0,
+    BAD_REQUEST,
+    'Invalid or expired password reset token',
+  );
 
   const salt = await bcrypt.genSalt(Number(BCRYPT_SALT));
-  user.password = await bcrypt.hash(newPassword, salt);
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpiresAt = undefined;
-  await user.save();
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  for (const user of users) {
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiresAt = undefined;
+    await user.save();
+  }
 
   res.json(
     new CustomResponse(true, null, 'Password has been reset successfully'),

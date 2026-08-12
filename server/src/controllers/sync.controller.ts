@@ -445,9 +445,10 @@ export const sync_apply_change = asyncHandler(
     if (change.operation === 'create') {
       const cleanPatch = sanitizePatch(change.patch);
       delete cleanPatch._id;
+      const castPatch = castDocumentTypes(cleanPatch);
       await LocalModel.updateOne(
         { _id: entityId },
-        { $setOnInsert: { _id: entityId, ...cleanPatch } },
+        { $setOnInsert: { _id: entityId, ...castPatch } },
         { upsert: true, timestamps: false },
       );
     } else if (change.operation === 'update') {
@@ -469,7 +470,8 @@ export const sync_apply_change = asyncHandler(
           updatePatch[key] = value;
         }
         updatePatch.updatedAt = new Date();
-        await LocalModel.updateOne({ _id: entityId }, { $set: updatePatch }, { timestamps: false });
+        const castPatch = castDocumentTypes(updatePatch);
+        await LocalModel.updateOne({ _id: entityId }, { $set: castPatch }, { timestamps: false });
       }
     } else if (change.operation === 'delete') {
       const existing = await LocalModel.findOne(
@@ -696,7 +698,7 @@ export const sync_current_seq = asyncHandler(
 );
 
 // Helper function to recursively cast strings into BSON ObjectIds and Dates
-const castDocumentTypes = (obj: any): any => {
+function castDocumentTypes(obj: any): any {
   if (obj === null || typeof obj !== 'object') {
     if (typeof obj === 'string') {
       const isoDateRegex =
@@ -723,7 +725,11 @@ const castDocumentTypes = (obj: any): any => {
         key === 'user' ||
         key === 'session' ||
         key === 'transaction' ||
-        key === 'student') &&
+        key === 'student' ||
+        key === 'event' ||
+        key === 'category' ||
+        key === 'owner' ||
+        key === 'rbacRole') &&
       typeof value === 'string' &&
       mongoose.Types.ObjectId.isValid(value)
     ) {

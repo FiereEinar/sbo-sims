@@ -25,9 +25,7 @@ import {
 import StudentSemInput from '@/components/StudentSemInput';
 import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
 import PaginationController from '@/components/PaginationController';
-import {
-  CalendarCheck,
-} from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 
 function TableSkeleton({ cols }: { cols: number }) {
   return (

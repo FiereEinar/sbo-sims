@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import _ from 'lodash';
+import StudentSemInput from '@/components/StudentSemInput';
+import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
 
 function RecentTransactionsSkeleton() {
   return (
@@ -51,13 +53,23 @@ export default function StudentDashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold">
-          Welcome back, {_.startCase((user?.firstname ?? '').toLowerCase())}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Here's a summary of your records across all organizations.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">
+            Welcome back, {_.startCase((user?.firstname ?? '').toLowerCase())}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Here's a summary of your records across all organizations.
+          </p>
+        </div>
+        <div className="flex items-end gap-2 flex-wrap">
+          <div className="w-[130px]">
+            <StudentSemInput hideLabel />
+          </div>
+          <div className="w-[150px]">
+            <StudentSchoolYearInput hideLabel />
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards */}

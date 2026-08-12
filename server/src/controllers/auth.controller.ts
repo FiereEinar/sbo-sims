@@ -588,18 +588,21 @@ export const verify_email = asyncHandler(async (req, res) => {
 });
 
 export const forgot_password = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const { identifier } = req.body;
 
-  const user = await UserModel.findOne({ email });
-  appAssert(user, NOT_FOUND, 'User with this email not found');
+  const user = await UserModel.findOne({
+    $or: [{ email: identifier }, { studentID: identifier }]
+  });
+  appAssert(user, NOT_FOUND, 'User with this information not found');
 
   const token = crypto.randomBytes(32).toString('hex');
   user.resetPasswordToken = token;
   user.resetPasswordExpiresAt = new Date(Date.now() + 3600000); // 1 hour
   await user.save();
 
-  const resetUrl = `${WEB_APP_ORIGIN}/reset-password?token=${token}`;
-  await sendForgotPasswordEmail(user.email, resetUrl);
+  const resetUrl = `${WEB_APP_ORIGIN}/#/reset-password?token=${token}`;
+  const targetEmail = user.email || `${user.studentID}${process.env.STUDENT_EMAIL_DOMAIN || '@student.buksu.edu.ph'}`;
+  await sendForgotPasswordEmail(targetEmail, resetUrl);
 
   res.json(
     new CustomResponse(true, null, 'Password reset link sent to your email'),

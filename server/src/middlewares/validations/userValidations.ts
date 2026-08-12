@@ -194,11 +194,11 @@ export const updateUserPasswordValidation = [
 ];
 
 export const forgotPasswordValidation = [
-  body('email')
+  body('identifier')
     .trim()
     .escape()
-    .isEmail()
-    .withMessage('Must be a valid email address'),
+    .isLength({ min: 1 })
+    .withMessage('Email or Student ID is required'),
 
   isFormBodyValidated,
 ];

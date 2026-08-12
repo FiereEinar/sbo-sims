@@ -102,9 +102,9 @@ export const completeOnboarding = async (): Promise<APIResponse<null>> => {
 	}
 };
 
-export const forgotPassword = async (email: string): Promise<APIResponse<null>> => {
+export const forgotPassword = async (identifier: string): Promise<APIResponse<null>> => {
 	try {
-		const { data } = await axiosInstance.post('/auth/forgot-password', { email });
+		const { data } = await axiosInstance.post('/auth/forgot-password', { identifier });
 		return data;
 	} catch (err: any) {
 		throw err;

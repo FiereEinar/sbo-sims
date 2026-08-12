@@ -11,7 +11,7 @@ import { forgotPassword } from '@/api/user';
 import { ArrowLeft } from 'lucide-react';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  identifier: z.string().min(1, 'Email or Student ID is required'),
 });
 
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
@@ -33,7 +33,7 @@ function ForgotPasswordForm() {
   const onSubmit = async (data: ForgotPasswordValues) => {
     setIsSubmitting(true);
     try {
-      await forgotPassword(data.email);
+      await forgotPassword(data.identifier);
       setIsSuccess(true);
     } catch (err: any) {
       setError('root', {
@@ -48,7 +48,7 @@ function ForgotPasswordForm() {
     return (
       <div className="space-y-4">
         <p className="text-muted-foreground text-sm">
-          If an account exists with that email address, a password reset link has been sent. Please check your inbox (and spam folder) for the email.
+          If an account exists with that information, a password reset link has been sent. Please check your inbox (and spam folder) for the email.
         </p>
         <div className="flex justify-start">
           <Button type="button" onClick={() => navigate('/login')}>
@@ -71,13 +71,13 @@ function ForgotPasswordForm() {
       </button>
 
       <p className="text-muted-foreground text-sm">
-        Enter your email address and we'll send you a link to reset your password.
+        Enter your email address or student ID and we'll send you a link to reset your password.
       </p>
 
       <InputField<ForgotPasswordValues>
-        name="email"
-        id="email"
-        label="Email Address:"
+        name="identifier"
+        id="identifier"
+        label="Email or Student ID:"
         registerFn={register}
         errors={errors}
         isDisabled={isSubmitting}

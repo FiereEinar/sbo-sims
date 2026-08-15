@@ -39,6 +39,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminSupportThread from './pages/admin/AdminSupportThread';
 import AdminSettings from './pages/admin/AdminSettings';
+import DataSync from './pages/DataSync';
 import Events from './pages/Events';
 import Gpoa from './pages/Gpoa';
 
@@ -323,6 +324,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Settings />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'data-sync',
+          element: (
+            <HasPermission
+              permissions={[MODULES.SETTING_READ]}
+              fallback={<NoPermission />}
+            >
+              <DataSync />
             </HasPermission>
           ),
         },

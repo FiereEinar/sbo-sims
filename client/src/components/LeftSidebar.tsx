@@ -5,7 +5,7 @@ import SidebarGroup from './SidebarGroup';
 import LogoutButton from './buttons/LogoutButton';
 import HeaderLogo from './HeaderLogo';
 import { useUserStore } from '@/store/user';
-import { Settings } from 'lucide-react';
+import { Settings, CloudCog } from 'lucide-react';
 import { Fragment } from 'react';
 import SyncStatusBadge from './SyncStatusBadge';
 
@@ -50,6 +50,16 @@ export default function LeftSidebar() {
 
         <div className="flex flex-col gap-5 pt-5 border-t border-border/50">
           <SyncStatusBadge />
+          {canView({
+            name: 'Data Sync',
+            path: '/data-sync',
+            icon: CloudCog,
+            permissions: [MODULES.SETTING_READ],
+          }) && (
+            <SidebarLink
+              link={{ icon: CloudCog, name: 'Data Sync', path: '/data-sync' }}
+            />
+          )}
           {canView({
             name: 'Settings',
             path: '/settings',

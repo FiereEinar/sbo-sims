@@ -13,6 +13,9 @@ import {
   sync_apply_bootstrap_batch,
   sync_push,
   sync_pull,
+  sync_export_force_sync_data,
+  sync_atlas_export_force_sync_data,
+  sync_apply_force_push,
 } from '../controllers/sync.controller';
 import { auth } from '../middlewares/authentication/auth';
 
@@ -55,6 +58,15 @@ router.patch('/checkpoint', auth, sync_update_checkpoint);
 
 /** POST /sync/apply-change — apply one pulled Atlas change to local DB */
 router.post('/apply-change', auth, sync_apply_change);
+
+/** POST /sync/export-force-sync-data — extract local/Atlas data for force sync (auth required) */
+router.post('/export-force-sync-data', auth, sync_export_force_sync_data);
+
+/** POST /sync/atlas-export-force-sync-data — extract Atlas data for force pull (secret required) */
+router.post('/atlas-export-force-sync-data', sync_atlas_export_force_sync_data);
+
+/** POST /sync/apply-force-push — accept payload and write to Atlas (secret required) */
+router.post('/apply-force-push', sync_apply_force_push);
 
 // ─── Bootstrap endpoints (Atlas-side, post-auth) ──────────────────────────────
 

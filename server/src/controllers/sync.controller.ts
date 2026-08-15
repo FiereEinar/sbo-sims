@@ -808,3 +808,214 @@ export const sync_apply_bootstrap_batch = asyncHandler(
     );
   },
 );
+// ─── FORCE SYNC ENDPOINTS ─────────────────────────────────────────────────────
+
+export const sync_export_force_sync_data = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { modules, semester, schoolYear } = req.body as {
+      modules: string[];
+      semester?: string;
+      schoolYear?: string;
+    };
+
+    appAssert(
+      Array.isArray(modules) && modules.length > 0,
+      BAD_REQUEST,
+      'modules must be a non-empty array',
+    );
+
+    const organizationId = req.tenantContext!.organizationId;
+    const db = mongoose.connection.db!;
+    const results: Record<string, any[]> = {};
+
+    // Determine event IDs if any child module is requested
+    let eventIds: mongoose.Types.ObjectId[] = [];
+    if (modules.includes('EventSession') || modules.includes('AttendanceRecord')) {
+      const events = await db
+        .collection('events')
+        .find(
+          { organization: organizationId, semester, schoolYear },
+          { projection: { _id: 1 } },
+        )
+        .toArray();
+      eventIds = events.map((e) => e._id);
+    }
+
+    for (const modelName of modules) {
+      const collection = ENTITY_COLLECTION_MAP[modelName as SyncableEntityType];
+      if (!collection) continue;
+
+      let filter: any = { organization: organizationId };
+
+      if (
+        ['Student', 'Transaction', 'Category', 'Prelisting', 'Gpoa', 'PaymentRequest', 'Event'].includes(
+          modelName,
+        )
+      ) {
+        if (semester) filter.semester = semester;
+        if (schoolYear) filter.schoolYear = schoolYear;
+      } else if (modelName === 'EventSession' || modelName === 'AttendanceRecord') {
+        if (eventIds.length === 0) {
+          results[collection] = [];
+          continue;
+        }
+        filter = { event: { $in: eventIds } };
+      }
+
+      const docs = await db.collection(collection).find(filter).toArray();
+      results[collection] = docs;
+    }
+
+    res.json(new CustomResponse(true, { data: results }, 'Force sync data exported'));
+  },
+);
+
+export const sync_atlas_export_force_sync_data = asyncHandler(
+  async (req: Request, res: Response) => {
+    const syncSecret = req.headers['x-sync-secret'];
+    appAssert(syncSecret === SECRET_ADMIN_KEY, UNAUTHORIZED, 'Invalid sync secret');
+
+    const { modules, semester, schoolYear, organizationId: orgIdStr } = req.body as {
+      modules: string[];
+      semester?: string;
+      schoolYear?: string;
+      organizationId?: string;
+    };
+
+    appAssert(
+      Array.isArray(modules) && modules.length > 0,
+      BAD_REQUEST,
+      'modules must be a non-empty array',
+    );
+    appAssert(orgIdStr, BAD_REQUEST, 'organizationId is required');
+
+    const organizationId = new mongoose.Types.ObjectId(orgIdStr);
+    const db = mongoose.connection.db!;
+    const results: Record<string, any[]> = {};
+
+    let eventIds: mongoose.Types.ObjectId[] = [];
+    if (modules.includes('EventSession') || modules.includes('AttendanceRecord')) {
+      const events = await db
+        .collection('events')
+        .find(
+          { organization: organizationId, semester, schoolYear },
+          { projection: { _id: 1 } },
+        )
+        .toArray();
+      eventIds = events.map((e) => e._id);
+    }
+
+    for (const modelName of modules) {
+      const collection = ENTITY_COLLECTION_MAP[modelName as SyncableEntityType];
+      if (!collection) continue;
+
+      let filter: any = { organization: organizationId };
+
+      if (
+        ['Student', 'Transaction', 'Category', 'Prelisting', 'Gpoa', 'PaymentRequest', 'Event'].includes(
+          modelName,
+        )
+      ) {
+        if (semester) filter.semester = semester;
+        if (schoolYear) filter.schoolYear = schoolYear;
+      } else if (modelName === 'EventSession' || modelName === 'AttendanceRecord') {
+        if (eventIds.length === 0) {
+          results[collection] = [];
+          continue;
+        }
+        filter = { event: { $in: eventIds } };
+      }
+
+      const docs = await db.collection(collection).find(filter).toArray();
+      results[collection] = docs;
+    }
+
+    res.json(new CustomResponse(true, { data: results }, 'Atlas force sync data exported'));
+  },
+);
+
+export const sync_apply_force_push = asyncHandler(
+  async (req: Request, res: Response) => {
+    const syncSecret = req.headers['x-sync-secret'];
+    appAssert(
+      syncSecret === SECRET_ADMIN_KEY,
+      UNAUTHORIZED,
+      'Invalid sync secret',
+    );
+
+    const { data } = req.body as { data: Record<string, any[]> };
+    appAssert(data && typeof data === 'object', BAD_REQUEST, 'data object is required');
+
+    const atlasConn = await getAtlasConnection();
+    const ChangeLog =
+      atlasConn.models['AtlasChangeLog'] ||
+      atlasConn.model<IAtlasChangeLog>('AtlasChangeLog', AtlasChangeLogModel.schema);
+    const Counter =
+      atlasConn.models['AtlasCounter'] ||
+      atlasConn.model('AtlasCounter', AtlasCounterModel.schema);
+
+    const serverTimestamp = new Date();
+    const clientId = 'force-push';
+    let totalUpserted = 0;
+
+    for (const [collection, docs] of Object.entries(data)) {
+      if (!Array.isArray(docs) || docs.length === 0) continue;
+
+      const modelName = Object.keys(ENTITY_COLLECTION_MAP).find(
+        (key) => ENTITY_COLLECTION_MAP[key as SyncableEntityType] === collection,
+      ) as SyncableEntityType;
+
+      if (!modelName) continue;
+
+      let AtlasModel = atlasConn.models[modelName];
+      if (!AtlasModel) {
+        const localModel = mongoose.models[modelName];
+        if (localModel) {
+          AtlasModel = atlasConn.model(modelName, localModel.schema);
+        } else {
+          continue;
+        }
+      }
+
+      for (const doc of docs) {
+        const entityId = new mongoose.Types.ObjectId(doc._id);
+        const cleanDoc = castDocumentTypes(doc);
+        delete cleanDoc._id;
+
+        await AtlasModel.updateOne(
+          { _id: entityId },
+          { $set: { ...cleanDoc, updatedAt: serverTimestamp } },
+          { upsert: true, timestamps: false },
+        );
+
+        const counter = await Counter.findOneAndUpdate(
+          { _id: 'changeLogSeq' },
+          { $inc: { value: 1 } },
+          { upsert: true, new: true },
+        );
+
+        await ChangeLog.updateOne(
+          { entityId, operation: 'create', clientId },
+          {
+            $setOnInsert: {
+              seq: counter!.value,
+              clientId,
+              entityType: modelName,
+              entityId,
+              operation: 'create' as const,
+              patch: cleanDoc,
+              organizationId: new mongoose.Types.ObjectId(doc.organization),
+              clientTimestamp: cleanDoc.createdAt ? new Date(cleanDoc.createdAt) : serverTimestamp,
+              serverTimestamp,
+            },
+          },
+          { upsert: true },
+        );
+
+        totalUpserted++;
+      }
+    }
+
+    res.json(new CustomResponse(true, { totalUpserted }, `Force push complete — ${totalUpserted} ops`));
+  },
+);

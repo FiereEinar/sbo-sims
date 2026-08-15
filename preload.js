@@ -42,6 +42,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send('sync:set-context', { authCookie, organizationId });
   },
 
+  /**
+   * Safely invoke IPC handlers in the main process
+   * @param {string} channel
+   * @param {any} data
+   */
+  invoke: (channel, data) => {
+    const validChannels = ['sync:force-push', 'sync:force-pull'];
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.invoke(channel, data);
+    }
+    return Promise.reject(new Error(`Unauthorized IPC channel: ${channel}`));
+  },
+
   /** True if running inside Electron desktop app */
   isElectron: true,
 });

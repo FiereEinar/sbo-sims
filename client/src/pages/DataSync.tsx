@@ -147,7 +147,7 @@ export default function DataSync() {
             Advanced synchronization controls.
           </p>
         </div>
-        <Card className="max-w-4xl mx-auto space-y-6 border bg-card/50">
+        <Card className="max-w-4xl space-y-6 border bg-card/50">
           <CardHeader>
             <CardTitle>Desktop App Required</CardTitle>
             <CardDescription>

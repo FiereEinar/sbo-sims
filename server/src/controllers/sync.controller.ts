@@ -174,7 +174,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       const existing = await AtlasModel.findOne(
         { _id: entityObjectId },
         { updatedAt: 1 },
-        { lean: true }
+        { lean: true },
       );
 
       const existingUpdatedAt = (existing as any)?.updatedAt
@@ -195,7 +195,7 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
         await AtlasModel.updateOne(
           { _id: entityObjectId },
           { $set: updatePatch },
-          { timestamps: false }
+          { timestamps: false },
         );
       }
     } else if (op.operation === 'delete') {
@@ -203,14 +203,14 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       const existing = await AtlasModel.findOne(
         { _id: entityObjectId },
         { archived: 1 },
-        { lean: true }
+        { lean: true },
       );
       if (existing !== null) {
         if ('archived' in existing) {
           await AtlasModel.updateOne(
             { _id: entityObjectId },
             { $set: { archived: true, updatedAt: serverTimestamp } },
-            { timestamps: false }
+            { timestamps: false },
           );
         } else {
           await AtlasModel.deleteOne({ _id: entityObjectId });
@@ -434,11 +434,7 @@ export const sync_apply_change = asyncHandler(
 
     const modelName = change.entityType as SyncableEntityType;
     const LocalModel = mongoose.models[modelName];
-    appAssert(
-      LocalModel,
-      BAD_REQUEST,
-      `Local model ${modelName} not found`,
-    );
+    appAssert(LocalModel, BAD_REQUEST, `Local model ${modelName} not found`);
 
     const entityId = new mongoose.Types.ObjectId(change.entityId);
 
@@ -455,7 +451,7 @@ export const sync_apply_change = asyncHandler(
       const existing = await LocalModel.findOne(
         { _id: entityId },
         { updatedAt: 1 },
-        { lean: true }
+        { lean: true },
       );
       const existingUpdatedAt = (existing as any)?.updatedAt
         ? new Date((existing as any).updatedAt)
@@ -471,20 +467,24 @@ export const sync_apply_change = asyncHandler(
         }
         updatePatch.updatedAt = new Date();
         const castPatch = castDocumentTypes(updatePatch);
-        await LocalModel.updateOne({ _id: entityId }, { $set: castPatch }, { timestamps: false });
+        await LocalModel.updateOne(
+          { _id: entityId },
+          { $set: castPatch },
+          { timestamps: false },
+        );
       }
     } else if (change.operation === 'delete') {
       const existing = await LocalModel.findOne(
         { _id: entityId },
         { archived: 1 },
-        { lean: true }
+        { lean: true },
       );
       if (existing !== null) {
         if ('archived' in existing) {
           await LocalModel.updateOne(
             { _id: entityId },
             { $set: { archived: true } },
-            { timestamps: false }
+            { timestamps: false },
           );
         } else {
           await LocalModel.deleteOne({ _id: entityId });
@@ -746,7 +746,7 @@ function castDocumentTypes(obj: any): any {
   }
 
   return transformed;
-};
+}
 
 // ─── POST /sync/apply-bootstrap-batch ─────────────────────────────────────────
 /**
@@ -787,11 +787,12 @@ export const sync_apply_bootstrap_batch = asyncHandler(
     // Build a bulk upsert operation for each doc
     const bulkOps = docs.map((doc) => {
       const cleanDoc = castDocumentTypes(doc);
+      const { _id, ...rest } = cleanDoc;
 
       return {
         updateOne: {
-          filter: { _id: cleanDoc._id }, // Ensure filter checks for BSON ObjectId
-          update: { $setOnInsert: cleanDoc },
+          filter: { _id: cleanDoc._id },
+          update: { $set: rest },
           upsert: true,
         },
       };
@@ -812,11 +813,12 @@ export const sync_apply_bootstrap_batch = asyncHandler(
 
 export const sync_export_force_sync_data = asyncHandler(
   async (req: Request, res: Response) => {
-    const { modules, semester, schoolYear } = req.body as {
+    const { modules, semester, schoolYear: reqSchoolYear } = req.body as {
       modules: string[];
       semester?: string;
       schoolYear?: string;
     };
+    const schoolYear = reqSchoolYear ? reqSchoolYear.split('-')[0] : undefined;
 
     appAssert(
       Array.isArray(modules) && modules.length > 0,
@@ -824,13 +826,23 @@ export const sync_export_force_sync_data = asyncHandler(
       'modules must be a non-empty array',
     );
 
-    const organizationId = req.tenantContext!.organizationId;
+    const organizationId = new mongoose.Types.ObjectId(
+      req.currentUser!.organization as any,
+    );
     const db = mongoose.connection.db!;
     const results: Record<string, any[]> = {};
 
+    console.log(`[DEBUG]: organizationId: ${organizationId}`);
+    console.log(`[DEBUG]: modules: ${JSON.stringify(modules)}`);
+    console.log(`[DEBUG]: semester: ${semester}`);
+    console.log(`[DEBUG]: schoolYear: ${schoolYear}`);
+
     // Determine event IDs if any child module is requested
     let eventIds: mongoose.Types.ObjectId[] = [];
-    if (modules.includes('EventSession') || modules.includes('AttendanceRecord')) {
+    if (
+      modules.includes('EventSession') ||
+      modules.includes('AttendanceRecord')
+    ) {
       const events = await db
         .collection('events')
         .find(
@@ -848,39 +860,61 @@ export const sync_export_force_sync_data = asyncHandler(
       let filter: any = { organization: organizationId };
 
       if (
-        ['Student', 'Transaction', 'Category', 'Prelisting', 'Gpoa', 'PaymentRequest', 'Event'].includes(
-          modelName,
-        )
+        [
+          'Student',
+          'Transaction',
+          'Category',
+          'Prelisting',
+          'Gpoa',
+          'PaymentRequest',
+          'Event',
+        ].includes(modelName)
       ) {
         if (semester) filter.semester = semester;
         if (schoolYear) filter.schoolYear = schoolYear;
-      } else if (modelName === 'EventSession' || modelName === 'AttendanceRecord') {
+      } else if (
+        modelName === 'EventSession' ||
+        modelName === 'AttendanceRecord'
+      ) {
         if (eventIds.length === 0) {
           results[collection] = [];
           continue;
         }
-        filter = { event: { $in: eventIds } };
+        const eventIdStrings = eventIds.map((id) => id.toString());
+        filter = { event: { $in: [...eventIds, ...eventIdStrings] } };
       }
 
       const docs = await db.collection(collection).find(filter).toArray();
       results[collection] = docs;
     }
 
-    res.json(new CustomResponse(true, { data: results }, 'Force sync data exported'));
+    res.json(
+      new CustomResponse(true, { data: results }, 'Force sync data exported'),
+    );
   },
 );
 
 export const sync_atlas_export_force_sync_data = asyncHandler(
   async (req: Request, res: Response) => {
     const syncSecret = req.headers['x-sync-secret'];
-    appAssert(syncSecret === SECRET_ADMIN_KEY, UNAUTHORIZED, 'Invalid sync secret');
+    appAssert(
+      syncSecret === SECRET_ADMIN_KEY,
+      UNAUTHORIZED,
+      'Invalid sync secret',
+    );
 
-    const { modules, semester, schoolYear, organizationId: orgIdStr } = req.body as {
+    const {
+      modules,
+      semester,
+      schoolYear: reqSchoolYear,
+      organizationId: orgIdStr,
+    } = req.body as {
       modules: string[];
       semester?: string;
       schoolYear?: string;
       organizationId?: string;
     };
+    const schoolYear = reqSchoolYear ? reqSchoolYear.split('-')[0] : undefined;
 
     appAssert(
       Array.isArray(modules) && modules.length > 0,
@@ -894,7 +928,10 @@ export const sync_atlas_export_force_sync_data = asyncHandler(
     const results: Record<string, any[]> = {};
 
     let eventIds: mongoose.Types.ObjectId[] = [];
-    if (modules.includes('EventSession') || modules.includes('AttendanceRecord')) {
+    if (
+      modules.includes('EventSession') ||
+      modules.includes('AttendanceRecord')
+    ) {
       const events = await db
         .collection('events')
         .find(
@@ -912,25 +949,41 @@ export const sync_atlas_export_force_sync_data = asyncHandler(
       let filter: any = { organization: organizationId };
 
       if (
-        ['Student', 'Transaction', 'Category', 'Prelisting', 'Gpoa', 'PaymentRequest', 'Event'].includes(
-          modelName,
-        )
+        [
+          'Student',
+          'Transaction',
+          'Category',
+          'Prelisting',
+          'Gpoa',
+          'PaymentRequest',
+          'Event',
+        ].includes(modelName)
       ) {
         if (semester) filter.semester = semester;
         if (schoolYear) filter.schoolYear = schoolYear;
-      } else if (modelName === 'EventSession' || modelName === 'AttendanceRecord') {
+      } else if (
+        modelName === 'EventSession' ||
+        modelName === 'AttendanceRecord'
+      ) {
         if (eventIds.length === 0) {
           results[collection] = [];
           continue;
         }
-        filter = { event: { $in: eventIds } };
+        const eventIdStrings = eventIds.map((id) => id.toString());
+        filter = { event: { $in: [...eventIds, ...eventIdStrings] } };
       }
 
       const docs = await db.collection(collection).find(filter).toArray();
       results[collection] = docs;
     }
 
-    res.json(new CustomResponse(true, { data: results }, 'Atlas force sync data exported'));
+    res.json(
+      new CustomResponse(
+        true,
+        { data: results },
+        'Atlas force sync data exported',
+      ),
+    );
   },
 );
 
@@ -944,12 +997,19 @@ export const sync_apply_force_push = asyncHandler(
     );
 
     const { data } = req.body as { data: Record<string, any[]> };
-    appAssert(data && typeof data === 'object', BAD_REQUEST, 'data object is required');
+    appAssert(
+      data && typeof data === 'object',
+      BAD_REQUEST,
+      'data object is required',
+    );
 
     const atlasConn = await getAtlasConnection();
     const ChangeLog =
       atlasConn.models['AtlasChangeLog'] ||
-      atlasConn.model<IAtlasChangeLog>('AtlasChangeLog', AtlasChangeLogModel.schema);
+      atlasConn.model<IAtlasChangeLog>(
+        'AtlasChangeLog',
+        AtlasChangeLogModel.schema,
+      );
     const Counter =
       atlasConn.models['AtlasCounter'] ||
       atlasConn.model('AtlasCounter', AtlasCounterModel.schema);
@@ -962,7 +1022,8 @@ export const sync_apply_force_push = asyncHandler(
       if (!Array.isArray(docs) || docs.length === 0) continue;
 
       const modelName = Object.keys(ENTITY_COLLECTION_MAP).find(
-        (key) => ENTITY_COLLECTION_MAP[key as SyncableEntityType] === collection,
+        (key) =>
+          ENTITY_COLLECTION_MAP[key as SyncableEntityType] === collection,
       ) as SyncableEntityType;
 
       if (!modelName) continue;
@@ -1005,7 +1066,9 @@ export const sync_apply_force_push = asyncHandler(
               operation: 'create' as const,
               patch: cleanDoc,
               organizationId: new mongoose.Types.ObjectId(doc.organization),
-              clientTimestamp: cleanDoc.createdAt ? new Date(cleanDoc.createdAt) : serverTimestamp,
+              clientTimestamp: cleanDoc.createdAt
+                ? new Date(cleanDoc.createdAt)
+                : serverTimestamp,
               serverTimestamp,
             },
           },
@@ -1016,6 +1079,12 @@ export const sync_apply_force_push = asyncHandler(
       }
     }
 
-    res.json(new CustomResponse(true, { totalUpserted }, `Force push complete — ${totalUpserted} ops`));
+    res.json(
+      new CustomResponse(
+        true,
+        { totalUpserted },
+        `Force push complete — ${totalUpserted} ops`,
+      ),
+    );
   },
 );

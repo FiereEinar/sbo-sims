@@ -35,14 +35,6 @@ import paymentRequestRouter from './routes/payment-request.route';
 import supportTicketRouter from './routes/support-ticket.route';
 import gpoaRouter from './routes/gpoa.route';
 import syncRouter from './routes/sync.route';
-import {
-  sync_health,
-  sync_bootstrap,
-  sync_user_bootstrap,
-  sync_apply_bootstrap_batch,
-  sync_push,
-  sync_pull,
-} from './controllers/sync.controller';
 import path from 'path';
 
 import { NODE_ENV, PORT } from './constants/env';

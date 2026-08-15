@@ -92,7 +92,10 @@ export default function DataSync() {
       return;
     }
 
-    const modules = [...selectedTermModules, ...selectedGlobalModules];
+    let modules = [...selectedTermModules, ...selectedGlobalModules];
+    if (modules.includes('Event')) {
+      modules.push('EventSession', 'AttendanceRecord');
+    }
     if (modules.length === 0) {
       toast({
         title: 'No modules selected',
@@ -137,14 +140,14 @@ export default function DataSync() {
 
   if (!isElectron) {
     return (
-      <div className="p-8 max-w-4xl mx-auto space-y-6">
+      <SidebarPageLayout>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Data Sync</h1>
           <p className="text-muted-foreground mt-2">
             Advanced synchronization controls.
           </p>
         </div>
-        <Card>
+        <Card className="max-w-4xl mx-auto space-y-6 border bg-card/50">
           <CardHeader>
             <CardTitle>Desktop App Required</CardTitle>
             <CardDescription>
@@ -153,7 +156,7 @@ export default function DataSync() {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </SidebarPageLayout>
     );
   }
 
@@ -168,7 +171,7 @@ export default function DataSync() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="border bg-card/50">
           <CardHeader>
             <CardTitle>Term-Based Modules</CardTitle>
             <CardDescription>
@@ -245,7 +248,7 @@ export default function DataSync() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border bg-card/50">
           <CardHeader>
             <CardTitle>Global Modules</CardTitle>
             <CardDescription>

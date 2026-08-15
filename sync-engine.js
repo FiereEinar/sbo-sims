@@ -650,32 +650,50 @@ function setupIpc() {
     if (!cookie) throw new Error('Not authenticated');
 
     // 1. Export from local
-    const exportRes = await netRequest(`${localApiUrl}/sync/export-force-sync-data`, {
-      method: 'POST',
-      body: payload,
-      headers: { Authorization: `Bearer ${cookie}` },
-    });
+    const exportRes = await netRequest(
+      `${localApiUrl}/sync/export-force-sync-data`,
+      {
+        method: 'POST',
+        body: payload,
+        headers: { Authorization: `Bearer ${cookie}` },
+      },
+    );
 
     if (exportRes.status !== 200) {
-      throw new Error('Failed to export local data: ' + JSON.stringify(exportRes.body));
+      throw new Error(
+        'Failed to export local data: ' + JSON.stringify(exportRes.body),
+      );
     }
+
+    logToFile(
+      '[SyncEngine] Local data exported successfully: ' +
+        JSON.stringify(exportRes.body),
+    );
 
     const data = exportRes.body?.data?.data;
     if (!data) throw new Error('No data received from local export');
 
     // 2. Push to Atlas
-    const pushRes = await netRequest(`${atlasHealthUrl}/sync/apply-force-push`, {
-      method: 'POST',
-      body: { data },
-      headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key' },
-    });
+    const pushRes = await netRequest(
+      `${atlasHealthUrl}/sync/apply-force-push`,
+      {
+        method: 'POST',
+        body: { data },
+        headers: {
+          'x-sync-secret':
+            process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
+        },
+      },
+    );
 
     if (pushRes.status !== 200) {
-      throw new Error('Failed to push to Atlas: ' + JSON.stringify(pushRes.body));
+      throw new Error(
+        'Failed to push to Atlas: ' + JSON.stringify(pushRes.body),
+      );
     }
 
     logToFile('[SyncEngine] Force Push completed successfully');
-    return pushRes.body;
+    return { totalUpserted: pushRes.body?.data?.totalUpserted || 0 };
   });
 
   ipcMain.handle('sync:force-pull', async (_event, payload) => {
@@ -684,14 +702,22 @@ function setupIpc() {
     if (!currentOrganizationId) throw new Error('Organization ID not set');
 
     // 1. Export from Atlas
-    const exportRes = await netRequest(`${atlasHealthUrl}/sync/atlas-export-force-sync-data`, {
-      method: 'POST',
-      body: { ...payload, organizationId: currentOrganizationId },
-      headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key' },
-    });
+    const exportRes = await netRequest(
+      `${atlasHealthUrl}/sync/atlas-export-force-sync-data`,
+      {
+        method: 'POST',
+        body: { ...payload, organizationId: currentOrganizationId },
+        headers: {
+          'x-sync-secret':
+            process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
+        },
+      },
+    );
 
     if (exportRes.status !== 200) {
-      throw new Error('Failed to export Atlas data: ' + JSON.stringify(exportRes.body));
+      throw new Error(
+        'Failed to export Atlas data: ' + JSON.stringify(exportRes.body),
+      );
     }
 
     const data = exportRes.body?.data?.data;
@@ -699,19 +725,25 @@ function setupIpc() {
 
     // 2. Apply to local db (looping through collections)
     let totalApplied = 0;
-    const secretKey = process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key';
+    const secretKey =
+      process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key';
     for (const [collection, docs] of Object.entries(data)) {
       if (!Array.isArray(docs) || docs.length === 0) continue;
-      
-      const applyRes = await netRequest(`${localApiUrl}/sync/apply-bootstrap-batch`, {
-        method: 'POST',
-        body: { collection, docs },
-        headers: { 'x-sync-secret': secretKey },
-      });
+
+      const applyRes = await netRequest(
+        `${localApiUrl}/sync/apply-bootstrap-batch`,
+        {
+          method: 'POST',
+          body: { collection, docs },
+          headers: { 'x-sync-secret': secretKey },
+        },
+      );
 
       if (applyRes.status !== 200) {
-         logToFile(`[SyncEngine] Local apply rejected for ${collection}: ${JSON.stringify(applyRes.body)}`);
-         throw new Error(`Failed to apply data to ${collection}`);
+        logToFile(
+          `[SyncEngine] Local apply rejected for ${collection}: ${JSON.stringify(applyRes.body)}`,
+        );
+        throw new Error(`Failed to apply data to ${collection}`);
       }
       totalApplied += docs.length;
     }

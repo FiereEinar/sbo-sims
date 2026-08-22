@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import _ from 'lodash';
 import StudentSemInput from '@/components/StudentSemInput';
 import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
+import Header from '@/components/ui/header';
 
 function RecentTransactionsSkeleton() {
   return (
@@ -51,13 +52,13 @@ export default function StudentDashboard() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="animate-appear p-6 space-y-6">
       {/* Greeting */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">
+          <Header>
             Welcome back, {_.startCase((user?.firstname ?? '').toLowerCase())}
-          </h1>
+          </Header>
           <p className="text-sm text-muted-foreground mt-1">
             Here's a summary of your records across all organizations.
           </p>
@@ -111,7 +112,7 @@ export default function StudentDashboard() {
       {/* Tables Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
-        <div className="rounded-2xl border bg-card/50 p-5 shadow-sm">
+        <div className="rounded-2xl border bg-card/40 p-5">
           <h2 className="font-semibold mb-4 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-primary" />
             Recent Transactions
@@ -162,7 +163,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Recent Attendance */}
-        <div className="rounded-2xl border bg-card/50 p-5 shadow-sm">
+        <div className="rounded-2xl border bg-card/40 p-5">
           <h2 className="font-semibold mb-4 flex items-center gap-2">
             <CalendarCheck className="w-4 h-4 text-primary" />
             Recent Attendance

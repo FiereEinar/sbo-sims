@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchStudentTransactions, StudentPortalFilters } from '@/api/student-portal';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  fetchStudentTransactions,
+  StudentPortalFilters,
+} from '@/api/student-portal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { useUserStore } from '@/store/user';
@@ -19,28 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
+import { Card } from '@/components/ui/card';
 import StudentSemInput from '@/components/StudentSemInput';
 import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
 import PaginationController from '@/components/PaginationController';
-import { Receipt } from 'lucide-react';
+import {
+  Receipt,
+  Filter,
+  Calendar,
+  Banknote,
+  ArrowUpDown,
+  Clock,
+  Building,
+} from 'lucide-react';
 import { numberWithCommas } from '@/lib/utils';
-
-function TableSkeleton({ cols }: { cols: number }) {
-  return (
-    <>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <TableRow key={i}>
-          {Array.from({ length: cols }).map((_, j) => (
-            <TableCell key={j}>
-              <Skeleton className="h-5 w-full" />
-            </TableCell>
-          ))}
-        </TableRow>
-      ))}
-    </>
-  );
-}
+import Header from '@/components/ui/header';
 
 export default function MyTransactions() {
   const { user } = useUserStore((state) => state);
@@ -76,159 +64,192 @@ export default function MyTransactions() {
   const total = data?.total ?? 0;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="animate-appear p-4 md:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            My Transactions
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            All your payment records across every enrolled organization.
+          <Header>My Transactions</Header>
+          <p className="text-muted-foreground mt-2 text-sm max-w-lg">
+            Review all your payment records and transaction history across every
+            enrolled organization.
           </p>
         </div>
 
-        <div className="flex items-end gap-2 flex-wrap">
-          <div className="w-[130px]">
+        {/* Term Selectors */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-[130px] md:w-[150px]">
             <StudentSemInput hideLabel />
           </div>
-          <div className="w-[150px]">
+          <div className="w-full sm:w-[150px] md:w-[170px]">
             <StudentSchoolYearInput hideLabel />
           </div>
         </div>
       </div>
 
-      {/* Summary badge */}
-      {!isLoading && (
-        <p className="text-sm text-muted-foreground">
-          Showing{' '}
-          <span className="font-medium text-foreground">{rows.length}</span> of{' '}
-          <span className="font-medium text-foreground">{total}</span>{' '}
-          transaction{total !== 1 ? 's' : ''} for{' '}
-          <span className="font-medium text-foreground">
-            SY {user?.activeSchoolYearDB} Sem {user?.activeSemDB}
+      {/* Filters Bar */}
+      <div className="flex flex-col lg:flex-row gap-4 bg-card/40 p-4 md:p-5 rounded-2xl border items-start lg:items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground px-2">
+          <Filter className="w-4 h-4" />
+          <span className="font-bold tracking-wide uppercase text-xs">
+            Filter & Sort
           </span>
-        </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full lg:w-auto">
+          <Select
+            value={sortField === 'createdAt' ? sortOrder : undefined}
+            onValueChange={(v: 'asc' | 'desc') => {
+              setSortField('createdAt');
+              setSortOrder(v);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Clock className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Date" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="desc">Recent to Oldest</SelectItem>
+              <SelectItem value="asc">Oldest to Recent</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={sortField === 'amount' ? sortOrder : undefined}
+            onValueChange={(v: 'asc' | 'desc') => {
+              setSortField('amount');
+              setSortOrder(v);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <ArrowUpDown className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Amount" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="desc">Highest to Lowest</SelectItem>
+              <SelectItem value="asc">Lowest to Highest</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select defaultValue="all" onValueChange={setModeOfPayment}>
+            <SelectTrigger className="w-full sm:w-[160px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Banknote className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Mode" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">All Modes</SelectItem>
+              <SelectItem value="cash">Cash</SelectItem>
+              <SelectItem value="gcash">GCash</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Summary badge */}
+      {!isLoading && total > 0 && (
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground px-2">
+          <span>Showing</span>
+          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
+            {rows.length}
+          </span>
+          <span>of</span>
+          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
+            {total}
+          </span>
+          <span>transactions</span>
+        </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-muted/40">
-              <TableHead className="w-[160px]">
-                <Select
-                  value={sortField === 'createdAt' ? sortOrder : undefined}
-                  onValueChange={(v: 'asc' | 'desc') => {
-                    setSortField('createdAt');
-                    setSortOrder(v);
-                  }}
+      {/* Data Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-[180px] rounded-2xl w-full" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-28 px-6 text-muted-foreground bg-card/30 rounded-3xl border border-dashed border-muted-foreground/30 mt-6">
+          <div className="bg-muted/50 p-5 rounded-full mb-5">
+            <Receipt className="w-14 h-14 opacity-40 text-primary" />
+          </div>
+          <p className="text-xl font-bold text-foreground mb-2 tracking-tight">
+            No transactions found
+          </p>
+          <p className="text-sm text-center max-w-sm leading-relaxed">
+            You don't have any payment records for this specific term and filter
+            criteria. Try adjusting your filters or switching terms.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {rows.map((tx) => (
+            <Card
+              key={tx._id}
+              className="flex flex-col overflow-hidden rounded-2xl hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border-muted-foreground/15 group bg-card/50"
+            >
+              <div className="p-6 flex-1 space-y-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                      <Building className="w-3.5 h-3.5 text-primary/70" />
+                      <span className="truncate">
+                        {tx.organization?.name ?? '—'}
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xl leading-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                      {tx.category?.name ?? '—'}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <span className="font-black text-4xl tracking-tighter text-foreground group-hover:text-primary transition-colors flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold opacity-50">₱</span>
+                    {numberWithCommas(tx.amount)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-muted/40 px-6 py-4 flex items-center justify-between border-t border-muted-foreground/10 mt-auto group-hover:bg-primary/5 transition-colors">
+                <div className="flex items-center gap-2.5 text-xs font-semibold text-muted-foreground">
+                  <Calendar className="w-4 h-4 text-primary/70" />
+                  <span className="flex flex-col sm:flex-row sm:items-center sm:gap-1.5">
+                    <span>{format(new Date(tx.createdAt), 'MMM d, yyyy')}</span>
+                    <span className="hidden sm:inline opacity-50">•</span>
+                    <span>{format(new Date(tx.createdAt), 'h:mm a')}</span>
+                  </span>
+                </div>
+
+                <span
+                  className={`text-[0.75rem] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm ${
+                    tx.modeOfPayment === 'gcash'
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  }`}
                 >
-                  <SelectTrigger className="w-full border-none pl-0 focus:ring-0 shadow-none font-semibold text-muted-foreground bg-transparent">
-                    <SelectValue placeholder="Date" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Recent to Oldest</SelectItem>
-                    <SelectItem value="asc">Oldest to Recent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="w-[160px]">
-                <Select
-                  value={sortField === 'amount' ? sortOrder : undefined}
-                  onValueChange={(v: 'asc' | 'desc') => {
-                    setSortField('amount');
-                    setSortOrder(v);
-                  }}
-                >
-                  <SelectTrigger className="w-full border-none pl-0 focus:ring-0 shadow-none font-semibold text-muted-foreground bg-transparent">
-                    <SelectValue placeholder="Amount" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Highest to Lowest</SelectItem>
-                    <SelectItem value="asc">Lowest to Highest</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-              <TableHead className="w-[130px]">
-                <Select defaultValue="all" onValueChange={setModeOfPayment}>
-                  <SelectTrigger className="w-full border-none pl-0 focus:ring-0 shadow-none font-semibold text-muted-foreground bg-transparent">
-                    <SelectValue placeholder="Mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Modes</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="gcash">GCash</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableSkeleton cols={5} />
-            ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-16 text-muted-foreground"
-                >
-                  <Receipt className="w-10 h-10 mx-auto mb-3 opacity-25" />
-                  <p className="text-sm italic">
-                    No transactions found for this term.
-                  </p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((tx) => (
-                <TableRow
-                  key={tx._id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(new Date(tx.createdAt), 'MMM d, yyyy')}
-                    <br />
-                    <span className="text-[0.7rem]">
-                      {format(new Date(tx.createdAt), 'h:mm a')}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-medium text-sm">
-                    {tx.organization?.name ?? '—'}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {tx.category?.name ?? '—'}
-                  </TableCell>
-                  <TableCell className="font-semibold text-sm">
-                    ₱{numberWithCommas(tx.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${
-                        tx.modeOfPayment === 'gcash'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                      }`}
-                    >
-                      {tx.modeOfPayment}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  {tx.modeOfPayment}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <PaginationController
-          currentPage={page}
-          prevPage={page > 1 ? page - 1 : -1}
-          nextPage={page < totalPages ? page + 1 : -1}
-          setPage={setPage}
-        />
+        <div className="pt-6 flex justify-center">
+          <PaginationController
+            currentPage={page}
+            prevPage={page > 1 ? page - 1 : -1}
+            nextPage={page < totalPages ? page + 1 : -1}
+            setPage={setPage}
+          />
+        </div>
       )}
     </div>
   );

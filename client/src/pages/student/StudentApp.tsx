@@ -9,7 +9,7 @@ export default function StudentApp() {
   setNavigate(navigate);
 
   return (
-    <main className="transition-all bg-background flex h-dvh">
+    <main className="transition-all  bg-background flex h-dvh">
       {/* Sidebar - hidden on mobile */}
       <div className="hidden sm:flex">
         <StudentLeftSidebar />

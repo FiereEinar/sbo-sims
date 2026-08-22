@@ -18,9 +18,11 @@ export default function StatCard({
   isLoading,
 }: StatCardProps) {
   return (
-    <div className="rounded-2xl border bg-card/50 p-5 shadow-sm flex justify-between items-start">
+    <div className="rounded-2xl border bg-card/40 p-5 flex justify-between items-start">
       <div className="space-y-1">
-        <p className="text-xs text-muted-foreground uppercase tracking-wide">{title}</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+          {title}
+        </p>
         {isLoading ? (
           <>
             <Skeleton className="h-7 w-32" />

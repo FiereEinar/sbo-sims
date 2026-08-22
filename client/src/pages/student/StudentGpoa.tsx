@@ -26,6 +26,7 @@ import {
 import { ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 import StudentSemInput from '@/components/StudentSemInput';
 import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
+import Header from '@/components/ui/header';
 
 const STATUS_BADGE: Record<
   StudentGpoaItem['status'],
@@ -57,13 +58,11 @@ export default function StudentGpoa() {
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="animate-appear p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            General Plan of Action
-          </h1>
+          <Header>General Plan of Action</Header>
           <p className="text-sm text-muted-foreground mt-1">
             View your organizations' planned activities for the current term.
           </p>

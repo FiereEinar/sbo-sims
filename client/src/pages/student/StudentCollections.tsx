@@ -4,14 +4,6 @@ import {
   fetchStudentCollections,
   StudentCollectionItem,
 } from '@/api/student-portal';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserStore } from '@/store/user';
 import {
@@ -21,37 +13,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
 import StudentSemInput from '@/components/StudentSemInput';
 import StudentSchoolYearInput from '@/components/StudentSchoolYearInput';
-import { FolderKanban } from 'lucide-react';
+import {
+  FolderKanban,
+  Filter,
+  Building,
+  Banknote,
+  ArrowUpDown,
+  Type,
+  Activity,
+} from 'lucide-react';
 import { numberWithCommas } from '@/lib/utils';
-
-function TableSkeleton({ cols }: { cols: number }) {
-  return (
-    <>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <TableRow key={i}>
-          {Array.from({ length: cols }).map((_, j) => (
-            <TableCell key={j}>
-              <Skeleton className="h-5 w-full" />
-            </TableCell>
-          ))}
-        </TableRow>
-      ))}
-    </>
-  );
-}
+import Header from '@/components/ui/header';
 
 function StatusBadge({ status }: { status: StudentCollectionItem['status'] }) {
   const styles = {
-    paid: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+    paid: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
     partial:
       'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-    unpaid: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    unpaid: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
   };
   return (
     <span
-      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${styles[status]}`}
+      className={`text-[0.7rem] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest ${styles[status]}`}
     >
       {status}
     </span>
@@ -110,189 +96,233 @@ export default function StudentCollections() {
 
   const total = rawCollections.length;
 
-  const selectTriggerClass =
-    'w-full border-none pl-0 focus:ring-0 shadow-none font-semibold text-muted-foreground bg-transparent';
-
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="animate-appear p-4 md:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            My Collections
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <Header>My Collections</Header>
+          <p className="text-muted-foreground mt-2 text-sm max-w-lg">
             View fee categories and your payment status across your enrolled
             organizations.
           </p>
         </div>
 
-        <div className="flex items-end gap-2 flex-wrap">
-          <div className="w-[130px]">
+        {/* Term Selectors (Naked) */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-[130px] md:w-[150px]">
             <StudentSemInput hideLabel />
           </div>
-          <div className="w-[150px]">
+          <div className="w-full sm:w-[150px] md:w-[170px]">
             <StudentSchoolYearInput hideLabel />
           </div>
         </div>
       </div>
 
-      {/* Summary */}
-      {!isLoading && (
-        <p className="text-sm text-muted-foreground">
-          Showing{' '}
-          <span className="font-medium text-foreground">
-            {collections.length}
-          </span>{' '}
-          of <span className="font-medium text-foreground">{total}</span>{' '}
-          collection{total !== 1 ? 's' : ''} for{' '}
-          <span className="font-medium text-foreground">
-            SY {user?.activeSchoolYearDB} Sem {user?.activeSemDB}
+      {/* Filters Bar */}
+      <div className="flex flex-col 2xl:flex-row gap-4 bg-card/40 p-4 md:p-5 rounded-2xl border items-start 2xl:items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground px-2">
+          <Filter className="w-4 h-4" />
+          <span className="font-bold tracking-wide uppercase text-xs">
+            Filter & Sort
           </span>
-        </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full 2xl:w-auto">
+          {/* Organization Filter */}
+          <Select defaultValue="all" onValueChange={setOrgFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium truncate">
+                <Building className="w-4 h-4 shrink-0 text-primary/70" />
+                <span className="truncate">
+                  {orgFilter === 'all'
+                    ? 'All Organizations'
+                    : uniqueOrgs.find((o) => o[0] === orgFilter)?.[1] || 'Org'}
+                </span>
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">All Organizations</SelectItem>
+              {uniqueOrgs.map(([id, name]) => (
+                <SelectItem key={id} value={id}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Status Filter */}
+          <Select defaultValue="all" onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[150px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Activity className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Status" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="partial">Partial</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort: Name */}
+          <Select
+            value={sortField === 'name' ? sortOrder : undefined}
+            onValueChange={(v: 'asc' | 'desc') => {
+              setSortField('name');
+              setSortOrder(v);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[160px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Type className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Name" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="asc">Name (A → Z)</SelectItem>
+              <SelectItem value="desc">Name (Z → A)</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort: Fee */}
+          <Select
+            value={sortField === 'fee' ? sortOrder : undefined}
+            onValueChange={(v: 'asc' | 'desc') => {
+              setSortField('fee');
+              setSortOrder(v);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[160px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Banknote className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Fee" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="desc">Fee (Highest)</SelectItem>
+              <SelectItem value="asc">Fee (Lowest)</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort: Amount Paid */}
+          <Select
+            value={sortField === 'amountPaid' ? sortOrder : undefined}
+            onValueChange={(v: 'asc' | 'desc') => {
+              setSortField('amountPaid');
+              setSortOrder(v);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[160px] bg-background border-muted-foreground/20 rounded-xl h-11 focus:ring-primary/20 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <ArrowUpDown className="w-4 h-4 text-primary/70" />
+                <SelectValue placeholder="Paid" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="desc">Paid (Highest)</SelectItem>
+              <SelectItem value="asc">Paid (Lowest)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Summary badge */}
+      {!isLoading && total > 0 && (
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground px-2">
+          <span>Showing</span>
+          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
+            {collections.length}
+          </span>
+          <span>of</span>
+          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
+            {total}
+          </span>
+          <span>collections</span>
+        </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-muted/40">
-              {/* Category name sort */}
-              <TableHead>
-                <Select
-                  value={sortField === 'name' ? sortOrder : undefined}
-                  onValueChange={(v: 'asc' | 'desc') => {
-                    setSortField('name');
-                    setSortOrder(v);
-                  }}
-                >
-                  <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue placeholder="Collection Name" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="asc">Collection Name A → Z</SelectItem>
-                    <SelectItem value="desc">Collection Name Z → A</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-
-              {/* Organization filter */}
-              <TableHead>
-                <Select defaultValue="all" onValueChange={setOrgFilter}>
-                  <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue placeholder="Organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Organizations</SelectItem>
-                    {uniqueOrgs.map(([id, name]) => (
-                      <SelectItem key={id} value={id}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
-
-              {/* Fee sort */}
-              <TableHead className="w-[130px]">
-                <Select
-                  value={sortField === 'fee' ? sortOrder : undefined}
-                  onValueChange={(v: 'asc' | 'desc') => {
-                    setSortField('fee');
-                    setSortOrder(v);
-                  }}
-                >
-                  <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue placeholder="Fee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Highest to Lowest</SelectItem>
-                    <SelectItem value="asc">Lowest to Highest</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-
-              {/* Amount paid sort */}
-              <TableHead className="w-[130px]">
-                <Select
-                  value={sortField === 'amountPaid' ? sortOrder : undefined}
-                  onValueChange={(v: 'asc' | 'desc') => {
-                    setSortField('amountPaid');
-                    setSortOrder(v);
-                  }}
-                >
-                  <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue placeholder="Amount Paid" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Highest to Lowest</SelectItem>
-                    <SelectItem value="asc">Lowest to Highest</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-
-              {/* Status filter */}
-              <TableHead className="w-[130px]">
-                <Select defaultValue="all" onValueChange={setStatusFilter}>
-                  <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="partial">Partial</SelectItem>
-                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableSkeleton cols={5} />
-            ) : collections.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-16 text-muted-foreground"
-                >
-                  <FolderKanban className="w-10 h-10 mx-auto mb-3 opacity-25" />
-                  <p className="text-sm italic">
-                    No collections found for this term.
-                  </p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              collections.map((col) => (
-                <TableRow
-                  key={col._id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <TableCell className="font-medium text-sm">
-                    {col.name}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {col.organization?.name ?? '—'}
-                  </TableCell>
-                  <TableCell className="font-semibold text-sm">
-                    ₱{numberWithCommas(col.fee)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {col.amountPaid > 0 ? (
-                      `₱${numberWithCommas(col.amountPaid)}`
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
+      {/* Data Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-[180px] rounded-2xl w-full" />
+          ))}
+        </div>
+      ) : collections.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-28 px-6 text-muted-foreground bg-card/30 rounded-3xl border border-dashed border-muted-foreground/30 mt-6">
+          <div className="bg-muted/50 p-5 rounded-full mb-5">
+            <FolderKanban className="w-14 h-14 opacity-40 text-primary" />
+          </div>
+          <p className="text-xl font-bold text-foreground mb-2 tracking-tight">
+            No collections found
+          </p>
+          <p className="text-sm text-center max-w-sm leading-relaxed">
+            You don't have any collections for this term, or they are filtered
+            out.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {collections.map((col) => (
+            <Card
+              key={col._id}
+              className="flex flex-col overflow-hidden rounded-2xl hover:-translate-y-1.5 transition-all duration-300 border-muted-foreground/15 group bg-card/40"
+            >
+              <div className="p-6 flex-1 space-y-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                      <Building className="w-3.5 h-3.5 text-primary/70" />
+                      <span className="truncate">
+                        {col.organization?.name ?? '—'}
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xl leading-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                      {col.name}
+                    </h3>
+                  </div>
+                  <div className="shrink-0 mt-1">
                     <StatusBadge status={col.status} />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-muted/40 px-6 py-4 flex items-center justify-between border-t border-muted-foreground/10 mt-auto group-hover:bg-primary/5 transition-colors">
+                <div className="flex flex-col">
+                  <span className="text-[0.7rem] text-muted-foreground font-bold uppercase tracking-wider mb-1">
+                    Fee
+                  </span>
+                  <span className="font-extrabold text-lg tracking-tight text-foreground">
+                    <span className="text-sm opacity-50 mr-0.5">₱</span>
+                    {numberWithCommas(col.fee)}
+                  </span>
+                </div>
+                <div className="w-[1px] h-10 bg-muted-foreground/10" />
+                <div className="flex flex-col items-end">
+                  <span className="text-[0.7rem] text-muted-foreground font-bold uppercase tracking-wider mb-1">
+                    Amount Paid
+                  </span>
+                  <span className="font-extrabold text-lg tracking-tight text-primary">
+                    {col.amountPaid > 0 ? (
+                      <>
+                        <span className="text-sm opacity-60 mr-0.5">₱</span>
+                        {numberWithCommas(col.amountPaid)}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground opacity-50">
+                        —
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

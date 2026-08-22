@@ -23,12 +23,18 @@ export default function RootRedirect() {
 
         // Global super admin goes to the admin portal
         if (user.role === 'central-admin' && !user.organization) {
+          if (window.electronAPI?.setSyncContext) {
+            window.electronAPI.setSyncContext(data.accessToken, '', 'central-admin');
+          }
           navigate('/admin', { replace: true });
           return;
         }
 
         // Students go to the student portal
         if (user.role === 'student') {
+          if (window.electronAPI?.setSyncContext) {
+            window.electronAPI.setSyncContext(data.accessToken, '', 'student');
+          }
           navigate('/student/dashboard', { replace: true });
           return;
         }
@@ -38,7 +44,7 @@ export default function RootRedirect() {
             const organizationId = user.organization._id;
             const authCookie = data.accessToken;
 
-            window.electronAPI.setSyncContext(authCookie, organizationId);
+            window.electronAPI.setSyncContext(authCookie, organizationId, 'org-admin');
           }
           navigate(`/${user.organization.slug}`, { replace: true });
         } else {

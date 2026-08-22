@@ -23,6 +23,8 @@ export default function AdminApp() {
 			// ignore
 		}
 		localStorage.removeItem('accessToken');
+		// Stop the sync engine loop and clear stored credentials
+		window.electronAPI?.clearSyncContext?.();
 		navigate('/admin/login', { replace: true });
 		toast({ title: 'Logged out', description: 'You have been signed out of the admin portal.' });
 	};

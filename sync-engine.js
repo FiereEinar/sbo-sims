@@ -51,6 +51,7 @@ let atlasHealthUrl = '';
 let userDataPath = '';
 let cookie = null;
 let currentOrganizationId = null;
+let currentRole = null; // 'org-admin' | 'central-admin' | 'student'
 
 // ─── Client ID ────────────────────────────────────────────────────────────────
 function initClientId(userDataDir) {
@@ -531,6 +532,16 @@ async function runSync(authCookie, organizationId) {
     return;
   }
 
+  // Only org-admins have org-scoped data to push/pull.
+  // central-admin and student roles don't use the incremental sync loop.
+  if (currentRole !== 'org-admin') {
+    logToFile(
+      `[SyncEngine] Skipping push/pull — role is '${currentRole}', not 'org-admin'`,
+    );
+    emitStatus('synced');
+    return;
+  }
+
   if (isSyncing) return;
   isSyncing = true;
   lastError = null;
@@ -636,13 +647,27 @@ function setupIpc() {
 
   // The renderer sends auth context after login so the sync engine can
   // call authenticated local Express endpoints
-  ipcMain.on('sync:set-context', (_event, { authCookie, organizationId }) => {
-    // logToFile('[SyncEngine] Current Auth Cookie: ' + authCookie);
-    // logToFile(`[SyncEngine] Context set — org: ${organizationId}`);
-    // Trigger immediate sync with new context
+  ipcMain.on('sync:set-context', (_event, { authCookie, organizationId, role }) => {
+    logToFile(`[SyncEngine] Context set — role: ${role}, org: ${organizationId}`);
     cookie = authCookie;
     currentOrganizationId = organizationId;
+    currentRole = role || null;
     checkConnectivity(cookie, organizationId);
+  });
+
+  // The renderer sends this on logout to stop the sync loop and clear credentials
+  ipcMain.on('sync:clear-context', () => {
+    logToFile('[SyncEngine] Context cleared — stopping sync loop (user logged out)');
+    cookie = null;
+    currentOrganizationId = null;
+    currentRole = null;
+    isSyncing = false;
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+    isOnline = false;
+    emitStatus('offline');
   });
 
   ipcMain.handle('sync:force-push', async (_event, payload) => {

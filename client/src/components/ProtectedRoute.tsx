@@ -40,7 +40,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
           const organizationId = user.organization?._id;
           const authCookie = data.accessToken;
 
-          window.electronAPI.setSyncContext(authCookie, organizationId || '');
+          window.electronAPI.setSyncContext(authCookie, organizationId || '', user.role || 'org-admin');
         }
 
         setIsAuthenticated(true);

@@ -32,14 +32,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * Send auth context to the SyncEngine so it can call authenticated
    * local Express endpoints. Call this after the user logs in.
    * @param {string} authCookie - The session cookie value
-   * @param {string} organizationId - Active organization ObjectId
+   * @param {string} organizationId - Active organization ObjectId (empty for central-admin/student)
+   * @param {string} role - User macro-role: 'org-admin' | 'central-admin' | 'student'
    */
-  setSyncContext: (authCookie, organizationId) => {
+  setSyncContext: (authCookie, organizationId, role) => {
     console.log('[Preload] setSyncContext called with:', {
       authCookie,
       organizationId,
+      role,
     });
-    ipcRenderer.send('sync:set-context', { authCookie, organizationId });
+    ipcRenderer.send('sync:set-context', { authCookie, organizationId, role });
+  },
+
+  /**
+   * Clear auth context from the SyncEngine on logout.
+   * Stops the recurring poll timer and prevents further sync attempts.
+   */
+  clearSyncContext: () => {
+    console.log('[Preload] clearSyncContext called');
+    ipcRenderer.send('sync:clear-context');
   },
 
   /**

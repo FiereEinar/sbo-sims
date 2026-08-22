@@ -23,6 +23,8 @@ export default function LogoutButton() {
     try {
       await axiosInstance.get('/auth/logout');
       localStorage.removeItem('accessToken');
+      // Stop the sync engine loop and clear stored credentials
+      window.electronAPI?.clearSyncContext?.();
       navigate('/login');
     } catch (err: any) {
       console.error('Failed to logout');

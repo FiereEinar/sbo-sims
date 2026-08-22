@@ -3,7 +3,8 @@
 export interface ElectronAPI {
   onSyncStatus: (callback: (data: any) => void) => () => void;
   getSyncStatus: () => void;
-  setSyncContext: (authCookie: string, organizationId: string) => void;
+  setSyncContext: (authCookie: string, organizationId: string, role: string) => void;
+  clearSyncContext: () => void;
   isElectron: boolean;
 }
 

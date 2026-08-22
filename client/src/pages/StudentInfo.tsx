@@ -148,36 +148,39 @@ export default function StudentInfo() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {selectedTxIds.length > 0 && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="default" className="flex gap-2">
-                    <FileText size={16} />
-                    Generate Receipt ({selectedTxIds.length})
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="flex justify-between items-center pr-8">
-                      <span>Consolidated Receipt</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDownloadPDF}
-                        disabled={isDownloading}
-                        className="flex gap-2"
-                      >
-                        <Download size={16} />
-                        {isDownloading ? 'Generating...' : 'Download PDF'}
-                      </Button>
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="mt-4">
-                    <TransactionReceipt transactions={selectedTransactions} />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={selectedTxIds.length === 0}
+                  variant="default"
+                  className="flex gap-2"
+                  size="sm"
+                >
+                  <FileText size={16} />
+                  Generate Receipt ({selectedTxIds.length})
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex justify-between items-center pr-8">
+                    <span>Consolidated Receipt</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadPDF}
+                      disabled={isDownloading}
+                      className="flex gap-2"
+                    >
+                      <Download size={16} />
+                      {isDownloading ? 'Generating...' : 'Download PDF'}
+                    </Button>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="mt-4">
+                  <TransactionReceipt transactions={selectedTransactions} />
+                </div>
+              </DialogContent>
+            </Dialog>
             <EditAndDeleteStudentButton student={student} />
           </div>
         </StickyHeader>

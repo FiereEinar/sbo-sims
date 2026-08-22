@@ -59,7 +59,6 @@ export default function DownloadCategoryStudentStatusButton({
         <Button
           disabled={isDownloading}
           variant="secondary"
-          size="sm"
           className="flex items-center gap-2 rounded-full"
         >
           <Download className="w-4 h-4" />

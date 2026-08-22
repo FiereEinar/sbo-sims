@@ -281,7 +281,7 @@ export default function AddTransactionForm({
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex justify-center gap-2 rounded-full" size="sm">
+          <Button className="flex justify-center gap-2 rounded-full">
             <Plus className="size-4" />
             <p>Add Transaction</p>
           </Button>

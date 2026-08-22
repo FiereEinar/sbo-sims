@@ -16,8 +16,11 @@ import { useViewModeStore } from '@/store/viewModeStore';
 import TransactionsCardView from '@/components/transaction/TransactionsCardView';
 import TransactionsTable from '@/components/transaction/TransactionsTable';
 import TransactionsFilter from '@/components/transaction/TransactionsFilter';
+import { useUserStore } from '@/store/user';
+import { AlertCircle } from 'lucide-react';
 
 export default function Transaction() {
+  const user = useUserStore((state) => state.user);
   const { viewMode } = useViewModeStore();
   const { page, pageSize, getFilterValues, setPage } =
     useTransactionFilterStore((state) => state);
@@ -59,7 +62,16 @@ export default function Transaction() {
   return (
     <SidebarPageLayout>
       <StickyHeader>
-        <Header>Transactions</Header>
+        <div className="flex flex-col gap-1">
+          <Header>Transactions</Header>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
+        </div>
 
         <div className="flex gap-2 items-center">
           <HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
@@ -73,7 +85,6 @@ export default function Transaction() {
 
       <div className="flex justify-between items-end flex-wrap gap-3">
         <TransactionsFilter />
-
         {/* <ViewModeToggle /> */}
       </div>
 

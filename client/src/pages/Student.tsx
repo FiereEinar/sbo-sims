@@ -9,15 +9,17 @@ import PaginationController from '@/components/PaginationController';
 import { useStudentFilterStore } from '@/store/studentsFilter';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Import } from 'lucide-react';
+import { AlertCircle, Import } from 'lucide-react';
 import { queryClient } from '@/main';
 import HasPermission from '@/components/HasPermission';
 import StudentsCardView from '@/components/student/StudentsCardView';
 import { useViewModeStore } from '@/store/viewModeStore';
 import StudentsTable from '@/components/student/StudentsTable';
 import StudentFilter from '@/components/student/StudentFilter';
+import { useUserStore } from '@/store/user';
 
 export default function Student() {
+  const user = useUserStore((state) => state.user);
   const { viewMode } = useViewModeStore();
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const { page, pageSize, setPage, getFilterValues } = useStudentFilterStore(
@@ -55,7 +57,16 @@ export default function Student() {
   return (
     <SidebarPageLayout>
       <StickyHeader>
-        <Header>Students</Header>
+        <div className="flex flex-col gap-1">
+          <Header>Students</Header>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
+        </div>
 
         <div className="flex gap-2  items-center">
           <HasPermission permissions={[MODULES.STUDENT_IMPORT]}>
@@ -63,7 +74,6 @@ export default function Student() {
               asChild
               className="rounded-full flex items-center gap-2"
               variant="ghost"
-              size="sm"
             >
               <Link to={`/${orgSlug}/student/import`}>
                 <Import className="size-4" />

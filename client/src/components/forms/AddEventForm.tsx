@@ -84,7 +84,7 @@ export default function AddEventForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex items-center gap-2 rounded-full" size="sm">
+          <Button className="flex items-center gap-2 rounded-full">
             <PlusIcon className="size-4" />
             <p>Add Event</p>
           </Button>

@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AlertCircle, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -91,16 +92,35 @@ export default function AdminPaymentRequests() {
   return (
     <SidebarPageLayout>
       <StickyHeader>
-        <Header>Payment Requests</Header>
-        <div className="flex gap-2 items-center">
-          <div className="w-[130px]">
-            <SemInput hideLabel />
-          </div>
-          <div className="w-[150px]">
-            <SchoolYearInput hideLabel />
+        <div className="flex flex-col gap-1">
+          <Header>Payment Requests</Header>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
           </div>
         </div>
       </StickyHeader>
+
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between w-full mt-2 mb-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground px-2">
+          <Filter className="w-4 h-4 shrink-0" />
+          <span className="font-bold tracking-wide uppercase text-xs shrink-0">
+            Filter
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-3 w-full lg:w-auto">
+          <div className="w-full sm:w-[130px]">
+            <SemInput hideLabel />
+          </div>
+          <div className="w-full sm:w-[150px]">
+            <SchoolYearInput hideLabel />
+          </div>
+        </div>
+      </div>
 
       <Table>
         <TableHeader>

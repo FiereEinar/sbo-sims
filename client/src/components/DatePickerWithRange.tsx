@@ -15,11 +15,13 @@ import { Label } from './ui/label';
 type DatePickerWithRangeProps = {
   setStartDate: (date?: Date) => void;
   setEndDate: (date?: Date) => void;
+  hideLabel?: boolean;
 };
 
 export function DatePickerWithRange({
   setStartDate,
   setEndDate,
+  hideLabel,
 }: DatePickerWithRangeProps) {
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: undefined,
@@ -36,7 +38,9 @@ export function DatePickerWithRange({
       <Popover>
         <PopoverTrigger asChild>
           <div className="space-y-2">
-            <Label className="flex gap-1 items-center">Date:</Label>
+            {!hideLabel && (
+              <Label className="flex gap-1 items-center">Date:</Label>
+            )}
             <Button
               id="date"
               variant={'outline'}

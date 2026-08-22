@@ -13,8 +13,11 @@ import { queryClient } from '@/main';
 import { usePrelistingFilterStore } from '@/store/prelistingFilter';
 import { PrelistingFilterValues } from '@/types/prelisting';
 import { useQuery } from '@tanstack/react-query';
+import { useUserStore } from '@/store/user';
+import { AlertCircle } from 'lucide-react';
 
 export default function Prelisting() {
+  const user = useUserStore((state) => state.user);
   const { page, pageSize, getFilterValues, setPage } = usePrelistingFilterStore(
     (state) => state,
   );
@@ -56,7 +59,16 @@ export default function Prelisting() {
   return (
     <SidebarPageLayout>
       <StickyHeader>
-        <Header>Prelistings</Header>
+        <div className="flex flex-col gap-1">
+          <Header>Prelistings</Header>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
+        </div>
 
         <HasPermission permissions={[MODULES.PRELISTING_CREATE]}>
           <AddPrelistingForm categories={categories} />

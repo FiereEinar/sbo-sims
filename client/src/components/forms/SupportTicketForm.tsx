@@ -81,7 +81,7 @@ export default function SupportTicketForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center rounded-full" size="sm">
+        <Button className="flex gap-2 items-center rounded-full">
           <PlusIcon className="size-4" />
           <p>New Ticket</p>
         </Button>

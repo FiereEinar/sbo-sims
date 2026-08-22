@@ -99,7 +99,7 @@ export default function AddGpoaForm({
         {trigger ? (
           trigger
         ) : mode === 'add' ? (
-          <Button className="flex items-center gap-2 rounded-full" size="sm">
+          <Button className="flex items-center gap-2 rounded-full">
             <PlusIcon className="size-4" />
             <p>Add Plan</p>
           </Button>
@@ -113,10 +113,12 @@ export default function AddGpoaForm({
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{mode === 'add' ? 'Add' : 'Edit'} Plan (GPOA)</DialogTitle>
+          <DialogTitle>
+            {mode === 'add' ? 'Add' : 'Edit'} Plan (GPOA)
+          </DialogTitle>
           <DialogDescription>
-            Fill up the form to {mode === 'add' ? 'add a new' : 'edit an'}{' '}
-            GPOA plan.
+            Fill up the form to {mode === 'add' ? 'add a new' : 'edit an'} GPOA
+            plan.
           </DialogDescription>
         </DialogHeader>
 
@@ -144,7 +146,7 @@ export default function AddGpoaForm({
             label="Venue:"
             id="venue"
           />
-          
+
           <InputField<GpoaFormValues>
             name="budget"
             type="number"

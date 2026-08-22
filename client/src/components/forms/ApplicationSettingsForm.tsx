@@ -6,6 +6,16 @@ import { AppSetting } from '@/types/appSetting';
 import { Loader2 } from 'lucide-react';
 import { useUserStore } from '@/store/user';
 import { AVAILABLE_SCHOOL_YEARS } from '@/constants';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function ApplicationSettingsForm() {
   const { toast } = useToast();
@@ -50,95 +60,79 @@ export default function ApplicationSettingsForm() {
 
   if (isLoading) {
     return (
-      <div
-        className="rounded-2xl p-8 flex justify-center items-center h-40"
-        style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.07)',
-        }}
-      >
-        <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+      <div className="rounded-2xl p-8 flex justify-center items-center h-40 bg-card/40 border border-muted-foreground/15">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.07)',
-      }}
-    >
+    <div className="rounded-2xl p-6 bg-card/40 border border-muted-foreground/15">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-white mb-1">
+        <h2 className="text-xl font-bold text-foreground mb-1">
           System Settings
         </h2>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-          Configure the default global active school year and semester for the system.
+        <p className="text-sm text-muted-foreground">
+          Configure the default global active school year and semester for the
+          system.
         </p>
       </div>
 
       <div className="space-y-5">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-white/80 ml-1">
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Default School Year
-          </label>
-          <select
+          </Label>
+          <Select
             value={settings?.activeSchoolYear || ''}
-            onChange={(e) =>
+            onValueChange={(value) =>
               setSettings((prev) =>
-                prev ? { ...prev, activeSchoolYear: e.target.value } : null,
+                prev ? { ...prev, activeSchoolYear: value } : null,
               )
             }
-            className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none appearance-none"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-            }}
           >
-            <option value="" disabled style={{ color: 'black' }}>Select Year</option>
-            {AVAILABLE_SCHOOL_YEARS.map((year) => (
-              <option key={year} value={year.toString()} style={{ color: 'black' }}>
-                {year} - {year + 1}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {AVAILABLE_SCHOOL_YEARS.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year} - {year + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-white/80 ml-1">
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Default Semester
-          </label>
-          <select
+          </Label>
+          <Select
             value={settings?.activeSemester || ''}
-            onChange={(e) =>
+            onValueChange={(value) =>
               setSettings((prev) =>
-                prev ? { ...prev, activeSemester: e.target.value } : null,
+                prev ? { ...prev, activeSemester: value } : null,
               )
             }
-            className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none appearance-none"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-            }}
           >
-            <option value="" disabled style={{ color: 'black' }}>Select Semester</option>
-            <option value="1" style={{ color: 'black' }}>1st Semester</option>
-            <option value="2" style={{ color: 'black' }}>2nd Semester</option>
-            <option value="Summer" style={{ color: 'black' }}>Summer</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Semester" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1st Semester</SelectItem>
+              <SelectItem value="2">2nd Semester</SelectItem>
+              <SelectItem value="Summer">Summer</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {currentUser?.studentID === '2301106533' && (
-          <div
-            className="space-y-1.5 pt-5 mt-5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
-          >
-            <label className="text-sm font-medium text-white/80 ml-1">
+          <div className="space-y-2 pt-5 mt-5 border-t border-border">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Healthcheck Message (Super Admin Only)
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               placeholder="Leave empty for no message"
               value={settings?.healthcheckMessage ?? ''}
@@ -154,35 +148,27 @@ export default function ApplicationSettingsForm() {
                       },
                 )
               }
-              className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none placeholder:opacity-30"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-              }}
             />
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-xs text-muted-foreground">
               This message is displayed on the server's root healthcheck route.
             </p>
           </div>
         )}
 
         <div className="flex justify-end pt-4">
-          <button
+          <Button
             onClick={onSave}
             disabled={isSaving || !settings}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 hover:scale-[1.02] active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-            }}
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Saving...
               </>
             ) : (
               'Save Settings'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -10,17 +10,15 @@ import OrgCard from '@/components/admin/OrgCard';
 import OrgFormModal from '@/components/admin/OrgFormModal';
 import DeleteModal from '@/components/admin/DeleteModal';
 import { Building2, Plus, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export type ModalMode = 'add' | 'edit' | 'delete' | null;
-
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const qc = useQueryClient();
   const [modal, setModal] = useState<ModalMode>(null);
-  const [selectedOrg, setSelectedOrg] = useState<AdminOrgWithStats | null>(
-    null,
-  );
+  const [selectedOrg, setSelectedOrg] = useState<AdminOrgWithStats | null>(null);
   const [search, setSearch] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
@@ -83,45 +81,34 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="p-8 min-h-full">
+    <div className="p-6 md:p-8 min-h-full">
       {/* Page header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Organizations</h1>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <h1 className="text-2xl font-bold text-foreground mb-1">Organizations</h1>
+          <p className="text-sm text-muted-foreground">
             {orgs.length} organization{orgs.length !== 1 ? 's' : ''} registered
           </p>
         </div>
-        <button
+        <Button
           id="addOrganizationBtn"
           onClick={handleAdd}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95"
-          style={{
-            background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-            boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
-          }}
+          className="flex items-center gap-2 rounded-full"
         >
           <Plus className="w-4 h-4" />
           Add Organization
-        </button>
+        </Button>
       </div>
 
       {/* Search */}
       <div className="relative mb-6 max-w-sm">
-        <Search
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
-          style={{ color: 'rgba(255,255,255,0.3)' }}
-        />
-        <input
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
           id="orgSearch"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search organizations…"
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white outline-none placeholder:opacity-30"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
+          className="w-full pl-10 pr-4 h-10 rounded-xl bg-background border-muted-foreground/20 shadow-none focus:ring-primary/20 transition-colors"
         />
       </div>
 
@@ -131,12 +118,12 @@ export default function AdminDashboard() {
           {
             label: 'Total Organizations',
             value: orgs.length,
-            color: '#7c3aed',
+            colorClass: 'text-primary',
           },
           {
             label: 'Total Users',
             value: orgs.reduce((sum, o) => sum + (o.userCount ?? 0), 0),
-            color: '#2563eb',
+            colorClass: 'text-blue-500',
           },
           {
             label: 'Total Departments',
@@ -144,24 +131,17 @@ export default function AdminDashboard() {
               (sum, o) => sum + (o.departments?.length ?? 0),
               0,
             ),
-            color: '#059669',
+            colorClass: 'text-emerald-500',
           },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl p-5"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
+            className="rounded-2xl p-5 bg-card/40 border border-muted-foreground/15 shadow-none"
           >
-            <p
-              className="text-3xl font-bold text-white mb-1"
-              style={{ color: stat.color }}
-            >
+            <p className={`text-3xl font-bold mb-1 ${stat.colorClass}`}>
               {stat.value}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-xs text-muted-foreground">
               {stat.label}
             </p>
           </div>
@@ -170,43 +150,22 @@ export default function AdminDashboard() {
 
       {/* Cards grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-24">
-          <svg
-            className="animate-spin w-8 h-8"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="white"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="white"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
+        <div className="flex items-center justify-center py-24 text-muted-foreground">
+          <svg className="animate-spin w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <Building2
-            className="w-12 h-12 mb-4"
-            style={{ color: 'rgba(255,255,255,0.15)' }}
-          />
-          <p className="text-white font-medium mb-1">No organizations found</p>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            {search
-              ? 'Try a different search term'
-              : 'Click "Add Organization" to get started'}
+          <Building2 className="w-12 h-12 mb-4 text-muted-foreground/30" />
+          <p className="text-foreground font-medium mb-1">No organizations found</p>
+          <p className="text-sm text-muted-foreground">
+            {search ? 'Try a different search term' : 'Click "Add Organization" to get started'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((org) => (
             <OrgCard
               key={org._id}
@@ -238,13 +197,7 @@ export default function AdminDashboard() {
             isDeleting={deleteMutation.isPending}
           />
           {deleteError && (
-            <div
-              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-xl text-sm text-red-300 shadow-xl"
-              style={{
-                background: 'rgba(20,20,35,0.95)',
-                border: '1px solid rgba(239,68,68,0.4)',
-              }}
-            >
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-xl text-sm bg-destructive/10 text-destructive border border-destructive/20 shadow-xl">
               {deleteError}
             </div>
           )}

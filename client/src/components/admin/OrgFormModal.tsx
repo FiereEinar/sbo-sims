@@ -2,10 +2,20 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, RefreshCw, Mail } from 'lucide-react';
+import { RefreshCw, Mail, Eye, EyeOff } from 'lucide-react';
 import { AdminOrgWithStats, adminCreateOrg, adminUpdateOrg } from '@/api/admin';
 import { organizationSchema } from '@/lib/validations/organizationSchema';
 import _ from 'lodash';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const editOrgSchema = organizationSchema;
 
@@ -46,7 +56,6 @@ function generateRandomPassword(): string {
     rand(digits),
     ...Array.from({ length: 6 }, () => rand(all)),
   ];
-  // Fisher-Yates shuffle
   for (let i = base.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [base[i], base[j]] = [base[j], base[i]];
@@ -112,14 +121,6 @@ export default function OrgFormModal({
     }
   };
 
-  const inputStyle = {
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    color: 'white',
-  };
-
-  const labelStyle = { color: 'rgba(255,255,255,0.55)' } as React.CSSProperties;
-
   const errOf = (key: string) =>
     (errors as Record<string, { message?: string }>)[key];
 
@@ -133,55 +134,32 @@ export default function OrgFormModal({
   ];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
-    >
-      <div
-        className="w-full max-w-lg rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90dvh]"
-        style={{
-          background: 'rgba(20,20,35,0.97)',
-          border: '1px solid rgba(255,255,255,0.1)',
-        }}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-white">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
             {mode === 'add' ? 'Add Organization' : 'Edit Organization'}
-          </h2>
-          <button
-            id="closeOrgModal"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
-          >
-            <X className="w-4 h-4 text-white" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* ── Org details ─────────────────────────────────────────── */}
           {orgFields.map((field) => (
-            <div key={field.name} className="space-y-1">
-              <label
-                className="text-xs font-semibold uppercase tracking-wider"
-                style={labelStyle}
+            <div key={field.name} className="space-y-1.5">
+              <Label
+                htmlFor={`orgForm-${field.name}`}
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 {field.label}
-              </label>
-              <input
+              </Label>
+              <Input
                 id={`orgForm-${field.name}`}
                 {...register(field.name as keyof AddOrgFormValues)}
                 placeholder={field.placeholder}
-                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all placeholder:opacity-30"
-                style={{
-                  ...inputStyle,
-                  borderColor: errOf(field.name)
-                    ? '#f87171'
-                    : 'rgba(255,255,255,0.12)',
-                }}
+                className={errOf(field.name) ? 'border-red-500' : ''}
               />
               {errOf(field.name) && (
-                <p className="text-xs text-red-400">
+                <p className="text-xs text-red-500">
                   {errOf(field.name)?.message}
                 </p>
               )}
@@ -190,16 +168,10 @@ export default function OrgFormModal({
 
           {/* ── Sync Sources ────────────────────────────────────────── */}
           <div className="space-y-2">
-            <label
-              className="text-xs font-semibold uppercase tracking-wider"
-              style={labelStyle}
-            >
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Sync Sources (Allowed Orgs)
-            </label>
-            <div
-              className="w-full px-4 py-3 rounded-xl text-sm"
-              style={inputStyle}
-            >
+            </Label>
+            <div className="w-full px-4 py-3 rounded-xl text-sm bg-muted/30 border border-border">
               <div className="max-h-32 overflow-y-auto space-y-2">
                 {allOrgs
                   .filter((o) => mode === 'add' || o._id !== org?._id)
@@ -210,11 +182,11 @@ export default function OrgFormModal({
                     return (
                       <label
                         key={sourceOrg._id}
-                        className="flex items-center gap-3 cursor-pointer p-1 rounded hover:bg-white/5 transition-colors"
+                        className="flex items-center gap-3 cursor-pointer p-1 rounded hover:bg-muted transition-colors"
                       >
                         <input
                           type="checkbox"
-                          className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+                          className="w-4 h-4 rounded accent-primary cursor-pointer"
                           checked={isSelected}
                           onChange={(e) => {
                             if (e.target.checked) {
@@ -232,21 +204,21 @@ export default function OrgFormModal({
                             }
                           }}
                         />
-                        <span className="text-white text-sm">
+                        <span className="text-sm text-foreground">
                           {sourceOrg.name} ({sourceOrg.slug})
                         </span>
                       </label>
                     );
                   })}
                 {allOrgs.length === (mode === 'add' ? 0 : 1) && (
-                  <p className="text-white/50 text-xs italic">
+                  <p className="text-muted-foreground text-xs italic">
                     No other organizations available to sync from.
                   </p>
                 )}
               </div>
             </div>
             {errOf('syncSources') && (
-              <p className="text-xs text-red-400">
+              <p className="text-xs text-red-500">
                 {errOf('syncSources')?.message}
               </p>
             )}
@@ -257,25 +229,13 @@ export default function OrgFormModal({
             <>
               <div className="pt-2">
                 <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="flex-1 h-px"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                  />
-                  <span
-                    className="text-xs font-semibold uppercase tracking-widest px-1"
-                    style={{ color: 'rgba(124,58,237,0.9)' }}
-                  >
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs font-semibold uppercase tracking-widest px-1 text-primary">
                     Admin Account
                   </span>
-                  <div
-                    className="flex-1 h-px"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                  />
+                  <div className="flex-1 h-px bg-border" />
                 </div>
-                <p
-                  className="text-xs mb-4"
-                  style={{ color: 'rgba(255,255,255,0.4)' }}
-                >
+                <p className="text-xs mb-4 text-muted-foreground">
                   This account will be seeded as the organization's
                   administrator with the Super Admin role (all permissions).
                 </p>
@@ -283,54 +243,44 @@ export default function OrgFormModal({
 
               {/* Admin Student ID + Password */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={labelStyle}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="adminStudentID"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     Student ID
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="adminStudentID"
                     {...register('adminStudentID')}
                     placeholder="10-digit ID"
                     maxLength={10}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-30"
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.adminStudentID
-                        ? '#f87171'
-                        : 'rgba(255,255,255,0.12)',
-                    }}
+                    className={errors.adminStudentID ? 'border-red-500' : ''}
                   />
                   {errors.adminStudentID && (
-                    <p className="text-xs text-red-400">
+                    <p className="text-xs text-red-500">
                       {errors.adminStudentID.message}
                     </p>
                   )}
                 </div>
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={labelStyle}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="adminPassword"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     Password
-                  </label>
+                  </Label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="adminPassword"
                       type={showAdminPassword ? 'text' : 'password'}
                       {...register('adminPassword')}
                       placeholder="Min 8 chars"
-                      className="w-full px-4 py-2.5 pr-20 rounded-xl text-sm outline-none placeholder:opacity-30"
-                      style={{
-                        ...inputStyle,
-                        borderColor: errors.adminPassword
-                          ? '#f87171'
-                          : 'rgba(255,255,255,0.12)',
-                      }}
+                      className={cn(
+                        'pr-16',
+                        errors.adminPassword && 'border-red-500',
+                      )}
                     />
-                    {/* Randomize button */}
                     <button
                       type="button"
                       id="randomizeAdminPassword"
@@ -343,60 +293,25 @@ export default function OrgFormModal({
                         setShowAdminPassword(true);
                       }}
                       title="Randomize password"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 transition-colors hover:opacity-80"
-                      style={{ color: 'rgba(124,58,237,0.8)' }}
+                      className="absolute right-8 top-1/2 -translate-y-1/2 text-primary hover:opacity-80 transition-opacity"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                     </button>
-                    {/* Show/hide toggle */}
                     <button
                       type="button"
                       id="toggleAdminPassword"
                       onClick={() => setShowAdminPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showAdminPassword ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                          />
-                        </svg>
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
+                        <Eye className="w-4 h-4" />
                       )}
                     </button>
                   </div>
                   {errors.adminPassword && (
-                    <p className="text-xs text-red-400">
+                    <p className="text-xs text-red-500">
                       {errors.adminPassword.message}
                     </p>
                   )}
@@ -405,52 +320,40 @@ export default function OrgFormModal({
 
               {/* Firstname + Lastname */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={labelStyle}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="adminFirstname"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     First Name
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="adminFirstname"
                     {...register('adminFirstname')}
                     placeholder="First name"
-                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-30"
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.adminFirstname
-                        ? '#f87171'
-                        : 'rgba(255,255,255,0.12)',
-                    }}
+                    className={errors.adminFirstname ? 'border-red-500' : ''}
                   />
                   {errors.adminFirstname && (
-                    <p className="text-xs text-red-400">
+                    <p className="text-xs text-red-500">
                       {errors.adminFirstname.message}
                     </p>
                   )}
                 </div>
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={labelStyle}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="adminLastname"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     Last Name
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="adminLastname"
                     {...register('adminLastname')}
                     placeholder="Last name"
-                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-30"
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.adminLastname
-                        ? '#f87171'
-                        : 'rgba(255,255,255,0.12)',
-                    }}
+                    className={errors.adminLastname ? 'border-red-500' : ''}
                   />
                   {errors.adminLastname && (
-                    <p className="text-xs text-red-400">
+                    <p className="text-xs text-red-500">
                       {errors.adminLastname.message}
                     </p>
                   )}
@@ -459,16 +362,12 @@ export default function OrgFormModal({
 
               {/* Send welcome email toggle */}
               <div
-                className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer select-none"
-                style={{
-                  background: sendEmail
-                    ? 'rgba(124,58,237,0.12)'
-                    : 'rgba(255,255,255,0.04)',
-                  border: sendEmail
-                    ? '1px solid rgba(124,58,237,0.4)'
-                    : '1px solid rgba(255,255,255,0.08)',
-                  transition: 'all 0.2s',
-                }}
+                className={cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer select-none border transition-all',
+                  sendEmail
+                    ? 'bg-primary/10 border-primary/30'
+                    : 'bg-muted/30 border-border',
+                )}
                 onClick={() => setSendEmail((v) => !v)}
               >
                 <input
@@ -477,48 +376,42 @@ export default function OrgFormModal({
                   checked={sendEmail}
                   onChange={() => setSendEmail((v) => !v)}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-4 h-4 rounded accent-violet-500 cursor-pointer"
+                  className="w-4 h-4 rounded accent-primary cursor-pointer"
                 />
                 <Mail
-                  className="w-4 h-4"
-                  style={{
-                    color: sendEmail ? '#a78bfa' : 'rgba(255,255,255,0.35)',
-                  }}
+                  className={cn(
+                    'w-4 h-4',
+                    sendEmail ? 'text-primary' : 'text-muted-foreground',
+                  )}
                 />
                 <span
-                  className="text-sm"
-                  style={{
-                    color: sendEmail ? '#c4b5fd' : 'rgba(255,255,255,0.5)',
-                  }}
+                  className={cn(
+                    'text-sm',
+                    sendEmail ? 'text-primary' : 'text-muted-foreground',
+                  )}
                 >
                   Send welcome email with credentials
                 </span>
               </div>
 
-              {/* Admin email (shown only when checkbox is ticked) */}
+              {/* Admin email */}
               {sendEmail && (
-                <div className="space-y-1">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={labelStyle}
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="adminEmail"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     Admin Email Address
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="adminEmail"
                     type="email"
                     {...register('adminEmail')}
                     placeholder="admin@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-30"
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.adminEmail
-                        ? '#f87171'
-                        : 'rgba(255,255,255,0.12)',
-                    }}
+                    className={errors.adminEmail ? 'border-red-500' : ''}
                   />
                   {errors.adminEmail && (
-                    <p className="text-xs text-red-400">
+                    <p className="text-xs text-red-500">
                       {errors.adminEmail.message}
                     </p>
                   )}
@@ -528,49 +421,36 @@ export default function OrgFormModal({
           )}
 
           {rootError && (
-            <div
-              className="rounded-xl px-4 py-3 text-sm text-red-300"
-              style={{
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid rgba(239,68,68,0.3)',
-              }}
-            >
+            <div className="rounded-xl px-4 py-3 text-sm text-destructive bg-destructive/10 border border-destructive/20">
               {rootError}
             </div>
           )}
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
               id="cancelOrgForm"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.7)',
-              }}
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               id="submitOrgForm"
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
-              style={{
-                background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-              }}
+              className="flex-1"
             >
               {isSubmitting
                 ? 'Saving…'
                 : mode === 'add'
                   ? 'Create & Seed'
                   : 'Save Changes'}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -59,7 +59,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
-// app.use(globalLimiter);
+app.use(globalLimiter);
 
 // Serve uploads folder locally
 if (NODE_ENV !== 'production' && !process.env.VERCEL) {

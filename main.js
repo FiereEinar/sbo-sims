@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { spawn } = require('child_process');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -159,6 +160,57 @@ function createWindow() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Auto-updater IPC — renderer triggers install after download completes
+// ---------------------------------------------------------------------------
+ipcMain.on('update:install', () => {
+  autoUpdater.quitAndInstall();
+});
+
+ipcMain.on('update:check', () => {
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdates();
+  }
+});
+
+function setupAutoUpdater() {
+  if (!app.isPackaged) return;
+
+  // Disable auto-download so we can track progress manually
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.on('update-available', (info) => {
+    logToFile(`[Updater] Update available: ${info.version}`);
+    mainWindow.webContents.send('update:available', { version: info.version });
+    // Start the download now that we've notified the UI
+    autoUpdater.downloadUpdate();
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    mainWindow.webContents.send('update:progress', {
+      percent: progressObj.percent,
+      bytesPerSecond: progressObj.bytesPerSecond,
+      transferred: progressObj.transferred,
+      total: progressObj.total,
+    });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    logToFile('[Updater] Update downloaded and ready to install.');
+    mainWindow.webContents.send('update:ready');
+  });
+
+  autoUpdater.on('error', (err) => {
+    logToFile(`[Updater] Error: ${err.message}`);
+    mainWindow.webContents.send('update:error', { message: err.message });
+  });
+
+  // Check for updates ~5s after startup to not delay initial load
+  setTimeout(() => {
+    autoUpdater.checkForUpdates();
+  }, 5000);
+}
+
 app.whenReady().then(async () => {
   try {
     // 1. Start MongoDB first and wait until ready
@@ -181,6 +233,9 @@ app.whenReady().then(async () => {
       logFn: logToFile,
     });
     logToFile('SyncEngine started.');
+
+    // 5. Set up auto-updater (only in packaged builds)
+    setupAutoUpdater();
   } catch (err) {
     logToFile(`Application startup failed: ${err.message}`);
   }

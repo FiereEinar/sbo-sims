@@ -1,6 +1,6 @@
 {
-  "name": "sims",
-  "version": "5.1.0",
+  "name": "sbo-sims",
+  "version": "5.3.0",
   "description": "A simple and intuitive web application designed to help you easily track student collections for specific events. Built with a modern tech stack for a seamless and responsive user experience, this app ensures efficient tracking and management.",
   "main": "main.js",
   "scripts": {
@@ -15,16 +15,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FiereEinar/transactions-tracker.git"
+    "url": "git+https://github.com/FiereEinar/sbo-sims.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/FiereEinar/transactions-tracker/issues"
+    "url": "https://github.com/FiereEinar/sbo-sims/issues"
   },
-  "homepage": "https://github.com/FiereEinar/transactions-tracker#readme",
+  "homepage": "https://github.com/FiereEinar/sbo-sims#readme",
   "devDependencies": {
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
@@ -61,9 +61,15 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "FiereEinar",
+      "repo": "sbo-sims"
     }
   },
   "dependencies": {
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "electron-updater": "^6.8.9"
   }
 }

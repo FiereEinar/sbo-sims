@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/user';
 import { Settings, CloudCog } from 'lucide-react';
 import { Fragment } from 'react';
 import SyncStatusBadge from './SyncStatusBadge';
+import AppUpdateBanner from './AppUpdateBanner';
 
 export default function LeftSidebar() {
   const { user } = useUserStore((state) => state);
@@ -49,6 +50,7 @@ export default function LeftSidebar() {
         </div>
 
         <div className="flex flex-col gap-5 pt-5 border-t border-border/50">
+          <AppUpdateBanner />
           <SyncStatusBadge />
           {canView({
             name: 'Data Sync',

@@ -35,9 +35,14 @@ adminAxiosInstance.interceptors.response.use(
 				if (window.location.hash) {
 					currentPath = window.location.hash.replace(/^#/, '');
 				}
-				navigate('/admin/login', {
-					state: { redirectUrl: currentPath },
-				});
+				if (navigate) {
+					navigate('/admin/login', {
+						state: { redirectUrl: currentPath },
+					});
+				} else {
+					// Fallback: navigate() not yet set (interceptor fired before App mounted)
+					window.location.href = '/#/admin/login';
+				}
 			}
 		}
 

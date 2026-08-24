@@ -37,11 +37,16 @@ axiosInstance.interceptors.response.use(
 				if (window.location.hash) {
 					currentPath = window.location.hash.replace(/^#/, '');
 				}
-				navigate('/login', {
-					state: {
-						redirectUrl: currentPath,
-					},
-				});
+				if (navigate) {
+					navigate('/login', {
+						state: {
+							redirectUrl: currentPath,
+						},
+					});
+				} else {
+					// Fallback: navigate() not yet set (interceptor fired before App mounted)
+					window.location.href = '/#/login';
+				}
 			}
 		}
 

@@ -10,8 +10,8 @@ import axios, { CreateAxiosDefaults } from 'axios';
 const UNAUTHORIZED = 401;
 
 const options: CreateAxiosDefaults = {
-	baseURL: import.meta.env.VITE_API_URL,
-	withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 };
 
 const adminAxiosInstance = axios.create(options);
@@ -20,43 +20,38 @@ const adminAxiosInstance = axios.create(options);
 const AdminTokenRefreshClient = axios.create(options);
 
 adminAxiosInstance.interceptors.response.use(
-	(response) => response,
-	async (error) => {
-		const { config, response } = error;
-		const { status, data } = response || {};
+  (response) => response,
+  async (error) => {
+    const { config, response } = error;
+    const { status, data } = response || {};
 
-		if (status === UNAUTHORIZED && data?.errorCode === 'InvalidAccessToken') {
-			try {
-				await AdminTokenRefreshClient.get('/auth/refresh');
-				return AdminTokenRefreshClient(config);
-			} catch {
-				queryClient.clear();
-				let currentPath = window.location.pathname;
-				if (window.location.hash) {
-					currentPath = window.location.hash.replace(/^#/, '');
-				}
-				if (navigate) {
-					navigate('/admin/login', {
-						state: { redirectUrl: currentPath },
-					});
-				} else {
-					// Fallback: navigate() not yet set (interceptor fired before App mounted)
-					window.location.href = '/#/admin/login';
-				}
-			}
-		}
+    if (status === UNAUTHORIZED && data?.errorCode === 'InvalidAccessToken') {
+      try {
+        await AdminTokenRefreshClient.get('/auth/refresh');
+        return AdminTokenRefreshClient(config);
+      } catch {
+        queryClient.clear();
+        let currentPath = window.location.pathname;
+        if (window.location.hash) {
+          currentPath = window.location.hash.replace(/^#/, '');
+        }
+        navigate('/admin/login', {
+          state: { redirectUrl: currentPath },
+        });
+      }
+    }
 
-		return Promise.reject({ status, ...data });
-	},
+    return Promise.reject({ status, ...data });
+  },
 );
 
 adminAxiosInstance.interceptors.request.use((config) => {
-	const token = localStorage.getItem('accessToken');
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
-	}
-	// Intentionally NOT setting x-organization-slug
-	return config;
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Intentionally NOT setting x-organization-slug
+  return config;
 });
 
 export default adminAxiosInstance;

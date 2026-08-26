@@ -8,8 +8,8 @@ const UNAUTHORIZED = 401;
 const TOO_MANY_REQUESTS = 429;
 
 const options: CreateAxiosDefaults = {
-	baseURL: import.meta.env.VITE_API_URL,
-	withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 };
 
 const axiosInstance = axios.create(options);
@@ -19,81 +19,81 @@ const axiosInstance = axios.create(options);
 const TokenRefreshClient = axios.create(options);
 
 axiosInstance.interceptors.response.use(
-	(response) => response,
-	async (error) => {
-		const { config, response } = error;
-		const { status, data } = response || {};
+  (response) => response,
+  async (error) => {
+    const { config, response } = error;
+    const { status, data } = response || {};
 
-		// try to refresh the access token behind the scenes
-		if (status === UNAUTHORIZED && data?.errorCode === 'InvalidAccessToken') {
-			try {
-				// refresh the access token, then retry the original request
-				await TokenRefreshClient.get('/auth/refresh');
-				return TokenRefreshClient(config);
-			} catch (error) {
-				// handle refresh errors by clearing the query cache & redirecting to login
-				queryClient.clear();
-				let currentPath = window.location.pathname;
-				if (window.location.hash) {
-					currentPath = window.location.hash.replace(/^#/, '');
-				}
-				if (navigate) {
-					navigate('/login', {
-						state: {
-							redirectUrl: currentPath,
-						},
-					});
-				} else {
-					// Fallback: navigate() not yet set (interceptor fired before App mounted)
-					window.location.href = '/#/login';
-				}
-			}
-		}
+    // try to refresh the access token behind the scenes
+    if (status === UNAUTHORIZED && data?.errorCode === 'InvalidAccessToken') {
+      try {
+        // refresh the access token, then retry the original request
+        await TokenRefreshClient.get('/auth/refresh');
+        return TokenRefreshClient(config);
+      } catch (error) {
+        // handle refresh errors by clearing the query cache & redirecting to login
+        queryClient.clear();
+        let currentPath = window.location.pathname;
+        if (window.location.hash) {
+          currentPath = window.location.hash.replace(/^#/, '');
+        }
+        navigate('/login', {
+          state: {
+            redirectUrl: currentPath,
+          },
+        });
+      }
+    }
 
-		// Show a user-friendly toast when the rate limit is hit
-		if (status === TOO_MANY_REQUESTS) {
-			toast({
-				variant: 'destructive',
-				title: 'Too many requests',
-				description:
-					"You're sending requests too quickly. Please wait a moment before trying again.",
-			});
-		}
+    // Show a user-friendly toast when the rate limit is hit
+    if (status === TOO_MANY_REQUESTS) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many requests',
+        description:
+          "You're sending requests too quickly. Please wait a moment before trying again.",
+      });
+    }
 
-		return Promise.reject({ status, ...data });
-	}
+    return Promise.reject({ status, ...data });
+  },
 );
 
 // attach the access token to the request headers
 axiosInstance.interceptors.request.use((config) => {
-	const token = localStorage.getItem('accessToken');
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
-	}
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-	const user = useUserStore.getState().user;
-	if (user) {
-		if (user.activeSemDB) {
-			config.headers['x-active-sem'] = user.activeSemDB;
-		}
-		if (user.activeSchoolYearDB) {
-			config.headers['x-active-school-year'] = user.activeSchoolYearDB;
-		}
-	}
+  const user = useUserStore.getState().user;
+  if (user) {
+    if (user.activeSemDB) {
+      config.headers['x-active-sem'] = user.activeSemDB;
+    }
+    if (user.activeSchoolYearDB) {
+      config.headers['x-active-school-year'] = user.activeSchoolYearDB;
+    }
+  }
 
-	// Since the app uses createHashRouter, the actual route is in window.location.hash
-	let currentPath = window.location.pathname;
-	if (window.location.hash) {
-		currentPath = window.location.hash.replace(/^#/, '').split('?')[0];
-	}
+  // Since the app uses createHashRouter, the actual route is in window.location.hash
+  let currentPath = window.location.pathname;
+  if (window.location.hash) {
+    currentPath = window.location.hash.replace(/^#/, '').split('?')[0];
+  }
 
-	const pathSegments = currentPath.split('/').filter(Boolean);
-	const firstSegment = pathSegments[0];
-	// Only inject org slug for tenant routes (not /admin, /login, /signup, /student, /officer-login)
-	if (firstSegment && !['login', 'signup', 'admin', 'student', 'officer-login'].includes(firstSegment)) {
-		config.headers['x-organization-slug'] = firstSegment;
-	}
-	return config;
+  const pathSegments = currentPath.split('/').filter(Boolean);
+  const firstSegment = pathSegments[0];
+  // Only inject org slug for tenant routes (not /admin, /login, /signup, /student, /officer-login)
+  if (
+    firstSegment &&
+    !['login', 'signup', 'admin', 'student', 'officer-login'].includes(
+      firstSegment,
+    )
+  ) {
+    config.headers['x-organization-slug'] = firstSegment;
+  }
+  return config;
 });
 
 export default axiosInstance;

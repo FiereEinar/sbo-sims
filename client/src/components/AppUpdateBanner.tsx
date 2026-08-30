@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import axiosInstance from '@/api/axiosInstance';
 
 const isElectron =
   typeof window !== 'undefined' && !!(window as any).electronAPI?.isElectron;
@@ -44,7 +45,7 @@ function formatSpeed(bps: number): string {
 
 export default function AppUpdateBanner() {
   const [phase, setPhase] = useState<UpdatePhase>('idle');
-  const [version, setVersion] = useState<string>('');
+  const [_version, setVersion] = useState<string>('');
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [dismissed, setDismissed] = useState(false);
@@ -61,7 +62,7 @@ export default function AppUpdateBanner() {
         setDismissed(false);
         // Downloading starts immediately after available (see main.js)
         setTimeout(() => setPhase('downloading'), 800);
-      }
+      },
     );
 
     const unsubProgress = api.onUpdateProgress((data: ProgressData) => {
@@ -98,7 +99,7 @@ export default function AppUpdateBanner() {
           'relative flex flex-col gap-2 rounded-lg px-3 py-2.5',
           'bg-green-500/10 border border-green-500/30',
           'text-green-600 dark:text-green-400',
-          'animate-in fade-in slide-in-from-bottom-2 duration-300'
+          'animate-in fade-in slide-in-from-bottom-2 duration-300',
         )}
       >
         <button
@@ -112,16 +113,26 @@ export default function AppUpdateBanner() {
         <div className="flex items-center gap-1.5">
           <Rocket className="h-3.5 w-3.5 flex-shrink-0" />
           <span className="text-xs font-semibold leading-tight">
-            v{version} ready!
+            Update ready
           </span>
         </div>
 
         <button
-          onClick={() => (window as any).electronAPI.installUpdate()}
+          onClick={async () => {
+            try {
+              await axiosInstance.get('/auth/logout');
+              localStorage.removeItem('accessToken');
+              (window as any).electronAPI?.clearSyncContext?.();
+            } catch (err) {
+              console.error('Failed to logout before update', err);
+            } finally {
+              (window as any).electronAPI.installUpdate();
+            }
+          }}
           className={cn(
             'w-full text-xs font-medium py-1 rounded-md',
             'bg-green-500 hover:bg-green-600 text-white',
-            'transition-colors duration-150'
+            'transition-colors duration-150',
           )}
         >
           Restart & Install
@@ -141,7 +152,7 @@ export default function AppUpdateBanner() {
                 'relative flex flex-col gap-2 rounded-lg px-3 py-2.5',
                 'bg-destructive/10 border border-destructive/30',
                 'text-destructive',
-                'animate-in fade-in slide-in-from-bottom-2 duration-300'
+                'animate-in fade-in slide-in-from-bottom-2 duration-300',
               )}
             >
               <button
@@ -161,13 +172,13 @@ export default function AppUpdateBanner() {
                 onClick={() => {
                   setPhase('idle');
                   setProgress(null);
-                  ;(window as any).electronAPI.checkForUpdates();
+                  (window as any).electronAPI.checkForUpdates();
                 }}
                 className={cn(
                   'w-full flex items-center justify-center gap-1.5',
                   'text-xs font-medium py-1 rounded-md',
                   'bg-destructive/20 hover:bg-destructive/30',
-                  'transition-colors duration-150'
+                  'transition-colors duration-150',
                 )}
               >
                 <RefreshCw className="h-3 w-3" />
@@ -175,7 +186,10 @@ export default function AppUpdateBanner() {
               </button>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="right" className="max-w-[220px] text-xs break-words">
+          <TooltipContent
+            side="right"
+            className="max-w-[220px] text-xs break-words"
+          >
             {errorMsg || 'An unknown error occurred during the update.'}
           </TooltipContent>
         </Tooltip>
@@ -193,7 +207,7 @@ export default function AppUpdateBanner() {
         'flex flex-col gap-1.5 rounded-lg px-3 py-2.5',
         'bg-primary/5 border border-primary/20',
         'text-primary',
-        'animate-in fade-in slide-in-from-bottom-2 duration-300'
+        'animate-in fade-in slide-in-from-bottom-2 duration-300',
       )}
     >
       {/* Header row */}
@@ -201,11 +215,11 @@ export default function AppUpdateBanner() {
         <Download
           className={cn(
             'h-3.5 w-3.5 flex-shrink-0',
-            !isDownloading && 'animate-bounce'
+            !isDownloading && 'animate-bounce',
           )}
         />
         <span className="text-xs font-semibold truncate">
-          {isDownloading ? `Downloading v${version}` : `Update v${version} available`}
+          {isDownloading ? 'Downloading update' : 'Update available'}
         </span>
       </div>
 

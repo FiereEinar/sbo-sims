@@ -314,6 +314,75 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
     .map((s) => s.organization)
     .filter(Boolean);
 
+  // --- Calculate termSummaries for all terms ---
+  const allStudentRecords = await StudentModel.find({ studentID }).lean();
+  const allStudentObjIds = allStudentRecords.map((s) => s._id);
+
+  const allTxAgg = await TransactionModel.aggregate([
+    { $match: { owner: { $in: allStudentObjIds } } },
+    {
+      $group: {
+        _id: { semester: '$semester', schoolYear: '$schoolYear' },
+        totalPaid: { $sum: '$amount' },
+        totalTransactions: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const studentIdToTerm = new Map<string, string>();
+  allStudentRecords.forEach((s) => {
+    studentIdToTerm.set(String(s._id), `${s.schoolYear}-${s.semester}`);
+  });
+
+  const allAtt = await AttendanceRecordModel.find({ student: { $in: allStudentObjIds } }).lean();
+  const attCounts = new Map<string, number>();
+  allAtt.forEach((att) => {
+    const key = studentIdToTerm.get(String(att.student));
+    if (key) {
+      attCounts.set(key, (attCounts.get(key) || 0) + 1);
+    }
+  });
+
+  const termMap = new Map<string, any>();
+
+  allStudentRecords.forEach((s) => {
+    const key = `${s.schoolYear}-${s.semester}`;
+    if (!termMap.has(key)) {
+      termMap.set(key, {
+        semester: s.semester,
+        schoolYear: s.schoolYear,
+        totalPaid: 0,
+        totalTransactions: 0,
+        totalAttended: attCounts.get(key) || 0,
+      });
+    }
+  });
+
+  allTxAgg.forEach((tx) => {
+    const key = `${tx._id.schoolYear}-${tx._id.semester}`;
+    if (!termMap.has(key)) {
+      termMap.set(key, {
+        semester: tx._id.semester,
+        schoolYear: tx._id.schoolYear,
+        totalPaid: 0,
+        totalTransactions: 0,
+        totalAttended: attCounts.get(key) || 0,
+      });
+    }
+    const t = termMap.get(key);
+    t.totalPaid = tx.totalPaid;
+    t.totalTransactions = tx.totalTransactions;
+  });
+
+  const termSummaries = Array.from(termMap.values());
+  termSummaries.sort((a, b) => {
+    if (a.schoolYear !== b.schoolYear) {
+      return parseInt(b.schoolYear) - parseInt(a.schoolYear);
+    }
+    return parseInt(b.semester) - parseInt(a.semester);
+  });
+  // ---------------------------------------------
+
   res.status(OK).json(
     new CustomResponse(
       true,
@@ -325,6 +394,7 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
         enrolledOrgs,
         recentTransactions,
         recentAttendance,
+        termSummaries,
       },
       'Student dashboard data',
     ),

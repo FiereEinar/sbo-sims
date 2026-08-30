@@ -25,6 +25,7 @@ import {
   Clock,
   Building,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import Header from '@/components/ui/header';
 
@@ -68,6 +69,13 @@ export default function MyAttendance() {
             All your event attendance records across every enrolled
             organization.
           </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
         </div>
 
         {/* Term Selectors */}

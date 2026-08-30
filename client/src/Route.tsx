@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Student from './pages/Student';
 import ImportStudents from './pages/ImportStudents';
 import Transaction from './pages/Transaction';
+import ImportTransactions from './pages/ImportTransactions';
 import Category from './pages/Category';
 import StudentInfo from './pages/StudentInfo';
 import NotFound from './pages/NotFound';
@@ -170,6 +171,17 @@ export default function Route() {
               fallback={<NoPermission />}
             >
               <Transaction />
+            </HasPermission>
+          ),
+        },
+        {
+          path: 'transaction/import',
+          element: (
+            <HasPermission
+              permissions={[MODULES.TRANSACTION_IMPORT]}
+              fallback={<NoPermission />}
+            >
+              <ImportTransactions />
             </HasPermission>
           ),
         },

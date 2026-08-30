@@ -118,7 +118,7 @@ export default function AddPrelistingForm({
     <Dialog>
       <DialogTrigger asChild>
         {mode === 'add' ? (
-          <Button className="flex gap-2 rounded-full" size="sm">
+          <Button className="flex gap-2 rounded-full">
             <PlusIcon className="size-4" />
             <p>Add Prelisting</p>
           </Button>

@@ -15,6 +15,7 @@ import {
   XCircle,
   Clock,
   MessageSquareWarning,
+  AlertCircle,
 } from 'lucide-react';
 import { numberWithCommas } from '@/lib/utils';
 import Header from '@/components/ui/header';
@@ -42,6 +43,13 @@ export default function StudentPaymentRequests() {
             Submit proofs of payment for admin approval and track their
             statuses.
           </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
         </div>
 
         {/* Header Actions */}

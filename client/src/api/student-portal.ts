@@ -41,6 +41,13 @@ export type StudentDashboardData = {
     session: { name: string };
     organization: { name: string; slug: string };
   }[];
+  termSummaries: {
+    semester: string;
+    schoolYear: string;
+    totalPaid: number;
+    totalTransactions: number;
+    totalAttended: number;
+  }[];
 };
 
 export const studentLogin = async (

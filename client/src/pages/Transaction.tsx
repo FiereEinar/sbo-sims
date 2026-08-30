@@ -10,18 +10,20 @@ import { queryClient } from '@/main';
 import { useTransactionFilterStore } from '@/store/transactionsFilter';
 import { TransactionsFilterValues } from '@/types/transaction';
 import { useQuery } from '@tanstack/react-query';
-import ImportTransactionsButton from '@/components/buttons/ImportTransactionsButton';
 import HasPermission from '@/components/HasPermission';
 import { useViewModeStore } from '@/store/viewModeStore';
 import TransactionsCardView from '@/components/transaction/TransactionsCardView';
 import TransactionsTable from '@/components/transaction/TransactionsTable';
 import TransactionsFilter from '@/components/transaction/TransactionsFilter';
 import { useUserStore } from '@/store/user';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Import } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export default function Transaction() {
   const user = useUserStore((state) => state.user);
   const { viewMode } = useViewModeStore();
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const { page, pageSize, getFilterValues, setPage } =
     useTransactionFilterStore((state) => state);
 
@@ -75,7 +77,16 @@ export default function Transaction() {
 
         <div className="flex gap-2 items-center">
           <HasPermission permissions={[MODULES.TRANSACTION_IMPORT]}>
-            <ImportTransactionsButton categories={categories} />
+            <Button
+              asChild
+              className="rounded-full flex items-center gap-2"
+              variant="ghost"
+            >
+              <Link to={`/${orgSlug}/transaction/import`}>
+                <Import className="size-4" />
+                Import
+              </Link>
+            </Button>
           </HasPermission>
           <HasPermission permissions={[MODULES.TRANSACTION_CREATE]}>
             <AddTransactionForm categories={categories} />

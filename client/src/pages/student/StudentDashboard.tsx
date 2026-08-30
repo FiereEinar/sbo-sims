@@ -11,6 +11,8 @@ import {
   Wallet,
   Clock,
   MapPin,
+  History,
+  AlertCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import _ from 'lodash';
@@ -62,6 +64,13 @@ export default function StudentDashboard() {
           <p className="text-sm text-muted-foreground mt-1">
             Here's a summary of your records across all organizations.
           </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Showing data for{' '}
+            <strong>
+              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+            </strong>
+          </div>
         </div>
         <div className="flex items-end gap-2 flex-wrap">
           <div className="w-[130px]">
@@ -202,6 +211,57 @@ export default function StudentDashboard() {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Term Summaries */}
+      <div className="rounded-2xl border bg-card/40 p-5">
+        <h2 className="font-semibold mb-4 flex items-center gap-2">
+          <History className="w-4 h-4 text-primary" />
+          Term Summaries
+        </h2>
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : data?.termSummaries?.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {data.termSummaries.map((term) => (
+              <div
+                key={`${term.schoolYear}-${term.semester}`}
+                className="rounded-xl border bg-background p-4 shadow-sm"
+              >
+                <h3 className="font-medium text-sm mb-3 text-muted-foreground">
+                  {term.semester === '1' ? '1st' : '2nd'} Sem - SY{' '}
+                  {term.schoolYear}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Transactions:</span>
+                    <span className="font-medium">
+                      {numberWithCommas(term.totalTransactions)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Attendance:</span>
+                    <span className="font-medium">
+                      {numberWithCommas(term.totalAttended)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t mt-2">
+                    <span className="text-muted-foreground font-medium">
+                      Total Paid:
+                    </span>
+                    <span className="font-semibold text-primary">
+                      ₱{numberWithCommas(term.totalPaid)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic py-4">
+            No past terms found.
+          </p>
+        )}
       </div>
     </div>
   );

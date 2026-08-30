@@ -1,28 +1,15 @@
-import axiosInstance from '@/api/axiosInstance';
-import { Button } from '../ui/button';
-import { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { APIResponse } from '@/types/api-response';
-import { queryClient } from '@/main';
-import { QUERY_KEYS } from '@/constants';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Import, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
-import { Category } from '@/types/category';
-import { Label } from '../ui/label';
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -30,9 +17,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
-import { Badge } from '../ui/badge';
-import { Import } from 'lucide-react';
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import axiosInstance from '@/api/axiosInstance';
+import { APIResponse } from '@/types/api-response';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
+import SidebarPageLayout from '@/components/SidebarPageLayout';
+import BackButton from '@/components/buttons/BackButton';
+import { fetchCategories } from '@/api/category';
 
 type ImportResult = {
   success: number;
@@ -66,18 +60,17 @@ type PreviewResult = {
   };
 };
 
-type ImportTransactionsButtonProps = {
-  categories: Category[] | undefined;
-};
-
 type Step = 'select' | 'preview' | 'result';
 
-export default function ImportTransactionsButton({
-  categories,
-}: ImportTransactionsButtonProps) {
+export default function ImportTransactions() {
   const { toast } = useToast();
+
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
+    queryKey: [QUERY_KEYS.CATEGORY],
+    queryFn: fetchCategories,
+  });
+
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [step, setStep] = useState<Step>('select');
   const [previewData, setPreviewData] = useState<PreviewResult | null>(null);
@@ -112,17 +105,13 @@ export default function ImportTransactionsButton({
 
       setPreviewData(data.data);
       setStep('preview');
-    } catch (err: unknown) {
-      const error = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
+    } catch (err: any) {
       console.error('Failed to preview file', err);
       toast({
         variant: 'destructive',
         title: 'Failed to preview file',
         description:
-          error.response?.data?.message || error.message || 'An error occurred',
+          err.response?.data?.message || err.message || 'An error occurred',
       });
     } finally {
       setIsLoading(false);
@@ -163,38 +152,30 @@ export default function ImportTransactionsButton({
           description: `${data.data.success} imported, ${data.data.skipped} skipped, ${data.data.failed} failed.`,
         });
       }
-    } catch (err: unknown) {
-      const error = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
+    } catch (err: any) {
       console.error('Failed to import file', err);
       toast({
         variant: 'destructive',
         title: 'Failed to import file',
         description:
-          error.response?.data?.message || error.message || 'An error occurred',
+          err.response?.data?.message || err.message || 'An error occurred',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      // Reset state when closing
-      setStep('select');
-      setPreviewData(null);
-      setImportResult(null);
-      setSelectedCategory('');
-      setSelectedFile(null);
-    }
-  };
-
   const handleBack = () => {
     setStep('select');
     setPreviewData(null);
+    setSelectedFile(null);
+  };
+
+  const handleReset = () => {
+    setStep('select');
+    setPreviewData(null);
+    setImportResult(null);
+    setSelectedCategory('');
     setSelectedFile(null);
   };
 
@@ -209,39 +190,27 @@ export default function ImportTransactionsButton({
   }, [previewData]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          className="flex items-center gap-2 rounded-full"
-          variant="ghost"
-        >
-          <Import className="size-4" />
-          Import
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>
-            {step === 'select' && 'Import Transactions'}
-            {step === 'preview' && 'Preview Import'}
-            {step === 'result' && 'Import Complete'}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 'select' &&
-              'Import transactions from an Excel or CSV file'}
-            {step === 'preview' && 'Review the data before importing'}
-            {step === 'result' && 'Import has been completed'}
-          </DialogDescription>
-        </DialogHeader>
+    <SidebarPageLayout>
+      <BackButton />
 
-        {/* Step 1: Select Category and File */}
+      <div className="flex items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold">Import Transactions</h1>
+          <p className="text-muted-foreground text-sm">
+            Import transactions from an Excel or CSV file.
+          </p>
+        </div>
+      </div>
+
+      <div className="border rounded-xl p-6">
         {step === 'select' && (
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className="space-y-6">
+            <div className="space-y-2 max-w-md">
               <Label>Select Category</Label>
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
+                disabled={isCategoriesLoading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
@@ -263,35 +232,45 @@ export default function ImportTransactionsButton({
                 <Button
                   disabled={isLoading || !selectedCategory}
                   variant="outline"
-                  className="w-full p-0"
+                  className="w-full max-w-md p-0 h-16 border-dashed"
+                  asChild
                 >
                   <label
-                    className="size-full px-4 py-2 cursor-pointer flex items-center justify-center"
-                    htmlFor="excel-input"
+                    className="size-full flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                    htmlFor="transaction-file-input"
                   >
-                    {isLoading
-                      ? 'Loading preview...'
-                      : 'Choose File (.xlsx, .csv)'}
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Loading preview...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Import className="w-4 h-4" />
+                        Choose File (.xlsx, .csv)
+                      </span>
+                    )}
                   </label>
                 </Button>
                 <input
                   onChange={handleFileSelect}
                   hidden
                   type="file"
-                  id="excel-input"
+                  id="transaction-file-input"
                   accept=".xlsx,.xls,.csv"
                   disabled={isLoading || !selectedCategory}
                 />
               </div>
             </div>
 
-            <div className="text-sm text-muted-foreground space-y-1 border rounded-md p-3 bg-muted/50">
-              <p className="font-medium">Auto-detected columns:</p>
-              <ul className="list-disc list-inside text-xs space-y-1">
+            <div className="text-sm text-muted-foreground space-y-2 border rounded-md p-4 bg-muted/30">
+              <p className="font-semibold text-foreground">
+                Auto-detected columns:
+              </p>
+              <ul className="list-disc list-inside space-y-1 ml-1">
                 <li>Student ID from: email, studentID, id columns</li>
                 <li>
-                  Extracts ID from emails (e.g.,
-                  2501114807@student.buksu.edu.ph)
+                  Extracts ID from emails (e.g., 2501114807@student.buksu.edu.ph)
                 </li>
                 <li>
                   Amount from: amount, fee, payment columns (or uses category
@@ -303,97 +282,99 @@ export default function ImportTransactionsButton({
           </div>
         )}
 
-        {/* Step 2: Preview */}
         {step === 'preview' && previewData && (
-          <div className="flex-1 overflow-hidden flex flex-col">
-            {/* Detected columns info */}
-            <div className="mb-3 p-2 bg-muted/50 rounded-md text-xs">
-              <span className="font-medium">Detected columns: </span>
+          <div className="flex flex-col space-y-6">
+            <div className="p-3 bg-muted/30 rounded-md text-xs flex flex-wrap gap-3 border">
+              <span className="font-semibold text-foreground">
+                Detected:
+              </span>
               {previewData.detectedColumns.studentID && (
-                <span className="mr-2">
-                  ID: "{previewData.detectedColumns.studentID}"
-                </span>
+                <span>ID: "{previewData.detectedColumns.studentID}"</span>
               )}
               {previewData.detectedColumns.name && (
-                <span className="mr-2">
-                  Name: "{previewData.detectedColumns.name}"
-                </span>
+                <span>Name: "{previewData.detectedColumns.name}"</span>
               )}
-              {previewData.detectedColumns.amount && (
+              {previewData.detectedColumns.amount ? (
                 <span>Amount: "{previewData.detectedColumns.amount}"</span>
-              )}
-              {!previewData.detectedColumns.amount && (
+              ) : (
                 <span className="text-muted-foreground">
                   (Using category fee: ₱{previewData.categoryFee})
                 </span>
               )}
             </div>
 
-            <div className="flex gap-4 mb-4">
-              <div className="flex-1 p-3 border rounded-md bg-muted/50">
-                <p className="text-sm text-muted-foreground">Category</p>
-                <p className="font-medium">{previewData.categoryName}</p>
-                <p className="text-sm">Fee: ₱{previewData.categoryFee}</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="p-4 border rounded-xl bg-muted/50 col-span-2 md:col-span-1">
+                <p className="text-sm text-muted-foreground font-medium">Category</p>
+                <p className="font-bold truncate">{previewData.categoryName}</p>
+                <p className="text-sm text-muted-foreground">₱{previewData.categoryFee}</p>
               </div>
-              <div className="flex-1 p-3 border rounded-md bg-green-50 dark:bg-green-950">
-                <p className="text-sm text-muted-foreground">Valid</p>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="p-4 border rounded-xl bg-green-500/10 border-green-500/20">
+                <p className="text-sm text-green-600 font-medium">Valid</p>
+                <p className="text-3xl font-bold text-green-700 dark:text-green-500">
                   {previewData.valid.length}
                 </p>
               </div>
-              <div className="flex-1 p-3 border rounded-md bg-yellow-50 dark:bg-yellow-950">
-                <p className="text-sm text-muted-foreground">Duplicates</p>
-                <p className="text-2xl font-bold text-yellow-600">
+              <div className="p-4 border rounded-xl bg-yellow-500/10 border-yellow-500/20">
+                <p className="text-sm text-yellow-600 font-medium">Duplicates</p>
+                <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-500">
                   {previewData.duplicates.length}
                 </p>
               </div>
-              <div className="flex-1 p-3 border rounded-md bg-red-50 dark:bg-red-950">
-                <p className="text-sm text-muted-foreground">Invalid</p>
-                <p className="text-2xl font-bold text-red-600">
+              <div className="p-4 border rounded-xl bg-red-500/10 border-red-500/20">
+                <p className="text-sm text-red-600 font-medium">Invalid</p>
+                <p className="text-3xl font-bold text-red-700 dark:text-red-500">
                   {previewData.invalid.length}
+                </p>
+              </div>
+              <div className="p-4 border rounded-xl bg-blue-500/10 border-blue-500/20">
+                <p className="text-sm text-blue-600 font-medium">Total Rows</p>
+                <p className="text-3xl font-bold text-blue-700 dark:text-blue-500">
+                  {previewData.totalRows}
                 </p>
               </div>
             </div>
 
-            {/* valid, duplicate, or invalid selector */}
-            <Select
-              defaultValue="all"
-              onValueChange={(value) => {
-                if (value === 'all') {
-                  setToPreview([
-                    ...previewData.valid,
-                    ...previewData.duplicates,
-                    ...previewData.invalid,
-                  ]);
-                } else {
-                  setToPreview(
-                    value === 'valid'
-                      ? previewData.valid
-                      : value === 'duplicates'
+            <div className="max-w-xs">
+              <Select
+                defaultValue="all"
+                onValueChange={(value) => {
+                  if (value === 'all') {
+                    setToPreview([
+                      ...previewData.valid,
+                      ...previewData.duplicates,
+                      ...previewData.invalid,
+                    ]);
+                  } else {
+                    setToPreview(
+                      value === 'valid'
+                        ? previewData.valid
+                        : value === 'duplicates'
                         ? previewData.duplicates
                         : value === 'invalid'
-                          ? previewData.invalid
-                          : null,
-                  );
-                }
-              }}
-            >
-              <SelectTrigger className="w-full mb-1">
-                <SelectValue placeholder="Select items" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="valid">Valid</SelectItem>
-                <SelectItem value="duplicates">Duplicates</SelectItem>
-                <SelectItem value="invalid">Invalid</SelectItem>
-              </SelectContent>
-            </Select>
+                        ? previewData.invalid
+                        : null,
+                    );
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter items" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Items</SelectItem>
+                  <SelectItem value="valid">Valid Only</SelectItem>
+                  <SelectItem value="duplicates">Duplicates Only</SelectItem>
+                  <SelectItem value="invalid">Invalid Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <div className="flex-1 overflow-auto border rounded-md max-h-64">
+            <div className="border rounded-md max-h-[400px] overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">Row</TableHead>
+                    <TableHead className="w-16">Row</TableHead>
                     <TableHead>Student ID</TableHead>
                     <TableHead>Name (DB)</TableHead>
                     <TableHead>Name (File)</TableHead>
@@ -407,8 +388,8 @@ export default function ImportTransactionsButton({
                       .sort((a, b) => a.rowNum - b.rowNum)
                       .map((item) => (
                         <TableRow key={item.rowNum}>
-                          <TableCell>{item.rowNum}</TableCell>
-                          <TableCell className="font-mono text-xs">
+                          <TableCell className="text-muted-foreground">{item.rowNum}</TableCell>
+                          <TableCell className="font-mono text-xs font-medium">
                             {item.studentID || '-'}
                           </TableCell>
                           <TableCell className="text-sm">
@@ -422,9 +403,7 @@ export default function ImportTransactionsButton({
                           </TableCell>
                           <TableCell>
                             {item.status === 'valid' ? (
-                              <Badge variant="default" className="bg-green-600">
-                                Valid
-                              </Badge>
+                              <Badge className="bg-green-600">Valid</Badge>
                             ) : item.status === 'duplicate' ? (
                               <Badge variant="secondary" title={item.error}>
                                 {item.error}
@@ -441,55 +420,70 @@ export default function ImportTransactionsButton({
               </Table>
             </div>
 
-            <DialogFooter className="mt-4">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={isLoading}
-              >
-                Back
+            <div className="flex items-center justify-end gap-3 pt-4 border-t">
+              <Button variant="ghost" onClick={handleBack} disabled={isLoading}>
+                Back to Selection
               </Button>
               <Button
                 onClick={handleConfirmImport}
                 disabled={isLoading || previewData.valid.length === 0}
+                className="min-w-[200px]"
               >
                 {isLoading
                   ? 'Importing...'
                   : `Import ${previewData.valid.length} Transactions`}
               </Button>
-            </DialogFooter>
+            </div>
           </div>
         )}
 
-        {/* Step 3: Result */}
         {step === 'result' && importResult && (
-          <div className="space-y-4 py-4">
-            <div className="flex gap-4">
-              <div className="flex-1 p-4 border rounded-md bg-green-50 dark:bg-green-950 text-center">
-                <p className="text-3xl font-bold text-green-600">
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 text-green-500 mb-4">
+                <Import className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-bold">Import Completed</h2>
+              <p className="text-muted-foreground">
+                Your transactions have been processed.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-6 border rounded-xl bg-green-500/10 border-green-500/20 text-center">
+                <p className="text-4xl font-bold text-green-600 mb-1">
                   {importResult.success}
                 </p>
-                <p className="text-sm text-muted-foreground">Imported</p>
+                <p className="text-sm font-medium text-green-700/80 dark:text-green-500/80 uppercase tracking-wider">
+                  Imported
+                </p>
               </div>
-              <div className="flex-1 p-4 border rounded-md bg-yellow-50 dark:bg-yellow-950 text-center">
-                <p className="text-3xl font-bold text-yellow-600">
+              <div className="p-6 border rounded-xl bg-yellow-500/10 border-yellow-500/20 text-center">
+                <p className="text-4xl font-bold text-yellow-600 mb-1">
                   {importResult.skipped}
                 </p>
-                <p className="text-sm text-muted-foreground">Skipped</p>
+                <p className="text-sm font-medium text-yellow-700/80 dark:text-yellow-500/80 uppercase tracking-wider">
+                  Skipped
+                </p>
               </div>
-              <div className="flex-1 p-4 border rounded-md bg-red-50 dark:bg-red-950 text-center">
-                <p className="text-3xl font-bold text-red-600">
+              <div className="p-6 border rounded-xl bg-red-500/10 border-red-500/20 text-center">
+                <p className="text-4xl font-bold text-red-600 mb-1">
                   {importResult.failed}
                 </p>
-                <p className="text-sm text-muted-foreground">Failed</p>
+                <p className="text-sm font-medium text-red-700/80 dark:text-red-500/80 uppercase tracking-wider">
+                  Failed
+                </p>
               </div>
             </div>
 
             {importResult.errors.length > 0 && (
-              <div className="border rounded-md p-3">
-                <p className="font-medium text-red-600 mb-2">Errors:</p>
-                <div className="max-h-40 overflow-auto">
-                  <ul className="text-sm text-red-500 space-y-1">
+              <div className="border border-red-500/20 rounded-xl p-4 bg-red-500/5">
+                <p className="font-semibold text-red-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  Error Details ({importResult.errors.length})
+                </p>
+                <div className="max-h-48 overflow-auto rounded border bg-background/50 p-3">
+                  <ul className="text-sm text-red-600/90 space-y-1.5 font-mono">
                     {importResult.errors.map((error, index) => (
                       <li key={index}>• {error}</li>
                     ))}
@@ -498,12 +492,14 @@ export default function ImportTransactionsButton({
               </div>
             )}
 
-            <DialogFooter>
-              <Button onClick={() => handleOpenChange(false)}>Done</Button>
-            </DialogFooter>
+            <div className="flex justify-center pt-6">
+              <Button onClick={handleReset} size="lg" className="px-8">
+                Import Another File
+              </Button>
+            </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </SidebarPageLayout>
   );
 }

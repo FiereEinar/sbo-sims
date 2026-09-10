@@ -35,6 +35,30 @@ export default function AttendanceScanner({ session }: AttendanceScannerProps) {
     }
   }, [session.status]);
 
+  // Global keydown: redirect any printable key to the scanner input
+  // so barcodes are captured even if the input isn't focused
+  useEffect(() => {
+    if (session.status !== 'active') return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ignore if already focused on an interactive element (other inputs, selects, etc.)
+      const tag = (e.target as HTMLElement).tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+
+      // Ignore modifier-only keys, function keys, and special keys
+      if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+
+      // Focus the scanner input — the keypress will land naturally in it
+      if (inputRef.current && document.activeElement !== inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [session.status]);
+
+
   // Clear the scan result message after 4 seconds
   useEffect(() => {
     if (lastScanResult) {

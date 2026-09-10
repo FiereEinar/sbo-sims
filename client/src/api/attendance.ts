@@ -3,9 +3,10 @@ import { AttendanceRecord } from '@/types/attendance';
 import { APIPaginatedResponse } from '@/types/api-response';
 
 export type AttendanceFilterValues = {
-  course?: string;
+  courses?: string[];
   year?: string;
   gender?: string;
+  section?: string;
   search?: string;
   sortBy?: 'time_desc' | 'time_asc' | 'name_asc' | 'name_desc';
 };
@@ -20,12 +21,14 @@ export const fetchSessionAttendance = async (
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('pageSize', String(pageSize));
-    if (filters.course && filters.course !== 'All')
-      params.set('course', filters.course);
+    if (filters.courses && filters.courses.length > 0)
+      params.set('course', filters.courses.join(','));
     if (filters.year && filters.year !== 'All')
       params.set('year', filters.year);
     if (filters.gender && filters.gender !== 'All')
       params.set('gender', filters.gender);
+    if (filters.section && filters.section !== 'All')
+      params.set('section', filters.section);
     if (filters.search) params.set('search', filters.search);
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
 
@@ -44,11 +47,13 @@ export const getAttendanceDownloadURL = (
   filters: AttendanceFilterValues = {},
 ) => {
   const params = new URLSearchParams();
-  if (filters.course && filters.course !== 'All')
-    params.set('course', filters.course);
+  if (filters.courses && filters.courses.length > 0)
+    params.set('course', filters.courses.join(','));
   if (filters.year && filters.year !== 'All') params.set('year', filters.year);
   if (filters.gender && filters.gender !== 'All')
     params.set('gender', filters.gender);
+  if (filters.section && filters.section !== 'All')
+    params.set('section', filters.section);
   if (filters.search) params.set('search', filters.search);
   if (filters.sortBy) params.set('sortBy', filters.sortBy);
 

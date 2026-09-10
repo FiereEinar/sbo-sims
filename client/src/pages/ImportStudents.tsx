@@ -82,6 +82,9 @@ export default function ImportStudents() {
   // Sync State
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
 
+  // Filter State
+  const [filterStatus, setFilterStatus] = useState<'all' | 'valid' | 'exists' | 'error'>('all');
+
   // ─── FILE IMPORT LOGIC ───────────────────────────────────────────────────
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +169,7 @@ export default function ImportStudents() {
     setStep('select');
     setPreviewData(null);
     setSelectedFile(null);
+    setFilterStatus('all');
   };
 
   const handleReset = () => {
@@ -173,6 +177,7 @@ export default function ImportStudents() {
     setPreviewData(null);
     setImportResult(null);
     setSelectedFile(null);
+    setFilterStatus('all');
   };
 
   const getStatusBadge = (status: string, error?: string) => {
@@ -339,7 +344,10 @@ export default function ImportStudents() {
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 border rounded-xl bg-green-500/10 border-green-500/20">
+                  <div 
+                    onClick={() => setFilterStatus('valid')}
+                    className={`p-4 border rounded-xl cursor-pointer transition-colors ${filterStatus === 'valid' ? 'bg-green-500/20 border-green-500' : 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10'}`}
+                  >
                     <p className="text-sm text-green-600 font-medium">
                       New Students
                     </p>
@@ -347,7 +355,10 @@ export default function ImportStudents() {
                       {previewData.valid.length}
                     </p>
                   </div>
-                  <div className="p-4 border rounded-xl bg-yellow-500/10 border-yellow-500/20">
+                  <div 
+                    onClick={() => setFilterStatus('exists')}
+                    className={`p-4 border rounded-xl cursor-pointer transition-colors ${filterStatus === 'exists' ? 'bg-yellow-500/20 border-yellow-500' : 'bg-yellow-500/5 border-yellow-500/20 hover:bg-yellow-500/10'}`}
+                  >
                     <p className="text-sm text-yellow-600 font-medium">
                       Already Exist
                     </p>
@@ -355,13 +366,19 @@ export default function ImportStudents() {
                       {previewData.existing.length}
                     </p>
                   </div>
-                  <div className="p-4 border rounded-xl bg-red-500/10 border-red-500/20">
+                  <div 
+                    onClick={() => setFilterStatus('error')}
+                    className={`p-4 border rounded-xl cursor-pointer transition-colors ${filterStatus === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-red-500/5 border-red-500/20 hover:bg-red-500/10'}`}
+                  >
                     <p className="text-sm text-red-600 font-medium">Invalid</p>
                     <p className="text-3xl font-bold text-red-700 dark:text-red-500">
                       {previewData.invalid.length}
                     </p>
                   </div>
-                  <div className="p-4 border rounded-xl bg-blue-500/10 border-blue-500/20">
+                  <div 
+                    onClick={() => setFilterStatus('all')}
+                    className={`p-4 border rounded-xl cursor-pointer transition-colors ${filterStatus === 'all' ? 'bg-blue-500/20 border-blue-500' : 'bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10'}`}
+                  >
                     <p className="text-sm text-blue-600 font-medium">
                       Total Rows
                     </p>
@@ -381,6 +398,7 @@ export default function ImportStudents() {
                         <TableHead>Name</TableHead>
                         <TableHead>Course</TableHead>
                         <TableHead>Year</TableHead>
+                        <TableHead>Section</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -390,6 +408,7 @@ export default function ImportStudents() {
                         ...previewData.existing,
                         ...previewData.invalid,
                       ]
+                        .filter(item => filterStatus === 'all' || item.status === filterStatus)
                         .sort((a, b) => a.rowNum - b.rowNum)
                         .map((item) => (
                           <TableRow key={item.rowNum}>
@@ -403,7 +422,8 @@ export default function ImportStudents() {
                               {item.firstname} {item.middlename} {item.lastname}
                             </TableCell>
                             <TableCell>{item.course || '-'}</TableCell>
-                            <TableCell>{item.year}</TableCell>
+                            <TableCell>{item.year || '-'}</TableCell>
+                            <TableCell>{item.section || '-'}</TableCell>
                             <TableCell>
                               {getStatusBadge(item.status, item.error)}
                             </TableCell>

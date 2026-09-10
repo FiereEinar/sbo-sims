@@ -24,6 +24,7 @@ interface AttendanceAggregationOptions {
   course?: string;
   year?: string;
   gender?: string;
+  section?: string;
   search?: string;
   sortBy?: 'time_asc' | 'time_desc' | 'name_asc' | 'name_desc';
   skip?: number;
@@ -44,6 +45,7 @@ async function buildAttendanceAggregation(
     course,
     year,
     gender,
+    section,
     search,
     sortBy = 'time_desc',
     skip,
@@ -74,12 +76,16 @@ async function buildAttendanceAggregation(
 
   // 4. Build student-field filters
   const studentFilters: Record<string, any>[] = [];
-  if (course && course !== 'All')
-    studentFilters.push({ 'student.course': course });
+  if (course && course !== 'All') {
+    const coursesArray = course.split(',');
+    studentFilters.push({ 'student.course': { $in: coursesArray } });
+  }
   if (year && year !== 'All')
     studentFilters.push({ 'student.year': parseInt(year) });
   if (gender && gender !== 'All')
     studentFilters.push({ 'student.gender': gender });
+  if (section && section !== 'All')
+    studentFilters.push({ 'student.section': section });
   if (search) {
     const re = new RegExp(escapeRegex(search), 'i');
     studentFilters.push({
@@ -214,7 +220,7 @@ export const record_attendance = asyncHandler(async (req, res) => {
  */
 export const get_session_attendance = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
-  const { page, pageSize, search, course, year, gender, sortBy } = req.query;
+  const { page, pageSize, search, course, year, gender, sortBy, section } = req.query;
 
   appAssert(sessionId, BAD_REQUEST, 'Session ID parameter is required');
 
@@ -232,6 +238,7 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
+      section: toStr(section),
       sortBy: (toStr(sortBy) as any) || 'time_desc',
       skip: skipAmount,
       limit: pageSizeNum,
@@ -243,6 +250,7 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
+      section: toStr(section),
       countOnly: true,
     }),
   ]);
@@ -268,7 +276,7 @@ export const get_session_attendance = asyncHandler(async (req, res) => {
 export const download_session_attendance_pdf = asyncHandler(
   async (req, res) => {
     const { sessionId } = req.params;
-    const { search, course, year, gender, sortBy } = req.query;
+    const { search, course, year, gender, sortBy, section } = req.query;
 
     const session = await EventSessionModel.findOne({
       _id: sessionId,
@@ -284,6 +292,7 @@ export const download_session_attendance_pdf = asyncHandler(
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
+      section: toStr(section),
       sortBy: (toStr(sortBy) as any) || 'time_desc',
     });
 
@@ -310,6 +319,7 @@ export const download_session_attendance_pdf = asyncHandler(
             <th>Name</th>
             <th>Course</th>
             <th>Year</th>
+            <th>Section</th>
             <th>Gender</th>
             <th>Time Recorded</th>
           </tr>
@@ -323,6 +333,7 @@ export const download_session_attendance_pdf = asyncHandler(
               <td>${r.student ? `${r.student.firstname} ${r.student.lastname}` : 'Unmapped'}</td>
               <td>${r.student ? r.student.course : '-'}</td>
               <td>${r.student ? r.student.year : '-'}</td>
+              <td>${r.student ? (r.student.section || '-') : '-'}</td>
               <td>${r.student ? r.student.gender : '-'}</td>
               <td>${new Date(r.recordedAt).toLocaleString()}</td>
             </tr>
@@ -353,7 +364,7 @@ export const download_session_attendance_pdf = asyncHandler(
 export const download_session_attendance_csv = asyncHandler(
   async (req, res) => {
     const { sessionId } = req.params;
-    const { search, course, year, gender, sortBy } = req.query;
+    const { search, course, year, gender, sortBy, section } = req.query;
 
     const session = await EventSessionModel.findOne({
       _id: sessionId,
@@ -369,6 +380,7 @@ export const download_session_attendance_csv = asyncHandler(
       course: toStr(course),
       year: toStr(year),
       gender: toStr(gender),
+      section: toStr(section),
       sortBy: (toStr(sortBy) as any) || 'time_desc',
     });
 
@@ -380,11 +392,12 @@ export const download_session_attendance_csv = asyncHandler(
       const sID = r.student ? r.student.studentID : r.studentIdInput;
       const course = r.student ? r.student.course : '-';
       const year = r.student ? r.student.year : '-';
+      const section = r.student ? (r.student.section || '-') : '-';
       const gender = r.student ? r.student.gender : '-';
-      return `${sID},${name},${course},${year},${gender},${time}`;
+      return `${sID},${name},${course},${year},${section},${gender},${time}`;
     });
 
-    csvLines.unshift('Student ID,Name,Course,Year,Gender,Time Recorded');
+    csvLines.unshift('Student ID,Name,Course,Year,Section,Gender,Time Recorded');
 
     res.set({
       'Content-Type': 'text/csv',

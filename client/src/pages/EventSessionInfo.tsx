@@ -19,7 +19,7 @@ import AttendanceStatsPanel from '@/components/event/AttendanceStatsPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, FileText, FileSpreadsheet, Search } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import PaginationController from '@/components/PaginationController';
 import HasPermission from '@/components/HasPermission';
@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import axiosInstance from '@/api/axiosInstance';
-import { fetchAvailableCourses } from '@/api/student';
+import { fetchAvailableCourses, fetchAvailableSections } from '@/api/student';
 
 export default function EventSessionInfo() {
   const { eventID, sessionID } = useParams();
@@ -44,6 +44,20 @@ export default function EventSessionInfo() {
   });
   const [searchInput, setSearchInput] = useState('');
   const [_isDownloading, setIsDownloading] = useState(false);
+  const [coursePopoverOpen, setCoursePopoverOpen] = useState(false);
+
+  const hasActiveFilters =
+    (filters.courses && filters.courses.length > 0) ||
+    (filters.year && filters.year !== 'All') ||
+    (filters.gender && filters.gender !== 'All') ||
+    (filters.section && filters.section !== 'All') ||
+    !!filters.search;
+
+  const handleClearFilters = () => {
+    setFiltersState({ sortBy: 'time_desc' });
+    setSearchInput('');
+    setPage(1);
+  };
 
   // Debounce search input
   useEffect(() => {
@@ -77,6 +91,12 @@ export default function EventSessionInfo() {
     queryFn: fetchAvailableCourses,
   });
 
+  // Fetch available sections for the Section filter dropdown
+  const { data: sections = [] } = useQuery({
+    queryKey: ['available-sections'],
+    queryFn: fetchAvailableSections,
+  });
+
   const { data: attendanceResult, isLoading: isAttendanceLoading } = useQuery({
     queryKey: [
       QUERY_KEYS.EVENT,
@@ -93,6 +113,7 @@ export default function EventSessionInfo() {
   const { data: statsResult, isLoading: isStatsLoading } = useQuery({
     queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance-stats'],
     queryFn: () => fetchSessionAttendanceStats(sessionID as string),
+    refetchInterval: session?.status === 'active' ? 3000 : false,
   });
 
   const prefetchPageFn = (prefetchPage: number) => {
@@ -162,14 +183,10 @@ export default function EventSessionInfo() {
 
   return (
     <SidebarPageLayout>
-      <div className="flex items-center justify-between">
-        <BackButton />
-      </div>
-
       <StickyHeader>
         <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Viewing Session</p>
+            <BackButton />
             <h2 className="text-2xl font-bold">
               {session.event.title} - {session.name}
             </h2>
@@ -219,64 +236,77 @@ export default function EventSessionInfo() {
             />
           </div>
 
-          <HasPermission
-            permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]}
-            fallback={
+          <div className="flex items-center gap-2">
+            {hasActiveFilters && (
               <Button
-                variant="outline"
-                disabled
-                title="You do not have permission to download attendance"
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-muted-foreground hover:text-foreground gap-1.5"
               >
-                <Download className="mr-2 h-4 w-4" /> Download
+                <X className="h-3.5 w-3.5" />
+                Clear Filters
               </Button>
-            }
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="rounded-full">
+            )}
+            <HasPermission
+              permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]}
+              fallback={
+                <Button
+                  variant="outline"
+                  disabled
+                  title="You do not have permission to download attendance"
+                >
                   <Download className="mr-2 h-4 w-4" /> Download
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => handleDownload('pdf')}
-                  className="cursor-pointer"
-                >
-                  <FileText className="mr-2 h-4 w-4" /> As PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownload('csv')}
-                  className="cursor-pointer"
-                >
-                  <FileSpreadsheet className="mr-2 h-4 w-4" /> As CSV / Excel
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </HasPermission>
+              }
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="rounded-full">
+                    <Download className="mr-2 h-4 w-4" /> Download
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => handleDownload('pdf')}
+                    className="cursor-pointer"
+                  >
+                    <FileText className="mr-2 h-4 w-4" /> As PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownload('csv')}
+                    className="cursor-pointer"
+                  >
+                    <FileSpreadsheet className="mr-2 h-4 w-4" /> As CSV / Excel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </HasPermission>
+          </div>
         </div>
 
-        {isAttendanceLoading ? (
-          <p className="text-muted-foreground">Loading records...</p>
-        ) : (
-          <div className="space-y-4">
-            <AttendanceRecordTable
-              records={attendanceResult?.data || []}
-              filters={filters}
-              setFilters={setFilters}
-              courses={courses}
-            />
+        <div className="space-y-4">
+          <AttendanceRecordTable
+            records={attendanceResult?.data || []}
+            isLoading={isAttendanceLoading}
+            filters={filters}
+            setFilters={setFilters}
+            courses={courses}
+            sections={sections}
+            coursePopoverOpen={coursePopoverOpen}
+            setCoursePopoverOpen={setCoursePopoverOpen}
+          />
 
-            {attendanceResult && (
-              <PaginationController
-                currentPage={page}
-                nextPage={attendanceResult.next}
-                prevPage={attendanceResult.prev}
-                setPage={setPage}
-                prefetchFn={prefetchPageFn}
-              />
-            )}
-          </div>
-        )}
+          {attendanceResult && (
+            <PaginationController
+              currentPage={page}
+              nextPage={attendanceResult.next}
+              prevPage={attendanceResult.prev}
+              setPage={setPage}
+              prefetchFn={prefetchPageFn}
+            />
+          )}
+        </div>
       </div>
     </SidebarPageLayout>
   );

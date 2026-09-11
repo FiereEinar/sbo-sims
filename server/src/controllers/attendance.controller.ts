@@ -61,12 +61,25 @@ async function buildAttendanceAggregation(
         organization: new mongoose.Types.ObjectId(organizationId),
       },
     },
-    // 2. Join the student document
+    // 2. Join the student document by studentIdInput
     {
       $lookup: {
         from: 'students',
-        localField: 'student',
-        foreignField: '_id',
+        let: { scannedId: '$studentIdInput', orgId: '$organization' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$studentID', '$$scannedId'] },
+                  { $eq: ['$organization', '$$orgId'] },
+                ],
+              },
+            },
+          },
+          { $sort: { updatedAt: -1 } },
+          { $limit: 1 },
+        ],
         as: 'student',
       },
     },
@@ -183,7 +196,7 @@ export const record_attendance = asyncHandler(async (req, res) => {
     session: session._id,
     student: student ? student._id : undefined,
     studentIdInput,
-    recordedBy: (req as any).userId ?? undefined,
+    recordedBy: req.currentUser?.id!,
     recordedAt: new Date(),
   });
 
@@ -220,7 +233,8 @@ export const record_attendance = asyncHandler(async (req, res) => {
  */
 export const get_session_attendance = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
-  const { page, pageSize, search, course, year, gender, sortBy, section } = req.query;
+  const { page, pageSize, search, course, year, gender, sortBy, section } =
+    req.query;
 
   appAssert(sessionId, BAD_REQUEST, 'Session ID parameter is required');
 
@@ -333,7 +347,7 @@ export const download_session_attendance_pdf = asyncHandler(
               <td>${r.student ? `${r.student.firstname} ${r.student.lastname}` : 'Unmapped'}</td>
               <td>${r.student ? r.student.course : '-'}</td>
               <td>${r.student ? r.student.year : '-'}</td>
-              <td>${r.student ? (r.student.section || '-') : '-'}</td>
+              <td>${r.student ? r.student.section || '-' : '-'}</td>
               <td>${r.student ? r.student.gender : '-'}</td>
               <td>${new Date(r.recordedAt).toLocaleString()}</td>
             </tr>
@@ -392,12 +406,14 @@ export const download_session_attendance_csv = asyncHandler(
       const sID = r.student ? r.student.studentID : r.studentIdInput;
       const course = r.student ? r.student.course : '-';
       const year = r.student ? r.student.year : '-';
-      const section = r.student ? (r.student.section || '-') : '-';
+      const section = r.student ? r.student.section || '-' : '-';
       const gender = r.student ? r.student.gender : '-';
       return `${sID},${name},${course},${year},${section},${gender},${time}`;
     });
 
-    csvLines.unshift('Student ID,Name,Course,Year,Section,Gender,Time Recorded');
+    csvLines.unshift(
+      'Student ID,Name,Course,Year,Section,Gender,Time Recorded',
+    );
 
     res.set({
       'Content-Type': 'text/csv',
@@ -434,8 +450,21 @@ export const get_session_attendance_stats = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: 'students',
-        localField: 'student',
-        foreignField: '_id',
+        let: { scannedId: '$studentIdInput', orgId: '$organization' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$studentID', '$$scannedId'] },
+                  { $eq: ['$organization', '$$orgId'] },
+                ],
+              },
+            },
+          },
+          { $sort: { updatedAt: -1 } },
+          { $limit: 1 },
+        ],
         as: 'student',
       },
     },

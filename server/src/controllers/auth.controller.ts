@@ -178,6 +178,7 @@ export const login = asyncHandler(async (req, res) => {
   }).exec();
   appAssert(organization, NOT_FOUND, 'Organization not found');
 
+  console.log({ studentID: studentID, org_id: organization._id });
   let user = await UserModel.findOne<IUser>({
     studentID: studentID,
     organization: organization._id,
@@ -198,7 +199,7 @@ export const login = asyncHandler(async (req, res) => {
       if (fetchRes.ok) {
         const responseData = await fetchRes.json();
         const data = responseData.data;
-
+        console.log({ data });
         if (data && data.user) {
           // Dynamically import Role model to avoid circular deps if any
           const RoleModel = (await import('../models/role.model')).default;
@@ -241,7 +242,8 @@ export const login = asyncHandler(async (req, res) => {
     }
   }
 
-  appAssert(user, UNAUTHORIZED, `Incorrect Student ID`);
+  console.log({ user });
+  appAssert(user, UNAUTHORIZED, `Incorrect Student ID `);
 
   // check if password is correct
   const match = await bcrypt.compare(password, user.password);

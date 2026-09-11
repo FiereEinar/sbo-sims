@@ -178,6 +178,7 @@ export const updateUserPasswordValidation = [
       minLowercase: 1,
       minUppercase: 1,
       minNumbers: 1,
+      minSymbols: 0,
     })
     .withMessage(
       'New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',
@@ -213,6 +214,7 @@ export const resetPasswordValidation = [
       minLowercase: 1,
       minUppercase: 1,
       minNumbers: 1,
+      minSymbols: 0,
     })
     .withMessage(
       'New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number',

@@ -1038,44 +1038,62 @@ export const sync_apply_force_push = asyncHandler(
         }
       }
 
+      // Reserve range of sequence numbers for all docs in this batch
+      const batchSize = docs.length;
+      const counter = await Counter.findOneAndUpdate(
+        { _id: 'changeLogSeq' },
+        { $inc: { value: batchSize } },
+        { upsert: true, new: true },
+      );
+
+      let currentSeq = counter!.value - batchSize + 1;
+
+      const atlasBulkOps: any[] = [];
+      const changeLogBulkOps: any[] = [];
+
       for (const doc of docs) {
         const entityId = new mongoose.Types.ObjectId(doc._id);
         const cleanDoc = castDocumentTypes(doc);
         delete cleanDoc._id;
 
-        await AtlasModel.updateOne(
-          { _id: entityId },
-          { $set: { ...cleanDoc, updatedAt: serverTimestamp } },
-          { upsert: true, timestamps: false },
-        );
-
-        const counter = await Counter.findOneAndUpdate(
-          { _id: 'changeLogSeq' },
-          { $inc: { value: 1 } },
-          { upsert: true, new: true },
-        );
-
-        await ChangeLog.updateOne(
-          { entityId, operation: 'create', clientId },
-          {
-            $setOnInsert: {
-              seq: counter!.value,
-              clientId,
-              entityType: modelName,
-              entityId,
-              operation: 'create' as const,
-              patch: cleanDoc,
-              organizationId: new mongoose.Types.ObjectId(doc.organization),
-              clientTimestamp: cleanDoc.createdAt
-                ? new Date(cleanDoc.createdAt)
-                : serverTimestamp,
-              serverTimestamp,
-            },
+        atlasBulkOps.push({
+          updateOne: {
+            filter: { _id: entityId },
+            update: { $set: { ...cleanDoc, updatedAt: serverTimestamp } },
+            upsert: true,
+            timestamps: false,
           },
-          { upsert: true },
-        );
+        });
 
-        totalUpserted++;
+        changeLogBulkOps.push({
+          updateOne: {
+            filter: { entityId, operation: 'create', clientId },
+            update: {
+              $setOnInsert: {
+                seq: currentSeq++,
+                clientId,
+                entityType: modelName,
+                entityId,
+                operation: 'create' as const,
+                patch: cleanDoc,
+                organizationId: doc.organization
+                  ? new mongoose.Types.ObjectId(doc.organization)
+                  : undefined,
+                clientTimestamp: cleanDoc.createdAt
+                  ? new Date(cleanDoc.createdAt)
+                  : serverTimestamp,
+                serverTimestamp,
+              },
+            },
+            upsert: true,
+          },
+        });
+      }
+
+      if (atlasBulkOps.length > 0) {
+        await AtlasModel.bulkWrite(atlasBulkOps, { ordered: false });
+        await ChangeLog.bulkWrite(changeLogBulkOps, { ordered: false });
+        totalUpserted += atlasBulkOps.length;
       }
     }
 

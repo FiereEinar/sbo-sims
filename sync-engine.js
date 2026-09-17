@@ -690,35 +690,51 @@ function setupIpc() {
       );
     }
 
-    logToFile(
-      '[SyncEngine] Local data exported successfully: ' +
-        JSON.stringify(exportRes.body),
-    );
-
     const data = exportRes.body?.data?.data;
     if (!data) throw new Error('No data received from local export');
 
-    // 2. Push to Atlas
-    const pushRes = await netRequest(
-      `${atlasHealthUrl}/sync/apply-force-push`,
-      {
-        method: 'POST',
-        body: { data },
-        headers: {
-          'x-sync-secret':
-            process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key',
-        },
-      },
+    const totalDocsCount = Object.values(data).reduce(
+      (acc, list) => acc + (Array.isArray(list) ? list.length : 0),
+      0,
     );
+    logToFile(`[SyncEngine] Local data exported successfully: ${totalDocsCount} total documents`);
 
-    if (pushRes.status !== 200) {
-      throw new Error(
-        'Failed to push to Atlas: ' + JSON.stringify(pushRes.body),
-      );
+    // 2. Push to Atlas in batches of 200
+    let totalUpserted = 0;
+    const secretKey =
+      process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key';
+    const CHUNK_SIZE = 200;
+
+    for (const [collection, docs] of Object.entries(data)) {
+      if (!Array.isArray(docs) || docs.length === 0) continue;
+
+      for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
+        const chunk = docs.slice(i, i + CHUNK_SIZE);
+        logToFile(
+          `[SyncEngine] Pushing ${collection} batch (${i + 1}..${i + chunk.length} of ${docs.length})...`,
+        );
+
+        const pushRes = await netRequest(
+          `${atlasHealthUrl}/sync/apply-force-push`,
+          {
+            method: 'POST',
+            body: { data: { [collection]: chunk } },
+            headers: { 'x-sync-secret': secretKey },
+          },
+        );
+
+        if (pushRes.status !== 200) {
+          throw new Error(
+            `Failed to push ${collection} batch: ${JSON.stringify(pushRes.body)}`,
+          );
+        }
+
+        totalUpserted += pushRes.body?.data?.totalUpserted || 0;
+      }
     }
 
-    logToFile('[SyncEngine] Force Push completed successfully');
-    return { totalUpserted: pushRes.body?.data?.totalUpserted || 0 };
+    logToFile(`[SyncEngine] Force Push completed successfully — ${totalUpserted} ops`);
+    return { totalUpserted };
   });
 
   ipcMain.handle('sync:force-pull', async (_event, payload) => {
@@ -748,32 +764,47 @@ function setupIpc() {
     const data = exportRes.body?.data?.data;
     if (!data) throw new Error('No data received from Atlas export');
 
-    // 2. Apply to local db (looping through collections)
+    const totalDocsCount = Object.values(data).reduce(
+      (acc, list) => acc + (Array.isArray(list) ? list.length : 0),
+      0,
+    );
+    logToFile(`[SyncEngine] Atlas data exported successfully: ${totalDocsCount} total documents`);
+
+    // 2. Apply to local db in batches of 200
     let totalApplied = 0;
     const secretKey =
       process.env.SECRET_ADMIN_KEY || 'sbo-sims-secret-admin-key';
+    const CHUNK_SIZE = 200;
+
     for (const [collection, docs] of Object.entries(data)) {
       if (!Array.isArray(docs) || docs.length === 0) continue;
 
-      const applyRes = await netRequest(
-        `${localApiUrl}/sync/apply-bootstrap-batch`,
-        {
-          method: 'POST',
-          body: { collection, docs },
-          headers: { 'x-sync-secret': secretKey },
-        },
-      );
-
-      if (applyRes.status !== 200) {
+      for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
+        const chunk = docs.slice(i, i + CHUNK_SIZE);
         logToFile(
-          `[SyncEngine] Local apply rejected for ${collection}: ${JSON.stringify(applyRes.body)}`,
+          `[SyncEngine] Applying ${collection} batch (${i + 1}..${i + chunk.length} of ${docs.length})...`,
         );
-        throw new Error(`Failed to apply data to ${collection}`);
+
+        const applyRes = await netRequest(
+          `${localApiUrl}/sync/apply-bootstrap-batch`,
+          {
+            method: 'POST',
+            body: { collection, docs: chunk },
+            headers: { 'x-sync-secret': secretKey },
+          },
+        );
+
+        if (applyRes.status !== 200) {
+          logToFile(
+            `[SyncEngine] Local apply rejected for ${collection} batch: ${JSON.stringify(applyRes.body)}`,
+          );
+          throw new Error(`Failed to apply data batch to ${collection}`);
+        }
+        totalApplied += chunk.length;
       }
-      totalApplied += docs.length;
     }
 
-    logToFile('[SyncEngine] Force Pull completed successfully');
+    logToFile(`[SyncEngine] Force Pull completed successfully — ${totalApplied} docs applied`);
     return { success: true, totalApplied };
   });
 }

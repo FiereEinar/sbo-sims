@@ -126,28 +126,52 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
   let skipped = 0;
   const serverTimestamp = new Date();
 
-  for (const op of ops) {
-    // Idempotency: skip if this op _id already landed in Atlas
-    const exists = await ChangeLog.exists({ _id: op._id });
-    if (exists) {
-      skipped++;
-      continue;
-    }
+  // 1. Bulk check idempotency: find ops that already exist in AtlasChangeLog in 1 query
+  const opIds = ops.map((o) => o._id);
+  const existingLogs = await ChangeLog.find(
+    { _id: { $in: opIds } },
+    { _id: 1 },
+  ).lean();
+  const existingIdsSet = new Set(
+    existingLogs.map((l: any) => (l._id ? l._id.toString() : '')),
+  );
 
+  const pendingOps = ops.filter((op) => {
+    if (existingIdsSet.has(op._id.toString())) {
+      skipped++;
+      return false;
+    }
     const modelName = op.entityType as SyncableEntityType;
     if (!ENTITY_COLLECTION_MAP[modelName]) {
       skipped++;
-      continue;
+      return false;
     }
+    return true;
+  });
 
-    // Get the Mongoose Model so it handles data type casting (String -> ObjectId/Date) automatically
+  if (pendingOps.length === 0) {
+    res.json(new CustomResponse(true, { accepted: 0, skipped }, 'Push complete'));
+    return;
+  }
+
+  // 2. Reserve range of sequence numbers for all new ops in this batch
+  const counter = await Counter.findOneAndUpdate(
+    { _id: 'changeLogSeq' },
+    { $inc: { value: pendingOps.length } },
+    { upsert: true, new: true },
+  );
+
+  let currentSeq = counter!.value - pendingOps.length + 1;
+  const changeLogsToInsert: any[] = [];
+
+  for (const op of pendingOps) {
+    const modelName = op.entityType as SyncableEntityType;
     let AtlasModel: mongoose.Model<any>;
     if (atlasConn.models[modelName]) {
       AtlasModel = atlasConn.models[modelName];
     } else {
       const localModel = mongoose.models[modelName];
       if (!localModel) {
-        console.error(`[SyncEngine] Local model ${modelName} not found!`);
         skipped++;
         continue;
       }
@@ -160,17 +184,12 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       const insertPatch = sanitizePatch({ ...op.patch });
       delete insertPatch._id;
 
-      console.log(`[DEBUG]: Insert patch: ${JSON.stringify(insertPatch)}`);
-      console.log(`[DEBUG]: Entity ID: ${entityObjectId}`);
-
-      // For creates: upsert the full patch as the document (idempotent on _id)
       await AtlasModel.updateOne(
         { _id: entityObjectId },
         { $setOnInsert: insertPatch },
         { upsert: true, timestamps: false },
       );
     } else if (op.operation === 'update') {
-      // LWW: only apply the patch if clientTimestamp is newer than the existing doc
       const existing = await AtlasModel.findOne(
         { _id: entityObjectId },
         { updatedAt: 1 },
@@ -183,11 +202,9 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       const incomingTs = new Date(op.clientTimestamp);
 
       if (incomingTs > existingUpdatedAt) {
-        // Apply only changed fields, preserve everything else
         const sanitized = sanitizePatch(op.patch);
         const updatePatch: Record<string, any> = {};
         for (const [key, value] of Object.entries(sanitized)) {
-          // Never allow overwriting _id, organization scoping fields
           if (key === '_id') continue;
           updatePatch[key] = value;
         }
@@ -199,7 +216,6 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
         );
       }
     } else if (op.operation === 'delete') {
-      // Soft-delete support: set archived: true if field exists, else hard delete
       const existing = await AtlasModel.findOne(
         { _id: entityObjectId },
         { archived: 1 },
@@ -218,16 +234,9 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
       }
     }
 
-    // Assign next global sequence number atomically
-    const counter = await Counter.findOneAndUpdate(
-      { _id: 'changeLogSeq' },
-      { $inc: { value: 1 } },
-      { upsert: true, new: true },
-    );
-
-    await ChangeLog.create({
+    changeLogsToInsert.push({
       _id: op._id,
-      seq: counter!.value,
+      seq: currentSeq++,
       clientId: op.clientId,
       entityType: op.entityType,
       entityId: entityObjectId,
@@ -239,6 +248,15 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
     });
 
     accepted++;
+  }
+
+  if (changeLogsToInsert.length > 0) {
+    await ChangeLog.insertMany(changeLogsToInsert, { ordered: false }).catch(
+      (err) => {
+        // Ignore duplicate key errors if already present
+        if (err.code !== 11000) throw err;
+      },
+    );
   }
 
   res.json(new CustomResponse(true, { accepted, skipped }, 'Push complete'));
@@ -493,6 +511,108 @@ export const sync_apply_change = asyncHandler(
     }
 
     res.json(new CustomResponse(true, null, 'Change applied'));
+  },
+);
+
+/**
+ * POST /sync/apply-changes-batch
+ * LOCAL-ONLY — applies a batch of pulled AtlasChangeLog entries to local MongoDB
+ * and advances the checkpoint in a single operation.
+ */
+export const sync_apply_changes_batch = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { changes } = req.body as { changes: IAtlasChangeLog[] };
+    appAssert(
+      Array.isArray(changes) && changes.length > 0,
+      BAD_REQUEST,
+      'changes must be a non-empty array',
+    );
+
+    let appliedCount = 0;
+    let maxSeq = 0;
+
+    for (const change of changes) {
+      if (!change.entityType || !change.entityId) continue;
+      const modelName = change.entityType as SyncableEntityType;
+      const LocalModel = mongoose.models[modelName];
+      if (!LocalModel) continue;
+
+      const entityId = new mongoose.Types.ObjectId(change.entityId);
+
+      if (change.operation === 'create') {
+        const cleanPatch = sanitizePatch(change.patch);
+        delete cleanPatch._id;
+        const castPatch = castDocumentTypes(cleanPatch);
+        await LocalModel.updateOne(
+          { _id: entityId },
+          { $setOnInsert: { _id: entityId, ...castPatch } },
+          { upsert: true, timestamps: false },
+        );
+      } else if (change.operation === 'update') {
+        const existing = await LocalModel.findOne(
+          { _id: entityId },
+          { updatedAt: 1 },
+          { lean: true },
+        );
+        const existingUpdatedAt = (existing as any)?.updatedAt
+          ? new Date((existing as any).updatedAt)
+          : new Date(0);
+        const incomingTs = new Date(change.clientTimestamp);
+
+        if (incomingTs > existingUpdatedAt) {
+          const sanitized = sanitizePatch(change.patch);
+          const updatePatch: Record<string, any> = {};
+          for (const [key, value] of Object.entries(sanitized)) {
+            if (key === '_id') continue;
+            updatePatch[key] = value;
+          }
+          updatePatch.updatedAt = new Date();
+          const castPatch = castDocumentTypes(updatePatch);
+          await LocalModel.updateOne(
+            { _id: entityId },
+            { $set: castPatch },
+            { timestamps: false },
+          );
+        }
+      } else if (change.operation === 'delete') {
+        const existing = await LocalModel.findOne(
+          { _id: entityId },
+          { archived: 1 },
+          { lean: true },
+        );
+        if (existing !== null) {
+          if ('archived' in existing) {
+            await LocalModel.updateOne(
+              { _id: entityId },
+              { $set: { archived: true } },
+              { timestamps: false },
+            );
+          } else {
+            await LocalModel.deleteOne({ _id: entityId });
+          }
+        }
+      }
+
+      if (change.seq > maxSeq) {
+        maxSeq = change.seq;
+      }
+      appliedCount++;
+    }
+
+    if (maxSeq > 0) {
+      await SyncCheckpointModel.findByIdAndUpdate(
+        'main',
+        {
+          $set: { lastPulledSeq: maxSeq },
+          $setOnInsert: { clientId: getClientId() },
+        },
+        { upsert: true, new: true },
+      );
+    }
+
+    res.json(
+      new CustomResponse(true, { appliedCount, maxSeq }, 'Batch applied'),
+    );
   },
 );
 

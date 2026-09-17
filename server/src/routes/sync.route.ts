@@ -7,6 +7,7 @@ import {
   sync_get_checkpoint,
   sync_update_checkpoint,
   sync_apply_change,
+  sync_apply_changes_batch,
   sync_current_seq,
   sync_bootstrap,
   sync_user_bootstrap,
@@ -58,6 +59,9 @@ router.patch('/checkpoint', auth, sync_update_checkpoint);
 
 /** POST /sync/apply-change — apply one pulled Atlas change to local DB */
 router.post('/apply-change', auth, sync_apply_change);
+
+/** POST /sync/apply-changes-batch — apply batch of pulled Atlas changes to local DB */
+router.post('/apply-changes-batch', auth, sync_apply_changes_batch);
 
 /** POST /sync/export-force-sync-data — extract local/Atlas data for force sync (auth required) */
 router.post('/export-force-sync-data', auth, sync_export_force_sync_data);

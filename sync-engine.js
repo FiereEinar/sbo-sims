@@ -303,29 +303,30 @@ async function runPull(authCookie, organizationId) {
     const { changes, hasMore: more } = pullRes.body?.data ?? {};
     if (!changes || changes.length === 0) break;
 
-    // Apply each change to the local database via local Express
-    for (const change of changes) {
-      await netRequest(`${localApiUrl}/sync/apply-change`, {
-        method: 'POST',
-        body: { change },
-        headers: { Authorization: `Bearer ${authCookie}` },
-      }).catch((err) => {
-        logToFile(
-          `[SyncEngine] Apply change failed for seq ${change.seq}: ${err.message}`,
-        );
-      });
-
-      // Advance checkpoint after EACH successful apply — ensures resumability
-      await netRequest(`${localApiUrl}/sync/checkpoint`, {
-        method: 'PATCH',
-        body: { lastPulledSeq: change.seq },
-        headers: {
-          Authorization: `Bearer ${authCookie}`,
+    // Apply batch of changes to local database via single HTTP request
+    try {
+      const applyRes = await netRequest(
+        `${localApiUrl}/sync/apply-changes-batch`,
+        {
+          method: 'POST',
+          body: { changes },
+          headers: { Authorization: `Bearer ${authCookie}` },
         },
-      }).catch(() => {});
+      );
 
-      lastSeq = change.seq;
-      pulled++;
+      if (applyRes.status === 200) {
+        const lastInBatch = changes[changes.length - 1];
+        lastSeq = lastInBatch.seq;
+        pulled += changes.length;
+      } else {
+        logToFile(
+          `[SyncEngine] Apply changes batch failed: ${JSON.stringify(applyRes.body)}`,
+        );
+        return false;
+      }
+    } catch (err) {
+      logToFile(`[SyncEngine] Apply changes batch error: ${err.message}`);
+      return false;
     }
 
     hasMore = more;

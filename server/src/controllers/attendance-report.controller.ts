@@ -3,12 +3,11 @@ import CustomResponse from '../types/response';
 import EventModel from '../models/event.model';
 import EventSessionModel from '../models/event-session.model';
 import AttendanceRecordModel from '../models/attendance-record.model';
-import StudentModel from '../models/student.model';
 
 export const get_attendance_summary = asyncHandler(async (req, res) => {
   const { organizationId, semester, schoolYear } = req.tenantContext!;
 
-  // 1. Fetch all events
+  // 1. Fetch all events for this tenant context
   const events = await EventModel.find({
     organization: organizationId,
     semester,
@@ -51,12 +50,14 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
   ]);
 
   const eventAttendanceMap = new Map(
-    eventAttendanceAgg.map((agg) => [agg._id.toString(), agg.count])
+    eventAttendanceAgg
+      .filter((agg) => agg._id != null)
+      .map((agg) => [agg._id.toString(), agg.count]),
   );
 
   const eventsBreakdown = events.map((ev) => {
     const evSessions = sessions.filter(
-      (s) => s.event.toString() === ev._id.toString()
+      (s) => s.event && s.event.toString() === ev._id.toString(),
     );
     return {
       eventId: ev._id,
@@ -67,7 +68,7 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
     };
   });
 
-  // 5. Compute top students by attendance
+  // 5. Compute top students by attendance using studentIdInput -> Student matching
   const topStudentsAgg = await AttendanceRecordModel.aggregate([
     {
       $match: {
@@ -76,8 +77,38 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: 'students',
+        let: { scannedId: '$studentIdInput', orgId: '$organization' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$studentID', '$$scannedId'] },
+                  { $eq: ['$organization', '$$orgId'] },
+                ],
+              },
+            },
+          },
+          { $sort: { updatedAt: -1 } },
+          { $limit: 1 },
+        ],
+        as: 'studentDoc',
+      },
+    },
+    { $unwind: { path: '$studentDoc', preserveNullAndEmptyArrays: true } },
+    {
       $group: {
-        _id: '$student',
+        _id: {
+          $ifNull: ['$studentDoc._id', '$studentIdInput'],
+        },
+        studentID: {
+          $first: { $ifNull: ['$studentDoc.studentID', '$studentIdInput'] },
+        },
+        firstname: { $first: '$studentDoc.firstname' },
+        lastname: { $first: '$studentDoc.lastname' },
+        course: { $first: '$studentDoc.course' },
         count: { $sum: 1 },
       },
     },
@@ -85,22 +116,17 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
     { $limit: 10 },
   ]);
 
-  const topStudentIds = topStudentsAgg.map((agg) => agg._id);
-  const students = await StudentModel.find({ _id: { $in: topStudentIds } })
-    .select('_id studentID firstname lastname course')
-    .lean();
-
-  const studentMap = new Map(students.map((s) => [s._id.toString(), s]));
-
-  const topStudents = topStudentsAgg.map((agg) => {
-    const s = studentMap.get(agg._id.toString());
-    return {
-      studentID: s?.studentID || 'Unknown',
-      name: s ? `${s.firstname} ${s.lastname}` : 'Unknown',
-      course: s?.course || 'Unknown',
-      attendedCount: agg.count,
-    };
-  });
+  const topStudents = topStudentsAgg.map((agg) => ({
+    studentID: agg.studentID || 'Unknown',
+    name:
+      agg.firstname && agg.lastname
+        ? `${agg.firstname} ${agg.lastname}`
+        : agg.studentID
+          ? `Unmapped (${agg.studentID})`
+          : 'Unmapped',
+    course: agg.course || '-',
+    attendedCount: agg.count,
+  }));
 
   res.json(
     new CustomResponse(
@@ -113,7 +139,7 @@ export const get_attendance_summary = asyncHandler(async (req, res) => {
         topStudents,
         meta: { semester, schoolYear },
       },
-      'Attendance report summary'
-    )
+      'Attendance report summary',
+    ),
   );
 });

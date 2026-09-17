@@ -167,14 +167,14 @@ export const get_summary_report = asyncHandler(async (req, res) => {
 
   // ── Unpack top students — hydrate names from StudentModel ────────────────
   const topStudentsRaw = facet.topStudents as any[];
-  const ownerIds = topStudentsRaw.map((s) => s._id);
+  const ownerIds = topStudentsRaw.map((s) => s._id).filter(Boolean);
   const studentDocs = await StudentModel.find({ _id: { $in: ownerIds } })
     .select('_id studentID firstname lastname course')
     .lean();
   const studentMap = new Map(studentDocs.map((s) => [s._id.toString(), s]));
 
   const topStudents = topStudentsRaw.map((s) => {
-    const student = studentMap.get(s._id.toString());
+    const student = s._id ? studentMap.get(s._id.toString()) : undefined;
     return {
       studentID: student?.studentID ?? 'N/A',
       name: student ? `${student.firstname} ${student.lastname}` : 'Unknown',

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Header from '@/components/ui/header';
 import DarkModeToggle from '@/components/buttons/DarkModeToggle';
 
@@ -38,6 +39,23 @@ export default function AuthPage({ form, title }: AuthPageProps) {
       <div className="absolute bottom-5 left-5 z-50 p-2 bg-card rounded-full shadow-lg border">
         <DarkModeToggle />
       </div>
+
+      {/* Legal footer */}
+      <p className="absolute bottom-5 right-5 z-50 text-xs text-muted-foreground text-center">
+        <Link
+          to="/privacy-policy"
+          className="underline underline-offset-2 hover:text-foreground transition-colors"
+        >
+          Privacy Policy
+        </Link>
+        {' · '}
+        <Link
+          to="/terms-of-service"
+          className="underline underline-offset-2 hover:text-foreground transition-colors"
+        >
+          Terms of Service
+        </Link>
+      </p>
     </main>
   );
 }

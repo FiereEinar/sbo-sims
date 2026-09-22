@@ -49,6 +49,8 @@ import StudentLoginPage from './pages/student/StudentLoginPage';
 import StudentSignupPage from './pages/student/StudentSignupPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import StudentApp from './pages/student/StudentApp';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentPaymentRequests from './pages/student/PaymentRequests';
@@ -85,6 +87,16 @@ export default function Route() {
     {
       path: '/reset-password',
       element: <ResetPassword />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: '/privacy-policy',
+      element: <PrivacyPolicy />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: '/terms-of-service',
+      element: <TermsOfService />,
       errorElement: <ErrorPage />,
     },
     {

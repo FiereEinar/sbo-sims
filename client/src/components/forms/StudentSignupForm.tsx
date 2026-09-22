@@ -22,7 +22,10 @@ export default function StudentSignupForm() {
     reset,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<StudentSignupFormValues>({ resolver: zodResolver(signupSchema) });
+  } = useForm<StudentSignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { agreedToTerms: false },
+  });
 
   const passwordValue = watch('password') || '';
 
@@ -165,6 +168,38 @@ export default function StudentSignupForm() {
           Log in
         </Link>
       </div>
+
+      {/* Consent checkbox */}
+      <label className="flex items-start gap-2.5 cursor-pointer group">
+        <input
+          type="checkbox"
+          id="agreeToTerms"
+          className="mt-0.5 size-4 rounded border-input accent-primary cursor-pointer"
+          {...register('agreedToTerms')}
+        />
+        <span className="text-xs text-muted-foreground leading-relaxed group-has-[:checked]:text-foreground transition-colors">
+          I have read and agree to the{' '}
+          <Link
+            to="/privacy-policy"
+            target="_blank"
+            className="underline text-primary"
+          >
+            Privacy Policy
+          </Link>{' '}and{' '}
+          <Link
+            to="/terms-of-service"
+            target="_blank"
+            className="underline text-primary"
+          >
+            Terms of Service
+          </Link>
+          , and I consent to the collection and processing of my personal
+          information by COT SBO.
+        </span>
+      </label>
+      {errors.agreedToTerms?.message && (
+        <ErrorText>{errors.agreedToTerms.message}</ErrorText>
+      )}
 
       <div className="flex justify-end">
         <Button disabled={isSubmitting}>

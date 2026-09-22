@@ -30,6 +30,13 @@ export const signupSchema = z
 			.refine((val) => parseInt(val).toString().length === 10, {
 				message: 'Student ID must be 10 numbers to be valid',
 			}),
+
+		agreedToTerms: z
+			.boolean()
+			.refine((val) => val === true, {
+				message:
+					'You must agree to the Privacy Policy and Terms of Service to create an account.',
+			}),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: 'Password must match',

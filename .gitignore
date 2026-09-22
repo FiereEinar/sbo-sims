@@ -7,3 +7,4 @@ package-lock.json
 handoff.md
 dist
 .env
+/reference

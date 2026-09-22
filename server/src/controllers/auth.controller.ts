@@ -190,7 +190,7 @@ export const login = asyncHandler(async (req, res) => {
     const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims.vercel.app';
     try {
       const fetchRes = await fetch(
-        `${cloudUrl}/sync/user-bootstrap?studentID=${studentID}&userRole=org-admin`,
+        `${cloudUrl}/sync/user-bootstrap?studentID=${studentID}&userRole=org-admin&organizationId=${organization._id}`,
         {
           headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! },
         },

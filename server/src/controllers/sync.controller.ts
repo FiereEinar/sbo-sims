@@ -743,6 +743,7 @@ export const sync_user_bootstrap = asyncHandler(
 
     const studentID = req.query.studentID as string;
     const userRole = req.query.userRole as string;
+    const organizationId = req.query.organizationId as string | undefined;
     appAssert(studentID, BAD_REQUEST, 'studentID is required');
 
     const atlasConn = await getAtlasConnection();
@@ -773,10 +774,15 @@ export const sync_user_bootstrap = asyncHandler(
         (await import('../models/app-setting.model')).default.schema,
       );
 
-    const user = (await User.findOne({
+    const userQuery: any = {
       studentID,
       role: userRole,
-    }).lean()) as any;
+    };
+    if (organizationId) {
+      userQuery.organization = organizationId;
+    }
+
+    const user = (await User.findOne(userQuery).lean()) as any;
     appAssert(user, NOT_FOUND, 'User not found in Atlas');
 
     const [organization, role, appSetting] = await Promise.all([

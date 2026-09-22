@@ -59,7 +59,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(userAgent.express());
 app.set('trust proxy', true);
-// app.use(globalLimiter);
 
 // Serve uploads folder locally
 if (NODE_ENV !== 'production' && !process.env.VERCEL) {
@@ -82,27 +81,27 @@ app.use(async (req, res, next) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/student-portal', studentPortalRouter);
+app.use('/student-portal', globalLimiter, studentPortalRouter);
 app.use('/sync', syncRouter);
 app.use(auth);
-app.use('/admin', adminRouter);
-app.use('/setting', settingRouter);
+app.use('/admin', globalLimiter, adminRouter);
+app.use('/setting', globalLimiter, settingRouter);
 app.use(extractTenantContext);
-app.use('/student', studentRouter);
-app.use('/user', userRouter);
-app.use('/transaction', transactionRouter);
-app.use('/report', reportRouter);
-app.use('/prelisting', prelistingRouter);
-app.use('/category', categoryRouter);
-app.use('/organization', organizationRouter);
-app.use('/role', roleRouter);
-app.use('/event', eventRouter);
-app.use('/event-session', eventSessionRouter);
+app.use('/student', globalLimiter, studentRouter);
+app.use('/user', globalLimiter, userRouter);
+app.use('/transaction', globalLimiter, transactionRouter);
+app.use('/report', globalLimiter, reportRouter);
+app.use('/prelisting', globalLimiter, prelistingRouter);
+app.use('/category', globalLimiter, categoryRouter);
+app.use('/organization', globalLimiter, organizationRouter);
+app.use('/role', globalLimiter, roleRouter);
+app.use('/event', globalLimiter, eventRouter);
+app.use('/event-session', globalLimiter, eventSessionRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/attendance-report', attendanceReportRouter);
-app.use('/payment-request', paymentRequestRouter);
-app.use('/support-ticket', supportTicketRouter);
-app.use('/gpoa', gpoaRouter);
+app.use('/payment-request', globalLimiter, paymentRequestRouter);
+app.use('/support-ticket', globalLimiter, supportTicketRouter);
+app.use('/gpoa', globalLimiter, gpoaRouter);
 
 // Error handlers
 app.use(notFoundHandler);

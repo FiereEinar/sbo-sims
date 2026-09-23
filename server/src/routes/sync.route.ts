@@ -17,8 +17,10 @@ import {
   sync_export_force_sync_data,
   sync_atlas_export_force_sync_data,
   sync_apply_force_push,
+  sync_module_count_check,
 } from '../controllers/sync.controller';
 import { auth } from '../middlewares/authentication/auth';
+import { syncSecretAuth } from '../middlewares/authentication/syncSecretAuth';
 
 const router = express.Router();
 
@@ -32,15 +34,15 @@ router.get('/health', sync_health);
 // ─── Local-only endpoints (Electron sync engine ↔ local Express) ─────────────
 // These are called by sync-engine.js on localhost. They read/write local MongoDB.
 
-router.get('/bootstrap', sync_bootstrap);
+router.get('/bootstrap', syncSecretAuth, sync_bootstrap);
 
-router.get('/user-bootstrap', sync_user_bootstrap);
+router.get('/user-bootstrap', syncSecretAuth, sync_user_bootstrap);
 
-router.post('/apply-bootstrap-batch', sync_apply_bootstrap_batch);
+router.post('/apply-bootstrap-batch', syncSecretAuth, sync_apply_bootstrap_batch);
 
-router.post('/push', sync_push);
+router.post('/push', syncSecretAuth, sync_push);
 
-router.get('/pull', sync_pull);
+router.get('/pull', syncSecretAuth, sync_pull);
 
 /** GET /sync/pending-ops — fetch next batch of unsynced ops for push */
 router.get('/pending-ops', auth, sync_get_pending_ops);
@@ -67,10 +69,13 @@ router.post('/apply-changes-batch', auth, sync_apply_changes_batch);
 router.post('/export-force-sync-data', auth, sync_export_force_sync_data);
 
 /** POST /sync/atlas-export-force-sync-data — extract Atlas data for force pull (secret required) */
-router.post('/atlas-export-force-sync-data', sync_atlas_export_force_sync_data);
+router.post('/atlas-export-force-sync-data', syncSecretAuth, sync_atlas_export_force_sync_data);
 
 /** POST /sync/apply-force-push — accept payload and write to Atlas (secret required) */
-router.post('/apply-force-push', sync_apply_force_push);
+router.post('/apply-force-push', syncSecretAuth, sync_apply_force_push);
+
+/** POST /sync/module-count-check — check both local and Atlas counts for a module (auth required) */
+router.post('/module-count-check', auth, sync_module_count_check);
 
 // ─── Bootstrap endpoints (Atlas-side, post-auth) ──────────────────────────────
 

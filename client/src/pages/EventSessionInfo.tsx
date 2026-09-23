@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import axiosInstance from '@/api/axiosInstance';
 import { fetchAvailableCourses, fetchAvailableSections } from '@/api/student';
+import SyncChecker from '@/components/sync/SyncChecker';
 
 export default function EventSessionInfo() {
   const { eventID, sessionID } = useParams();
@@ -204,6 +205,11 @@ export default function EventSessionInfo() {
                   • Ended: {format(new Date(session.endedAt), 'h:mm a')}
                 </span>
               )}
+              <SyncChecker
+                module="AttendanceRecord"
+                eventId={eventID}
+                sessionId={sessionID}
+              />
             </div>
           </div>
 

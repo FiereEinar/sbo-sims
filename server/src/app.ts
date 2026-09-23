@@ -45,7 +45,7 @@ import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { extractTenantContext } from './middlewares/attach-database-models';
-import { seedAdmin } from './database/seedAdmin';
+import { ensureAdminSeeded } from './middlewares/seedAdmin';
 import connectToMongoDB from './database/mongodb';
 connectToMongoDB();
 
@@ -65,20 +65,8 @@ if (NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 }
 
+app.use(ensureAdminSeeded);
 app.get('/', healthcheck);
-
-let isSeeded = false;
-app.use(async (req, res, next) => {
-  if (NODE_ENV !== 'test' && !isSeeded) {
-    try {
-      await seedAdmin();
-      isSeeded = true;
-    } catch (err) {
-      console.error('[seed] Startup error:', err);
-    }
-  }
-  next();
-});
 
 app.use('/auth', authRouter);
 app.use('/student-portal', globalLimiter, studentPortalRouter);

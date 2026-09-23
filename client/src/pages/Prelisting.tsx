@@ -15,6 +15,7 @@ import { PrelistingFilterValues } from '@/types/prelisting';
 import { useQuery } from '@tanstack/react-query';
 import { useUserStore } from '@/store/user';
 import { AlertCircle } from 'lucide-react';
+import SyncChecker from '@/components/sync/SyncChecker';
 
 export default function Prelisting() {
   const user = useUserStore((state) => state.user);
@@ -61,12 +62,19 @@ export default function Prelisting() {
       <StickyHeader>
         <div className="flex flex-col gap-1">
           <Header>Prelistings</Header>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
-            <AlertCircle className="w-3.5 h-3.5" />
-            Showing data for{' '}
-            <strong>
-              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
-            </strong>
+          <div className="flex items-center gap-3 flex-wrap py-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground w-fit">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Showing data for{' '}
+              <strong>
+                SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+              </strong>
+            </div>
+            <SyncChecker
+              module="Prelisting"
+              semester={user?.activeSemDB}
+              schoolYear={user?.activeSchoolYearDB}
+            />
           </div>
         </div>
 

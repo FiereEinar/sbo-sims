@@ -34,6 +34,7 @@ import SchoolYearInput from '@/components/SchoolYearInput';
 import { useUserStore } from '@/store/user';
 import HasPermission from '@/components/HasPermission';
 import { MODULES } from '@/constants';
+import SyncChecker from '@/components/sync/SyncChecker';
 
 export default function AdminPaymentRequests() {
   const { orgSlug } = useParams<{ orgSlug: string }>();
@@ -94,12 +95,19 @@ export default function AdminPaymentRequests() {
       <StickyHeader>
         <div className="flex flex-col gap-1">
           <Header>Payment Requests</Header>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
-            <AlertCircle className="w-3.5 h-3.5" />
-            Showing data for{' '}
-            <strong>
-              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
-            </strong>
+          <div className="flex items-center gap-3 flex-wrap py-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground w-fit">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Showing data for{' '}
+              <strong>
+                SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+              </strong>
+            </div>
+            <SyncChecker
+              module="PaymentRequest"
+              semester={user?.activeSemDB}
+              schoolYear={user?.activeSchoolYearDB}
+            />
           </div>
         </div>
       </StickyHeader>

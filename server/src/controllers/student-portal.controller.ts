@@ -51,7 +51,8 @@ export const student_signup = asyncHandler(async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-organization-slug': (req.headers['x-organization-slug'] as string) || '',
+        'x-organization-slug':
+          (req.headers['x-organization-slug'] as string) || '',
       },
       body: JSON.stringify(req.body),
     });
@@ -124,7 +125,8 @@ export const student_login = asyncHandler(async (req, res) => {
   }).exec();
 
   if (!user && !process.env.VERCEL) {
-    const cloudUrl = process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
+    const cloudUrl =
+      process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
     try {
       const fetchRes = await fetch(
         `${cloudUrl}/sync/user-bootstrap?studentID=${studentID}&userRole=student`,
@@ -150,7 +152,10 @@ export const student_login = asyncHandler(async (req, res) => {
         }
       }
     } catch (err) {
-      console.error('[Student Login Proxy] Error fetching user from Atlas:', err);
+      console.error(
+        '[Student Login Proxy] Error fetching user from Atlas:',
+        err,
+      );
     }
   }
 
@@ -334,7 +339,9 @@ export const get_student_dashboard = asyncHandler(async (req, res) => {
     studentIdToTerm.set(String(s._id), `${s.schoolYear}-${s.semester}`);
   });
 
-  const allAtt = await AttendanceRecordModel.find({ student: { $in: allStudentObjIds } }).lean();
+  const allAtt = await AttendanceRecordModel.find({
+    student: { $in: allStudentObjIds },
+  }).lean();
   const attCounts = new Map<string, number>();
   allAtt.forEach((att) => {
     const key = studentIdToTerm.get(String(att.student));
@@ -599,7 +606,9 @@ export const get_student_attendance = asyncHandler(async (req, res) => {
   }).lean();
   const studentObjIds = studentRecords.map((s) => s._id);
 
-  const matchFilters: any = { student: { $in: studentObjIds } };
+  const matchFilters: any = {
+    $or: [{ student: { $in: studentObjIds } }, { studentIdInput: studentID }],
+  };
 
   if (startDate && endDate) {
     matchFilters.recordedAt = {

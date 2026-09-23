@@ -12,6 +12,7 @@ import EventSessionCard from '@/components/event/EventSessionCard';
 import AddEventSessionForm from '@/components/forms/AddEventSessionForm';
 import StickyHeaderLoading from '@/components/loading/StickyHeaderLoading';
 import HasPermission from '@/components/HasPermission';
+import SyncChecker from '@/components/sync/SyncChecker';
 
 export default function EventInfo() {
   const { eventID } = useParams();
@@ -54,8 +55,16 @@ export default function EventInfo() {
         </StickyHeader>
       )}
 
-      <div className="mt-6 flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Event Sessions</h2>
+      <div className="mt-6 flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-xl font-bold">Event Sessions</h2>
+          {event && (
+            <SyncChecker
+              module="EventSession"
+              eventId={event._id}
+            />
+          )}
+        </div>
         {event && (
           <HasPermission permissions={[MODULES.EVENT_CREATE]}>
             <AddEventSessionForm eventId={event._id} mode="add" />

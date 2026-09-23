@@ -11,6 +11,7 @@ import SemInput from '@/components/SemInput';
 import SchoolYearInput from '@/components/SchoolYearInput';
 import { useUserStore } from '@/store/user';
 import { AlertCircle, Filter } from 'lucide-react';
+import SyncChecker from '@/components/sync/SyncChecker';
 
 export default function Events() {
   const user = useUserStore((state) => state.user);
@@ -33,12 +34,19 @@ export default function Events() {
       <StickyHeader>
         <div className="flex flex-col gap-1">
           <Header>Events</Header>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 w-fit">
-            <AlertCircle className="w-3.5 h-3.5" />
-            Showing data for{' '}
-            <strong>
-              SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
-            </strong>
+          <div className="flex items-center gap-3 flex-wrap py-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground w-fit">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Showing data for{' '}
+              <strong>
+                SY {user?.activeSchoolYearDB} — Semester {user?.activeSemDB}
+              </strong>
+            </div>
+            <SyncChecker
+              module="Event"
+              semester={user?.activeSemDB}
+              schoolYear={user?.activeSchoolYearDB}
+            />
           </div>
         </div>
 

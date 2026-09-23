@@ -19,8 +19,8 @@ const fs = require('fs');
 const { randomUUID } = require('crypto');
 
 // ─── Configuration ────────────────────────────────────────────────────────────
-const HEALTH_PING_INTERVAL_MS = 30_000; // check connectivity every 30s
-const POLL_INTERVAL_MS = 30_000; // pull new changes every 30s while online
+const HEALTH_PING_INTERVAL_MS = 60_000; // check connectivity every 60s
+const POLL_INTERVAL_MS = 60_000; // pull new changes every 60s while online
 const PUSH_BATCH_SIZE = 50; // ops per push batch
 const CLOCK_SKEW_WARN_MS = 5 * 60_000; // warn if clocks differ by > 5 minutes
 
@@ -648,17 +648,24 @@ function setupIpc() {
 
   // The renderer sends auth context after login so the sync engine can
   // call authenticated local Express endpoints
-  ipcMain.on('sync:set-context', (_event, { authCookie, organizationId, role }) => {
-    logToFile(`[SyncEngine] Context set — role: ${role}, org: ${organizationId}`);
-    cookie = authCookie;
-    currentOrganizationId = organizationId;
-    currentRole = role || null;
-    checkConnectivity(cookie, organizationId);
-  });
+  ipcMain.on(
+    'sync:set-context',
+    (_event, { authCookie, organizationId, role }) => {
+      logToFile(
+        `[SyncEngine] Context set — role: ${role}, org: ${organizationId}`,
+      );
+      cookie = authCookie;
+      currentOrganizationId = organizationId;
+      currentRole = role || null;
+      checkConnectivity(cookie, organizationId);
+    },
+  );
 
   // The renderer sends this on logout to stop the sync loop and clear credentials
   ipcMain.on('sync:clear-context', () => {
-    logToFile('[SyncEngine] Context cleared — stopping sync loop (user logged out)');
+    logToFile(
+      '[SyncEngine] Context cleared — stopping sync loop (user logged out)',
+    );
     cookie = null;
     currentOrganizationId = null;
     currentRole = null;
@@ -698,7 +705,9 @@ function setupIpc() {
       (acc, list) => acc + (Array.isArray(list) ? list.length : 0),
       0,
     );
-    logToFile(`[SyncEngine] Local data exported successfully: ${totalDocsCount} total documents`);
+    logToFile(
+      `[SyncEngine] Local data exported successfully: ${totalDocsCount} total documents`,
+    );
 
     // 2. Push to Atlas in batches of 200
     let totalUpserted = 0;
@@ -734,7 +743,9 @@ function setupIpc() {
       }
     }
 
-    logToFile(`[SyncEngine] Force Push completed successfully — ${totalUpserted} ops`);
+    logToFile(
+      `[SyncEngine] Force Push completed successfully — ${totalUpserted} ops`,
+    );
     return { totalUpserted };
   });
 
@@ -769,7 +780,9 @@ function setupIpc() {
       (acc, list) => acc + (Array.isArray(list) ? list.length : 0),
       0,
     );
-    logToFile(`[SyncEngine] Atlas data exported successfully: ${totalDocsCount} total documents`);
+    logToFile(
+      `[SyncEngine] Atlas data exported successfully: ${totalDocsCount} total documents`,
+    );
 
     // 2. Apply to local db in batches of 200
     let totalApplied = 0;
@@ -805,7 +818,9 @@ function setupIpc() {
       }
     }
 
-    logToFile(`[SyncEngine] Force Pull completed successfully — ${totalApplied} docs applied`);
+    logToFile(
+      `[SyncEngine] Force Pull completed successfully — ${totalApplied} docs applied`,
+    );
     return { success: true, totalApplied };
   });
 }

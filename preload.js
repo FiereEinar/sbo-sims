@@ -36,11 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * @param {string} role - User macro-role: 'org-admin' | 'central-admin' | 'student'
    */
   setSyncContext: (authCookie, organizationId, role) => {
-    console.log('[Preload] setSyncContext called with:', {
-      authCookie,
-      organizationId,
-      role,
-    });
+    console.log('[Preload] setSyncContext called');
     ipcRenderer.send('sync:set-context', { authCookie, organizationId, role });
   },
 

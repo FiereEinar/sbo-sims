@@ -13,9 +13,7 @@ import {
 } from '../models/operation-log.model';
 import CustomResponse from '../types/response';
 import appAssert from '../errors/appAssert';
-import { SECRET_ADMIN_KEY } from '../constants/env';
 import {
-  UNAUTHORIZED,
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
@@ -89,13 +87,6 @@ export const sync_health = asyncHandler(
  * Idempotent: if an operation _id already exists in AtlasChangeLog, it is skipped.
  */
 export const sync_push = asyncHandler(async (req: Request, res: Response) => {
-  const syncSecret = req.headers['x-sync-secret'];
-  appAssert(
-    syncSecret === SECRET_ADMIN_KEY,
-    UNAUTHORIZED,
-    'Invalid sync secret',
-  );
-
   const ops: IOperationLog[] = req.body.ops;
 
   appAssert(
@@ -272,13 +263,6 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
  *   organizationId - org scoping
  */
 export const sync_pull = asyncHandler(async (req: Request, res: Response) => {
-  const syncSecret = req.headers['x-sync-secret'];
-  appAssert(
-    syncSecret === SECRET_ADMIN_KEY,
-    UNAUTHORIZED,
-    'Invalid sync secret',
-  );
-
   const since = Number(req.query.since ?? 0);
   const excludeClient = req.query.excludeClient as string;
   const organizationId = req.query.organizationId as string;
@@ -660,14 +644,6 @@ const GLOBAL_COLLECTIONS = new Set(['organizations']);
  */
 export const sync_bootstrap = asyncHandler(
   async (req: Request, res: Response) => {
-    const syncSecret = req.headers['x-sync-secret'];
-
-    appAssert(
-      syncSecret === SECRET_ADMIN_KEY,
-      UNAUTHORIZED,
-      'Invalid sync secret',
-    );
-
     const collection = req.query.collection as BootstrapCollection;
     const orgId = req.query.orgId as string;
     const page = Math.max(1, Number(req.query.page ?? 1));
@@ -734,13 +710,6 @@ export const sync_bootstrap = asyncHandler(
  */
 export const sync_user_bootstrap = asyncHandler(
   async (req: Request, res: Response) => {
-    const syncSecret = req.headers['x-sync-secret'];
-    appAssert(
-      syncSecret === SECRET_ADMIN_KEY,
-      UNAUTHORIZED,
-      'Invalid sync secret',
-    );
-
     const studentID = req.query.studentID as string;
     const userRole = req.query.userRole as string;
     const organizationId = req.query.organizationId as string | undefined;
@@ -884,13 +853,6 @@ function castDocumentTypes(obj: any): any {
  */
 export const sync_apply_bootstrap_batch = asyncHandler(
   async (req: Request, res: Response) => {
-    const syncSecret = req.headers['x-sync-secret'];
-    appAssert(
-      syncSecret === SECRET_ADMIN_KEY,
-      UNAUTHORIZED,
-      'Invalid sync secret',
-    );
-
     const { collection, docs } = req.body as {
       collection: string;
       docs: Record<string, any>[];
@@ -935,6 +897,92 @@ export const sync_apply_bootstrap_batch = asyncHandler(
     );
   },
 );
+// ─── FORCE SYNC HELPER ────────────────────────────────────────────────────────
+interface ModuleFilterParams {
+  moduleName: string;
+  organizationId: mongoose.Types.ObjectId;
+  semester?: string;
+  schoolYear?: string;
+  eventId?: string;
+  sessionId?: string;
+  db: mongoose.mongo.Db;
+}
+
+async function buildModuleFilter(params: ModuleFilterParams): Promise<any> {
+  const {
+    moduleName,
+    organizationId,
+    semester,
+    schoolYear,
+    eventId,
+    sessionId,
+    db,
+  } = params;
+  let filter: any = { organization: organizationId };
+
+  if (
+    [
+      'Student',
+      'Transaction',
+      'Category',
+      'Prelisting',
+      'Gpoa',
+      'PaymentRequest',
+      'Event',
+    ].includes(moduleName)
+  ) {
+    if (semester) filter.semester = semester;
+    if (schoolYear) filter.schoolYear = schoolYear;
+    if (moduleName === 'Event') {
+      filter.archived = { $ne: true };
+    }
+  } else if (moduleName === 'EventSession') {
+    if (eventId) {
+      filter.event = new mongoose.Types.ObjectId(eventId);
+    } else if (semester && schoolYear) {
+      const events = await db
+        .collection('events')
+        .find(
+          {
+            organization: organizationId,
+            semester,
+            schoolYear,
+            archived: { $ne: true },
+          },
+          { projection: { _id: 1 } },
+        )
+        .toArray();
+      const eventIds = events.map((e) => e._id);
+      const eventIdStrings = eventIds.map((id) => id.toString());
+      filter.event = { $in: [...eventIds, ...eventIdStrings] };
+    }
+  } else if (moduleName === 'AttendanceRecord') {
+    if (sessionId) {
+      filter.session = new mongoose.Types.ObjectId(sessionId);
+    } else if (eventId) {
+      filter.event = new mongoose.Types.ObjectId(eventId);
+    } else if (semester && schoolYear) {
+      const events = await db
+        .collection('events')
+        .find(
+          {
+            organization: organizationId,
+            semester,
+            schoolYear,
+            archived: { $ne: true },
+          },
+          { projection: { _id: 1 } },
+        )
+        .toArray();
+      const eventIds = events.map((e) => e._id);
+      const eventIdStrings = eventIds.map((id) => id.toString());
+      filter.event = { $in: [...eventIds, ...eventIdStrings] };
+    }
+  }
+
+  return filter;
+}
+
 // ─── FORCE SYNC ENDPOINTS ─────────────────────────────────────────────────────
 
 export const sync_export_force_sync_data = asyncHandler(
@@ -1022,13 +1070,6 @@ export const sync_export_force_sync_data = asyncHandler(
 
 export const sync_atlas_export_force_sync_data = asyncHandler(
   async (req: Request, res: Response) => {
-    const syncSecret = req.headers['x-sync-secret'];
-    appAssert(
-      syncSecret === SECRET_ADMIN_KEY,
-      UNAUTHORIZED,
-      'Invalid sync secret',
-    );
-
     const {
       modules,
       semester,
@@ -1113,15 +1154,79 @@ export const sync_atlas_export_force_sync_data = asyncHandler(
   },
 );
 
+export const sync_module_count_check = asyncHandler(
+  async (req: Request, res: Response) => {
+    const {
+      module,
+      semester,
+      schoolYear: reqSchoolYear,
+      eventId,
+      sessionId,
+    } = req.body as {
+      module: string;
+      semester?: string;
+      schoolYear?: string;
+      eventId?: string;
+      sessionId?: string;
+    };
+    appAssert(module, BAD_REQUEST, 'module is required');
+
+    const organizationId = new mongoose.Types.ObjectId(
+      req.currentUser!.organization as any,
+    );
+    const schoolYear = reqSchoolYear ? reqSchoolYear.split('-')[0] : undefined;
+    const collection = ENTITY_COLLECTION_MAP[module as SyncableEntityType];
+    appAssert(collection, BAD_REQUEST, `Invalid module: ${module}`);
+
+    const localDb = mongoose.connection.db!;
+    const filter = await buildModuleFilter({
+      moduleName: module,
+      organizationId,
+      semester,
+      schoolYear,
+      eventId,
+      sessionId,
+      db: localDb,
+    });
+
+    const localCount = await localDb
+      .collection(collection)
+      .countDocuments(filter);
+
+    let atlasCount: number | null = null;
+    let isOnline = false;
+
+    try {
+      const atlasConn = await getAtlasConnection();
+      if (atlasConn && atlasConn.readyState === 1 && atlasConn.db) {
+        atlasCount = await atlasConn.db
+          .collection(collection)
+          .countDocuments(filter);
+        isOnline = true;
+      }
+    } catch (err: any) {
+      console.warn(
+        `[SyncCheck] Cannot reach Atlas directly for ${module}: ${err.message}`,
+      );
+    }
+
+    res.json(
+      new CustomResponse(
+        true,
+        {
+          localCount,
+          atlasCount,
+          isOnline,
+          module,
+        },
+        'Module count check complete',
+      ),
+    );
+  },
+);
+
 export const sync_apply_force_push = asyncHandler(
   async (req: Request, res: Response) => {
-    const syncSecret = req.headers['x-sync-secret'];
-    appAssert(
-      syncSecret === SECRET_ADMIN_KEY,
-      UNAUTHORIZED,
-      'Invalid sync secret',
-    );
-
     const { data } = req.body as { data: Record<string, any[]> };
     appAssert(
       data && typeof data === 'object',

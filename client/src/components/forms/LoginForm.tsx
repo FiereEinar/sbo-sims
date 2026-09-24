@@ -50,8 +50,12 @@ export default function LoginForm() {
   const isFormDisabled = isSubmitting || isLoggingIn;
 
   // Step 1: form validation passes → show reCAPTCHA overlay
+  // On desktop (Electron) the officer login hits the local server which does
+  // not enforce reCAPTCHA, so we skip the overlay entirely.
+  const isDesktop = !!(window as any).electronAPI?.isElectron;
+
   const onSubmit = async (data: LoginFormValues) => {
-    if (import.meta.env.VITE_CHECK_RECPATCHA === 'false') {
+    if (import.meta.env.VITE_CHECK_RECPATCHA === 'false' || isDesktop) {
       await performLogin(data, '');
     } else {
       setPendingData(data);

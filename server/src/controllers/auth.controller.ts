@@ -162,7 +162,9 @@ export const login = asyncHandler(async (req, res) => {
     recaptchaToken,
   }: loginUserBody & { recaptchaToken: string } = req.body;
 
-  // verify reCAPTCHA token with Google
+  // verify reCAPTCHA token with Google.
+  // verifyRecaptcha() short-circuits and returns { success: true } when
+  // CHECK_RECPATCHA=false (set in the desktop root .env), so no extra guard needed.
   const recaptchaData = await verifyRecaptcha(recaptchaToken);
   appAssert(
     recaptchaData.success,

@@ -12,6 +12,7 @@ import {
   updateUserPassword,
   update_user,
   completeOnboarding,
+  update_active_term,
 } from '../controllers/user.controller';
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { hasRole } from '../middlewares/authentication/role';
@@ -25,6 +26,9 @@ router.get('/', getUsers);
 router.get('/:userID', getSingleUser);
 
 router.put('/complete-onboarding', completeOnboarding);
+
+// Updates active semester / school year filter locally without syncing to Atlas
+router.put('/active-term', update_active_term);
 
 router.post('/', hasRole([MODULES.USER_CREATE]), logOperation('User'), createUser);
 

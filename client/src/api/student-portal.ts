@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance';
+import studentAxiosInstance from './studentAxiosInstance';
 import { APIResponse } from '@/types/api-response';
 import { User } from '@/types/user';
 
@@ -53,19 +53,19 @@ export type StudentDashboardData = {
 export const studentLogin = async (
   payload: StudentLoginPayload,
 ): Promise<APIResponse<{ user: User; accessToken: string; device: DeviceTypes }> | undefined> => {
-  const { data } = await axiosInstance.post('/student-portal/login', payload);
+  const { data } = await studentAxiosInstance.post('/student-portal/login', payload);
   return data;
 };
 
 export const studentSignup = async (
   payload: StudentSignupPayload,
 ): Promise<APIResponse<User> | undefined> => {
-  const { data } = await axiosInstance.post('/student-portal/signup', payload);
+  const { data } = await studentAxiosInstance.post('/student-portal/signup', payload);
   return data;
 };
 
 export const fetchStudentDashboard = async (): Promise<StudentDashboardData> => {
-  const { data } = await axiosInstance.get('/student-portal/dashboard');
+  const { data } = await studentAxiosInstance.get('/student-portal/dashboard');
   return data.data;
 };
 
@@ -73,7 +73,7 @@ export const updateStudentTerm = async (payload: {
   activeSemDB?: string;
   activeSchoolYearDB?: string;
 }): Promise<User> => {
-  const { data } = await axiosInstance.put('/student-portal/term', payload);
+  const { data } = await studentAxiosInstance.put('/student-portal/term', payload);
   return data.data;
 };
 
@@ -136,7 +136,7 @@ export const fetchStudentTransactions = async (
   if (filters?.sortField) params.append('sortField', filters.sortField);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-  const { data } = await axiosInstance.get(
+  const { data } = await studentAxiosInstance.get(
     `/student-portal/transactions?${params.toString()}`
   );
   return data.data;
@@ -159,7 +159,7 @@ export const fetchStudentAttendance = async (
   if (filters?.sortField) params.append('sortField', filters.sortField);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-  const { data } = await axiosInstance.get(
+  const { data } = await studentAxiosInstance.get(
     `/student-portal/attendance?${params.toString()}`
   );
   return data.data;
@@ -183,7 +183,7 @@ export type StudentGpoaItem = {
 };
 
 export const fetchStudentGpoa = async (): Promise<StudentGpoaItem[]> => {
-  const { data } = await axiosInstance.get('/student-portal/gpoa');
+  const { data } = await studentAxiosInstance.get('/student-portal/gpoa');
   return data.data;
 };
 
@@ -204,7 +204,7 @@ export type StudentCollectionItem = {
 };
 
 export const fetchStudentCollections = async (): Promise<StudentCollectionItem[]> => {
-  const { data } = await axiosInstance.get('/student-portal/collections');
+  const { data } = await studentAxiosInstance.get('/student-portal/collections');
   return data.data;
 };
 

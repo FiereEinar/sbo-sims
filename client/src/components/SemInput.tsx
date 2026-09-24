@@ -9,10 +9,8 @@ import {
 } from './ui/select';
 import { useUserStore } from '@/store/user';
 import { useToast } from '@/hooks/use-toast';
-import axiosInstance from '@/api/axiosInstance';
-import { APIResponse } from '@/types/api-response';
-import { User } from '@/types/user';
 import { queryClient } from '@/main';
+import { updateActiveTerm } from '@/api/user';
 
 type SemInputProps = {
   hideLabel?: boolean;
@@ -44,11 +42,8 @@ export default function SemInput({ hideLabel }: SemInputProps) {
       // Instantly reset queries to fetch from the new context
       queryClient.resetQueries();
 
-      // Save to backend database asynchronously
-      await axiosInstance.put<APIResponse<User>>(
-        `/user/${currentUser._id}`,
-        updatedUser,
-      );
+      // Save to backend database asynchronously without triggering sync logs
+      await updateActiveTerm({ activeSemDB: value });
     } catch (error: any) {
       console.error('Failed to save', error);
       // Rollback to previous state on failure

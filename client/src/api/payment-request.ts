@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import studentAxiosInstance from './studentAxiosInstance';
 
 export type PaymentRequestStatus = 'pending' | 'approved' | 'rejected';
 
@@ -18,21 +19,21 @@ export type PaymentRequestData = {
   createdAt: string;
 };
 
-// Student APIs
+// Student APIs (direct to Atlas Cloud)
 export const createPaymentRequest = async (formData: FormData): Promise<PaymentRequestData> => {
-  const { data } = await axiosInstance.post('/student-portal/payment-request', formData, {
+  const { data } = await studentAxiosInstance.post('/student-portal/payment-request', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data.data;
 };
 
 export const fetchStudentPaymentRequests = async (): Promise<PaymentRequestData[]> => {
-  const { data } = await axiosInstance.get('/student-portal/payment-request');
+  const { data } = await studentAxiosInstance.get('/student-portal/payment-request');
   return data.data;
 };
 
 export const fetchCategoriesForOrg = async (orgSlug: string): Promise<{ _id: string; name: string; fee: number }[]> => {
-  const { data } = await axiosInstance.get('/category', {
+  const { data } = await studentAxiosInstance.get('/category', {
     headers: { 'x-organization-slug': orgSlug },
   });
   return data.data;

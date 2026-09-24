@@ -1,4 +1,5 @@
 import axiosInstance from '@/api/axiosInstance';
+import studentAxiosInstance from '@/api/studentAxiosInstance';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@/types/user';
@@ -13,6 +14,7 @@ export default function RootRedirect() {
 
   useEffect(() => {
     (async () => {
+      // 1. Try local/org-admin check-auth first (supports offline org-admin)
       try {
         const { data } = await axiosInstance.get<{
           user: User;
@@ -21,46 +23,57 @@ export default function RootRedirect() {
         const user = data.user;
         setUser(user);
 
-        // Global super admin goes to the admin portal
-        if (user.role === 'central-admin' && !user.organization) {
+        if (user.role === 'org-admin' && user.organization?.slug) {
           if (window.electronAPI?.setSyncContext) {
             window.electronAPI.setSyncContext(
               data.accessToken,
-              '',
-              'central-admin',
-            );
-          }
-          navigate('/admin', { replace: true });
-          return;
-        }
-
-        // Students go to the student portal
-        if (user.role === 'student') {
-          if (window.electronAPI?.setSyncContext) {
-            window.electronAPI.setSyncContext(data.accessToken, '', 'student');
-          }
-          navigate('/student/dashboard', { replace: true });
-          return;
-        }
-
-        if (user.organization?.slug) {
-          if (window.electronAPI?.setSyncContext) {
-            const organizationId = user.organization._id;
-            const authCookie = data.accessToken;
-
-            window.electronAPI.setSyncContext(
-              authCookie,
-              organizationId,
+              user.organization._id,
               'org-admin',
             );
           }
           navigate(`/${user.organization.slug}`, { replace: true });
-        } else {
-          navigate('/login', { replace: true });
+          return;
         }
-      } catch (err: any) {
-        navigate('/login', { replace: true });
+
+        if (user.role === 'central-admin') {
+          navigate('/admin', { replace: true });
+          return;
+        }
+
+        if (user.role === 'student') {
+          navigate('/student/dashboard', { replace: true });
+          return;
+        }
+      } catch {
+        // Not authenticated locally, check cloud if token exists
       }
+
+      // 2. Check cloud Atlas backend (for student and central-admin)
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          const { data } = await studentAxiosInstance.get<{
+            user: User;
+            accessToken: string;
+          }>('/auth/check-auth');
+          const user = data.user;
+          setUser(user);
+
+          if (user.role === 'central-admin') {
+            navigate('/admin', { replace: true });
+            return;
+          }
+
+          if (user.role === 'student') {
+            navigate('/student/dashboard', { replace: true });
+            return;
+          }
+        } catch {
+          // Cloud session not valid or offline
+        }
+      }
+
+      navigate('/login', { replace: true });
     })();
   }, [navigate, setUser]);
 

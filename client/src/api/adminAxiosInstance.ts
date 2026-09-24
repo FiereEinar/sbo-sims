@@ -10,7 +10,7 @@ import axios, { CreateAxiosDefaults } from 'axios';
 const UNAUTHORIZED = 401;
 
 const options: CreateAxiosDefaults = {
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_CLOUD_API_URL || import.meta.env.VITE_API_URL,
   withCredentials: true,
 };
 

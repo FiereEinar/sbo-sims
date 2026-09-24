@@ -401,3 +401,42 @@ export const completeOnboarding = asyncHandler(async (req, res) => {
 
   res.json(new CustomResponse(true, result, 'Onboarding completed!'));
 });
+
+/**
+ * @route PUT /user/active-term
+ * Updates the user's active semester and school year session filter without syncing to Atlas.
+ */
+export const update_active_term = asyncHandler(async (req, res) => {
+  const userID = req.currentUser?._id;
+  appAssert(userID, UNAUTHORIZED, 'User not authenticated');
+
+  const { activeSemDB, activeSchoolYearDB } = req.body;
+
+  const update: UpdateQuery<IUser> = {};
+
+  if (activeSchoolYearDB !== undefined) {
+    const year = parseInt(activeSchoolYearDB);
+    appAssert(
+      year >= 2000 && year <= 3000,
+      BAD_REQUEST,
+      'Year must only be between 2000 and 3000',
+    );
+    update.activeSchoolYearDB = activeSchoolYearDB;
+  }
+
+  if (activeSemDB !== undefined) {
+    appAssert(
+      activeSemDB === '1' || activeSemDB === '2',
+      BAD_REQUEST,
+      'Semester can only be 1 or 2',
+    );
+    update.activeSemDB = activeSemDB;
+  }
+
+  const result = await UserModel.findByIdAndUpdate(userID, update, {
+    new: true,
+  }).exec();
+
+  const safeUser = result?.omitPassword();
+  res.json(new CustomResponse(true, safeUser, 'Active term updated successfully!'));
+});

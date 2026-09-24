@@ -654,9 +654,29 @@ function setupIpc() {
       logToFile(
         `[SyncEngine] Context set — role: ${role}, org: ${organizationId}`,
       );
+
+      // Only org-admin has local offline sync capability.
+      // Students and central-admin connect directly to Atlas cloud.
+      if (role !== 'org-admin') {
+        logToFile(
+          `[SyncEngine] Role '${role}' does not use local offline sync. Halting sync engine.`,
+        );
+        cookie = null;
+        currentOrganizationId = null;
+        currentRole = role || null;
+        isSyncing = false;
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        isOnline = false;
+        emitStatus('offline');
+        return;
+      }
+
       cookie = authCookie;
       currentOrganizationId = organizationId;
-      currentRole = role || null;
+      currentRole = role;
       checkConnectivity(cookie, organizationId);
     },
   );

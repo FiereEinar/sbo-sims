@@ -1,4 +1,4 @@
-import axiosInstance from '@/api/axiosInstance';
+import studentAxiosInstance from '@/api/studentAxiosInstance';
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@/types/user';
@@ -20,7 +20,7 @@ export default function StudentProtectedRoute({ children }: PropsWithChildren) {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await axiosInstance.get<{
+        const { data } = await studentAxiosInstance.get<{
           user: User;
           accessToken: string;
         }>('/auth/check-auth');

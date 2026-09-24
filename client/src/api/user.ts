@@ -120,3 +120,16 @@ export const resetPassword = async (token: string, newPassword: string): Promise
 	}
 };
 
+export const updateActiveTerm = async (payload: {
+	activeSemDB?: string;
+	activeSchoolYearDB?: string;
+}): Promise<APIResponse<User> | undefined> => {
+	try {
+		const { data } = await axiosInstance.put<APIResponse<User>>('/user/active-term', payload);
+		return data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+
+

@@ -1,7 +1,9 @@
 import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import axiosInstance from '@/api/axiosInstance';
+import studentAxiosInstance from '@/api/studentAxiosInstance';
 import SidebarLink from '../SidebarLink';
 import { useToast } from '@/hooks/use-toast';
+import { useUserStore } from '@/store/user';
 import { Power } from 'lucide-react';
 import {
   AlertDialog,
@@ -21,7 +23,12 @@ export default function LogoutButton() {
 
   const onLogout = async () => {
     try {
-      await axiosInstance.get('/auth/logout');
+      const user = useUserStore.getState().user;
+      if (user?.role === 'student') {
+        await studentAxiosInstance.get('/auth/logout');
+      } else {
+        await axiosInstance.get('/auth/logout');
+      }
       localStorage.removeItem('accessToken');
       // Stop the sync engine loop and clear stored credentials
       window.electronAPI?.clearSyncContext?.();

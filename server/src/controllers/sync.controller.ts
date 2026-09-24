@@ -806,6 +806,11 @@ function castDocumentTypes(obj: any): any {
     return obj;
   }
 
+  // Preserve existing Date or ObjectId instances without transforming into empty objects
+  if (obj instanceof Date || obj instanceof mongoose.Types.ObjectId) {
+    return obj;
+  }
+
   if (Array.isArray(obj)) {
     return obj.map((item) => castDocumentTypes(item));
   }
@@ -813,7 +818,9 @@ function castDocumentTypes(obj: any): any {
   const transformed: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (
+    if (value instanceof Date || value instanceof mongoose.Types.ObjectId) {
+      transformed[key] = value;
+    } else if (
       (key === '_id' ||
         key.endsWith('Id') ||
         key === 'organization' ||

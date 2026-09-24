@@ -119,45 +119,10 @@ export const student_login = asyncHandler(async (req, res) => {
   );
 
   // Find the student user, no org filter, role must be 'student'
-  let user = await UserModel.findOne<IUser>({
+  const user = await UserModel.findOne<IUser>({
     studentID,
     role: 'student',
   }).exec();
-
-  if (!user && !process.env.VERCEL) {
-    const cloudUrl =
-      process.env.CLOUD_API_URL || 'https://sbo-sims-server.vercel.app';
-    try {
-      const fetchRes = await fetch(
-        `${cloudUrl}/sync/user-bootstrap?studentID=${studentID}&userRole=student`,
-        {
-          headers: { 'x-sync-secret': process.env.SECRET_ADMIN_KEY! },
-        },
-      );
-
-      if (fetchRes.ok) {
-        const responseData = await fetchRes.json();
-        const data = responseData.data;
-
-        if (data && data.user) {
-          const UserModel = (await import('../models/user.model')).default;
-          await UserModel.findByIdAndUpdate(data.user._id, data.user, {
-            upsert: true,
-          });
-
-          user = await UserModel.findOne<IUser>({
-            studentID,
-            role: 'student',
-          }).exec();
-        }
-      }
-    } catch (err) {
-      console.error(
-        '[Student Login Proxy] Error fetching user from Atlas:',
-        err,
-      );
-    }
-  }
 
   appAssert(user, UNAUTHORIZED, 'Incorrect Student ID or password');
 

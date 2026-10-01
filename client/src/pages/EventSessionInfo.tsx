@@ -19,7 +19,8 @@ import AttendanceStatsPanel from '@/components/event/AttendanceStatsPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, FileText, FileSpreadsheet, Search, X } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, Search, X, Upload } from 'lucide-react';
+import ImportAttendance from '@/components/event/ImportAttendance';
 import { format } from 'date-fns';
 import PaginationController from '@/components/PaginationController';
 import HasPermission from '@/components/HasPermission';
@@ -46,6 +47,7 @@ export default function EventSessionInfo() {
   const [searchInput, setSearchInput] = useState('');
   const [_isDownloading, setIsDownloading] = useState(false);
   const [coursePopoverOpen, setCoursePopoverOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const hasActiveFilters =
     (filters.courses && filters.courses.length > 0) ||
@@ -229,90 +231,116 @@ export default function EventSessionInfo() {
       <div className="mt-8">
         <AttendanceStatsPanel stats={statsResult} isLoading={isStatsLoading} />
 
-        <div className="flex justify-between gap-2 items-center mb-4">
-          {/* Search Bar */}
-          <div className="relative w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="attendance-search"
-              className="pl-9"
-              placeholder="Search by name or student ID..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearFilters}
-                className="text-muted-foreground hover:text-foreground gap-1.5"
-              >
-                <X className="h-3.5 w-3.5" />
-                Clear Filters
-              </Button>
-            )}
-            <HasPermission
-              permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]}
-              fallback={
-                <Button
-                  variant="outline"
-                  disabled
-                  title="You do not have permission to download attendance"
-                >
-                  <Download className="mr-2 h-4 w-4" /> Download
-                </Button>
-              }
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="rounded-full">
-                    <Download className="mr-2 h-4 w-4" /> Download
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => handleDownload('pdf')}
-                    className="cursor-pointer"
-                  >
-                    <FileText className="mr-2 h-4 w-4" /> As PDF
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleDownload('csv')}
-                    className="cursor-pointer"
-                  >
-                    <FileSpreadsheet className="mr-2 h-4 w-4" /> As CSV / Excel
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </HasPermission>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <AttendanceRecordTable
-            records={attendanceResult?.data || []}
-            isLoading={isAttendanceLoading}
-            filters={filters}
-            setFilters={setFilters}
-            courses={courses}
-            sections={sections}
-            coursePopoverOpen={coursePopoverOpen}
-            setCoursePopoverOpen={setCoursePopoverOpen}
+        {isImporting ? (
+          <ImportAttendance
+            session={session}
+            onBack={() => {
+              setIsImporting(false);
+              queryClient.invalidateQueries({
+                queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance'],
+              });
+              queryClient.invalidateQueries({
+                queryKey: [QUERY_KEYS.EVENT, sessionID, 'attendance-stats'],
+              });
+            }}
           />
+        ) : (
+          <>
+            <div className="flex justify-between gap-2 items-center mb-4">
+              {/* Search Bar */}
+              <div className="relative w-[300px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="attendance-search"
+                  className="pl-9"
+                  placeholder="Search by name or student ID..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+              </div>
 
-          {attendanceResult && (
-            <PaginationController
-              currentPage={page}
-              nextPage={attendanceResult.next}
-              prevPage={attendanceResult.prev}
-              setPage={setPage}
-              prefetchFn={prefetchPageFn}
-            />
-          )}
-        </div>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearFilters}
+                    className="text-muted-foreground hover:text-foreground gap-1.5"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear Filters
+                  </Button>
+                )}
+                <HasPermission permissions={[MODULES.ATTENDANCE_RECORD_CREATE]}>
+                  <Button
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setIsImporting(true)}
+                  >
+                    <Upload className="mr-2 h-4 w-4" /> Import
+                  </Button>
+                </HasPermission>
+                <HasPermission
+                  permissions={[MODULES.ATTENDANCE_RECORD_DOWNLOAD]}
+                  fallback={
+                    <Button
+                      variant="outline"
+                      disabled
+                      title="You do not have permission to download attendance"
+                    >
+                      <Download className="mr-2 h-4 w-4" /> Download
+                    </Button>
+                  }
+                >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="rounded-full">
+                        <Download className="mr-2 h-4 w-4" /> Download
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDownload('pdf')}
+                        className="cursor-pointer"
+                      >
+                        <FileText className="mr-2 h-4 w-4" /> As PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDownload('csv')}
+                        className="cursor-pointer"
+                      >
+                        <FileSpreadsheet className="mr-2 h-4 w-4" /> As CSV / Excel
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </HasPermission>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <AttendanceRecordTable
+                records={attendanceResult?.data || []}
+                isLoading={isAttendanceLoading}
+                filters={filters}
+                setFilters={setFilters}
+                courses={courses}
+                sections={sections}
+                coursePopoverOpen={coursePopoverOpen}
+                setCoursePopoverOpen={setCoursePopoverOpen}
+              />
+
+              {attendanceResult && (
+                <PaginationController
+                  currentPage={page}
+                  nextPage={attendanceResult.next}
+                  prevPage={attendanceResult.prev}
+                  setPage={setPage}
+                  prefetchFn={prefetchPageFn}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </SidebarPageLayout>
   );

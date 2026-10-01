@@ -93,3 +93,67 @@ export const fetchSessionAttendanceStats = async (
   );
   return data.data;
 };
+
+export type AttendancePreviewItem = {
+  rowNum: number;
+  studentID: string;
+  name: string;
+  course?: string;
+  year?: number;
+  gender?: string;
+  section?: string;
+  isMapped: boolean;
+  status: 'valid' | 'exists' | 'error';
+  error?: string;
+};
+
+export type AttendancePreviewResult = {
+  valid: AttendancePreviewItem[];
+  existing: AttendancePreviewItem[];
+  invalid: AttendancePreviewItem[];
+  totalRows: number;
+  detectedColumns: {
+    studentID?: string;
+    name?: string;
+    course?: string;
+    year?: string;
+    section?: string;
+  };
+};
+
+export type AttendanceImportResult = {
+  success: number;
+  failed: number;
+  skipped: number;
+  errors: string[];
+};
+
+export const previewSessionAttendanceImport = async (
+  sessionId: string,
+  file: File,
+): Promise<AttendancePreviewResult> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const { data } = await axiosInstance.post<{ data: AttendancePreviewResult }>(
+    `/attendance/session/${sessionId}/import/preview`,
+    formData,
+  );
+  return data.data;
+};
+
+export const importSessionAttendance = async (
+  sessionId: string,
+  file: File,
+  allowUnmapped: boolean = true,
+): Promise<AttendanceImportResult> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('allowUnmapped', String(allowUnmapped));
+
+  const { data } = await axiosInstance.post<{ data: AttendanceImportResult }>(
+    `/attendance/session/${sessionId}/import`,
+    formData,
+  );
+  return data.data;
+};

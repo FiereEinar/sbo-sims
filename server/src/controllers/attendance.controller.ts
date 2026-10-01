@@ -11,6 +11,10 @@ import {
   recordAttendanceSchema,
 } from '../middlewares/validations/attendance.validation';
 import { escapeRegex } from '../utils/utils';
+import {
+  previewAttendanceFromFile,
+  importAttendanceFromFile,
+} from '../services/attendanceExcelLoader';
 
 // Helper to safely narrow Express query/param values to string
 const toStr = (v: unknown): string | undefined =>
@@ -504,6 +508,98 @@ export const get_session_attendance_stats = asyncHandler(async (req, res) => {
       true,
       result ?? { total: 0, byGender: [], byCourse: [], byYear: [] },
       'Session attendance stats',
+    ),
+  );
+});
+
+/**
+ * POST - preview attendance records from Excel/CSV file
+ */
+export const preview_attendance_import = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+  const file = req.file;
+
+  appAssert(sessionId, BAD_REQUEST, 'Session ID parameter is required');
+  appAssert(file, BAD_REQUEST, 'No file uploaded');
+
+  const validMimeTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'text/csv',
+    'application/csv',
+    'text/plain',
+  ];
+  const isExtensionValid =
+    file.originalname.toLowerCase().endsWith('.xlsx') ||
+    file.originalname.toLowerCase().endsWith('.xls') ||
+    file.originalname.toLowerCase().endsWith('.csv');
+
+  appAssert(
+    validMimeTypes.includes(file.mimetype) || isExtensionValid,
+    BAD_REQUEST,
+    'File must be Excel (.xlsx, .xls) or CSV (.csv)',
+  );
+
+  const previewResult = await previewAttendanceFromFile(
+    req,
+    toStr(sessionId)!,
+    file.buffer,
+    file.originalname,
+    file.mimetype,
+  );
+
+  res.json(
+    new CustomResponse(
+      true,
+      previewResult,
+      `Preview: ${previewResult.valid.length} valid, ${previewResult.existing.length} already recorded, ${previewResult.invalid.length} invalid`,
+    ),
+  );
+});
+
+/**
+ * POST - import attendance records from Excel/CSV file
+ */
+export const import_attendance = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+  const file = req.file;
+  const allowUnmapped = req.body.allowUnmapped !== 'false';
+
+  appAssert(sessionId, BAD_REQUEST, 'Session ID parameter is required');
+  appAssert(file, BAD_REQUEST, 'No file uploaded');
+
+  const validMimeTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'text/csv',
+    'application/csv',
+    'text/plain',
+  ];
+  const isExtensionValid =
+    file.originalname.toLowerCase().endsWith('.xlsx') ||
+    file.originalname.toLowerCase().endsWith('.xls') ||
+    file.originalname.toLowerCase().endsWith('.csv');
+
+  appAssert(
+    validMimeTypes.includes(file.mimetype) || isExtensionValid,
+    BAD_REQUEST,
+    'File must be Excel (.xlsx, .xls) or CSV (.csv)',
+  );
+
+  const importResult = await importAttendanceFromFile(
+    req,
+    toStr(sessionId)!,
+    file.buffer,
+    allowUnmapped,
+    file.originalname,
+    file.mimetype,
+  );
+
+  res.json(
+    new CustomResponse(
+      true,
+      importResult,
+      `Import: ${importResult.success} recorded, ${importResult.skipped} skipped, ${importResult.failed} failed`,
     ),
   );
 });

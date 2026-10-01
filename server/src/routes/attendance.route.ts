@@ -6,9 +6,12 @@ import {
   get_session_attendance_stats,
   download_session_attendance_pdf,
   download_session_attendance_csv,
+  preview_attendance_import,
+  import_attendance,
 } from '../controllers/attendance.controller';
 import { hasRole } from '../middlewares/authentication/role';
 import { logOperation } from '../middlewares/operation-log.middleware';
+import upload from '../utils/multer';
 
 const router = express.Router();
 
@@ -41,6 +44,20 @@ router.get(
   '/session/:sessionId/download/csv',
   hasRole([MODULES.ATTENDANCE_RECORD_DOWNLOAD]),
   download_session_attendance_csv,
+);
+
+router.post(
+  '/session/:sessionId/import/preview',
+  hasRole([MODULES.ATTENDANCE_RECORD_CREATE]),
+  upload.single('file'),
+  preview_attendance_import,
+);
+
+router.post(
+  '/session/:sessionId/import',
+  hasRole([MODULES.ATTENDANCE_RECORD_CREATE]),
+  upload.single('file'),
+  import_attendance,
 );
 
 export default router;

@@ -21,7 +21,9 @@ export default function StudentLoginForm() {
   const setUser = useUserStore((state) => state.setUser);
 
   const [showCaptcha, setShowCaptcha] = useState(false);
-  const [pendingData, setPendingData] = useState<StudentLoginFormValues | null>(null);
+  const [pendingData, setPendingData] = useState<StudentLoginFormValues | null>(
+    null,
+  );
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const {
@@ -35,7 +37,8 @@ export default function StudentLoginForm() {
     if (searchParams.get('verified') === 'true') {
       toast({
         title: 'Email Verified',
-        description: 'Your email has been successfully verified. You can now log in.',
+        description:
+          'Your email has been successfully verified. You can now log in.',
         variant: 'default',
       });
       searchParams.delete('verified');
@@ -64,7 +67,9 @@ export default function StudentLoginForm() {
       }
       navigate('/student/dashboard', { replace: true });
     } catch (err: any) {
-      setError('root', { message: err.message || 'Failed to login. Please try again.' });
+      setError('root', {
+        message: err.message || 'Failed to login. Please try again.',
+      });
     } finally {
       setIsLoggingIn(false);
     }
@@ -73,7 +78,7 @@ export default function StudentLoginForm() {
   const handleCaptchaVerify = async (token: string) => {
     setShowCaptcha(false);
     if (!pendingData) return;
-    
+
     await performLogin(pendingData, token);
     setPendingData(null);
   };
@@ -155,7 +160,10 @@ export default function StudentLoginForm() {
       </form>
 
       {showCaptcha && (
-        <RecaptchaOverlay onVerify={handleCaptchaVerify} onClose={handleCaptchaClose} />
+        <RecaptchaOverlay
+          onVerify={handleCaptchaVerify}
+          onClose={handleCaptchaClose}
+        />
       )}
     </>
   );

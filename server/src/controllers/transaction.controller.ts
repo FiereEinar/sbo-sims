@@ -26,6 +26,11 @@ import {
 import UserModel from '../models/user.model';
 import OrganizationModel from '../models/organization.model';
 import StudentModel from '../models/student.model';
+import {
+  notifyStudentTransactionRecorded,
+  notifyStudentBatchTransactionsRecorded,
+  notifyStudentTransactionAmountUpdated,
+} from '../services/transactionEmail.service';
 
 /**
  * GET - fetch all transactions made
@@ -447,6 +452,19 @@ export const create_transaction = asyncHandler(async (req, res) => {
       { new: true },
     ).exec();
 
+    // Send receipt email to student (fire-and-forget)
+    if (updatedTransaction) {
+      notifyStudentTransactionRecorded({
+        transaction: updatedTransaction,
+        student,
+        category,
+        recordedBy: user,
+        amountPaidNow: numericAmount,
+        modeOfPayment: paymentMode,
+        paymentDate,
+      }).catch(() => {});
+    }
+
     res.json(
       new CustomResponse(
         true,
@@ -495,6 +513,17 @@ export const create_transaction = asyncHandler(async (req, res) => {
     schoolYear: req.tenantContext!.schoolYear,
   });
   await transaction.save();
+
+  // Send receipt email to student (fire-and-forget)
+  notifyStudentTransactionRecorded({
+    transaction,
+    student,
+    category,
+    recordedBy: user,
+    amountPaidNow: amount,
+    modeOfPayment: paymentMode,
+    paymentDate,
+  }).catch(() => {});
 
   res.json(
     new CustomResponse(true, transaction, 'Transaction saved successfully'),
@@ -650,6 +679,20 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
     }
   }
 
+  // Send consolidated receipt email for batch transactions (fire-and-forget)
+  if (transactions.length > 0) {
+    notifyStudentBatchTransactionsRecorded({
+      transactions: transactions as any,
+      validatedItems,
+      student,
+      recordedBy: user,
+      modeOfPayment: paymentMode,
+      paymentDate,
+      semester: req.tenantContext!.semester,
+      schoolYear: req.tenantContext!.schoolYear,
+    }).catch(() => {});
+  }
+
   res.json(
     new CustomResponse(
       true,
@@ -776,6 +819,14 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
     .populate({
       model: CategoryModel,
       path: 'category',
+      populate: {
+        model: OrganizationModel,
+        path: 'organization',
+      },
+    })
+    .populate({
+      model: StudentModel,
+      path: 'owner',
     })
     .exec();
 
@@ -819,6 +870,17 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
     update,
     { new: true },
   ).exec();
+
+  // Send receipt email to student (fire-and-forget)
+  if (result && transaction.owner) {
+    notifyStudentTransactionAmountUpdated({
+      transaction: result,
+      category,
+      student: transaction.owner as any,
+      amountAdded: amount,
+      recordedBy: req.currentUser,
+    }).catch(() => {});
+  }
 
   res.json(
     new CustomResponse(true, result, 'Transaction amount updated successfully'),

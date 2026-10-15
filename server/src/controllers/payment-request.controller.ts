@@ -8,6 +8,7 @@ import CategoryModel from '../models/category.model';
 import StudentModel from '../models/student.model';
 import UserModel from '../models/user.model';
 import { sendPaymentRequestStatusEmail } from '../services/emailService';
+import { resolveStudentEmail } from '../utils/student';
 
 export const create_payment_request = asyncHandler(async (req, res) => {
   // Extract info from studentAuth middleware
@@ -218,11 +219,11 @@ export const approve_payment_request = asyncHandler(async (req, res) => {
 
   // Send email notification to student (fire-and-forget)
   try {
-    const studentUser = await UserModel.findOne({ studentID: student.studentID, role: 'student' }).lean();
-    if (studentUser?.email) {
+    const studentEmail = await resolveStudentEmail(student);
+    if (studentEmail) {
       const orgName = (request.organization as any)?.name ?? 'your organization';
       sendPaymentRequestStatusEmail(
-        studentUser.email,
+        studentEmail,
         `${student.firstname} ${student.lastname}`,
         category.name,
         orgName,
@@ -256,11 +257,11 @@ export const reject_payment_request = asyncHandler(async (req, res) => {
   try {
     const student = request.student as any;
     const category = request.category as any;
-    const studentUser = await UserModel.findOne({ studentID: student.studentID, role: 'student' }).lean();
-    if (studentUser?.email) {
+    const studentEmail = await resolveStudentEmail(student);
+    if (studentEmail) {
       const orgName = (request.organization as any)?.name ?? 'your organization';
       sendPaymentRequestStatusEmail(
-        studentUser.email,
+        studentEmail,
         `${student.firstname} ${student.lastname}`,
         category.name,
         orgName,

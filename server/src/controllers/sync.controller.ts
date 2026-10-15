@@ -33,6 +33,7 @@ const ENTITY_COLLECTION_MAP: Record<SyncableEntityType, string> = {
   PaymentRequest: 'paymentrequests',
   Role: 'roles',
   User: 'users',
+  SupportTicket: 'supporttickets',
 };
 
 const MAX_PUSH_BATCH = 100;
@@ -622,6 +623,7 @@ const BOOTSTRAP_COLLECTIONS = [
   'attendancerecords',
   'paymentrequests',
   'gpoas',
+  'supporttickets',
 ] as const;
 
 type BootstrapCollection = (typeof BOOTSTRAP_COLLECTIONS)[number];

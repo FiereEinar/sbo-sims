@@ -36,6 +36,7 @@ const BOOTSTRAP_COLLECTIONS = [
   'attendancerecords',
   'paymentrequests',
   'gpoas',
+  'supporttickets',
 ];
 
 // ─── State ────────────────────────────────────────────────────────────────────

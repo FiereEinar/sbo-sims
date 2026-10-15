@@ -16,7 +16,8 @@ export type SyncableEntityType =
   | 'Gpoa'
   | 'PaymentRequest'
   | 'Role'
-  | 'User';
+  | 'User'
+  | 'SupportTicket';
 
 export interface IOperationLog extends mongoose.Document {
   _id: mongoose.Types.ObjectId;

@@ -7,8 +7,10 @@ import { BAD_REQUEST, NOT_FOUND, OK } from '../constants/http';
 import CategoryModel from '../models/category.model';
 import StudentModel from '../models/student.model';
 import UserModel from '../models/user.model';
-import { sendPaymentRequestStatusEmail } from '../services/emailService';
+import { sendPaymentRequestStatusEmail, sendOrgEmail, renderEmailLayout } from '../services/emailService';
 import { resolveStudentEmail } from '../utils/student';
+import { resolveOrgEmailCredentials } from './organization.controller';
+
 
 export const create_payment_request = asyncHandler(async (req, res) => {
   // Extract info from studentAuth middleware
@@ -222,16 +224,22 @@ export const approve_payment_request = asyncHandler(async (req, res) => {
     const studentEmail = await resolveStudentEmail(student);
     if (studentEmail) {
       const orgName = (request.organization as any)?.name ?? 'your organization';
-      sendPaymentRequestStatusEmail(
-        studentEmail,
-        `${student.firstname} ${student.lastname}`,
-        category.name,
-        orgName,
-        Number(request.amount),
-        'approved',
-      ).catch(() => {}); // non-blocking
+      const orgCreds = await resolveOrgEmailCredentials(organizationId).catch(() => null);
+      if (orgCreds) {
+        sendPaymentRequestStatusEmailOrg(
+          studentEmail,
+          `${student.firstname} ${student.lastname}`,
+          category.name,
+          orgName,
+          Number(request.amount),
+          'approved',
+          undefined,
+          orgCreds,
+        ).catch(() => {}); // non-blocking
+      }
     }
   } catch (_) {}
+
 
   res.status(OK).json(new CustomResponse(true, request, 'Payment request approved successfully'));
 });
@@ -260,17 +268,83 @@ export const reject_payment_request = asyncHandler(async (req, res) => {
     const studentEmail = await resolveStudentEmail(student);
     if (studentEmail) {
       const orgName = (request.organization as any)?.name ?? 'your organization';
-      sendPaymentRequestStatusEmail(
-        studentEmail,
-        `${student.firstname} ${student.lastname}`,
-        category.name,
-        orgName,
-        Number(request.amount),
-        'rejected',
-        remarks,
-      ).catch(() => {}); // non-blocking
+      const orgCreds = await resolveOrgEmailCredentials(organizationId).catch(() => null);
+      if (orgCreds) {
+        sendPaymentRequestStatusEmailOrg(
+          studentEmail,
+          `${student.firstname} ${student.lastname}`,
+          category.name,
+          orgName,
+          Number(request.amount),
+          'rejected',
+          remarks,
+          orgCreds,
+        ).catch(() => {}); // non-blocking
+      }
     }
   } catch (_) {}
 
   res.status(OK).json(new CustomResponse(true, request, 'Payment request rejected successfully'));
 });
+
+/**
+ * Sends a payment request status email using org-specific credentials.
+ * Silently skips if orgCreds is null (no email configured).
+ */
+async function sendPaymentRequestStatusEmailOrg(
+  to: string,
+  studentName: string,
+  categoryName: string,
+  orgName: string,
+  amount: number,
+  status: 'approved' | 'rejected',
+  remarks?: string,
+  orgCreds?: { user: string; pass: string } | null,
+) {
+  if (!orgCreds) return;
+
+  const { WEB_APP_ORIGIN } = await import('../constants/env');
+  const isApproved = status === 'approved';
+  const statusLabel = isApproved ? 'Approved' : 'Rejected';
+  const headerColor = isApproved ? '#1e8e3e' : '#d93025';
+  const badgeBg = isApproved ? '#e6f4ea' : '#fce8e6';
+  const badgeColor = isApproved ? '#1e8e3e' : '#d93025';
+
+  const bodyMessage = isApproved
+    ? `Great news! Your payment request for <strong>${categoryName}</strong> has been reviewed and <strong>approved</strong> by <strong>${orgName}</strong>. A transaction record has been created for your account.`
+    : `Your payment request for <strong>${categoryName}</strong> has been reviewed by <strong>${orgName}</strong> and has unfortunately been <strong>rejected</strong>.`;
+
+  const remarksSection =
+    !isApproved && remarks
+      ? `<div style="background-color:#fce8e6;border-left:4px solid #d93025;padding:14px 18px;border-radius:4px;margin:20px 0;"><p style="color:#d93025;font-size:13px;font-weight:bold;margin:0 0 6px;">Rejection Reason:</p><p style="color:#5f6368;font-size:14px;margin:0;">${remarks}</p></div>`
+      : '';
+
+  const studentPortalUrl = `${WEB_APP_ORIGIN || 'https://sbo-sims.vercel.app'}/#/student/transactions`;
+
+  const contentHtml = `
+    <p style="color:#5f6368;font-size:15px;margin:0 0 20px;">Hi <strong>${studentName}</strong>,</p>
+    <p style="color:#5f6368;font-size:15px;line-height:1.6;margin:0 0 20px;">${bodyMessage}</p>
+    ${remarksSection}
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:6px;margin:24px 0;border:1px solid #e0e0e0;">
+      <tr><td style="padding:16px 20px;border-bottom:1px solid #e0e0e0;"><span style="color:#9aa0a6;font-size:12px;display:block;margin-bottom:4px;">ORGANIZATION</span><span style="color:#202124;font-size:14px;font-weight:bold;">${orgName}</span></td></tr>
+      <tr><td style="padding:16px 20px;border-bottom:1px solid #e0e0e0;"><span style="color:#9aa0a6;font-size:12px;display:block;margin-bottom:4px;">CATEGORY</span><span style="color:#202124;font-size:14px;font-weight:bold;">${categoryName}</span></td></tr>
+      <tr><td style="padding:16px 20px;border-bottom:1px solid #e0e0e0;"><span style="color:#9aa0a6;font-size:12px;display:block;margin-bottom:4px;">AMOUNT</span><span style="color:#202124;font-size:14px;font-weight:bold;">₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></td></tr>
+      <tr><td style="padding:16px 20px;"><span style="color:#9aa0a6;font-size:12px;display:block;margin-bottom:4px;">STATUS</span><span style="display:inline-block;background-color:${badgeBg};color:${badgeColor};padding:4px 12px;border-radius:999px;font-size:13px;font-weight:bold;">${statusLabel}</span></td></tr>
+    </table>
+    <p style="color:#5f6368;font-size:14px;line-height:1.6;margin:24px 0 0;">You can log in to your <a href="${studentPortalUrl}" style="color:#1a73e8;text-decoration:none;">SBO-SIMS Student Portal</a> to view more details.</p>
+  `;
+
+  await sendOrgEmail({
+    orgEmailUser: orgCreds.user,
+    orgEmailPass: orgCreds.pass,
+    orgName,
+    to,
+    subject: `Payment Request ${statusLabel} — ${categoryName}`,
+    preheader: `Your payment request for ${categoryName} has been ${status}.`,
+    headerBackground: headerColor,
+    headerTitle: 'SBO-SIMS',
+    headerSubtitle: 'Payment Request Update',
+    contentHtml,
+  });
+}
+

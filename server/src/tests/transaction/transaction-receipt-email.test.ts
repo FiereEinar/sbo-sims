@@ -16,9 +16,14 @@ import {
 } from '../../services/transactionEmail.service';
 import UserModel from '../../models/user.model';
 
+import nodemailer from 'nodemailer';
+
 const sendMailMock = vi
-  .spyOn(transporter, 'sendMail')
+  .fn()
   .mockResolvedValue({ messageId: 'test-message-id' } as any);
+
+vi.spyOn(transporter, 'sendMail').mockImplementation(sendMailMock);
+vi.spyOn(nodemailer, 'createTransport').mockReturnValue({ sendMail: sendMailMock } as any);
 
 describe('Student Email Resolution', () => {
   beforeEach(() => {
@@ -218,7 +223,48 @@ describe('Transaction Email Service Handlers', () => {
     } as any);
   });
 
-  it('should notify student on single transaction record', async () => {
+  const mockOrgCreds = {
+    user: 'cs.sbo@gmail.com',
+    pass: 'secretapppass',
+  };
+
+  it('should silently skip sending without error if org has no configured email', async () => {
+    const mockStudent: any = {
+      _id: 'student-id-1',
+      studentID: '2301106599',
+      firstname: 'Juan',
+      lastname: 'Dela Cruz',
+    };
+    const mockCategory: any = {
+      _id: 'category-id-1',
+      name: 'College Fee',
+      fee: 250,
+      organization: { name: 'CS SBO' },
+      details: [],
+    };
+    const mockTransaction: any = {
+      _id: '65f123456789012345678901',
+      amount: 250,
+      semester: '1',
+      schoolYear: '2025-2026',
+    };
+
+    await expect(
+      notifyStudentTransactionRecorded({
+        transaction: mockTransaction,
+        student: mockStudent,
+        category: mockCategory,
+        amountPaidNow: 250,
+        modeOfPayment: 'cash',
+        paymentDate: new Date('2026-10-15'),
+        orgEmailCredentials: null,
+      }),
+    ).resolves.not.toThrow();
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+  });
+
+  it('should notify student on single transaction record using org email credentials', async () => {
     const mockStudent: any = {
       _id: 'student-id-1',
       studentID: '2301106599',
@@ -258,16 +304,18 @@ describe('Transaction Email Service Handlers', () => {
       amountPaidNow: 250,
       modeOfPayment: 'cash',
       paymentDate: new Date('2026-10-15'),
+      orgEmailCredentials: mockOrgCreds,
     });
 
     expect(sendMailMock).toHaveBeenCalledTimes(1);
     const mailArgs = sendMailMock.mock.calls[0][0];
     expect(mailArgs.to).toBe('2301106599@student.buksu.edu.ph');
+    expect(mailArgs.from).toContain('cs.sbo@gmail.com');
     expect(mailArgs.html).toContain('College Fee');
     expect(mailArgs.html).toContain('₱250.00');
   });
 
-  it('should notify student on batch transaction record with itemized entries', async () => {
+  it('should notify student on batch transaction record with itemized entries using org email credentials', async () => {
     const mockStudent: any = {
       _id: 'student-id-1',
       studentID: '2301106599',
@@ -306,18 +354,20 @@ describe('Transaction Email Service Handlers', () => {
       paymentDate: new Date('2026-10-15'),
       semester: '1',
       schoolYear: '2025-2026',
+      orgEmailCredentials: mockOrgCreds,
     });
 
     expect(sendMailMock).toHaveBeenCalledTimes(1);
     const mailArgs = sendMailMock.mock.calls[0][0];
     expect(mailArgs.to).toBe('2301106599@student.buksu.edu.ph');
+    expect(mailArgs.from).toContain('cs.sbo@gmail.com');
     expect(mailArgs.html).toContain('Membership Fee');
     expect(mailArgs.html).toContain('T-Shirt');
     expect(mailArgs.html).toContain('Size:</strong> XL');
     expect(mailArgs.html).toContain('₱400.00'); // total amount paid
   });
 
-  it('should notify student on transaction amount update (top-up)', async () => {
+  it('should notify student on transaction amount update (top-up) using org email credentials', async () => {
     const mockStudent: any = {
       _id: 'student-id-1',
       studentID: '2301106599',
@@ -348,11 +398,13 @@ describe('Transaction Email Service Handlers', () => {
       student: mockStudent,
       amountAdded: 200,
       recordedBy: { firstname: 'Admin', lastname: 'User' } as any,
+      orgEmailCredentials: mockOrgCreds,
     });
 
     expect(sendMailMock).toHaveBeenCalledTimes(1);
     const mailArgs = sendMailMock.mock.calls[0][0];
     expect(mailArgs.to).toBe('juan@custom.com');
+    expect(mailArgs.from).toContain('cs.sbo@gmail.com');
     expect(mailArgs.html).toContain('Org Shirt');
     expect(mailArgs.html).toContain('₱200.00'); // amount paid now
     expect(mailArgs.html).toContain('Fully Paid');

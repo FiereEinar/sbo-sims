@@ -31,6 +31,8 @@ import {
   notifyStudentBatchTransactionsRecorded,
   notifyStudentTransactionAmountUpdated,
 } from '../services/transactionEmail.service';
+import { resolveOrgEmailCredentials } from './organization.controller';
+
 
 /**
  * GET - fetch all transactions made
@@ -462,8 +464,10 @@ export const create_transaction = asyncHandler(async (req, res) => {
         amountPaidNow: numericAmount,
         modeOfPayment: paymentMode,
         paymentDate,
+        orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
       }).catch(() => {});
     }
+
 
     res.json(
       new CustomResponse(
@@ -523,7 +527,9 @@ export const create_transaction = asyncHandler(async (req, res) => {
     amountPaidNow: amount,
     modeOfPayment: paymentMode,
     paymentDate,
+    orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
   }).catch(() => {});
+
 
   res.json(
     new CustomResponse(true, transaction, 'Transaction saved successfully'),
@@ -690,8 +696,10 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
       paymentDate,
       semester: req.tenantContext!.semester,
       schoolYear: req.tenantContext!.schoolYear,
+      orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
     }).catch(() => {});
   }
+
 
   res.json(
     new CustomResponse(
@@ -879,8 +887,10 @@ export const update_transaction_amount = asyncHandler(async (req, res) => {
       student: transaction.owner as any,
       amountAdded: amount,
       recordedBy: req.currentUser,
+      orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
     }).catch(() => {});
   }
+
 
   res.json(
     new CustomResponse(true, result, 'Transaction amount updated successfully'),

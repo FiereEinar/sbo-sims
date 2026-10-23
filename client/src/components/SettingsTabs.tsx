@@ -27,6 +27,12 @@ export default function SettingsTabs() {
       permissions: [MODULES.ORGANIZATION_READ],
     },
     {
+      name: 'Email',
+      path: '/settings/email',
+      match: '/settings/email',
+      permissions: [MODULES.ORGANIZATION_UPDATE],
+    },
+    {
       name: 'Users',
       path: '/user',
       match: '/user',
@@ -39,6 +45,7 @@ export default function SettingsTabs() {
       permissions: [MODULES.ROLE_READ],
     },
   ];
+
 
   const canView = (permissions: string[]) => {
     if (!user) return false;

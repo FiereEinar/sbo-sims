@@ -11,6 +11,10 @@ export interface IOrganization extends mongoose.Document {
   treasurer: string;
   auditor: string;
   syncSources: mongoose.Types.ObjectId[];
+  /** Gmail address used as sender for org-specific emails */
+  emailUser?: string;
+  /** AES-256-GCM encrypted Gmail App Password */
+  emailPass?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +28,8 @@ export const OrganizationSchema = new Schema<IOrganization>(
     treasurer: { type: String, required: true },
     auditor: { type: String, required: true },
     syncSources: [{ type: Schema.Types.ObjectId, ref: 'Organization' }],
+    emailUser: { type: String, required: false, default: null },
+    emailPass: { type: String, required: false, default: null }, // stored encrypted
   },
   { timestamps: true },
 );

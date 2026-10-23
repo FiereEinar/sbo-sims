@@ -83,3 +83,32 @@ export const submitUpdateOrganizationForm = async (
 		throw err;
 	}
 };
+
+// ─── Email Configuration ──────────────────────────────────────────────────────
+
+export type OrgEmailConfig = {
+	emailUser: string | null;
+	hasEmailPass: boolean;
+};
+
+export const fetchOrgEmailConfig = async (): Promise<OrgEmailConfig | undefined> => {
+	try {
+		const { data } = await axiosInstance.get('/organization/email-config/current');
+		return data.data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+
+export const updateOrgEmailConfig = async (payload: {
+	emailUser?: string;
+	emailPass?: string;
+}): Promise<OrgEmailConfig | undefined> => {
+	try {
+		const { data } = await axiosInstance.put('/organization/email-config/current', payload);
+		return data.data;
+	} catch (err: any) {
+		throw err;
+	}
+};
+

@@ -6,6 +6,8 @@ import {
   get_organization,
   get_organization_categories,
   update_organization,
+  get_org_email_config,
+  update_org_email_config,
 } from '../controllers/organization.controller';
 import { createOrganizationValidation } from '../middlewares/validations/organizationValidations';
 import { isValidMongooseId } from '../middlewares/validations/validation';
@@ -50,4 +52,19 @@ router.put(
   update_organization,
 );
 
+// ─── Email configuration (per-org) ───────────────────────────────────────────
+
+router.get(
+  '/email-config/current',
+  hasRole([MODULES.ORGANIZATION_READ]),
+  get_org_email_config,
+);
+
+router.put(
+  '/email-config/current',
+  hasRole([MODULES.ORGANIZATION_UPDATE]),
+  update_org_email_config,
+);
+
 export default router;
+

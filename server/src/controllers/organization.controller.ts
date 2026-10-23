@@ -12,6 +12,7 @@ import {
 } from '../constants/http';
 import CategoryModel from '../models/category.model';
 import StudentModel from '../models/student.model';
+import { encrypt, decrypt } from '../utils/encryption';
 
 /**
  * GET - get all organizations and its categories
@@ -239,3 +240,87 @@ export const update_organization = asyncHandler(async (req, res) => {
     new CustomResponse(true, result, 'Organization created successfully'),
   );
 });
+
+/**
+ * GET - retrieve the email configuration for an organization (password is never returned)
+ */
+export const get_org_email_config = asyncHandler(async (req, res) => {
+  const organizationId = req.tenantContext!.organizationId;
+
+  const org = await OrganizationModel.findById(organizationId).select(
+    'emailUser emailPass',
+  );
+  appAssert(org, NOT_FOUND, 'Organization not found');
+
+  res.json(
+    new CustomResponse(
+      true,
+      {
+        emailUser: org.emailUser ?? null,
+        // Never expose the raw/encrypted password; only signal whether one is set
+        hasEmailPass: !!org.emailPass,
+      },
+      'Email configuration retrieved',
+    ),
+  );
+});
+
+/**
+ * PUT - configure the email user and app-password for an organization.
+ * The password is encrypted with AES-256-GCM before being persisted.
+ */
+export const update_org_email_config = asyncHandler(async (req, res) => {
+  const organizationId = req.tenantContext!.organizationId;
+  const { emailUser, emailPass } = req.body;
+
+  appAssert(
+    organizationId?.toString() === req.tenantContext!.organizationId?.toString(),
+    UNAUTHORIZED,
+    'You do not have permission to update another organization email config',
+  );
+
+  const org = await OrganizationModel.findById(organizationId);
+  appAssert(org, NOT_FOUND, 'Organization not found');
+
+  if (emailUser !== undefined) {
+    org.emailUser = emailUser ? String(emailUser).trim() : null as any;
+  }
+
+  if (emailPass !== undefined) {
+    // Allow clearing the password by sending an empty string
+    org.emailPass = emailPass
+      ? encrypt(String(emailPass))
+      : null as any;
+  }
+
+  await org.save();
+
+  res.json(
+    new CustomResponse(
+      true,
+      {
+        emailUser: org.emailUser ?? null,
+        hasEmailPass: !!org.emailPass,
+      },
+      'Email configuration updated successfully',
+    ),
+  );
+});
+
+/**
+ * Helper – resolve the decrypted nodemailer credentials for a given organization.
+ * Returns null if the org has no email configured.
+ */
+export const resolveOrgEmailCredentials = async (
+  organizationId: any,
+): Promise<{ user: string; pass: string } | null> => {
+  const org = await OrganizationModel.findById(organizationId).select(
+    'emailUser emailPass',
+  );
+  if (!org?.emailUser || !org?.emailPass) return null;
+
+  const decrypted = decrypt(org.emailPass);
+  if (!decrypted) return null;
+
+  return { user: org.emailUser, pass: decrypted };
+};

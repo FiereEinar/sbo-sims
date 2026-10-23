@@ -16,6 +16,8 @@ import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrganizationInfo from './pages/OrganizationInfo';
 import Settings from './pages/Settings';
+import EmailSettings from './pages/EmailSettings';
+
 import Prelisting from './pages/Prelisting';
 import PrelistingInfo from './pages/PrelistingInfo';
 import HasPermission from './components/HasPermission';
@@ -351,6 +353,18 @@ export default function Route() {
             </HasPermission>
           ),
         },
+        {
+          path: 'settings/email',
+          element: (
+            <HasPermission
+              permissions={[MODULES.ORGANIZATION_UPDATE]}
+              fallback={<NoPermission />}
+            >
+              <EmailSettings />
+            </HasPermission>
+          ),
+        },
+
         {
           path: 'data-sync',
           element: (

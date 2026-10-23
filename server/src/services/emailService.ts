@@ -11,6 +11,16 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+/**
+ * Creates a nodemailer transporter configured with an org's own Gmail credentials.
+ */
+export const createOrgTransporter = (emailUser: string, emailPass: string) =>
+  nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: emailUser, pass: emailPass },
+  });
+
+
 // ─── Shared Email Layout & Sending ──────────────────────────────────────────
 
 export interface EmailLayoutOptions {
@@ -117,6 +127,41 @@ export const sendSystemEmail = async (options: SendSystemEmailOptions) => {
 
   return await transporter.sendMail(mailOptions);
 };
+
+export interface SendOrgEmailOptions extends EmailLayoutOptions {
+  to: string;
+  subject: string;
+  orgEmailUser: string;
+  orgEmailPass: string;
+  orgName?: string;
+}
+
+/**
+ * Sends an email using the organization's own Gmail credentials.
+ * Falls back to sendSystemEmail if org credentials are not provided.
+ */
+export const sendOrgEmail = async (options: SendOrgEmailOptions) => {
+  const html = renderEmailLayout(options);
+  const fromName = options.orgName ? `"${options.orgName} via SBO-SIMS"` : '"SBO-SIMS"';
+
+  const mailOptions = {
+    from: `${fromName} <${options.orgEmailUser}>`,
+    replyTo: options.orgEmailUser,
+    to: options.to,
+    subject: options.subject,
+    headers: {
+      'X-Mailer': 'SBO-SIMS Mailer',
+      'X-Priority': '3',
+      Precedence: 'bulk',
+      'List-Unsubscribe': `<mailto:${options.orgEmailUser}?subject=unsubscribe>`,
+    },
+    html,
+  };
+
+  const orgTransporter = createOrgTransporter(options.orgEmailUser, options.orgEmailPass);
+  return await orgTransporter.sendMail(mailOptions);
+};
+
 
 // ─── Existing System Emails (Refactored to reuse base layout) ────────────────
 

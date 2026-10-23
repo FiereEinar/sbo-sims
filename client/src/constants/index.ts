@@ -37,7 +37,9 @@ export const QUERY_KEYS = {
   ATTENDANCE_REPORT_SUMMARY: 'attendance_report_summary',
   SUPPORT_TICKETS: 'support_tickets',
   GPOA: 'gpoa',
+  ORG_EMAIL_CONFIG: 'org_email_config',
 };
+
 
 export const MODULES = {
   USER_CREATE: 'user:create',

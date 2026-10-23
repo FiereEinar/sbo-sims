@@ -301,6 +301,9 @@ export const update_org_email_config = asyncHandler(async (req, res) => {
       {
         _id: org._id,
         emailUser: org.emailUser ?? null,
+        // Include the encrypted ciphertext so the sync patch carries it to Atlas.
+        // This is safe — it is AES-256-GCM encrypted and never decrypted client-side.
+        emailPass: org.emailPass ?? null,
         hasEmailPass: !!org.emailPass,
       },
       'Email configuration updated successfully',

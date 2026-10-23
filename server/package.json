@@ -56,7 +56,7 @@
 		"lodash": "^4.17.21",
 		"mongoose": "^8.7.0",
 		"multer": "^2.1.1",
-		"nodemailer": "^9.0.3",
+		"nodemailer": "^10.2.1",
 		"puppeteer": "^23.6.1",
 		"server": "file:",
 		"zod": "^4.4.3"
@@ -64,5 +64,10 @@
 	"overrides": {
 		"esbuild": "^0.28.1",
 		"uuid": "^11.1.0"
+	},
+	"allowScripts": {
+		"esbuild@0.28.2": true,
+		"mongodb-memory-server@10.4.3": true,
+		"puppeteer@23.11.1": true
 	}
 }

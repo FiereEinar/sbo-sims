@@ -39,7 +39,7 @@ export const renderEmailLayout = ({
   preheader,
   headerTitle = 'SBO-SIMS',
   headerSubtitle = 'Student Organization Management System',
-  headerBackground = '#1a73e8',
+  headerBackground = '#ffffff',
   contentHtml,
   footerHtml,
 }: EmailLayoutOptions): string => {
@@ -50,15 +50,35 @@ export const renderEmailLayout = ({
     </p>
   `;
 
+  const isWhiteHeader =
+    !headerBackground ||
+    headerBackground.toLowerCase() === '#ffffff' ||
+    headerBackground.toLowerCase() === '#fff' ||
+    headerBackground.toLowerCase() === 'white';
+
+  const matchHex = headerBackground.match(/#[a-fA-F0-9]{3,6}/);
+  const solidBg = isWhiteHeader ? '#ffffff' : (matchHex ? matchHex[0] : '#1a73e8');
+  const titleColor = isWhiteHeader ? '#0f172a' : '#ffffff';
+  const subtitleColor = isWhiteHeader ? '#64748b' : '#e2e8f0';
+  const borderBottom = isWhiteHeader ? 'border-bottom:1px solid #e2e8f0;' : '';
+
   return `
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
       <title>${headerTitle}</title>
+      <style type="text/css">
+        :root {
+          color-scheme: light dark;
+          supported-color-schemes: light dark;
+        }
+      </style>
     </head>
-    <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+    <body class="body" style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
       ${
         preheader
           ? `<span style="display:none;font-size:1px;color:#f4f4f4;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</span>`
@@ -70,18 +90,22 @@ export const renderEmailLayout = ({
             <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;">
               <!-- Header -->
               <tr>
-                <td style="background:${headerBackground};padding:30px;text-align:center;">
-                  <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:bold;letter-spacing:0.5px;">${headerTitle}</h1>
+                <td class="header-cell" bgcolor="${solidBg}" style="background-color:${solidBg};${borderBottom}padding:28px 24px;text-align:center;">
+                  <div class="header-title" style="color:${titleColor};margin:0;font-size:24px;font-weight:800;letter-spacing:-0.3px;line-height:1.2;">
+                    ${headerTitle}
+                  </div>
                   ${
                     headerSubtitle
-                      ? `<p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">${headerSubtitle}</p>`
+                      ? `<p class="header-subtitle" style="color:${subtitleColor};margin:6px 0 0;font-size:13px;letter-spacing:0.2px;font-weight:500;">
+                          ${headerSubtitle}
+                        </p>`
                       : ''
                   }
                 </td>
               </tr>
               <!-- Body -->
               <tr>
-                <td style="padding:36px 30px;">
+                <td style="padding:32px 30px;">
                   ${contentHtml}
                 </td>
               </tr>
@@ -686,7 +710,7 @@ export const sendTransactionReceiptEmail = async (
     to,
     subject: `Official Receipt #${receiptNumber} — ${orgName}`,
     preheader: `Payment confirmation of ${formatCurrency(totalAmountPaidNow)} for ${items.map((i) => i.categoryName).join(', ')}.`,
-    headerBackground: 'linear-gradient(135deg,#0f172a,#1e293b)',
+    headerBackground: '#ffffff',
     headerTitle: 'SBO-SIMS',
     headerSubtitle: 'Official Electronic Payment Receipt',
     contentHtml,

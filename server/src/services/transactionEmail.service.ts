@@ -116,7 +116,7 @@ export const notifyStudentTransactionRecorded = async ({
       to: studentEmail,
       subject: `Official Receipt #${receiptNumber} — ${orgName}`,
       preheader: `Payment confirmation for ${category.name}.`,
-      headerBackground: 'linear-gradient(135deg,#0f172a,#1e293b)',
+      headerBackground: '#ffffff',
       headerTitle: 'SBO-SIMS',
       headerSubtitle: 'Official Electronic Payment Receipt',
       contentHtml: buildReceiptContentHtml({
@@ -233,7 +233,7 @@ export const notifyStudentBatchTransactionsRecorded = async ({
       to: studentEmail,
       subject: `Official Receipt #${receiptNumber} — ${orgName}`,
       preheader: `Payment confirmation for ${items.map((i) => i.categoryName).join(', ')}.`,
-      headerBackground: 'linear-gradient(135deg,#0f172a,#1e293b)',
+      headerBackground: '#ffffff',
       headerTitle: 'SBO-SIMS',
       headerSubtitle: 'Official Electronic Payment Receipt',
       contentHtml: buildReceiptContentHtml({
@@ -323,7 +323,7 @@ export const notifyStudentTransactionAmountUpdated = async ({
       to: studentEmail,
       subject: `Official Receipt #${receiptNumber} — ${orgName}`,
       preheader: `Payment update for ${category.name}.`,
-      headerBackground: 'linear-gradient(135deg,#0f172a,#1e293b)',
+      headerBackground: '#ffffff',
       headerTitle: 'SBO-SIMS',
       headerSubtitle: 'Official Electronic Payment Receipt',
       contentHtml: buildReceiptContentHtml({
@@ -470,7 +470,7 @@ function buildReceiptContentHtml(params: ReceiptHtmlParams): string {
     </table>
     <!-- Itemized Fee Breakdown Table -->
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;margin-bottom:20px;">
-      <thead><tr style="background-color:#0f172a;color:#ffffff;"><th align="left" style="padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;">Description</th><th align="right" style="padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;">Fee</th><th align="right" style="padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;">Paid</th><th align="center" style="padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;">Status</th></tr></thead>
+      <thead bgcolor="#0f172a"><tr bgcolor="#0f172a" style="background-color:#0f172a !important;color:#ffffff !important;"><th align="left" bgcolor="#0f172a" style="background-color:#0f172a !important;color:#ffffff !important;padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;"><span style="color:#ffffff !important;">Description</span></th><th align="right" bgcolor="#0f172a" style="background-color:#0f172a !important;color:#ffffff !important;padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;"><span style="color:#ffffff !important;">Fee</span></th><th align="right" bgcolor="#0f172a" style="background-color:#0f172a !important;color:#ffffff !important;padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;"><span style="color:#ffffff !important;">Paid</span></th><th align="center" bgcolor="#0f172a" style="background-color:#0f172a !important;color:#ffffff !important;padding:12px 16px;font-size:11px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase;"><span style="color:#ffffff !important;">Status</span></th></tr></thead>
       <tbody>${itemsRowsHtml}</tbody>
     </table>
     <!-- Totals -->
@@ -493,7 +493,7 @@ function buildReceiptContentHtml(params: ReceiptHtmlParams): string {
     </table>
     <!-- CTA -->
     <div style="text-align:center;margin:28px 0 10px;">
-      <a href="${portalUrl}" style="display:inline-block;background-color:#0f172a;color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:6px;font-size:14px;font-weight:bold;letter-spacing:0.3px;">View in Student Portal</a>
+      <a href="${portalUrl}" style="display:inline-block;background-color:#0f172a;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;padding:12px 28px;text-decoration:none;border-radius:6px;font-size:14px;font-weight:bold;letter-spacing:0.3px;"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;">View in Student Portal</span></a>
     </div>`;
 }
 

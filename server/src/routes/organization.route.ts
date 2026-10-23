@@ -13,6 +13,8 @@ import { createOrganizationValidation } from '../middlewares/validations/organiz
 import { isValidMongooseId } from '../middlewares/validations/validation';
 import { hasRole } from '../middlewares/authentication/role';
 import { MODULES } from '../constants/modules';
+import { logOperation } from '../middlewares/operation-log.middleware';
+
 
 const router = express.Router();
 
@@ -63,8 +65,10 @@ router.get(
 router.put(
   '/email-config/current',
   hasRole([MODULES.ORGANIZATION_UPDATE]),
+  logOperation('Organization'),
   update_org_email_config,
 );
+
 
 export default router;
 

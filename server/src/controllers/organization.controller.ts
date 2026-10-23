@@ -299,6 +299,7 @@ export const update_org_email_config = asyncHandler(async (req, res) => {
     new CustomResponse(
       true,
       {
+        _id: org._id,
         emailUser: org.emailUser ?? null,
         hasEmailPass: !!org.emailPass,
       },

@@ -565,89 +565,7 @@ export const sync_apply_change = asyncHandler(
 
     const entityId = new mongoose.Types.ObjectId(change.entityId);
 
-    if (change.operation === 'create') {
-      const cleanPatch = sanitizePatch(change.patch);
-      delete cleanPatch._id;
-      const castPatch = castDocumentTypes(cleanPatch);
-      await LocalModel.updateOne(
-        { _id: entityId },
-        { $setOnInsert: { _id: entityId, ...castPatch } },
-        { upsert: true, timestamps: false },
-      );
-    } else if (change.operation === 'update') {
-      const existing = await LocalModel.findOne(
-        { _id: entityId },
-        { updatedAt: 1 },
-        { lean: true },
-      );
-      const existingUpdatedAt = (existing as any)?.updatedAt
-        ? new Date((existing as any).updatedAt)
-        : new Date(0);
-      const incomingTs = new Date(change.clientTimestamp);
-
-      if (incomingTs > existingUpdatedAt) {
-        const sanitized = sanitizePatch(change.patch);
-        const updatePatch: Record<string, any> = {};
-        for (const [key, value] of Object.entries(sanitized)) {
-          if (key === '_id') continue;
-          updatePatch[key] = value;
-        }
-        updatePatch.updatedAt = new Date();
-        const castPatch = castDocumentTypes(updatePatch);
-        await LocalModel.updateOne(
-          { _id: entityId },
-          { $set: castPatch },
-          { timestamps: false },
-        );
-      }
-    } else if (change.operation === 'delete') {
-      const existing = await LocalModel.findOne(
-        { _id: entityId },
-        { archived: 1 },
-        { lean: true },
-      );
-      if (existing !== null) {
-        if ('archived' in existing) {
-          await LocalModel.updateOne(
-            { _id: entityId },
-            { $set: { archived: true } },
-            { timestamps: false },
-          );
-        } else {
-          await LocalModel.deleteOne({ _id: entityId });
-        }
-      }
-    }
-
-    res.json(new CustomResponse(true, null, 'Change applied'));
-  },
-);
-
-/**
- * POST /sync/apply-changes-batch
- * LOCAL-ONLY — applies a batch of pulled AtlasChangeLog entries to local MongoDB
- * and advances the checkpoint in a single operation.
- */
-export const sync_apply_changes_batch = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { changes } = req.body as { changes: IAtlasChangeLog[] };
-    appAssert(
-      Array.isArray(changes) && changes.length > 0,
-      BAD_REQUEST,
-      'changes must be a non-empty array',
-    );
-
-    let appliedCount = 0;
-    let maxSeq = 0;
-
-    for (const change of changes) {
-      if (!change.entityType || !change.entityId) continue;
-      const modelName = change.entityType as SyncableEntityType;
-      const LocalModel = mongoose.models[modelName];
-      if (!LocalModel) continue;
-
-      const entityId = new mongoose.Types.ObjectId(change.entityId);
-
+    try {
       if (change.operation === 'create') {
         const cleanPatch = sanitizePatch(change.patch);
         delete cleanPatch._id;
@@ -699,6 +617,110 @@ export const sync_apply_changes_batch = asyncHandler(
           } else {
             await LocalModel.deleteOne({ _id: entityId });
           }
+        }
+      }
+    } catch (err: any) {
+      if (err.code === 11000) {
+        console.warn(
+          `[SyncApply] Duplicate key error (11000) for ${modelName} ${entityId}, skipping. Key:`,
+          err.keyValue,
+        );
+      } else {
+        throw err;
+      }
+    }
+
+    res.json(new CustomResponse(true, null, 'Change applied'));
+  },
+);
+
+/**
+ * POST /sync/apply-changes-batch
+ * LOCAL-ONLY — applies a batch of pulled AtlasChangeLog entries to local MongoDB
+ * and advances the checkpoint in a single operation.
+ */
+export const sync_apply_changes_batch = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { changes } = req.body as { changes: IAtlasChangeLog[] };
+    appAssert(
+      Array.isArray(changes) && changes.length > 0,
+      BAD_REQUEST,
+      'changes must be a non-empty array',
+    );
+
+    let appliedCount = 0;
+    let maxSeq = 0;
+
+    for (const change of changes) {
+      if (!change.entityType || !change.entityId) continue;
+      const modelName = change.entityType as SyncableEntityType;
+      const LocalModel = mongoose.models[modelName];
+      if (!LocalModel) continue;
+
+      const entityId = new mongoose.Types.ObjectId(change.entityId);
+
+      try {
+        if (change.operation === 'create') {
+          const cleanPatch = sanitizePatch(change.patch);
+          delete cleanPatch._id;
+          const castPatch = castDocumentTypes(cleanPatch);
+          await LocalModel.updateOne(
+            { _id: entityId },
+            { $setOnInsert: { _id: entityId, ...castPatch } },
+            { upsert: true, timestamps: false },
+          );
+        } else if (change.operation === 'update') {
+          const existing = await LocalModel.findOne(
+            { _id: entityId },
+            { updatedAt: 1 },
+            { lean: true },
+          );
+          const existingUpdatedAt = (existing as any)?.updatedAt
+            ? new Date((existing as any).updatedAt)
+            : new Date(0);
+          const incomingTs = new Date(change.clientTimestamp);
+
+          if (incomingTs > existingUpdatedAt) {
+            const sanitized = sanitizePatch(change.patch);
+            const updatePatch: Record<string, any> = {};
+            for (const [key, value] of Object.entries(sanitized)) {
+              if (key === '_id') continue;
+              updatePatch[key] = value;
+            }
+            updatePatch.updatedAt = new Date();
+            const castPatch = castDocumentTypes(updatePatch);
+            await LocalModel.updateOne(
+              { _id: entityId },
+              { $set: castPatch },
+              { timestamps: false },
+            );
+          }
+        } else if (change.operation === 'delete') {
+          const existing = await LocalModel.findOne(
+            { _id: entityId },
+            { archived: 1 },
+            { lean: true },
+          );
+          if (existing !== null) {
+            if ('archived' in existing) {
+              await LocalModel.updateOne(
+                { _id: entityId },
+                { $set: { archived: true } },
+                { timestamps: false },
+              );
+            } else {
+              await LocalModel.deleteOne({ _id: entityId });
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.code === 11000) {
+          console.warn(
+            `[SyncBatch] Duplicate key (11000) on ${modelName} ${entityId}, skipping insert. Key:`,
+            err.keyValue,
+          );
+        } else {
+          throw err;
         }
       }
 

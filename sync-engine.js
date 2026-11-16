@@ -496,14 +496,25 @@ async function runBootstrap(authCookie, organizationId) {
   let seqRes;
   try {
     seqRes = await netRequest(`${atlasHealthUrl}/sync/current-seq`, {
-      headers: { Authorization: `Bearer ${authCookie}` },
+      headers: {
+        Authorization: `Bearer ${authCookie}`,
+        'x-sync-secret': secretKey,
+      },
     });
   } catch (err) {
     logToFile(`[SyncEngine] Failed to get current seq: ${err.message}`);
     return false;
   }
 
+  if (seqRes.status !== 200) {
+    logToFile(
+      `[SyncEngine] Failed to get current seq (HTTP ${seqRes.status}): ${JSON.stringify(seqRes.body)}`,
+    );
+    return false;
+  }
+
   const seq = seqRes.body?.data?.seq ?? 0;
+  logToFile(`[SyncEngine] Anchoring bootstrap checkpoint to Atlas seq: ${seq}`);
 
   // Mark bootstrap complete in checkpoint
   const res = await netRequest(`${localApiUrl}/sync/checkpoint`, {

@@ -84,6 +84,6 @@ router.post('/module-count-check', auth, sync_module_count_check);
  * Returns the current Atlas change log sequence counter.
  * Called at end of bootstrap to anchor lastPulledSeq.
  */
-router.get('/current-seq', auth, sync_current_seq);
+router.get('/current-seq', syncSecretAuth, sync_current_seq);
 
 export default router;

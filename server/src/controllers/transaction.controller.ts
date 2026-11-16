@@ -454,7 +454,10 @@ export const create_transaction = asyncHandler(async (req, res) => {
       { new: true },
     ).exec();
 
-    // Send receipt email to student (fire-and-forget)
+    // Send receipt email to student (fire-and-forget).
+    // On Electron (non-Vercel), skip — the sync push to Atlas will handle it.
+    // Top-ups are UPDATE ops and are always sent here regardless of environment,
+    // since sync_push does not send emails for UPDATE ops.
     if (updatedTransaction) {
       notifyStudentTransactionRecorded({
         transaction: updatedTransaction,
@@ -518,17 +521,21 @@ export const create_transaction = asyncHandler(async (req, res) => {
   });
   await transaction.save();
 
-  // Send receipt email to student (fire-and-forget)
-  notifyStudentTransactionRecorded({
-    transaction,
-    student,
-    category,
-    recordedBy: user,
-    amountPaidNow: amount,
-    modeOfPayment: paymentMode,
-    paymentDate,
-    orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
-  }).catch(() => {});
+  // Send receipt email to student (web portal / Vercel only).
+  // On Electron (non-Vercel), skip — sync_push on Atlas will fire it after the
+  // CREATE op lands, ensuring the email is always sent regardless of connectivity.
+  if (process.env.VERCEL) {
+    notifyStudentTransactionRecorded({
+      transaction,
+      student,
+      category,
+      recordedBy: user,
+      amountPaidNow: amount,
+      modeOfPayment: paymentMode,
+      paymentDate,
+      orgEmailCredentials: await resolveOrgEmailCredentials(req.tenantContext!.organizationId).catch(() => null),
+    }).catch(() => {});
+  }
 
 
   res.json(
@@ -685,8 +692,10 @@ export const create_batch_transactions = asyncHandler(async (req, res) => {
     }
   }
 
-  // Send consolidated receipt email for batch transactions (fire-and-forget)
-  if (transactions.length > 0) {
+  // Send consolidated receipt email for batch transactions (web portal / Vercel only).
+  // On Electron (non-Vercel), each Transaction CREATE op will trigger an individual
+  // email from sync_push on Atlas after the sync.
+  if (process.env.VERCEL && transactions.length > 0) {
     notifyStudentBatchTransactionsRecorded({
       transactions: transactions as any,
       validatedItems,

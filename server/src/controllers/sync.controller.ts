@@ -18,6 +18,8 @@ import {
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
 } from '../constants/http';
+import { notifyStudentTransactionRecorded } from '../services/transactionEmail.service';
+import { resolveOrgEmailCredentials } from './organization.controller';
 
 // ─── Model name → Mongoose collection name map ───────────────────────────────
 // Used by the push handler to know which Atlas collection to upsert into.
@@ -80,6 +82,111 @@ export const sync_health = asyncHandler(
     res.json({ ok: true, serverTime: new Date().toISOString() });
   },
 );
+
+// ─── Receipt email helper for Transaction CREATE ops ─────────────────────────
+/**
+ * Sends a transaction receipt email from the Atlas (Vercel) side after a
+ * Transaction CREATE op is applied during sync.
+ *
+ * This runs on Vercel which always has internet, so the email reliably reaches
+ * the student even when the Electron client was offline during recording.
+ *
+ * We fetch student, category, and org from Atlas using refs in the op patch.
+ */
+async function sendTransactionReceiptFromSyncPush(
+  patch: Record<string, any>,
+  atlasConn: mongoose.Connection,
+): Promise<void> {
+  try {
+    const { notifyStudentTransactionRecorded } = await import(
+      '../services/transactionEmail.service'
+    );
+    const { resolveOrgEmailCredentials } = await import(
+      './organization.controller'
+    );
+
+    // Lazy-register models on the Atlas connection
+    const StudentModel =
+      atlasConn.models['Student'] ||
+      atlasConn.model(
+        'Student',
+        (await import('../models/student.model')).default.schema,
+      );
+    const CategoryModel =
+      atlasConn.models['Category'] ||
+      atlasConn.model(
+        'Category',
+        (await import('../models/category.model')).default.schema,
+      );
+    const UserModel =
+      atlasConn.models['User'] ||
+      atlasConn.model(
+        'User',
+        (await import('../models/user.model')).default.schema,
+      );
+    const OrganizationModel =
+      atlasConn.models['Organization'] ||
+      atlasConn.model(
+        'Organization',
+        (await import('../models/organization.model')).default.schema,
+      );
+
+    const ownerId = patch.owner;
+    const categoryId = patch.category;
+    const organizationId = patch.organization;
+    const recordedById = patch.recordedBy;
+
+    if (!ownerId || !categoryId || !organizationId) return;
+
+    const [student, category, recordedBy] = await Promise.all([
+      StudentModel.findById(ownerId).lean(),
+      CategoryModel.findById(categoryId)
+        .populate({ path: 'organization', model: OrganizationModel })
+        .lean(),
+      recordedById ? UserModel.findById(recordedById).lean() : null,
+    ]);
+
+    if (!student || !category) return;
+
+    const orgEmailCredentials = await resolveOrgEmailCredentials(
+      organizationId,
+    ).catch(() => null);
+
+    const paymentDate = patch.date
+      ? new Date(patch.date)
+      : patch.createdAt
+        ? new Date(patch.createdAt)
+        : new Date();
+
+    const modeOfPayment = patch.modeOfPayment || 'cash';
+    const amountPaidNow = Number(patch.amount) || 0;
+
+    // Build a minimal ITransaction-compatible object from the op patch
+    const transaction = {
+      _id: { toString: () => String(patch._id ?? '') } as any,
+      amount: amountPaidNow,
+      description: patch.description,
+      details: patch.details,
+      semester: patch.semester,
+      schoolYear: patch.schoolYear,
+      governor: patch.governor,
+      treasurer: patch.treasurer,
+    } as any;
+
+    await notifyStudentTransactionRecorded({
+      transaction,
+      student: student as any,
+      category: category as any,
+      recordedBy: recordedBy as any,
+      amountPaidNow,
+      modeOfPayment,
+      paymentDate,
+      orgEmailCredentials,
+    });
+  } catch (err) {
+    console.error('[SyncPush] sendTransactionReceiptFromSyncPush error:', err);
+  }
+}
 
 // ─── POST /sync/push ──────────────────────────────────────────────────────────
 /**
@@ -182,6 +289,22 @@ export const sync_push = asyncHandler(async (req: Request, res: Response) => {
         { $setOnInsert: insertPatch },
         { upsert: true, timestamps: false },
       );
+
+      // ── Receipt email for new Transactions ──────────────────────────────────
+      // The Electron server skips emailing on create (it may be offline).
+      // We reliably send it here on Atlas (Vercel) where internet is guaranteed.
+      // Top-ups arrive as UPDATE ops and are emailed by the controller directly,
+      // so we only handle CREATE ops here.
+      if (op.entityType === 'Transaction') {
+        sendTransactionReceiptFromSyncPush(op.patch, atlasConn).catch(
+          (err) => {
+            console.error(
+              `[SyncPush] Failed to send receipt email for Transaction ${op.entityId}:`,
+              err,
+            );
+          },
+        );
+      }
     } else if (op.operation === 'update') {
       const existing = await AtlasModel.findOne(
         { _id: entityObjectId },

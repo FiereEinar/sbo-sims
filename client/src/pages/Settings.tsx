@@ -7,7 +7,7 @@ import AppearanceSettingsForm from '@/components/forms/AppearanceSettingsForm';
 export default function Settings() {
   return (
     <SidebarPageLayout>
-      <div className="w-full max-w-5xl space-y-6">
+      <div className="w-full space-y-6 mx-auto">
         <SettingsTabs />
 
         <HasPermission permissions={[MODULES.SETTING_UPDATE]}>

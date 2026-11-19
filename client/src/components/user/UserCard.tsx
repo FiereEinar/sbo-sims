@@ -2,55 +2,72 @@ import { useTenantNavigate } from '../../hooks/useTenantNavigate';
 import { User } from '@/types/user';
 import _ from 'lodash';
 import { format } from 'date-fns';
-import { User2, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Mail, Hash, Calendar, ArrowUpRight } from 'lucide-react';
 
 interface UserCardProps {
   user: User;
 }
 
+function roleBgClass(role: string): string {
+  if (role === 'central-admin') return 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300';
+  if (role === 'org-admin') return 'bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300';
+  return 'bg-muted text-muted-foreground';
+}
+
 export default function UserCard({ user }: UserCardProps) {
   const navigate = useTenantNavigate();
   const fullName = _.startCase(`${user.firstname} ${user.lastname}`);
+  const initials = (() => {
+    const parts = fullName.trim().split(' ');
+    return parts.length >= 2
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : fullName.slice(0, 2);
+  })();
+  const roleName = user.rbacRole?.name ?? user.role ?? '--';
 
   return (
     <div
       onClick={() => navigate(`/user/${user._id}`)}
-      className="cursor-pointer rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all bg-card/40"
+      className="group cursor-pointer rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all bg-card/40"
     >
       {/* Header */}
-      <div className="flex justify-between items-center gap-2">
-        <div className="flex items-center gap-2">
-          <User2 size={24} className="text-muted-foreground shrink-0" />
-          <h3 className="font-semibold text-lg truncate w-40">{fullName}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold uppercase shrink-0">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm truncate">{fullName}</h3>
+            <Badge
+              variant="outline"
+              className={`text-[10px] rounded-full px-2 mt-1 ${roleBgClass(roleName)}`}
+            >
+              {_.startCase(roleName)}
+            </Badge>
+          </div>
         </div>
-
-        <div className="text-right text-sm font-medium flex items-center gap-2 shrink-0">
-          <Calendar size={16} className="text-muted-foreground shrink-0" />
-          {format(new Date(user.createdAt), 'MM/dd/yyyy')}
-        </div>
+        <ArrowUpRight
+          size={15}
+          className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0"
+        />
       </div>
 
       {/* Details */}
-      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+      <div className="mt-4 space-y-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          {/* <Shield size={20} className="text-muted-foreground shrink-0" /> */}
-          <div>
-            <p className="text-muted-foreground text-xs">Role</p>
-            <p>{_.startCase(user.rbacRole?.name ?? user.role ?? '--')}</p>
-          </div>
+          <Hash size={12} className="shrink-0" />
+          <span className="tabular-nums">{user.studentID}</span>
         </div>
-
-        <div>
-          <p className="text-muted-foreground text-xs">Student ID</p>
-          <p>{user.studentID}</p>
-        </div>
-
         <div className="flex items-center gap-2">
-          {/* <Mail size={20} className="text-muted-foreground shrink-0" /> */}
-          <div>
-            <p className="text-muted-foreground text-xs">Email</p>
-            <p>{user.email || '--'}</p>
-          </div>
+          <Mail size={12} className="shrink-0" />
+          <span className="truncate">{user.email || '—'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Calendar size={12} className="shrink-0" />
+          <span className="tabular-nums">
+            Joined {format(new Date(user.createdAt), 'MM/dd/yyyy')}
+          </span>
         </div>
       </div>
     </div>

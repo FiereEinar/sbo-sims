@@ -8,6 +8,7 @@ import {
   TableFooter,
   Table,
 } from '../ui/table';
+import { Badge } from '../ui/badge';
 import { CategoryWithTransactions } from '@/types/category';
 import { useEffect, useState } from 'react';
 import { numberWithCommas } from '@/lib/utils';
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { ArrowUpRight } from 'lucide-react';
 
 type SortOption =
   | 'none'
@@ -53,6 +55,7 @@ export default function CategoriesTable({
       );
     }
   }, [categories, setTotalAmount]);
+
   const sortedCategories = categories
     ? [...categories].sort((a, b) => {
         switch (sortBy) {
@@ -81,8 +84,7 @@ export default function CategoriesTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          {/* <TableHead className="w-[200px]">Organization</TableHead> */}
+        <TableRow className="hover:bg-transparent">
           <TableHead className="w-[400px]">
             <Select
               value={['name_asc', 'name_desc'].includes(sortBy) ? sortBy : 'none'}
@@ -93,8 +95,8 @@ export default function CategoriesTable({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Category name</SelectItem>
-                <SelectItem value="name_asc">Name: A-Z</SelectItem>
-                <SelectItem value="name_desc">Name: Z-A</SelectItem>
+                <SelectItem value="name_asc">Name: A–Z</SelectItem>
+                <SelectItem value="name_desc">Name: Z–A</SelectItem>
               </SelectContent>
             </Select>
           </TableHead>
@@ -104,10 +106,10 @@ export default function CategoriesTable({
               onValueChange={(v) => setSortBy(v as SortOption)}
             >
               <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
-                <SelectValue placeholder="Category fee" />
+                <SelectValue placeholder="Fee" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Category fee</SelectItem>
+                <SelectItem value="none">Fee</SelectItem>
                 <SelectItem value="fee_asc">Fee: Low to High</SelectItem>
                 <SelectItem value="fee_desc">Fee: High to Low</SelectItem>
               </SelectContent>
@@ -119,12 +121,12 @@ export default function CategoriesTable({
               onValueChange={(v) => setSortBy(v as SortOption)}
             >
               <SelectTrigger className="w-full border-none pl-0 focus:ring-0 font-semibold text-muted-foreground">
-                <SelectValue placeholder="Total transactions" />
+                <SelectValue placeholder="Transactions" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Total transactions</SelectItem>
-                <SelectItem value="total_asc">Transactions: Low to High</SelectItem>
-                <SelectItem value="total_desc">Transactions: High to Low</SelectItem>
+                <SelectItem value="none">Transactions</SelectItem>
+                <SelectItem value="total_asc">Low to High</SelectItem>
+                <SelectItem value="total_desc">High to Low</SelectItem>
               </SelectContent>
             </Select>
           </TableHead>
@@ -134,10 +136,10 @@ export default function CategoriesTable({
               onValueChange={(v) => setSortBy(v as SortOption)}
             >
               <SelectTrigger className="w-full border-none pr-0 focus:ring-0 font-semibold text-muted-foreground justify-end [&>span]:text-right">
-                <SelectValue placeholder="Total amount" />
+                <SelectValue placeholder="Total collected" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Total amount</SelectItem>
+                <SelectItem value="none">Total collected</SelectItem>
                 <SelectItem value="amount_asc">Amount: Low to High</SelectItem>
                 <SelectItem value="amount_desc">Amount: High to Low</SelectItem>
               </SelectContent>
@@ -150,24 +152,37 @@ export default function CategoriesTable({
         {isLoading && <TableLoading colSpan={4} />}
         {!categories?.length && !isLoading && (
           <TableRow>
-            <TableCell colSpan={4}>No categories</TableCell>
+            <TableCell colSpan={4} className="text-center text-muted-foreground py-10 italic">
+              No categories found
+            </TableCell>
           </TableRow>
         )}
         {sortedCategories &&
           sortedCategories.map((category) => (
             <TableRow
-              className="cursor-pointer"
+              className="cursor-pointer group"
               onClick={() => navigate(`/category/${category._id}`)}
               key={category._id}
             >
-              {/* <TableCell className="">{category.organization.name}</TableCell> */}
-              <TableCell className="">{category.name}</TableCell>
-              <TableCell className="">
-                {numberWithCommas(category.fee)}
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  {category.name}
+                  <ArrowUpRight
+                    size={13}
+                    className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                </div>
               </TableCell>
-              <TableCell className="">{category.totalTransactions}</TableCell>
-              <TableCell className="text-right">
-                {numberWithCommas(category.totalTransactionsAmount)}
+              <TableCell>
+                <Badge variant="outline" className="tabular-nums font-medium text-xs rounded-full">
+                  ₱{numberWithCommas(category.fee)}
+                </Badge>
+              </TableCell>
+              <TableCell className="tabular-nums text-muted-foreground">
+                {category.totalTransactions}
+              </TableCell>
+              <TableCell className="text-right tabular-nums font-medium">
+                ₱{numberWithCommas(category.totalTransactionsAmount)}
               </TableCell>
             </TableRow>
           ))}
@@ -175,9 +190,9 @@ export default function CategoriesTable({
 
       <TableFooter>
         <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className="text-right">
-            {numberWithCommas(totalAmount)}
+          <TableCell colSpan={3} className="font-semibold">Total collected</TableCell>
+          <TableCell className="text-right tabular-nums font-semibold">
+            ₱{numberWithCommas(totalAmount)}
           </TableCell>
         </TableRow>
       </TableFooter>

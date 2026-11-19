@@ -7,12 +7,12 @@ import BouncyLoading from '@/components/loading/BouncyLoading';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import SettingsTabs from '@/components/SettingsTabs';
 import StickyHeader from '@/components/StickyHeader';
-import Header from '@/components/ui/header';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient } from '@/main';
 import { Role } from '@/types/role';
 import { useQuery } from '@tanstack/react-query';
+import { KeyRound, ShieldOff } from 'lucide-react';
 
 export default function Roles() {
   const navigate = useTenantNavigate();
@@ -54,30 +54,56 @@ export default function Roles() {
 
   return (
     <SidebarPageLayout>
-      <SettingsTabs />
-      <StickyHeader>
-        <Header>Roles</Header>
+      <div className="w-full space-y-6 mx-auto">
+        <SettingsTabs />
+        <StickyHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <KeyRound size={16} />
+            </div>
+            <div>
+              <h1 className="font-semibold text-base leading-tight">Roles</h1>
+              {roles && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {roles.length} role{roles.length !== 1 ? 's' : ''} defined
+                </p>
+              )}
+            </div>
+          </div>
 
-        <HasPermission permissions={[MODULES.ROLE_CREATE]}>
-          <AddRoleForm />
-        </HasPermission>
-      </StickyHeader>
-      {isLoading && <BouncyLoading text="Loading roles" />}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {roles && roles.length === 0 && (
-          <p className="italic text-muted-foreground col-span-full">
-            No roles found
-          </p>
+          <HasPermission permissions={[MODULES.ROLE_CREATE]}>
+            <AddRoleForm />
+          </HasPermission>
+        </StickyHeader>
+
+        {isLoading && <BouncyLoading text="Loading roles" />}
+
+        {!isLoading && roles && roles.length === 0 && (
+          <div className="rounded-2xl border border-dashed bg-card/30 py-16 flex flex-col items-center gap-3 text-center">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <ShieldOff size={22} className="text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">No roles yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Create a role to define what members can do.
+              </p>
+            </div>
+          </div>
         )}
-        {roles &&
-          roles.map((role) => (
-            <RoleCard
-              key={role._id}
-              role={role}
-              onEdit={() => navigate(`/role/${role._id}`)}
-              onDelete={() => onDelete(role._id)}
-            />
-          ))}
+
+        {roles && roles.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {roles.map((role) => (
+              <RoleCard
+                key={role._id}
+                role={role}
+                onEdit={() => navigate(`/role/${role._id}`)}
+                onDelete={() => onDelete(role._id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </SidebarPageLayout>
   );

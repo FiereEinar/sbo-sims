@@ -6,7 +6,6 @@ import PaginationController from '@/components/PaginationController';
 import SidebarPageLayout from '@/components/SidebarPageLayout';
 import SettingsTabs from '@/components/SettingsTabs';
 import StickyHeader from '@/components/StickyHeader';
-import Header from '@/components/ui/header';
 import UsersTable from '@/components/user/UsersTable';
 import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
@@ -15,6 +14,7 @@ import { APIPaginatedResponse } from '@/types/api-response';
 import { User } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Users2 } from 'lucide-react';
 
 export default function Users() {
   const { viewMode } = useViewModeStore();
@@ -52,35 +52,56 @@ export default function Users() {
 
   return (
     <SidebarPageLayout>
-      <SettingsTabs />
-      <StickyHeader>
-        <Header>Users</Header>
+      <div className="w-full space-y-6 mx-auto">
+        <SettingsTabs />
+        <StickyHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <Users2 size={16} />
+            </div>
+            <div>
+              <h1 className="font-semibold text-base leading-tight">
+                Officers
+              </h1>
+              {response && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {response.data?.length ?? 0} member
+                  {(response.data?.length ?? 0) !== 1 ? 's' : ''} on this page
+                </p>
+              )}
+            </div>
+          </div>
 
-        <HasPermission permissions={[MODULES.USER_CREATE]}>
-          <AddUserForm />
-        </HasPermission>
-      </StickyHeader>
+          <HasPermission permissions={[MODULES.USER_CREATE]}>
+            <AddUserForm />
+          </HasPermission>
+        </StickyHeader>
 
-      {/* <div className="flex justify-between items-center">
-        <div />
-        <ViewModeToggle />
-      </div> */}
+        <div className="rounded-2xl border bg-card/50 shadow-sm overflow-hidden">
+          <div>
+            {viewMode === 'table' ? (
+              <UsersTable users={response?.data ?? []} isLoading={isLoading} />
+            ) : (
+              <div className="p-4">
+                <UsersCardView
+                  users={response?.data ?? []}
+                  isLoading={isLoading}
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
-      {viewMode === 'table' ? (
-        <UsersTable users={response?.data ?? []} isLoading={isLoading} />
-      ) : (
-        <UsersCardView users={response?.data ?? []} isLoading={isLoading} />
-      )}
-
-      {response && (
-        <PaginationController
-          currentPage={page}
-          nextPage={response?.next}
-          prevPage={response?.prev}
-          setPage={setPage}
-          prefetchFn={prefetchPageFn}
-        />
-      )}
+        {response && (
+          <PaginationController
+            currentPage={page}
+            nextPage={response?.next}
+            prevPage={response?.prev}
+            setPage={setPage}
+            prefetchFn={prefetchPageFn}
+          />
+        )}
+      </div>
     </SidebarPageLayout>
   );
 }

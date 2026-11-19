@@ -8,3 +8,7 @@ handoff.md
 dist
 .env
 /reference
+/.impeccable
+/.gemini
+PRODUCT.md
+DESIGN.md
